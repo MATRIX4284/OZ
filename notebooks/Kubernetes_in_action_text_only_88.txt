@@ -1,0 +1,52 @@
+58
+CHAPTER 3
+Pods: running containers in Kubernetes
+INTRODUCING THE FLAT INTER-POD NETWORK
+All pods in a Kubernetes cluster reside in a single flat, shared, network-address space
+(shown in figure 3.2), which means every pod can access every other pod at the other
+pod’s IP address. No NAT (Network Address Translation) gateways exist between them.
+When two pods send network packets between each other, they’ll each see the actual
+IP address of the other as the source IP in the packet.
+Consequently, communication between pods is always simple. It doesn’t matter if two
+pods are scheduled onto a single or onto different worker nodes; in both cases the
+containers inside those pods can communicate with each other across the flat NAT-
+less network, much like computers on a local area network (LAN), regardless of the
+actual inter-node network topology. Like a computer on a LAN, each pod gets its own
+IP address and is accessible from all other pods through this network established spe-
+cifically for pods. This is usually achieved through an additional software-defined net-
+work layered on top of the actual network.
+ To sum up what’s been covered in this section: pods are logical hosts and behave
+much like physical hosts or VMs in the non-container world. Processes running in the
+same pod are like processes running on the same physical or virtual machine, except
+that each process is encapsulated in a container. 
+3.1.3
+Organizing containers across pods properly
+You should think of pods as separate machines, but where each one hosts only a cer-
+tain app. Unlike the old days, when we used to cram all sorts of apps onto the same
+host, we don’t do that with pods. Because pods are relatively lightweight, you can have
+as many as you need without incurring almost any overhead. Instead of stuffing every-
+thing into a single pod, you should organize apps into multiple pods, where each one
+contains only tightly related components or processes.
+Node 1
+Pod A
+IP: 10.1.1.6
+Container 1
+Container 2
+Pod B
+IP: 10.1.1.7
+Container 1
+Container 2
+Node 2
+Flat network
+Pod C
+IP: 10.1.2.5
+Container 1
+Container 2
+Pod D
+IP: 10.1.2.7
+Container 1
+Container 2
+Figure 3.2
+Each pod gets a routable IP address and all other pods see the pod under 
+that IP address.
+ 

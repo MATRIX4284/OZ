@@ -1,0 +1,62 @@
+61
+Creating pods from YAML or JSON descriptors
+3.2
+Creating pods from YAML or JSON descriptors
+Pods and other Kubernetes resources are usually created by posting a JSON or YAML
+manifest to the Kubernetes REST API endpoint. Also, you can use other, simpler ways
+of creating resources, such as the kubectl run command you used in the previous
+chapter, but they usually only allow you to configure a limited set of properties, not
+all. Additionally, defining all your Kubernetes objects from YAML files makes it possi-
+ble to store them in a version control system, with all the benefits it brings.
+ To configure all aspects of each type of resource, you’ll need to know and under-
+stand the Kubernetes API object definitions. You’ll get to know most of them as you
+learn about each resource type throughout this book. We won’t explain every single
+property, so you should also refer to the Kubernetes API reference documentation at
+http:/
+/kubernetes.io/docs/reference/ when creating objects.
+3.2.1
+Examining a YAML descriptor of an existing pod
+You already have some existing pods you created in the previous chapter, so let’s look
+at what a YAML definition for one of those pods looks like. You’ll use the kubectl get
+command with the -o yaml option to get the whole YAML definition of the pod, as
+shown in the following listing.
+$ kubectl get po kubia-zxzij -o yaml
+apiVersion: v1                         
+kind: Pod                                       
+metadata:                                                 
+  annotations:                                            
+    kubernetes.io/created-by: ...                         
+  creationTimestamp: 2016-03-18T12:37:50Z                 
+  generateName: kubia-                                    
+  labels:                                                 
+    run: kubia                                            
+  name: kubia-zxzij                                       
+  namespace: default                                      
+  resourceVersion: "294"                                  
+  selfLink: /api/v1/namespaces/default/pods/kubia-zxzij   
+  uid: 3a564dc0-ed06-11e5-ba3b-42010af00004               
+spec:                                                   
+  containers:                                           
+  - image: luksa/kubia                                  
+    imagePullPolicy: IfNotPresent                       
+    name: kubia                                         
+    ports:                                              
+    - containerPort: 8080                               
+      protocol: TCP                                     
+    resources:                                          
+      requests:                                         
+        cpu: 100m                                       
+Listing 3.1
+Full YAML of a deployed pod
+Kubernetes API version used 
+in this YAML descriptor
+Type of Kubernetes 
+object/resource
+Pod metadata (name, 
+labels, annotations, 
+and so on)
+Pod specification/
+contents (list of 
+pod’s containers, 
+volumes, and so on)
+ 

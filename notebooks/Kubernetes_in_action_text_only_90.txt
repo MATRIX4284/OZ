@@ -1,0 +1,52 @@
+60
+CHAPTER 3
+Pods: running containers in Kubernetes
+For example, the main container in a pod could be a web server that serves files from
+a certain file directory, while an additional container (a sidecar container) periodi-
+cally downloads content from an external source and stores it in the web server’s
+directory. In chapter 6 you’ll see that you need to use a Kubernetes Volume that you
+mount into both containers. 
+ Other examples of sidecar containers include log rotators and collectors, data pro-
+cessors, communication adapters, and others.
+DECIDING WHEN TO USE MULTIPLE CONTAINERS IN A POD
+To recap how containers should be grouped into pods—when deciding whether to
+put two containers into a single pod or into two separate pods, you always need to ask
+yourself the following questions:
+Do they need to be run together or can they run on different hosts?
+Do they represent a single whole or are they independent components?
+Must they be scaled together or individually? 
+Basically, you should always gravitate toward running containers in separate pods,
+unless a specific reason requires them to be part of the same pod. Figure 3.4 will help
+you memorize this.
+Although pods can contain multiple containers, to keep things simple for now, you’ll
+only be dealing with single-container pods in this chapter. You’ll see how multiple
+containers are used in the same pod later, in chapter 6. 
+Pod
+Frontend
+process
+Backend
+process
+Container
+Pod
+Frontend
+process
+Frontend
+container
+Frontend pod
+Frontend
+process
+Frontend
+container
+Backend pod
+Backend
+process
+Backend
+container
+Backend
+process
+Backend
+container
+Figure 3.4
+A container shouldn’t run multiple processes. A pod shouldn’t contain multiple 
+containers if they don’t need to run on the same machine.
+ 

@@ -1,0 +1,1850 @@
+,entity,description,category,node_occurence_flag
+6,UTS namespace,Shared hostname and network interfaces among containers in a pod,network,Single
+11,Port space,Shared port numbers among containers in a pod,network,Single
+14,Flat inter-pod network,"single flat, shared network-address space for all pods",network,Single
+18,NAT (Network Address Translation),gateway between pods that translates IP addresses,software,Single
+19,Worker nodes,physical or virtual machines that run pods,hardware,Single
+20,LAN (Local Area Network),network for computers on the same physical location,network,Single
+21,Software-defined network,additional network layered on top of actual network,software,Single
+22,VM (Virtual Machine),virtualized environment for running operating systems,hardware,Single
+24,App,application or service that runs in a pod,software,Single
+26,Container 1,instance of a container running an application,process,Single
+27,Container 2,instance of a container running an application,process,Single
+33,Log rotator,a type of sidecar container that rotates and manages logs for a container,process,Single
+34,Collector,a type of sidecar container that collects data from a container or other sources,process,Single
+35,Data processor,a type of sidecar container that processes and transforms data for a container,process,Single
+36,Communication adapter,a type of sidecar container that enables communication between containers or other systems,process,Single
+37,Frontend process,"the main process running in the frontend pod, responsible for serving files and handling user requests",process,Single
+38,Backend process,"the main process running in the backend pod, responsible for processing data and handling requests",process,Single
+39,Frontend container,the container running the frontend process in a pod,container,Single
+40,Backend container,the container running the backend process in a pod,container,Single
+45,REST API,Web service for interacting with Kubernetes resources,software,Single
+50,API object definitions,"Definitions of Kubernetes API objects, such as Pods, Services, etc.",software,Single
+51,Kubernetes API reference documentation,Official documentation for the Kubernetes API,documentation,Single
+54,Pod metadata,"Information about a Pod, including its name, labels, annotations, etc.",container,Single
+55,Pod specification,"Contents of a Pod, including its containers, volumes, and so on",container,Single
+59,dnsPolicy,ClusterFirst,network,Single
+60,nodeName,gke-kubia-e8fe08b8-node-txje,hardware,Single
+62,serviceAccount,default,application,Single
+63,terminationGracePeriodSeconds,30,process,Single
+65,containerID,docker://f0276994322d247ba...,process,Single
+67,lastState,{},process,Single
+69,ready,true,process,Single
+70,restartCount,0,process,Single
+71,state,running: startedAt: 2016-03-18T12:46:05Z,process,Single
+72,hostIP,10.132.0.4,hardware,Single
+73,phase,Running,process,Single
+74,podIP,10.0.2.3,hardware,Single
+75,startTime,2016-03-18T12:44:32Z,process,Single
+76,Kubernetes API version,used in the YAML and the type of resource the YAML is describing,software,Single
+78,Spec,contains the actual description of the pod’s contents,database,Single
+79,Pod specification/contents,"list of pod’s containers, volumes, and so on",database,Single
+80,Detailed status of the pod and its containers,status: conditions: lastProbeTime: null lastTransitionTime: null status: True type: Ready,process,Single
+93,protocol,"The protocol being used for communication over a port, such as TCP or UDP.",network,Single
+101,status,"The current state of a pod, including its running containers and any errors.",application,Single
+107,po kubia-manual,Pod object used to retrieve its YAML definition,object,Single
+108,-o yaml,Option to specify output format as YAML,option,Single
+109,-o json,Option to specify output format as JSON,option,Single
+114,process's standard output,Output stream where the application logs are written,output stream,Single
+115,standard error stream,Error output stream where the application logs are written,output stream,Single
+120,$ docker logs <container id>,command to get container's log,command,Single
+122,kubectl logs kubia-manual,"command to see pod's log (more precisely, container's log)",command,Single
+123,Kubia server starting...,log statement about the server starting up,log message,Single
+124,-c <container name>,option to specify container name when getting logs of a multi-container pod,flag,Single
+125,$ kubectl logs kubia-manual -c kubia,command to get logs of a specific container in a multi-container pod,command,Single
+126,container name,name of the container for which logs are being retrieved,parameter,Single
+128,port forwarding,method to connect to a pod for testing and debugging purposes,process,Single
+135,localhost:8888,The local machine's port being used to connect to the pod.,port,Single
+136,8080,The port number on the pod being accessed.,port,Single
+142,Resource,any object in Kubernetes that can be labeled,object,Single
+145,Microservice,"a small, independent service that can be deployed independently",application,Single
+148,UI Pod,a pod running the user interface for an application,container,Single
+157,canary release,A deployment strategy where a new version of an application is deployed next to the stable version,deployment strategy,Single
+158,stable release,A deployment strategy where a new version of an application is deployed as the primary version,deployment strategy,Single
+159,beta release,A deployment strategy where a new version of an application is deployed for testing and feedback,deployment strategy,Single
+160,kubia-manual-with-labels.yaml,A YAML file that specifies labels when creating a pod,file,Single
+165,ui pod,A pod with a label specifying it as a UI component,pod,Single
+166,account service,A pod with a label specifying it as an account service component,pod,Single
+167,product catalog,A pod with a label specifying it as a product catalog component,pod,Single
+168,shopping cart,A pod with a label specifying it as a shopping cart component,pod,Single
+169,order service,A pod with a label specifying it as an order service component,pod,Single
+175,--show-labels,switch to show labels in kubectl get pods output,option,Single
+176,-L,switch to specify labels to display in kubectl get pods output,option,Single
+179,kubia-manual-v2,pod name,application,Single
+189,manual,Value of the creation_method label for manually-created pods,label value,Single
+191,none,Value of the creation_method and env labels for certain pods,label value,Single
+197,!env,Bash shell variable,process,Single
+198,creation_method!=manual,Label selector for pods created manually,label_selector,Single
+199,"env in (prod,devel)",Label selector for pods with env label set to prod or devel,label_selector,Single
+200,"env notin (prod,devel)",Label selector for pods with env label not set to prod or devel,label_selector,Single
+201,app=pc,Label selector for product catalog microservice pods,label_selector,Single
+202,rel=beta,Label selector for beta release of product catalog microservice,label_selector,Single
+203,app=ui,Label selector for UI pod,label_selector,Single
+204,rel=stable,Label selector for stable release of various services,label_selector,Single
+205,app=sc,Label selector for Shopping Cart pod,label_selector,Single
+206,rel=canary,Label selector for canary release of various services,label_selector,Single
+209,selectors,used to constrain pod scheduling based on node labels,software,Single
+216,SSDs,solid-state drives used in some worker nodes,hardware,Single
+217,spinning hard drives,a type of storage device used in some worker nodes,hardware,Single
+218,GPU acceleration,the use of graphics processing units to accelerate computation,hardware,Single
+219,node requirements,a description of the resources required by a pod,software,Single
+221,app: ui,a label used to identify the UI pod,software,Single
+224,app: as,a label used to identify the Account Service pod,software,Single
+229,GPU,general-purpose GPU computing,hardware,Single
+240,gpu,label that indicates a node has a GPU,hardware,Single
+243,kubernetes.io/hostname,a unique label on each node with its hostname,software,Single
+252,chapter 16,a reference to additional information on scheduling pods,software,Single
+259,kubernetes.io/created-by,annotation key used to store information about the creator of a pod,software,Single
+262,kubectl annotate,command for adding or modifying annotations on existing pods,software,Single
+263,mycompany.com/someannotation,example annotation key used to store additional data about a pod,software,Single
+271,names,only need to be unique within a namespace,software,Single
+276,kube-public namespace,a namespace used by Kubernetes,software,Single
+279,fluentd-cloud-kubia-e8fe-node-txje pod,a pod in the kube-system namespace,software,Single
+280,heapster-v11-fz1ge pod,a pod in the kube-system namespace,software,Single
+281,kube-dns-v9-p8a4t pod,a pod in the kube-system namespace,software,Single
+282,kube-ui-v4-kdlai pod,a pod in the kube-system namespace,software,Single
+283,l7-lb-controller-v0.5.2-bue96 pod,a pod in the kube-system namespace,software,Single
+300,metadata section,A section in a YAML manifest that specifies the metadata for a resource,software,Single
+304,--namespace flag,A flag used with the `kubectl` command to specify a namespace for an action,flag,Single
+305,kubectl config commands,Commands used to manage Kubernetes contexts and namespaces,software,Single
+306,alias kcd,An alias created to quickly switch between namespaces using the `kubectl` command,command,Single
+307,networking solution,A solution that provides network isolation between namespaces in Kubernetes,software,Single
+308,inter-namespace network isolation,The ability of a networking solution to isolate pods across different namespaces,feature,Single
+317,creation_method=manual label,A label attached to pods created manually,label,Single
+318,rel=canary label,A label attached to canary pods,label,Single
+321,ns,namespace in Kubernetes,software,Single
+332,ui,example application name,software,Single
+335,stable,example release version,software,Single
+336,as,example application name,software,Single
+337,pc,example application name,software,Single
+345,canary,release version label selector,software,Single
+353,kubia-09as0,pod name,software,Single
+354,kubia-something,pod name,software,Single
+356,kubia-http Service,service that exposes the kubia application to the network,software,Single
+361,Label Selectors,should be used to organize pods and easily perform operations on multiple pods at once.,metadata,Single
+363,Selectors,can be used to schedule pods only to nodes that have certain features.,node,Single
+364,Annotations,allow attaching larger blobs of data to pods either by people or tools and libraries.,metadata,Single
+366,kubectl explain command,can be used to quickly look up the information on any Kubernetes resource.,command,Single
+372,cluster node,physical or virtual machine running Kubernetes,hardware,Single
+374,Replication and other controllers,managed resources that create and manage pods,application,Single
+378,horizontal scaling,process of increasing the number of pods to meet demand,process,Single
+379,system-level pods,pods that run on each cluster node and provide system services,application,Single
+380,batch jobs,"short-lived, non-interactive processes that perform a specific task",application,Single
+381,scheduling jobs,process of running batch jobs periodically or once in the future,process,Single
+388,OutOfMemoryErrors,Error thrown when a process consumes excessive memory,error,Single
+389,Java app,Example application with a memory leak,application,Single
+394,TCP Socket,A type of probe that tries to open a TCP connection to the specified port of the container.,process,Single
+396,HTTP GET liveness probe,A type of probe that performs an HTTP GET request to check whether a web server is serving requests.,process,Single
+397,livenessProbe,A field in the pod specification that defines a liveness probe for the container.,field,Single
+409,httpGet liveness probe,a mechanism to periodically perform HTTP GET requests on a path to determine if a container is still healthy,software,Single
+413,RESTARTS column,a column in the output of kubectl get that shows how many times a pod's container has been restarted,software,Single
+415,kubia-liveness,the name of a pod in the example,software,Single
+417,--previous option,an option for kubectl logs that allows retrieving the log output from a previous instance of a container,software,Single
+418,myped,the name of a pod in the example,software,Single
+423,http-get,HTTP request method used in liveness probe,command,Single
+424,delay=0s,Initial delay before starting the liveness probe,parameter,Single
+425,timeout=1s,Timeout period for the liveness probe,parameter,Single
+426,period=10s,Period between consecutive liveness probes,parameter,Single
+427,#success=1,Number of successful liveness probe attempts,parameter,Single
+428,#failure=3,Number of failed liveness probe attempts before restart,parameter,Single
+433,initialDelaySeconds,delay before executing a probe,process/thread,Single
+434,probe,mechanism to check the health of a container,application/process,Single
+438,exit code,numeric value indicating the reason for a process termination,process/thread,Single
+442,health check,mechanism to verify the internal status of an application,application/process,Single
+443,/health,HTTP endpoint for health checks,hardware/network,Single
+453,Exec Probe,A type of liveness probe that executes a command to check if a container is running correctly,software,Single
+454,HTTP GET Liveness Probe,A type of liveness probe that uses an HTTP GET request to check if a container is running correctly,software,Single
+461,RC,Abbreviation for ReplicationController.,software,Single
+464,pod B2,A new pod instance created by the ReplicationController to replace pod B.,container,Single
+468,Replica count,The desired number of pods that should be running at any given time.,count,Single
+471,Pod selector,A way to select pods based on labels attached to them.,selector,Single
+478,JSON or YAML descriptor,"A file format used to define and describe Kubernetes resources, such as ReplicationControllers.",software,Single
+502,$ kubectl delete pod,The command used to manually delete a pod from the cluster.,command,Single
+504,ReplicationController spins up a new pod,The process by which a ReplicationController creates a new pod when one is deleted or fails.,process,Single
+505,$ kubectl get rc,The command used to list all running ReplicationControllers in the cluster.,command,Single
+508,Ready,A status indicator that shows how many pods are currently running and ready to receive traffic.,status,Single
+513,api server,The central component that manages access to the Kubernetes cluster.,application,Single
+516,containercreating,An event indicating that a container is being created.,event,Single
+517,terminating,An event indicating that a pod is terminating.,event,Single
+520,gcloud compute ssh command,A command used to SSH into a Google Kubernetes Engine node.,software,Single
+521,ifconfig eth0 down,A command used to shut down the network interface on a node.,software,Single
+525,kubectl get node command,A command used to list the nodes in a Kubernetes cluster.,software,Single
+526,NotReady status,The status of a node that is not ready due to network issues or other problems.,hardware,Single
+527,Unknown status,The status of a pod that is scheduled to an unreachable node.,software,Single
+535,instances,compute instances in GKE cluster,hardware,Single
+539,ownerReferences,field in pod metadata referencing ReplicationController,software,Single
+541,pod creation,event creating a new pod instance,container,Single
+548,-L app,An option for the kubectl get command to display the app label in a column.,command,Single
+557,kubia-2qneh,A pod name,container,Single
+558,kubia-dmdck,A pod name,container,Single
+563,kubia-oini2,A pod name,container,Single
+564,kubia-k0xz6,A pod name,container,Single
+569,rc kubia,The name of a ReplicationController.,software,Single
+570,YAML definition,"A human-readable format for representing data, used to define Kubernetes resources.",format,Single
+576,chapter 9,"A reference to a future chapter in the book, which will cover a better way of upgrading pods.",book,Single
+580,scale,a command used to change the number of replicas in a ReplicationController,command,Single
+582,ReplicationController resource,a Kubernetes resource that defines the configuration for a set of pods,resource,Single
+586,text editor,an application used for editing text files,software,Single
+587,KUBE_EDITOR,an environment variable that specifies the default text editor to use with kubectl edit,environment variable,Single
+588,EDITOR,an environment variable that specifies the default text editor to use for editing files,environment variable,Single
+593,selector.app,The field in the ReplicationController's definition that specifies the label selector for the pods managed by the controller.,software,Single
+595,ReplicationController's definition,The configuration file that defines the ReplicationController's desired state and behavior.,software,Single
+596,desired state,The specified number of replicas or other settings that define how a Kubernetes resource should behave.,software,Single
+598,horizontal pod auto-scaling,A feature in Kubernetes that automatically scales the number of replicas based on demand or other conditions.,software,Single
+601,--cascade=false,An option passed to the kubectl delete command to keep pods running when deleting a ReplicationController.,option,Single
+610,pod selectors,Selectors used to match pods in a ReplicaSet or ReplicationController,software,Single
+622,metadata.labels,"Labels attached to the pod, used for matching and selection",software,Single
+623,spec.containers,A list of containers in the pod template,software,Single
+624,containers.name,The name of a container in the pod template,software,Single
+629,selector.matchLabels,"A way to define label selectors for a ReplicaSet, specifying the labels directly under the selector property.",software,Single
+634,Pods Status,"A field that displays the status of pods managed by a ReplicaSet, including running, waiting, succeeded, and failed states.",software,Single
+635,apiGroup,The group name for a Kubernetes API resource.,software,Single
+636,v1beta2,A specific version of the apps API group.,software,Single
+637,core API group,A category of Kubernetes resources that do not require an explicit API group in their apiVersion field.,software,Single
+645,In,An operator that matches if the label's value is one of the specified values.,software,Single
+646,NotIn,An operator that matches if the label's value is not any of the specified values.,software,Single
+647,Exists,"An operator that matches if a pod has a label with the specified key, regardless of its value.",software,Single
+648,DoesNotExist,An operator that matches if a pod does not have a label with the specified key.,software,Single
+666,ssd-monitor,The name of the DaemonSet and pod.,application,Single
+669,ssd,The value of the disk label.,hardware,Single
+673,luksa/ssd-monitor,The name of the Docker image.,software,Single
+676,ssd-monitor-daemonset.yaml,A YAML file containing the configuration for the DaemonSet.,software,Single
+679,disk=ssd,A label that identifies nodes with solid-state drives (SSDs).,label,Single
+680,disk=hdd,A label that identifies nodes with hard disk drives (HDDs).,label,Single
+698,batch API group,A group of APIs related to batch processing,application,Single
+699,v1 API version,The version of the Kubernetes API used for batch processing,software,Single
+710,OnFailure,A value of the restart policy field that indicates a pod should be restarted only if it fails,value,Single
+714,luksa/batch-job,The name of an image used to create a container,image,Single
+715,pod spec property,A property that defaults to Always,software,Single
+716,Job pods,Pods managed by a Job resource,software,Single
+717,restart policy,Setting that prevents the container from being restarted when it finishes,software,Single
+718,kubectl create command,Command used to create a Job resource,command,Single
+720,pod list,List of running pods,output,Single
+721,--show-all switch,Switch used to show completed pods in the pod list,command,Single
+724,completions property,Property used to set the number of pod instances in a Job,software,Single
+725,parallelism property,Property used to set the number of pod instances running in parallel,software,Single
+728,completions,A Job property that specifies how many times the Job's pod should run.,property,Single
+729,parallelism,A Job property that specifies how many pods are allowed to run in parallel.,property,Single
+737,kubectl scale command,A command used to scale a Job or ReplicationController by changing its parallelism property.,command,Single
+740,spec.backoffLimit field,A field in the Job manifest that configures how many times a Job can be retried before it is marked as failed.,field,Single
+742,cron format,A well-known format for specifying a schedule for running a job.,format,Single
+743,Job template,A template used to create a Job resource according to the CronJob object.,template,Single
+744,pod replicas,One or more pod replicas created and started according to the Job's pod template.,process,Single
+747,jobTemplate,A template from which Job objects will be created by the CronJob resource.,application,Single
+753,minute,"A unit of time in the cron schedule format, representing minutes.",process,Single
+754,hour,"A unit of time in the cron schedule format, representing hours.",process,Single
+755,day of month,"A unit of time in the cron schedule format, representing days of the month.",process,Single
+756,month,"A unit of time in the cron schedule format, representing months.",process,Single
+757,day of week,"A unit of time in the cron schedule format, representing days of the week.",process,Single
+759,startingDeadlineSeconds,A field in the CronJob specification that specifies the deadline for starting a job.,process,Single
+767,desired replica count,The desired number of replicas for a ReplicationController.,process,Single
+781,sysadmin,system administrator configuring non-Kubernetes environment,personnel,Single
+784,external clients,clients outside the cluster requesting services from pods,application,Single
+785,external services,services provided by entities outside the cluster,software,Single
+786,pod readiness,controlling whether a pod is ready to be part of a service or not,process,Single
+791,Kubernetes Service,"Resource that makes a single, constant point of entry to a group of pods providing the same service",framework,Single
+792,IP address and port,Constant point of entry for a service,network,Single
+793,Frontend web server,Multiple pods providing the same service,application,Single
+794,Backend database server,Single pod providing a service,database,Single
+795,Service for frontend pods,Stable address for external clients to connect to the pods,application,Single
+796,Service for backend pod,Stable address for the backend pod,application,Single
+802,Node.js app,web application framework,software,Single
+811,kubia-svc.yaml,a YAML file that defines a service called kubia,file,Single
+825,get svc,command,software,Single
+836,service IP,IP address of the service,network,Single
+842,node.js,JavaScript runtime environment for building scalable server-side applications,software,Single
+844,HTTP response,Response sent from server to client using the HTTP protocol,network,Single
+846,-s option,Option used with kubectl exec to specify an alternate API server,command,Single
+847,--,Double dash character used to signal the end of command options for kubectl,command,Single
+850,sessionAffinity property,sets the service's session affinity to ClientIP or None,property,Single
+851,ClientIP,a value for the sessionAffinity property that redirects all requests from the same client IP to the same pod,value,Single
+852,None,the default value for the sessionAffinity property,value,Single
+853,Kubernetes services,don't operate at the HTTP level and don't care about the payload they carry,application,Single
+854,TCP packets,and UDP packets are handled by Kubernetes services,protocol,Single
+855,HTTP protocol,cookies are a construct of the HTTP protocol and aren't known to Kubernetes services,protocol,Single
+856,cookies,a construct of the HTTP protocol that can't be used for session affinity in Kubernetes services,construct,Single
+859,multi-port service,"a service that exposes multiple ports, including HTTP and HTTPS",service,Single
+860,ports 80 and 443,can be forwarded to the pod's ports 8080 and 8443 using a single multi-port service,port,Single
+861,pod's ports 8080 and 8443,can be exposed through a single cluster IP using a multi-port service,port,Single
+864,https,"The HTTPS port, which maps to pod's port 8443",software,Single
+878,env command,Lists environment variables inside a container,command,Single
+879,Environment Variables,Variables set by Kubernetes to point to services,process,Single
+880,Port numbers,Numbers assigned to ports for communication between containers,hardware,Single
+881,IP addresses,Addresses used for communication between containers,hardware,Single
+883,Service spec,Configuration file for a service,configuration,Single
+891,KUBIA_SERVICE_HOST,environment variable,process,Single
+892,KUBIA_SERVICE_PORT,environment variable,process,Single
+893,BACKEND_DATABASE_SERVICE_HOST,environment variable,process,Single
+894,BACKEND_DATABASE_SERVICE_PORT,environment variable,process,Single
+896,DNS server,service,application,Single
+902,backend-database,service name,database,Single
+904,svc.cluster.local,configurable cluster domain suffix used in all cluster local service names,network,Single
+905,client,must know the service's port number,application,Single
+911,http://kubia.default.svc.cluster.local,FQDN of the kubia service,network,Single
+912,http://kubia.default,simplified FQDN of the kubia service,network,Single
+914,http://kubia,the URL of the Kubia service,application,Single
+915,kubia-8awf3,the hostname of the Kubia service,application,Single
+916,service's name,the name of the service used as the hostname in the requested URL,software,Single
+917,/etc/resolv.conf,a file in the container that configures the DNS resolver,file,Single
+918,DNS resolver,a component that resolves domain names to IP addresses,software,Single
+920,kubia.default.svc.cluster.local,the fully qualified domain name (FQDN) of the Kubia service,application,Single
+923,service endpoints,"a resource that sits between services and pods, providing load balancing and discovery",software,Single
+928,svc kubia,service name and selector,application,Single
+931,80/TCP,service port and protocol,application,Single
+933,kubectl get endpoints kubia,command to display Endpoints resource information,software,Single
+934,NAME ENDPOINTS AGE,format of Endpoints resource output,application,Single
+936,"10.108.1.4:8080,10.108.2.5:8080,10.108.2.6:8080",list of IP addresses and ports exposing a service,database,Single
+943,external-service,service name and selector,application,Single
+946,endpoints resource,A separate resource and not an attribute of a service.,database,Single
+947,yaml manifest,The YAML manifest for the Endpoints object.,software,Single
+952,subsets,A list of subsets for the Endpoints resource.,database,Single
+953,addresses,A list of IP addresses for the Endpoints resource.,network,Single
+954,ip,An individual IP address for the Endpoints resource.,hardware,Single
+959,connections,Connections to the service's IP:port pair will be load balanced between the service’s endpoints.,network,Single
+962,service name,"The name of the service, which must match the name of the Endpoints object.",application,Single
+963,endpoints IP,The IPs of the endpoints that the service will forward connections to.,network,Single
+968,ExternalName,Type of service that serves as an alias for an external service,software,Single
+975,externalName,"Field in Service resource definition, used to point to an external service",hardware,Single
+979,DNS level,Implementation level of ExternalName services,network,Single
+990,External client,"A client outside the Kubernetes cluster that can access services exposed to it through NodePort, LoadBalancer, or Ingress resources.",hardware/network,Single
+1001,nodePort,Node port number for the Service resource,software,Single
+1006,svc,Short form for Service resource,software,Single
+1008,CLUSTER-IP,Cluster IP address for the Service resource,network,Single
+1011,<nodes>,Placeholder for node IP addresses,network,Single
+1012,80:30123/TCP,Port number and protocol for the Service resource,software,Single
+1013,10.111.254.223,Cluster IP address for the Service resource,network,Single
+1014,<1st node's IP>,Placeholder for first node's IP address,network,Single
+1015,30123,Node port number for the Service resource,software,Single
+1017,Firewall Rules,"rules that control incoming and outgoing network traffic based on source and destination IP addresses, ports, and protocols",hardware/network,Single
+1018,gcloud compute firewall-rules create,a command to create a new firewall rule in Google Cloud Platform,software/command,Single
+1019,kubia-svc-rule,a specific firewall rule created for the Kubia service,hardware/network,Single
+1020,tcp:30123,a protocol and port number combination that allows incoming TCP connections on port 30123,software/protocol,Single
+1025,Port 30123,a specific port number used by the NodePort service,hardware/computer/port,Single
+1032,JSONPath,Query language for JSON data,software,Single
+1037,ExternalIP,Type of IP address assigned to a node,network,Single
+1046,APIVersion,a field in the YAML manifest that specifies the version of the Kubernetes API being used,"software,hardware",Single
+1050,Port,a field in the YAML manifest that specifies a port number for the service,"software,application",Single
+1051,TargetPort,a field in the YAML manifest that specifies the port on which the pod is listening,"software,application",Single
+1056,kubectl explain,command to check service's session affinity,command,Single
+1058,keep-alive connections,browser requests sent through single connection,process,Single
+1059,session affinity,service setting to determine pod selection,software,Single
+1061,external client,client connecting to service through load balancer,hardware,Single
+1063,IP: 130.211.53.173:80,load balancer IP address and port,network,Single
+1066,IP: 130.211.99.206,node IP address,network,Single
+1068,IP: 130.211.97.55,node IP address,network,Single
+1069,Port 32143,port used by service,software,Single
+1078,externalTrafficPolicy,a field in the service's spec section that determines how external traffic is handled,software,Single
+1079,Local,a value for the externalTrafficPolicy field that causes the service proxy to choose a locally running pod,hardware,Single
+1080,client's IP,The client's IP address that is not preserved when connecting to a service through a node port.,network,Single
+1081,Source Network Address Translation (SNAT),A process that changes the source IP of packets received through a node port.,process,Single
+1083,Local external traffic policy,A policy that affects the preservation of the client's IP when connecting to a service through a node port.,policy,Single
+1085,LoadBalancer service,A type of service that requires its own load balancer with its own public IP address.,service,Single
+1086,public IP address,An IP address that is accessible from outside the cluster.,network,Single
+1087,host and path in the request,The components of an HTTP request that determine which service to forward the request to.,application,Single
+1088,Service using Local external traffic policy,A type of service that may lead to uneven load distribution across pods.,service,Single
+1097,Ingress add-on,An optional feature in Minikube that enables the Ingress functionality.,software,Single
+1099,Kube-dns,A service that provides DNS resolution for pods in a Kubernetes cluster.,software,Single
+1119,NAMESPACE,column header for the namespace column,key,Single
+1125,default-http-backend-5wb0h,name of the Ingress controller pod,process,Single
+1126,kube-addon-manager-minikube,name of the Kubernetes addon manager process,process,Single
+1127,kube-dns-v20-101vq,name of the Kubernetes DNS service pod,process,Single
+1128,kubernetes-dashboard-jxd9l,name of the Kubernetes dashboard process,process,Single
+1129,nginx-ingress-controller-gdts0,name of the Nginx Ingress controller process,process,Single
+1136,get ingresses,A command used to list Ingress resources in a Kubernetes cluster.,command,Single
+1137,ingresses,A resource that exposes services externally through HTTP requests.,application,Single
+1138,DNS servers,Servers that resolve domain names to IP addresses.,network,Single
+1139,/etc/hosts,A file on Unix-like systems that maps hostnames to IP addresses.,file system,Single
+1143,End-points object,An object that stores information about the IP addresses of pods associated with a service.,database,Single
+1145,Host header,A header in an HTTP request that specifies the hostname or IP address of the server being requested.,header,Single
+1164,TLS,A protocol for encrypting communication between clients and servers.,network,Single
+1168,openssl,A command-line tool for generating and managing SSL/TLS certificates and private keys.,software,Single
+1169,genrsa,A command used to generate a new RSA key pair.,command,Single
+1170,req,A command used to create a certificate signing request (CSR).,command,Single
+1171,x509,A command used to create a self-signed X.509 certificate.,command,Single
+1174,tls-secret,name of the Secret resource,database,Single
+1178,CertificateSigningRequest,resource to request a signed certificate,application,Single
+1179,csr,short form for CertificateSigningRequest,software,Single
+1180,kubia-ingress-tls.yaml,file containing the Ingress configuration,hardware,Single
+1181,tls,attribute of the Ingress resource,software,Single
+1183,kubia.example.com,hostname for which TLS connections will be accepted,network,Single
+1189,liveness probes,A mechanism to periodically check if a container is running and responding correctly.,process,Single
+1196,GET / request,HTTP request method,"network,application",Single
+1199,TCP Socket probe,Type of readiness probe that opens a TCP connection,"process,container",Single
+1206,TCP connection,Network communication protocol,"network,application",Single
+1213,container specification,Definition of a container in the pod template,application,Single
+1214,readiness probe definition,Periodic command to check if a file exists inside the container,process,Single
+1215,ls command,Command to list files and directories inside the container,command,Single
+1216,exit code zero,Return value indicating success or failure of the readiness probe,error,Single
+1217,file /var/ready,File used by the readiness probe to determine pod readiness,process,Single
+1222,READY column,column in kubectl output showing pod readiness,output,Single
+1225,touch command,command to create a new file,command,Single
+1229,kubia-loadbalancer,service name,application,Single
+1237,pod labels,Metadata associated with a pod that can be used to identify or filter pods,metadata,Single
+1242,DNS lookups,a way to resolve service names to pod IPs,process,Single
+1243,Cluster IP,a virtual IP address assigned to a service by Kubernetes,network,Single
+1244,Service specification,the configuration file that defines a service,software,Single
+1245,clusterIP field,a field in the service specification that determines whether a cluster IP is assigned,process,Single
+1261,dig binary,a binary used for DNS-related actions,binary,Single
+1262,tutum/dnsutils container image,an image containing the binaries needed for DNS-related actions,image,Single
+1264,--generator=run-pod/v1 option,an option used to create a pod directly without any kind of ReplicationController or similar behind it,option,Single
+1266,DNS A records,the IP addresses returned by a DNS server for a headless service,object,Single
+1267,kubia-headless.default.svc.cluster.local FQDN,a fully qualified domain name used to perform DNS lookups,domain name,Single
+1268,kubectl get pods command,a command to list running pods with their IPs,command,Single
+1276,headless services,services that don't have an IP address,software,Single
+1278,DNS round-robin,mechanism for distributing traffic across multiple pods,process,Single
+1281,service.alpha.kubernetes.io/tolerate-unready-endpoints,annotation for tolerating unready endpoints,database,Single
+1282,publishNotReadyAddresses,field for publishing not ready addresses,database,Single
+1283,Kubernetes version 1.9.0,version of Kubernetes,software,Single
+1289,port exposed by the service,The port number that a service exposes to clients.,application,Single
+1293,Kubernetes Service resources,A type of resource in Kubernetes that exposes services available in an application.,application,Single
+1300,ExternalName service type,A type of service in Kubernetes that provides a DNS CNAME alias for external services.,network,Single
+1303,pod container,a pod's readiness probe is used to determine whether a pod should or shouldn't be included as a service endpoint,container,Single
+1306,bash shell,running a bash shell in an existing pod's container,process,Single
+1308,kubernetes resources,managed by kubectl apply command,application,Single
+1309,pod IPs,discovered through DNS when creating a headless service,network,Single
+1311,Volumes,attaching disk storage to containers,software,Single
+1320,Disk storage,persistent storage for containers,hardware,Single
+1323,Persistent storage,shared disk storage between containers,hardware,Single
+1332,/var/logs,A directory in the filesystem used by containers to store logs,filesystem,Single
+1333,/var/html,A directory in the filesystem used by containers to create and store HTML files,filesystem,Single
+1334,web server,A software application that serves HTTP requests and returns web pages,application,Single
+1335,agent,A software component that performs a specific task or function,process,Single
+1336,log rotator,"A software component that rotates, compresses, and analyzes logs",process,Single
+1338,Container: WebServer,A container running a web server process,application,Single
+1340,Webserver,A process running a web server application,process,Single
+1343,/,The root directory of the filesystem,filesystem,Single
+1345,/htdocs/,A subdirectory of the filesystem for storing web server files,filesystem,Single
+1347,Container: ContentAgent,A container running a content agent process,application,Single
+1349,ContentAgent,A process running a content agent application,process,Single
+1352,/html/,A subdirectory of the filesystem for storing HTML files,filesystem,Single
+1353,Container: LogRotator,A container running a log rotator process,application,Single
+1355,LogRotator,A process running a log rotator application,process,Single
+1359,Volume: publicHtml,A shared storage volume for web server files,storage,Single
+1360,Volume: logVol,A shared storage volume for log files,storage,Single
+1361,Linux,Operating System,software,Single
+1366,Web-Server container,A container running a web server,software,Single
+1367,ContentAgent container,A container generating content for the web server,software,Single
+1368,LogRotator container,A container rotating logs for the web server,software,Single
+1369,publicHtml volume,A shared directory between containers serving HTML files,software,Single
+1370,logVol volume,A shared directory for storing logs,software,Single
+1376,awsElastic-BlockStore,A type of volume for Amazon Web Services Elastic Block Store Volume storage,hardware,Single
+1383,quobyte,Used for mounting other types of network storage.,software,Single
+1386,vsphere-Volume,Used for mounting other types of network storage.,software,Single
+1387,photonPersistentDisk,Used for mounting other types of network storage.,software,Single
+1388,scaleIO,Used for mounting other types of network storage.,software,Single
+1397,UNIX fortune command,A command that generates a random quote every time it is run.,software,Single
+1399,fortune image,A Docker image that generates fortunes,software,Single
+1401,apt-get,A package manager for Debian-based systems,software,Single
+1402,fortune binary,A program that generates fortunes,software,Single
+1409,disk storage,A type of persistent storage for containers,hardware,Single
+1412,luksa/fortune,the Docker image used by html-generator container,image,Single
+1417,nginx:alpine,the Docker image used by web-server container,image,Single
+1419,read-only,the mode of the volume mounted in web-server container,docker,Single
+1422,TCP,the protocol used for communication between containers and the host machine,protocol,Single
+1425,fortune,the name of the pod that contains two containers and a shared volume,pod,Single
+1428,tmpfs filesystem,a filesystem that stores data in memory instead of on disk,hardware,Single
+1439,repository,the URL of the Git repository to be cloned,database,Single
+1441,directory,the directory within the volume where the repository will be cloned,process,Single
+1449,Git,a version control system,software,Single
+1450,GitHub,a web-based platform for version control and collaboration,application,Single
+1455,sidecar container,a secondary container that augments the operation of a main container,container,Single
+1456,Git sync process,a process that keeps a local directory synchronized with a Git repository,process,Single
+1457,SSH protocol,a secure communication protocol for secure shell access,protocol,Single
+1467,database pod,a pod that stores data in a hostPath volume,pod,Single
+1469,fluentd-kubia-4ebc2f1e-9a3e pod,a pod that uses hostPath volumes to access node's data,pod,Single
+1470,varlog volume,a hostPath volume that accesses the node's /var/log directory,volume,Single
+1471,varlibdockercontainers volume,a hostPath volume that accesses the node's /var/lib/docker/containers directory,volume,Single
+1472,Minikube pod,a pod used for testing persistent storage in single-node clusters,pod,Single
+1474,CA certificates,the node's CA certificates accessed by hostPath volumes,file,Single
+1475,kubectl get pod command,a command used to list pods in a namespace,command,Single
+1476,kubectl describe po command,a command used to describe a pod's details,command,Single
+1478,hostPath volumes,A type of volume that allows reading or writing system files on a node.,volume,Single
+1481,gcloud command,A command-line tool for managing Google Cloud resources.,command,Single
+1483,pod volume,A type of storage that allows data to be persisted within a pod.,volume,Single
+1486,gce persistent disk,a type of persistent storage used by Google Cloud Engine,hardware,Single
+1487,mongodb,a database management system,software,Single
+1491,gce persistent disk volume,"a type of persistent storage used by Google Cloud Engine, attached to a container",hardware,Single
+1494,/data/db,the path where MongoDB stores its data,hardware,Single
+1497,mongodb-pod-hostpath.yaml,the YAML file for a pod using a hostPath volume,application,Single
+1498,gcepd.yaml,the YAML file for a pod using a GCE Persistent Disk volume,application,Single
+1505,JSON document,A type of data that can be stored in a MongoDB database.,data format,Single
+1506,find() command,A MongoDB command used to retrieve documents from a collection.,command,Single
+1507,insert() command,A MongoDB command used to insert a new document into a collection.,command,Single
+1508,GCE persistent disk,"A type of storage that persists data even after a pod is deleted or recreated, provided by Google Cloud Engine.",hardware,Single
+1514,mongodb://127.0.0.1:27017,MongoDB connection string,database,Single
+1515,ObjectId,Data type in MongoDB for object IDs,database,Single
+1518,azureFile,Type of volume used for persistent storage on Microsoft Azure,volume,Single
+1527,volumeId,unique identifier for a volume,process,Single
+1530,NFS volume,network file system storage option,database,Single
+1543,fc,storage option for Fibre Channel connections,hardware,Single
+1545,Persistent Volume,Provisioned storage resource,database,Single
+1550,NFS export,Network File System export,database,Single
+1551,PersistentVolumeClaim (PVC),Request for persistent storage,database,Single
+1552,PersistentVolume (PV),Provisioned storage resource,database,Single
+1557,Cluster administrator,User responsible for setting up storage resources,role,Single
+1558,Application developer,User responsible for using persistent storage,role,Single
+1561,PersistentVolumeReclaimPolicy,Policy for reclaiming a PersistentVolume,software,Single
+1563,ReadOnlyMany,Access mode for a PersistentVolume,access mode,Single
+1580,PersistentVolumeClaim manifest,A YAML file defining a PersistentVolumeClaim,configuration,Single
+1585,cluster Nodes,The nodes of a Kubernetes cluster,hardware,Single
+1586,Namespace A,A namespace in a Kubernetes cluster,application,Single
+1587,User A,A user in a Kubernetes cluster,user,Single
+1600,RWO,ReadWriteOnce access mode (only one node can read and write),hardware,Single
+1601,ROX,ReadOnlyMany access mode (multiple nodes can read),hardware,Single
+1602,RWX,ReadWriteMany access mode (multiple nodes can read and write),hardware,Single
+1624,claims,requests for persistent storage,software,Single
+1645,GCE Persistent Disks,type of storage resource provided by Google Cloud Platform,hardware,Single
+1648,Delete,persistentVolumeReclaimPolicy to delete the underlying storage,software,Single
+1650,Retain policy,a reclaim policy for PersistentVolumes that retains the data on deletion,software,Single
+1651,Delete policy,a reclaim policy for PersistentVolumes that deletes the data on deletion,software,Single
+1655,PersistentVolume provisioner,a component that provisions PersistentVolumes dynamically,software,Single
+1658,PersistentVolumeClaim 1,a specific PersistentVolumeClaim resource,software,Single
+1660,Pod 2,a specific Pod resource,software,Single
+1661,PersistentVolumeClaim 2,a specific PersistentVolumeClaim resource,software,Single
+1662,Pod 3,a specific Pod resource,software,Single
+1663,Dynamic Provisioning,Provisioning of PersistentVolumes on demand,process,Single
+1677,PersistentDisk (PD),Storage type provided by Google Compute Engine,database,Single
+1678,GCE,Google Cloud Platform service,application,Single
+1679,PVC definition,Definition of a PersistentVolumeClaim,process,Single
+1681,storageclass-fast-gcepd.yaml,File containing the StorageClass definition,file,Single
+1682,mongodb-pvc-dp.yaml,Updated PVC definition with dynamic provisioning,database,Single
+1693,fast StorageClass,A custom storage class used in the example,database,Single
+1694,kubectl get pvc,A command to list Persistent Volume Claims,command,Single
+1700,gcloud compute disks list,A command to list Compute Engine disks,command,Single
+1701,kubernetes.io/gce-pd provisioner,The provisioner used by the fast StorageClass,process,Single
+1703,storage class,A storage class with different performance or other characteristics,database,Single
+1709,Persistent disk,A persistent storage device attached to a pod,hardware,Single
+1710,SSD,"Solid-State Drive, a type of fast storage device",hardware,Single
+1712,fast storage class,A custom storage class created by the user,database,Single
+1713,standard storage class,The default storage class provided by GKE or Minikube,database,Single
+1719,standard,default storage class in GKE cluster,storage class,Single
+1724,storageclass.beta.kubernetes.io/is-default-class,annotation to mark a storage class as default,annotation,Single
+1727,pd-standard,type of GCE PD to create,storage class parameter,Single
+1735,100Mi,amount of storage requested by the PVC,storage request,Single
+1744,compute disks list,A command used with gcloud to retrieve information about compute disks,software,Single
+1749,dynamic volume provisioner,A component that provisions PersistentVolumes dynamically,software,Single
+1770,command-line options,arguments passed to an application when it is run from the command line,software,Single
+1777,config file,file containing configuration options,application,Single
+1779,Docker containers,containerized applications,container,Single
+1780,Kubernetes resources,top-level Kubernetes resource for storing configuration data,database,Single
+1795,docker exec,command used to execute a command inside a running container,application,Single
+1796,ps x,Unix command used to list processes running in the system,application,Single
+1797,docker exec -it,command used to execute a command inside a running container with interactive shell,application,Single
+1800,ENTRYPOINT instruction,a command in a Dockerfile that specifies the default command to run when the container is started,software,Single
+1801,CMD instruction,a command in a Dockerfile that specifies the default arguments for the ENTRYPOINT command,software,Single
+1804,apt-get update,a command used to update the package index in Ubuntu,software,Single
+1805,apt-get -y install fortune,a command used to install the fortune program in Ubuntu,software,Single
+1807,interval,a variable that specifies the delay interval between fortunes,software,Single
+1808,PID 1,the process ID of the shell process,process,Single
+1809,PID 7,the process ID of the node process,process,Single
+1810,shell,a command-line interface for interacting with the operating system,software,Single
+1811,exec form,a way to specify a default command in a Dockerfile using the ENTRYPOINT instruction,software,Single
+1812,docker build,a command used to build a Docker image from a Dockerfile,software,Single
+1813,docker push,"a command used to push a Docker image to a registry, such as Docker Hub",software,Single
+1816,Control+C,Keyboard shortcut to stop the script,process,Single
+1817,docker.io/luksa/fortune:args,Docker image with custom argument handling,image,Single
+1823,/bin/command,Custom command to override the ENTRYPOINT,command,Single
+1824,"arg1, arg2, arg3",Custom arguments to pass to the container,arguments,Single
+1826,fortune-pod-args.yaml,Modified Kubernetes pod definition file with custom arguments,file,Single
+1833,fortune:args,a specific Docker image that generates a new fortune every two seconds,container,Single
+1834,fortune:latest,"a specific Docker image, but not specified what it does",container,Single
+1838,FOO=BAR,an environment variable with key FOO and value BAR,environment variable,Single
+1839,ABC=123,an environment variable with key ABC and value 123,environment variable,Single
+1840,Container A,"the first container in the pod, with its own set of environment variables",container,Single
+1841,Container B,"the second container in the pod, with its own set of environment variables",container,Single
+1845,trap,Bash command used to catch and handle signals (e.g. SIGINT),software,Single
+1846,SIGINT,Signal sent when the user presses Ctrl+C,hardware,Single
+1847,mkdir,Bash command used to create a new directory,software,Single
+1849,while,Bash command used to create a loop that runs indefinitely,software,Single
+1851,/usr/games/fortune,Command used to generate a new fortune,software,Single
+1852,System.getenv,Java method used to retrieve an environment variable,software,Single
+1853,process.env,Node.js property used to access environment variables,software,Single
+1854,os.environ,Python dictionary used to store environment variables,software,Single
+1857,container definition,YAML file used to specify the configuration for a container,hardware,Single
+1864,ConfigMap resource,a source for environment variable values using the valueFrom instead of the value field,database,Single
+1866,$(VAR) syntax,referencing previously defined environment variables or any other existing variables,process,Single
+1867,FIRST_VAR,an environment variable with value 'foo',process,Single
+1868,SECOND_VAR,an environment variable with value '$(FIRST_VAR)bar',process,Single
+1876,Kubernetes REST API endpoint,an API endpoint for accessing ConfigMap data,network,Single
+1880,configMap volume,a volume that provides access to a ConfigMap's data,hardware,Single
+1881,key1=value1,an example key-value pair within a ConfigMap,software,Single
+1882,key2=value2,another example key-value pair within a ConfigMap,software,Single
+1883,app-config,a ConfigMap with a specific name and namespace,software,Single
+1884,development values,example configuration data for the development environment,software,Single
+1885,production values,example configuration data for the production environment,software,Single
+1888,create configmap command,a special command for creating ConfigMaps,software,Single
+1889,ConfigMap keys,"must be valid DNS subdomains and can contain alphanumeric characters, dashes, underscores, and dots",hardware,Single
+1890,DNS subdomain,a subset of a domain name that is used to identify a specific resource or service,network,Single
+1892,literal,a value that is specified directly in a command or configuration file,hardware,Single
+1893,ConfigMap name,"the unique identifier for a ConfigMap, used to reference it in other commands and configurations",software,Single
+1902,$ kubectl create -f fortune-config.yaml,A command to create a ConfigMap from a YAML file,command,Single
+1904,--from-file=config-file.conf,An option to create a ConfigMap from a file,option,Single
+1905,--from-literal=some=thing,An option to create a ConfigMap from a literal value,option,Single
+1906,/path/to/dir,A directory path used to import files into a ConfigMap,directory,Single
+1908,bar=foobar.conf,A file stored under a custom key in a ConfigMap,file,Single
+1909,config-opts/,A directory used to import files into a ConfigMap,directory,Single
+1910,some=thing,A literal value used to create a ConfigMap,value,Single
+1918,my-conﬁg,the name of a ConfigMap,software,Single
+1921,abc,a value stored in the ConfigMap,string,Single
+1923,true,the value of a boolean variable stored in the ConfigMap,boolean,Single
+1924,repeat,a key-value pair stored in the ConfigMap,software,Single
+1925,100,the value of an integer variable stored in the ConfigMap,integer,Single
+1926,some thing,a key-value pair stored in the ConfigMap,string,Single
+1927,foobar.conf,a file containing configuration data in JSON format,file,Single
+1931,ConfigMapKeyRef,"A reference to a ConfigMap key, used to initialize environment variables in containers.",software,Single
+1942,envFrom,An attribute used to expose all entries of a ConfigMap as environment variables.,software,Single
+1944,prefix,An optional attribute used to specify a prefix for environment variables.,software,Single
+1945,CONFIG_FOO,An example environment variable created by using the envFrom attribute.,software,Single
+1946,CONFIG_BAR,Another example environment variable created by using the envFrom attribute.,software,Single
+1947,FOO-BAR,A ConfigMap key that is not converted to a valid environment variable name.,software,Single
+1948,my-config-map,An example ConfigMap used in the listing.,software,Single
+1949,some-image,The image used in the container.,software,Single
+1955,configMapVolume,a special volume type that exposes ConfigMap entries as files,software,Single
+1964,luksa/fortune:args,the Docker image that takes an integer argument,software,Single
+1969,Nginx web server,web server software used in the example,software,Single
+1970,fortuneloop.sh script,script used to configure the Nginx web server,software,Single
+1971,Config file,file containing configuration data for an application,software,Single
+1973,server_name,directive in Nginx config file specifying the server name,software,Single
+1974,listen directive,directive in Nginx config file specifying the port number to listen on,software,Single
+1975,gzip_types,directive in Nginx config file specifying the types of files to compress,software,Single
+1976,location directive,directive in Nginx config file specifying the location of a resource,software,Single
+1977,root directive,directive in Nginx config file specifying the root directory for a resource,software,Single
+1978,index directive,directive in Nginx config file specifying the index files to serve,software,Single
+1979,configmap-files,directory containing configuration files used to create a ConfigMap,hardware,Single
+1988,ConfigMap's entries,The key-value pairs stored in a ConfigMap.,software,Single
+1990,/etc/nginx/nginx.conf,The default Nginx configuration file.,file,Single
+1991,/etc/nginx/conf.d/,A directory where Nginx automatically includes .conf files.,directory,Single
+2005,port-forwarding,the process of forwarding traffic from a local port to a remote port in the pod,process,Single
+2011,fortune-configmap-volume,a pod with a ConfigMap volume mounted to it,application,Single
+2013,items attribute,a configuration option for specifying which ConfigMap entries should be exposed as files in a volume,software,Single
+2017,gzip.conf,a file containing compressed configuration data,file,Single
+2025,gzip.conf file,a configuration file for Nginx that enables gzip compression,file,Single
+2026,subPath property,an additional property on the volumeMount that allows you to mount a single file or directory from a ConfigMap,property,Single
+2027,/etc directory,a system directory in Linux that contains important configuration files,directory,Single
+2029,myconfig.conf file,a configuration file stored in a ConfigMap volume,file,Single
+2033,subPath,A property used to mount part of a volume instead of the whole volume.,software,Single
+2034,file permissions,The default permissions set for files in a ConfigMap volume (644 or -rw-r—r--).,hardware,Single
+2045,fortune-config Config-Map,A specific ConfigMap used as an example in the chapter.,software,Single
+2047,Nginx config file,A configuration file used by Nginx to determine how to handle requests.,file,Single
+2050,nginx -s reload,A command used to signal Nginx to reload its configuration files.,command,Single
+2051,config file changes,The ability of an app to detect and respond to changes in its configuration files.,process,Single
+2052,symbolic links,A feature used by Kubernetes to update all files in a configMap volume atomically.,hardware,Single
+2058,files,mounted into existing directories don't get updated,hardware,Single
+2059,directories,symbolic links pointing to files in the ..data dir,hardware,Single
+2060,symlinks,pointing to files in the ..data dir,software,Single
+2061,ConfigMap-backed volumes,a way to pass configuration data to containers,software,Single
+2065,processes,new process will also see the new config,hardware,Single
+2066,encryption keys,sensitive information that needs to be kept secure,software,Single
+2067,credentials,sensitive information that needs to be kept secure,software,Single
+2071,files in a volume,exposing Secret entries as files in a volume,process,Single
+2082,default-token-cfee9,Name of a Secret object in the default namespace.,object,Single
+2088,automountServiceAccountToken,Field in the pod spec that controls whether the default token Secret is mounted into containers.,field,Single
+2098,create secret,a command used to create a Secret in a Kubernetes cluster,command,Single
+2099,ConfigMaps and Secrets,a chapter title in the document,software,Single
+2111,create secret tls,a command for creating a TLS Secret,command,Single
+2115,Base64 encoding,a method for encoding binary data as plain-text,process,Single
+2116,binary values,data that is not in plain-text format,software,Single
+2117,1MB,the maximum size limit of a Secret,hardware,Single
+2127,stringData field,a write-only field in a Secret that allows setting values through plain text,software,Single
+2135,Base64-encoded,a way to encode binary data for storage,software,Single
+2140,fortune-https Secret,a Secret containing certificates and keys for HTTPS,software,Single
+2142,fortune-config ConfigMap,a specific ConfigMap used in the example,software,Single
+2144,ssl_certificate,SSL certificate file,software,Single
+2145,certs/https.cert,Path to SSL certificate file,hardware,Single
+2146,ssl_certificate_key,SSL key file,software,Single
+2147,certs/https.key,Path to SSL key file,hardware,Single
+2148,ssl_protocols,Supported SSL protocols,software,Single
+2149,TLSv1 TLSv1.1 TLSv1.2,List of supported SSL protocols,hardware,Single
+2150,ssl_ciphers,Supported SSL ciphers,software,Single
+2151,HIGH:!aNULL:!MD5,List of supported SSL ciphers,hardware,Single
+2152,location /,Nginx configuration directive,software,Single
+2155,index.html index.htm,List of index files,hardware,Single
+2157,/etc/nginx/certs,Path to secret volume holding certificate and key files,hardware,Single
+2159,apiVersion: v1,Kubernetes API version,software,Single
+2160,kind: Pod,Type of Kubernetes resource,hardware,Single
+2162,name: fortune-https,Name of the pod,hardware,Single
+2165,image: luksa/fortune:env,Image for the html-generator container,software,Single
+2177,readOnly: true,Flag indicating whether the volume is read-only,software,Single
+2179,containerPort: 80,Exposed port for the web-server container,software,Single
+2184,items,a list of key-value pairs for a configMap,software,Single
+2190,mount,the process of attaching a volume to a container,software,Single
+2205,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,encryption algorithm,algorithm,Single
+2206,tmpfs,in-memory filesystem,filesystem,Single
+2207,Secret volume,mounting a Secret in a container's directory tree,process,Single
+2210,FOO_SECRET,environment variable exposing the foo key from a Secret,variable,Single
+2215,secretKeyRef,a way to refer to a Secret in Kubernetes,command,Single
+2218,image registries,repositories that store Docker images,database,Single
+2219,private image registry,an image registry that requires credentials to access,database,Single
+2224,entry,a single piece of data stored in a Secret,database,Single
+2227,docker-registry,type of Secret for authenticating with a Docker registry,software,Single
+2229,.dockercfg,file containing Docker Hub credentials,software,Single
+2233,username/private:tag,image name and tag for a private Docker Hub repository,software,Single
+2241,docker-registry Secret,a way to store sensitive data and use it to pull images from a private image registry,software,Single
+2243,token Secret,used to talk to the API server from within a pod,software,Single
+2252,Kubernetes client libraries,libraries that provide access to the Kubernetes API server,library,Single
+2261,Pod manifest,"A YAML or JSON file that defines a pod's configuration, including its metadata and status.",file,Single
+2264,DownwardAPI volume,A Kubernetes resource that exposes metadata from the pod to the processes running inside it.,volume,Single
+2269,memory requests,The CPU and memory requests for each container,process,Single
+2270,CPU limits,The CPU and memory limits for each container,process,Single
+2271,memory limits,The CPU and memory limits for each container,process,Single
+2284,status.podIP,the IP address of the pod,kubernetes,Single
+2286,spec.nodeName,the name of the node on which the container is running,kubernetes,Single
+2295,divisor,a divisor used to calculate the value of a resource field,kubernetes,Single
+2297,CPU limits and requests,Resource constraints for container execution.,process,Single
+2298,Memory limits/requests,Resource constraints for container memory usage.,process,Single
+2306,POD_NAME,An environment variable that specifies the name of the pod.,environmental variable,Single
+2336,/etc/downward/labels,A file within the container that contains the pod's labels.,Filesystem,Single
+2337,/etc/downward/annotations,A file within the container that contains the pod's annotations.,Filesystem,Single
+2338,/podName,A placeholder for the name of the pod.,Kubernetes,Single
+2339,/podNamespace,A placeholder for the namespace of the pod.,Kubernetes,Single
+2345,/etc/downward/,mounted volume directory,filesystem,Single
+2350,podName,file containing pod name,file,Single
+2351,podNamespace,file containing pod namespace,file,Single
+2355,labels and annotations,metadata fields exposed through downwardAPI volume,software,Single
+2356,key=value format,format of labels and annotations in files,software,Single
+2357,"
+",newline character used to denote multi-line values,character,Single
+2359,container-level metadata,"Information about a container, such as resource limits or requests.",metadata,Single
+2361,containerName,The name of the container whose resource field is being referenced.,parameter,Single
+2372,REST endpoints,Kubernetes API server's REST endpoints,application,Single
+2373,kubectl cluster-info,Command to get Kubernetes master URL,command,Single
+2379,app process,Application process running inside a pod,application,Single
+2381,proxy,Kubernetes API server proxy,software,Single
+2383,authorization token,token used for authorization with the API server,software,Single
+2387,/api/v1,API path for Kubernetes v1 API group,network,Single
+2389,/apis/apps,API path for Kubernetes apps API group,network,Single
+2390,/apis/apps/v1beta1,API path for Kubernetes apps v1beta1 API version,network,Single
+2391,/apis/batch,API path for Kubernetes batch API group,network,Single
+2392,/apis/batch/v1,API path for Kubernetes batch v1 API version,network,Single
+2393,/apis/batch/v2alpha1,API path for Kubernetes batch v2alpha1 API version,network,Single
+2399,API groups,Grouping of API resources,software,Single
+2400,Batch API group,API group for batch jobs,software,Single
+2402,APIResourceList,API resource list object,software,Single
+2405,APIResource,API resource object,software,Single
+2408,v2alpha1,Deprecated version of the batch API group,software,Single
+2416,update,action to update a resource fully,software,Single
+2418,jobs/status,special REST endpoint for modifying the status of a Job,software,Single
+2419,JobList,resource type that represents a list of Jobs,software,Single
+2423,REST API server,The interface through which applications interact with the Kubernetes cluster.,application,Single
+2429,my-job,The name of a specific Job instance.,application,Single
+2434,tutum/curl image,A container image containing the curl binary,container image,Single
+2447,port 443,Default port for HTTPS,hardware,Single
+2448,SSL certificate,Secure Sockets Layer certificate,security,Single
+2449,-k option,Insecure option for curl,application,Single
+2451,default-token-xyz,Automatically created Secret,software,Single
+2454,--cacert option,Option to specify CA certificate,application,Single
+2457,CURL_CA_BUNDLE,An environment variable that specifies the CA bundle to use,environment variable,Single
+2458,/var/run/secrets/kubernetes.io/,A directory containing secrets and certificates for Kubernetes,directory,Single
+2459,serviceaccount/ca.crt,A certificate used to verify the identity of the API server,file,Single
+2463,TOKEN environment variable,An environment variable that stores the authentication token,environment variable,Single
+2467,/ui/,A path in the Kubernetes API server for accessing the UI,path,Single
+2468,Authorization HTTP header,A header used to pass a token for authentication,network,Single
+2473,NS environment variable,An environment variable used to store the namespace of a pod,process,Single
+2474,TOKEN,A token used for authentication with the API server,network,Single
+2476,PUT or PATCH requests,HTTP requests used to update API objects,network,Single
+2482,system:serviceaccounts,A group used to grant privileges to service accounts,network,Single
+2485,API server's certificate,A digital certificate used to authenticate the API server.,certificate,Single
+2486,Certificate Authority (CA),An entity responsible for issuing and managing digital certificates.,software,Single
+2487,ca.crt file,"A file containing the CA's public key, used to verify the API server's certificate.",file,Single
+2488,Bearer token,An authentication token sent in the Authorization header to authenticate with the API server.,token,Single
+2490,Namespace file,"A file containing the namespace, used to pass it to the API server when performing CRUD operations.",file,Single
+2491,"CRUD (Create, Read, Update, Delete)",A set of HTTP methods used to perform operations on API objects.,protocol,Single
+2492,POST method,An HTTP method used to create a new resource.,http-method,Single
+2493,GET method,An HTTP method used to read an existing resource.,http-method,Single
+2494,PATCH/PUT method,An HTTP method used to update or replace a resource.,http-method,Single
+2495,DELETE method,An HTTP method used to delete a resource.,http-method,Single
+2496,Ambassador containers,"Containers that simplify API server communication by handling HTTPS, certificates, and authentication tokens.",container,Single
+2497,Server certificate,A digital certificate used to authenticate the API server.,certificate,Single
+2498,Default token secret volume,"A file containing the default token, used to authenticate with the API server.",file,Single
+2499,kubectl proxy command,a command used to access the API server through a proxy,command,Single
+2501,ambassador container pattern,a design pattern that uses an ambassador container to proxy requests to the API server,pattern,Single
+2502,kubectl-proxy container image,a general-purpose container image used as an ambassador container,image,Single
+2507,HTTP,the protocol used for communication between containers in a pod,protocol,Single
+2519,API server proxy,Component of Kubernetes that provides a proxy to the API server,software,Single
+2521,port 8001,Default port used by kubectl proxy,software,Single
+2522,Kubernetes API client libraries,Existing Kubernetes API client libraries supported by the API Machinery special interest group (SIG),software,Single
+2523,Golang client,Kubernetes API client library for Golang,software,Single
+2524,Python client,Kubernetes API client library for Python,software,Single
+2525,Java client by Fabric8,User-contributed Kubernetes API client library for Java by Fabric8,software,Single
+2526,Java client by Amdatu,User-contributed Kubernetes API client library for Java by Amdatu,software,Single
+2527,Node.js client by tenxcloud,User-contributed Kubernetes API client library for Node.js by tenxcloud,software,Single
+2528,Node.js client by GoDaddy,User-contributed Kubernetes API client library for Node.js by GoDaddy,software,Single
+2529,PHP client,User-contributed Kubernetes API client library for PHP,software,Single
+2530,Another PHP client,User-contributed Kubernetes API client library for PHP,software,Single
+2535,Ruby,A programming language,software,Single
+2536,https://github.com/Ch00k/kubr,A Ruby client library for Kubernetes,software,Single
+2537,Another Ruby client,A Ruby client library for Kubernetes,software,Single
+2538,https://github.com/abonas/kubeclient,A Ruby client library for Kubernetes,software,Single
+2539,Clojure,A programming language,software,Single
+2540,https://github.com/yanatan16/clj-kubernetes-api,A Clojure client library for Kubernetes,software,Single
+2541,Scala,A programming language,software,Single
+2542,https://github.com/doriordan/skuber,A Scala client library for Kubernetes,software,Single
+2543,Perl,A programming language,software,Single
+2544,https://metacpan.org/pod/Net::Kubernetes,A Perl client library for Kubernetes,software,Single
+2545,Fabric8 Java Client,A Java client library for Kubernetes,software,Single
+2546,io.fabric8.kubernetes.api.model.Pod,A Kubernetes Pod object,software,Single
+2547,io.fabric8.kubernetes.api.model.PodList,A list of Kubernetes Pods,software,Single
+2548,DefaultKubernetesClient,A default Kubernetes client,software,Single
+2549,KubernetesClient,A Kubernetes client interface,software,Single
+2551,inNamespace,A method to get pods in a specific namespace,software,Single
+2553,getItems,A method to get the items in a pod list,software,Single
+2554,stream,A method to stream the results of an operation,software,Single
+2555,forEach,A method to iterate over a collection,software,Single
+2556,getMetadata,A method to get the metadata of an object,software,Single
+2557,getName,A method to get the name of an object,software,Single
+2558,createNew,A method to create a new pod,software,Single
+2562,addToLabels,A method to add labels to a pod,command,Single
+2563,endMetadata,A method to end metadata for a pod,command,Single
+2564,done,A method to indicate the completion of an operation,command,Single
+2565,System.out.println,A statement to print output to the console,statement,Single
+2566,Thread.sleep,A method to pause execution for a specified time,method,Single
+2567,client.pods().inNamespace,A method to access pods in a specific namespace,command,Single
+2570,Swagger API,An API framework for generating client libraries and documentation,framework,Single
+2571,OpenAPI spec,A specification for defining APIs in a machine-readable format,specification,Single
+2572,Swagger UI,A web-based interface for exploring and interacting with REST APIs,interface,Single
+2580,CPU requests and limits,CPU requests and limits refer to the amount of CPU resources allocated to a pod.,resource,Single
+2581,memory requests and limits,Memory requests and limits refer to the amount of memory resources allocated to a pod.,resource,Single
+2589,client libraries,Client libraries are pre-built libraries that provide a simple interface for interacting with Kubernetes.,library,Single
+2595,config data,secret and non-secret configuration data passed to pods,software,Single
+2596,microservices,smaller components that make up a full-fledged system,application,Single
+2599,Deployment resources,Kubernetes resources used by Deployments to manage applications,software,Single
+2600,rolling updates,the process of updating pods with newer versions while minimizing downtime,process,Single
+2601,rollouts,the process of deploying new versions of an application,process,Single
+2602,reverting,the process of reverting pods to a previous version,process,Single
+2618,Downtime,Short period of time when the application is not available due to updates,hardware,Single
+2633,set selector,A command used to update the pod selector of a Service resource.,software,Single
+2638,NodeJS,programming language and runtime environment,software,Single
+2666,get svc kubia,kubectl command to retrieve information about a service named 'kubia',software,Single
+2668,cluster-ip,unique IP address assigned to a Service within a Kubernetes cluster,network,Single
+2669,external-ip,"publicly accessible IP address of a Service, used for accessing the application from outside the cluster",network,Single
+2675,IfNotPresent,imagePullPolicy value that only pulls an image if it's not already present in the local cache,software,Single
+2680,response.end(),"method for sending a response back to the client, used in Node.js applications",programming language,Single
+2686,kubia-v2,The image name for the kubia app version 2.,software,Single
+2707,--v option,A kubectl flag that enables verbose logging,command,Single
+2712,Kubernetes master,the central component of a Kubernetes cluster,hardware,Single
+2719,verbose logging option,an option for running kubectl commands with detailed logging,software,Single
+2733,kubia-deployment-v1.yaml,A YAML manifest that defines a Deployment resource.,file,Single
+2738,kubia Service,A service that provides access to the kubia app,application,Single
+2740,--record,An option used to record the command in the revision history,command,Single
+2741,kubectl get deployment,A command used to see details of the Deployment,command,Single
+2743,kubectl rollout status deployment kubia,A command used to check the status of a Deployment's rollout,command,Single
+2746,kubia-1506449474-otnnh,A pod created by the Deployment,software,Single
+2747,kubia-1506449474-vmn7s,A pod created by the Deployment,software,Single
+2748,kubia-1506449474-xis6m,A pod created by the Deployment,software,Single
+2757,Recreate strategy,"A deployment strategy that deletes all old pods at once and then creates new ones, similar to modifying a ReplicationController's pod template.",software,Single
+2758,RollingUpdate strategy,The default deployment strategy that performs a rolling update by replacing one or more replicas with new ones while keeping the overall number of replicas constant.,software,Single
+2763,kubectl patch command,A command for modifying a single property or limited number of properties of a resource without editing its definition in a text editor,command,Single
+2764,minReadySeconds attribute,An attribute that can be set on a Deployment to slow down the update process,attribute,Single
+2765,Deployment spec,"The specification of a Deployment, which includes properties like desired replica count and deployment strategy",specification,Single
+2766,kubectl set image command,A command for changing the image used in a container (like Deployments),command,Single
+2767,nodejs container,A container that runs the Node.js application,container,Single
+2771,Image registry,A place where images are stored,database,Single
+2780,kubectl patch,A command to modify individual properties of an object,command,Single
+2782,kubectl replace,A command to replace an object with a new one from a YAML/JSON file,command,Single
+2783,kubia-deployment-v2.yaml,A YAML file containing the full definition of a resource,file,Single
+2786,v1 pods,pods running the v1 version of an app,container,Single
+2787,v2 pods,pods running the v2 version of an app,container,Single
+2792,ReplicaSet v1,an instance of ReplicaSet running the v1 version,software,Single
+2793,ReplicaSet v2,an instance of ReplicaSet running the v2 version,software,Single
+2803,requestCount,A variable that keeps track of the number of requests,variable,Single
+2807,500 error,An internal server error with an HTTP status code of 500,error,Single
+2816,kubia-1914148340-lalmx,A specific pod name.,pod,Single
+2817,internal error,An error that occurs within the application.,error,Single
+2818,kubectl rollout undo,The command to roll back a Deployment.,command,Single
+2822,rollout history,displaying a deployment's rollout history using kubectl command,application,Single
+2825,--record command-line option,option for recording the cause of changes in Deployments,software,Single
+2826,CHANGE-CAUSE column,column in the revision history that shows the reason for each change,database,Single
+2827,revisionHistoryLimit property,property on the Deployment resource that limits the length of the revision history,application,Single
+2828,ReplicaSet list,list of ReplicaSets associated with a Deployment,database,Single
+2830,revision history,"history of changes to a Deployment, stored in ReplicaSets",database,Single
+2831,--to-revision option,option for specifying the revision to roll back to,software,Single
+2832,undo command,command for rolling back a Deployment to a previous revision,application,Single
+2835,revisionHistoryLimit,A property that controls the number of revisions kept by a Deployment,software,Single
+2836,apps/v1beta2,A version of Deployments,software,Single
+2851,v1beta1,version of Deployments,software,Single
+2852,extensions,API group in Kubernetes,network,Single
+2855,Desired replica count,number of desired replicas for a deployment,process,Single
+2860,resume,A command used to resume a paused Deployment and start the rollout process.,command,Single
+2869,kubectl apply command,A command used to update the deployment with a readiness probe,command,Single
+2892,readinessProbe,A mechanism to check if a pod is ready to serve traffic,process,Single
+2894,kubia-deployment-v3-with-readinesscheck.yaml,A YAML file containing the deployment configuration,file,Single
+2900,periodSeconds,The interval at which a readiness probe is executed,parameter,Single
+2916,ProgressDeadlineExceeded,A condition that is displayed when the rollout can't make progress within the specified deadline.,condition,Single
+2917,progressDeadlineSeconds,A property in the Deployment spec that sets the time after which a Deployment is considered failed if it can't make progress.,property,Single
+2919,kubectl rollout undo deployment,A command used to abort a bad rollout by rolling back the Deployment.,command,Single
+2936,DNS SRV records,discovering peers through DNS SRV records,"network,process",Single
+2943,Storage volume,Persistent storage resource for a pod,database,Single
+2952,ReplicaSet A1,a ReplicaSet with 1 instance,container,Single
+2953,Pod A1-xyz,a pod with a unique identifier xyz,container,Single
+2954,PVC A2,Persistent Volume Claim for replica set A2,storage,Single
+2955,PV A2,Persistent Volume for replica set A2,storage,Single
+2956,ReplicaSet A2,a ReplicaSet with 1 instance,container,Single
+2957,Pod A2-xzy,a pod with a unique identifier xzy,container,Single
+2958,PVC A3,Persistent Volume Claim for replica set A3,storage,Single
+2959,PV A3,Persistent Volume for replica set A3,storage,Single
+2960,ReplicaSet A3,a ReplicaSet with 1 instance,container,Single
+2961,Pod A3-zyx,a pod with a unique identifier zyx,container,Single
+2981,Stateful pods,a type of pod that requires a stable name and state,software,Single
+2982,Pets vs. Cattle analogy,a metaphor for treating app instances as either pets or cattle,concept,Single
+2983,Stateless apps,applications where instances can be replaced without affecting the overall application,software,Single
+2984,Stateful apps,"applications where instances have a stable name and state, requiring special treatment when an instance dies",software,Single
+2994,headless Service,A Service that provides network identity without creating a load balancer.,software,Single
+2995,DNS entry,A record in the DNS system that maps a hostname to an IP address.,network,Single
+3004,foo.default.svc.cluster.local,domain for StatefulSet's pods' names,network,Single
+3005,a-0.foo.default.svc.cluster.local,fully qualified domain name of Pod A-0,network,Single
+3014,StatefulSets scale down,The process of scaling down a StatefulSet,process,Single
+3015,distributed data store,A type of database that stores data across multiple nodes,database,Single
+3016,data entry,A single unit of data stored in a database,database,Single
+3020,PersistentVolume-Claims,allow persistent storage to be attached to a pod by referencing the PersistentVolumeClaim in the pod by name,database,Single
+3024,volume claim templates,enable a StatefulSet to stamp out PersistentVolumeClaims along with each pod instance,process,Single
+3027,replicas field,field in a StatefulSet that determines how many replicas to create,application,Single
+3029,PVC A-0,PersistentVolumeClaim for pod A-0,database,Single
+3032,PVC A-1,PersistentVolumeClaim for pod A-1,database,Single
+3034,Pod A-1,"stateful pod that runs a stateful application, associated with PVC A-1 and PV",container,Single
+3035,PVC A-2,PersistentVolumeClaim for pod A-2,database,Single
+3037,Pod A-2,"stateful pod that runs a stateful application, associated with PVC A-2 and PV",container,Single
+3046,scale-up,The process of increasing the number of replicas in a Kubernetes resource.,process,Single
+3055,Data store,a simple clustered data store used as an example in the chapter,application,Single
+3056,Kubia app,the starting point for building a stateful application,application,Single
+3058,fs.createWriteStream(),a function used to create a write stream for writing data to a file,programming language,Single
+3059,request.pipe(),a method used to pipe the request body into a write stream,programming language,Single
+3060,fs.readFileSync(),a function used to read data from a file synchronously,programming language,Single
+3061,fileExists(),a function used to check if a file exists,programming language,Single
+3068,node:7,A Docker base image based on Node.js version 7.,container,Single
+3070,http.createServer(handler),A Node.js function that creates an HTTP server and sets up a handler function.,process,Single
+3071,listen(8080),A method call to start the HTTP server listening on port 8080.,process,Single
+3074,gcloud compute disks create,A command to create a Google Compute Engine persistent disk.,command,Single
+3079,List,object and listing the resources as items of the object,data structure,Single
+3082,NFS (Network File System),volume type,software,Single
+3086,"pv-a, pv-b, and pv-c",PersistentVolumes names,resource,Single
+3087,1 Mi,capacity of each persistent volume,parameter,Single
+3101,volumeClaimTemplates,a list of templates used to create PersistentVolumeClaims for pods in a StatefulSet,database,Single
+3112,$ kubectl create -f kubia-statefulset.yaml ,command to create a StatefulSet,command,Single
+3113,kubia-statefulset.yaml,configuration file for the StatefulSet,file,Single
+3118,$ kubectl get po kubia-0 -o yaml,command to view the pod spec in YAML format,command,Single
+3125,/var/data,The mount path for the data volume.,hardware,Single
+3128,default-token-r2m41,A secret that provides authentication tokens for the StatefulSet.,software,Single
+3130,get pvc,A command used to list PersistentVolumeClaims.,software,Single
+3132,data-kubia-0,A PersistentVolumeClaim created by the StatefulSet.,software,Single
+3133,pv-c,A Persistent Volume object associated with the data-kubia-0 PVC.,hardware,Single
+3134,pv-a,A Persistent Volume object associated with another PVC.,hardware,Single
+3139,/api/v1/namespaces/default/pods/kubia-0/proxy/<path>,A URL used to proxy connections directly to a pod through the API server.,hardware,Single
+3148,kubia-0 pod,a container running a simple web application,container,Single
+3149,API server host and port,the address of the API server,network,Single
+3151,-L option,an option for curl to follow redirects,software,Single
+3152,kubectl proxy and API server proxy,two different proxies used to access the pod,software,Single
+3161,localhost:8001/api/v1/namespaces/default/pods/kubia-0/proxy/,The URL for accessing the kubia-0 pod's proxy service.,url,Single
+3162,DELETING A STATEFUL POD,A process of deleting a StatefulSet pod and verifying its behavior.,process,Single
+3163,reschedule,The process of scheduling a new pod to replace an existing one.,process,Single
+3169,persistent data,data stored on a persistent volume,database,Single
+3176,ordinal number,the order of a pod in a StatefulSet,process,Single
+3180,ClusterIP Service,a type of Service that is only accessible from within the cluster,application,Single
+3188,StatefulSet peer discovery,the ability to find other members of a StatefulSet within the cluster,process,Single
+3189,SRV record,Used to point to hostnames and ports of servers providing a specific service.,network,Single
+3191,A record,Used to map a hostname to an IP address.,network,Single
+3193,MX record,Used to specify the mail server responsible for a domain.,network,Single
+3194,dig DNS lookup tool,A command-line tool used to perform DNS lookups.,software,Single
+3196,tutum/dnsutils image,A Docker image containing the DNS utilities.,container,Single
+3200,dns.resolveSrv() function,A Node.js function used to perform an SRV DNS lookup.,function,Single
+3206,Stone Age data store,"An unclustered, independent data storage system",database,Single
+3208,kubia-public Service,A Kubernetes service that exposes the kubia application to clients,application,Single
+3209,dns.resolveSrv,A function in Node.js that performs a DNS SRV record lookup,library,Single
+3210,fs.readFileSync,A function in Node.js that reads a file synchronously,library,Single
+3211,os.hostname,A property of the os module in Node.js that returns the hostname of the machine,library,Single
+3213,request,An object representing an HTTP request,network,Single
+3214,response,An object representing an HTTP response,network,Single
+3215,fileExists,A function in the kubia-pet-peers-image/app.js file that checks if a file exists,library,Single
+3217,addresses.forEach,iterating over a list of addresses,javascript,Single
+3219,requestOptions,object containing options for the HTTP request,javascript,Single
+3223,returnedData,data returned from the HTTP GET request,javascript,Single
+3224,numResponses,counter for tracking the number of responses received,javascript,Single
+3225,response.write,method for writing output to a response object,javascript,Single
+3227,docker.io/luksa/kubia-pet-peers,container image URL,software,Single
+3232,GET /data,HTTP request method and path,http,Single
+3238,spec.template.spec.containers.image,A field in the StatefulSet definition that specifies the image to use for each replica.,field,Single
+3241,StatefulSet updateStrategy,A field in the StatefulSet definition that specifies how to update the set of replicas.,field,Single
+3243,POST,An HTTP method used to create or update resources on the server.,protocol,Single
+3244,localhost:8001/api/v1/namespaces/default/services/kubia-public/proxy/,A URL that specifies the endpoint for sending requests to a service in a cluster.,url,Single
+3245,pod kubia-0,A specific pod instance running on a node in the cluster.,application,Single
+3246,pod kubia-1,A specific pod instance running on a node in the cluster.,application,Single
+3250,/kubia-public/proxy/,service endpoint,endpoint,Single
+3251,kubia-0.kubia.default.svc.cluster.local,pod name,pod,Single
+3252,kubia-1.kubia.default.svc.cluster.local,pod name,pod,Single
+3253,kubia-2.kubia.default.svc.cluster.local,pod name,pod,Single
+3262,node failures,An event where a node in the Kubernetes cluster fails or becomes unavailable.,hardware,Single
+3263,$ sudo ifconfig eth0 down,A Linux command that shuts down a network interface.,command,Single
+3266,NotReady,A status that the control plane assigns to a node when it is no longer receiving updates from the node.,status,Single
+3267,$ kubectl get node,A Kubernetes command that lists all nodes in the cluster.,command,Single
+3270,Unknown,A status that the control plane assigns to a pod when it is no longer receiving updates from the node.,status,Single
+3271,evicted,An event where a pod is automatically deleted by the master due to its unknown status for an extended period.,process,Single
+3280,gke-kubia-default-pool-32a2cac8-m0g1,name of the node being examined,hardware,Single
+3281,NodeLost,reason for pod termination due to unresponsive node,error,Single
+3282,Terminating,status of the pod being deleted,process,Single
+3284,"pod ""kubia-0"" deleted",output of kubectl delete command indicating successful deletion,output,Single
+3295,--force,"The --force option tells kubectl to delete the pod immediately, without waiting for confirmation from the Kubelet.",option,Single
+3296,--grace-period,The --grace-period option specifies how long to wait before deleting a pod.,option,Single
+3301,GCE web console,The GCE (Google Compute Engine) web console is a graphical interface for managing Google Cloud resources.,application,Single
+3306,host names,connect to other members through their host names,network,Single
+3311,Deployment object,Resource that represents a set of replicas,resource,Single
+3312,Running pod,Pod that is currently executing,container,Single
+3313,Network between pods,Communication mechanism between pods,network,Single
+3314,Kubernetes Services,Resource that provides a network identity and load balancing for accessing applications,resource,Single
+3315,High-availability,Capability to ensure continuous operation of an application or system,application,Single
+3318,etcd distributed persistent storage,A component that stores and manages the state of the cluster.,database,Single
+3323,Kubernetes Service Proxy (kube-proxy),A component that provides network connectivity to services running in the cluster.,application,Single
+3324,Container Runtime,"A component that runs containers on worker nodes, such as Docker or rkt.",container,Single
+3325,Kubernetes DNS server,A component that provides DNS resolution for services running in the cluster.,application,Single
+3329,Container Network Interface network plugin,A component that provides networking capabilities for containers running in the cluster.,network,Single
+3337,attach,kubectl command to attach to a running container,command,Single
+3340,componentstatuses,API resource that shows the health status of each Control Plane component,software,Single
+3342,Worker node(s),Nodes that run Kubelet and other components,hardware,Single
+3360,etcd instance,can be run multiple times for high availability and better performance,process,Single
+3361,optimistic locking system,a method where data includes a version number to prevent concurrent updates,process,Single
+3362,metadata.resourceVersion field,a field that clients need to pass back to the API server when updating an object,database,Single
+3364,/registry,the top-level directory where Kubernetes stores all its data in etcd,directory,Single
+3366,daemonsets,a type of resource stored in etcd under /registry/daemonsets,resource,Single
+3367,deployments,a type of resource stored in etcd under /registry/deployments,resource,Single
+3380,/registry/pods,Directory in etcd that stores pod information,directory,Single
+3381,/registry/pods/default,Subdirectory of /registry/pods that stores default namespace pods,directory,Single
+3382,kubia-159041347-wt6ga,Pod name and identifier,container,Single
+3387,RAFT consensus algorithm,Consensus protocol used by etcd to ensure consistency across nodes,algorithm,Single
+3388,Control Plane components,"Components that manage the Kubernetes cluster, including the API server and etcd",software,Single
+3390,quorum,Majority of nodes required for a state change in an etcd cluster,concept,Single
+3391,state changes,Updates made to the cluster state by clients or other nodes,process,Single
+3395,RESTful API,"an architectural style for designing networked applications, emphasizing simplicity and scalability",protocol,Single
+3397,majority,"the minimum number of etcd instances required for a quorum, ensuring the cluster can transition to a new state",concept,Single
+3398,CRUD interface,"a set of operations (Create, Read, Update, Delete) provided by the Kubernetes API server for querying and modifying cluster state",protocol,Single
+3399,optimistic locking,a mechanism used by the Kubernetes API server to prevent changes to an object from being overridden by other clients in concurrent updates,concept,Single
+3401,resource validation,the process of verifying that a resource meets certain criteria before it is stored in etcd,concept,Single
+3402,HTTP POST request,a type of HTTP request used by kubectl to create resources through the Kubernetes API server,protocol,Single
+3403,Authentication Plugins,Plugins configured in the API server to authenticate clients sending requests.,Software,Single
+3405,HTTP Request,The request sent by the client to the API server.,Network,Single
+3406,Client Certificate,A certificate used by clients to authenticate themselves.,Software,Single
+3407,HTTP Header,A header in the HTTP request that contains authentication information.,Network,Single
+3408,Authorization Plugins,Plugins configured in the API server to determine whether authenticated users can perform actions on requested resources.,Software,Single
+3412,Admission Control Plugins,Plugins that validate and/or modify resources in requests.,Software,Single
+3413,AlwaysPullImages,An Admission Control plugin that overrides the pod's imagePullPolicy to Always.,Software,Single
+3417,Admission Control plugins,Plugins that validate incoming requests before they are processed by the API server.,software,Single
+3422,kubectl tool,A client used to interact with the API server and watch resources for changes.,software,Single
+3423,HTTP connection,The protocol used by clients to connect to the API server and receive notifications of resource changes.,network,Single
+3424,stream of modifications,A continuous flow of updates sent by the API server to connected clients watching resources.,process,Single
+3425,watched objects,"Resources being observed by clients for changes, such as pods or services.",application,Single
+3426,--watch flag,A command-line option used with kubectl to enable watching resources for changes.,software,Single
+3427,GET /.../pods?watch=true,An HTTP request used by clients to watch pods for changes.,command,Single
+3428,POST /.../pods/pod-xyz,An HTTP request used by clients to create a new pod resource.,command,Single
+3429,Send updated object to all watchers,The process by which the API server notifies connected clients of changes to watched resources.,process,Single
+3430,kubia-159041347-14j3i,pod name,container,Single
+3435,watch mechanism,API server feature used by the Scheduler and Kubelet,network,Single
+3439,kubectl get pods -o yaml --watch,command used to print pod definitions with watch mechanism,software,Single
+3440,round-robin,algorithm used to prioritize nodes when multiple have the highest score,process,Single
+3445,Predicate functions,Functions used to check node eligibility for pod scheduling,software,Single
+3446,Hardware resources,"Resources such as CPU, memory, and disk space required by a pod",hardware,Single
+3447,Memory pressure condition,Condition where a node is running low on memory,hardware,Single
+3448,Disk pressure condition,Condition where a node is running low on disk space,hardware,Single
+3449,Node selector,Label used to select specific nodes for pod scheduling,software,Single
+3450,Host port,Port used by a pod to communicate with the host machine,network,Single
+3452,Taints and tolerations,Mechanism for node affinity and anti-affinity rules,software,Single
+3453,Affinity or anti-affinity rules,Rules used to select specific nodes for pod scheduling,software,Single
+3464,ReplicationManager,Controller for ReplicationController resources,controller,Single
+3475,Watch mechanism,Mechanism used by controllers to be notified of changes to resources,process,Single
+3476,Re-list operation,Periodic operation performed by controllers to ensure they haven't missed any events,process,Single
+3478,Constructor,Method used by controllers to create an Informer and initialize themselves,software,Single
+3482,Pod resources,resources that represent running containers in the cluster,software,Single
+3484,syncHandler,function that gets invoked each time the controller needs to do something,software,Single
+3485,ReplicationController resources,resources that represent the desired replica count and actual replica count,software,Single
+3486,Worker() method,method that gets invoked each time the controller needs to do something,software,Single
+3507,EndPoints controller,The active component that keeps the endpoint list constantly updated with the IPs and ports of pods matching the label selector.,process,Single
+3518,Kubernetes Service Proxies,components that perform load balancing across pods,application,Single
+3523,rkt,container runtime used by CoreOS,software,Single
+3526,Kubelet manifest directory,local directory where pod manifests are stored,file system,Single
+3527,pod manifests,files that contain pod configuration information,file system,Single
+3532,Kubernetes Service Proxy,Ensures connections to service IP and port end up at one of the pods backing that service,application,Single
+3536,Worker node,A machine that runs the Kubelet and manages containers,hardware,Single
+3540,userspace proxy mode,a mode of operation for kube-proxy where packets are handled in user space,process,Single
+3541,in kernel space,a mode of operation for kube-proxy where packets are handled by the Kernel,process,Single
+3542,round-robin fashion,a method of balancing connections across pods,algorithm,Single
+3543,Kubernetes add-ons,components that enable additional features in a Kubernetes cluster,software,Single
+3546,dashboard add-ons,components that provide a web interface for managing a Kubernetes cluster,software,Single
+3552,default-http-backend,deployment for default HTTP backend,application,Single
+3553,kubernetes-dashboard,deployment for Kubernetes dashboard,application,Single
+3554,nginx-ingress-controller,deployment for Nginx ingress controller,application,Single
+3555,DNS add-on,add-on for DNS service,software,Single
+3559,cluster's internal DNS server,DNS service within the cluster,software,Single
+3560,kube-dns service,service for Kubernetes DNS server,application,Single
+3561,nameserver,DNS resolver in /etc/resolv.conf file,hardware,Single
+3562,API server's watch mechanism,mechanism to observe changes to resources,software,Single
+3563,Services and Endpoints,resources for services and endpoints,application,Single
+3565,reverse proxy server,server to forward traffic to pods,hardware,Single
+3591,ReplicaSet A,example ReplicaSet resource,application,Single
+3593,Node X,example node in a Kubernetes cluster,hardware,Single
+3597,ReplicaSet Controller,A specific controller that manages ReplicaSets,software,Single
+3605,Event,A Kubernetes resource that represents a notification about a specific action or change,software,Single
+3611,KIND,column in the events list that shows the type of resource being acted on,column,Single
+3612,REASON,column in the events list that shows why a controller action was taken,column,Single
+3613,SOURCE,column in the events list that shows which controller performed an action,column,Single
+3614,deployment-controller,controller responsible for managing deployments in Kubernetes,controller,Single
+3615,replicaset-controller,controller responsible for managing replica sets in Kubernetes,controller,Single
+3616,default-scheduler,scheduler that assigns pods to nodes by default in Kubernetes,scheduler,Single
+3627,docker,a containerization platform,software,Single
+3628,minikubeVM,the virtual machine running minikube,hardware,Single
+3629,CONTAINER ID,a unique identifier for a Docker container,attribute,Single
+3630,IMAGE,the image used to create a Docker container,attribute,Single
+3631,COMMAND,the command run by a Docker container,attribute,Single
+3634,pod infrastructure container,a container that holds all the namespaces for a pod,container type,Single
+3636,Inter-pod networking,communication between pods in Kubernetes,application,Single
+3641,NAT,Network Address Translation,networking,Single
+3645,IP: 10.1.1.1,IP address of Pod A,network,Single
+3646,srcIP: 10.1.1.1,source IP address of packet sent by Pod A,network,Single
+3647,dstIP: 10.1.2.1,destination IP address of packet sent by Pod A,network,Single
+3651,Pod X,Client pod providing notification service,container,Single
+3652,Pod Y,Notification service pod,container,Single
+3654,NAT-less communication,Communication between pods without network address translation,process,Single
+3655,pause container,Infrastructure container holding pod's IP address and network namespace,container,Single
+3659,node-to-pod communication,Communication between a node and a pod,process,Single
+3660,pod-to-node communication,Communication between a pod and a node,process,Single
+3661,outbound packets,Packets sent from a pod to the internet,network,Single
+3662,interface,The interface in the host's network namespace is attached to a network bridge.,network,Single
+3669,overlay networks,"This can be done with overlay or underlay networks or by regular layer 3 routing, which we'll look at next.",network,Single
+3670,underlay networks,"This can be done with overlay or underlay networks or by regular layer 3 routing, which we'll look at next.",network,Single
+3671,layer 3 routing,The node's physical network interface needs to be connected to the bridge as well.,network,Single
+3672,routing tables,"Routing tables on node A need to be configured so all packets destined for 10.1.2.0/24 are routed to node B, whereas node B's routing tables need to be configured so packets sent to 10.1.1.0/24 are routed to node A.",network,Single
+3673,pod C,Pod C is running on Node B and has an IP address of 10.1.2.1.,application,Single
+3677,physical adapter,Hardware component that connects a computer to a network,hardware/network,Single
+3680,Software Defined Network (SDN),Network architecture that uses software to manage network behavior,hardware/network,Single
+3681,Container Network Interface (CNI),Project that allows Kubernetes to use any CNI plugin,software/container,Single
+3682,Calico,CNI plugin for container networking,software/container,Single
+3684,Romana,CNI plugin for container networking,software/container,Single
+3685,Weave Net,CNI plugin for container networking,software/container,Single
+3694,Endpoints objects,holds the IP/port pairs of all the pods that back the service,database,Single
+3697,network interfaces,not assigned to the service IP address and port,hardware,Single
+3699,kube-proxy agents,"running on worker nodes, notified by API server when a new Service is created",process,Single
+3701,kernel,the core part of an operating system that manages hardware resources,hardware,Single
+3703,node A,a Kubernetes node running on machine A,application,Single
+3704,node B,a Kubernetes node running on machine B,application,Single
+3707,Pod B1,a containerized application running on a Kubernetes pod,container,Single
+3708,Pod B2,a containerized application running on a Kubernetes pod,container,Single
+3709,Pod B3,a containerized application running on a Kubernetes pod,container,Single
+3710,Packet X,an example network packet being routed through the service,network,Single
+3711,Service B,a Kubernetes service providing access to multiple backend pods,application,Single
+3713,Endpoints B,a collection of IP addresses and ports associated with a Kubernetes service,database,Single
+3720,Leader-election mechanism,Method for multiple app instances to agree on a leader,software,Single
+3722,Kubernetes Control Plane components,Components responsible for managing Kubernetes cluster state,software,Single
+3731,Load balancer,Component that distributes incoming traffic across multiple nodes,application,Single
+3732,Master node,Node that runs the Control Plane components,node,Single
+3738,--leader-elect option,an option that controls which instance is active at a time,command,Single
+3746,leader election mechanism,a way to elect a leader in control plane components,process,Single
+3749,kube-scheduler,an instance of the Scheduler component,software,Single
+3752,get endpoints,a command used to retrieve information about an Endpoints resource,command,Single
+3753,leaderTransitions,a field in the leader election annotation,field,Single
+3754,leaseDurationSeconds,a field in the leader election annotation,field,Single
+3761,Infrastructure Container,binds together all containers of a pod,container,Single
+3762,Network Bridge,connects pods running on different nodes,network,Single
+3765,ServiceAccount token,A token used to authenticate with the Kubernetes API server.,process,Single
+3774,default roles and bindings,Pre-configured Roles and RoleBindings provided by Kubernetes.,database,Single
+3776,API server core,the central part of the API server that receives requests from authentication plugins,application,Single
+3777,client certificate,a method used by authentication plugins to obtain the identity of the client,hardware,Single
+3778,authentication token,a method used by authentication plugins to obtain the identity of the client through an HTTP header,software,Single
+3779,Basic HTTP authentication,a method used by authentication plugins to obtain the identity of the client,software,Single
+3782,service accounts,a mechanism used by pods to authenticate themselves,software,Single
+3783,ServiceAccount resources,resources created and stored in the cluster for service accounts,database,Single
+3787,system:unauthenticated group,Used for requests where none of the authentication plugins could authenticate the client.,group,Single
+3788,system:authenticated group,Automatically assigned to a user who was authenticated successfully.,group,Single
+3789,system:serviceaccounts group,Encompasses all ServiceAccounts in the system.,group,Single
+3792,ServiceAccount usernames,"Formatted like system:serviceaccount:<namespace>:<service account name>, and are passed to the API server core for authorization.",string,Single
+3794,ServiceAccounts resource,"A resource just like Pods, Secrets, ConfigMaps, and so on, scoped to individual namespaces.",resource,Single
+3796,$ kubectl get sa,A command used to list ServiceAccounts in a namespace.,command,Single
+3803,cluster administrator,"The cluster administrator is responsible for configuring and managing the Kubernetes cluster, including setting up authorization plugins.",hardware,Single
+3809,sa,abbreviation for ServiceAccount,application,Single
+3810,foo-token-qzq7j,token Secret associated with the foo ServiceAccount,secret,Single
+3811,JSON Web Tokens (JWT),a type of authentication token used in ServiceAccounts,software,Single
+3815,Mountable secrets,list of Secrets that can be mounted inside a pod using a ServiceAccount,application,Single
+3821,image pull Secrets,Secrets that hold the credentials for pulling container images from a private image repository.,database,Single
+3822,mountable Secrets,"Secrets that can be mounted by a pod, allowing it to access sensitive information.",database,Single
+3833,foo ServiceAccount,Custom ServiceAccount used in the example,software,Single
+3837,/var/run/secrets/kubernetes.io/serviceaccount/token,Path to the ServiceAccount token file,path,Single
+3839,localhost:8001/api/v1/pods,API endpoint for listing pods,url,Single
+3843,Role-Based Access Control (RBAC),A plugin used to secure the cluster by preventing unauthorized users from viewing or modifying the cluster state.,authorization,Single
+3845,RBAC authorization plugin,"A plugin that enables role-based access control in a Kubernetes cluster, preventing unauthorized users from viewing or modifying the cluster state.",authorization,Single
+3846,Attribute-Based Access Control (ABAC),An authorization plugin that allows access to be controlled based on attributes of users and resources.,authorization,Single
+3847,Web-Hook plugin,An authorization plugin that uses web hooks to control access to a Kubernetes cluster.,authorization,Single
+3848,custom plugin implementations,Custom plugins implemented by users to control access to a Kubernetes cluster.,authorization,Single
+3850,REST resources,"Resources in a Kubernetes cluster that can be accessed using HTTP requests, such as Pods, Services, Secrets, etc.",application,Single
+3853,PUT request,A type of HTTP request used to update existing resources in a Kubernetes cluster.,protocol,Single
+3854,DELETE request,A type of HTTP request used to delete resources from a Kubernetes cluster.,protocol,Single
+3860,roles,User-defined roles that define permissions for users or ServiceAccounts,process,Single
+3878,clusterrole,Resource that defines permissions for a cluster-wide role,resource,Single
+3895,Role resource,allows users to get and list Services in the foo namespace,software,Single
+3913,YAML file,file format for defining Kubernetes resources,software,Single
+3915,cluster-admin rights,permissions required to manage a Kubernetes cluster,software,Single
+3920,--verb=get,command-line option for specifying the actions allowed by a Role,software,Single
+3921,--verb=list,command-line option for specifying the actions allowed by a Role,software,Single
+3922,--resource=services,command-line option for specifying the resources affected by a Role,software,Single
+3923,--namespace=foo,command-line option for specifying the namespace in which to create a resource,software,Single
+3924,--clusterrolebinding,command-line option for creating a clusterrolebinding resource,software,Single
+3932,ServiceList,A Kubernetes object that represents a list of Services.,software,Single
+3934,localhost:8001/api/v1/namespaces/foo/services,The URL of the Kubernetes API server to list Services in the foo namespace.,network,Single
+3937,rolebinding,"a resource that binds a role to a set of subjects, such as users or service accounts",software,Single
+3939,role,a resource that defines a set of permissions within a Kubernetes namespace,software,Single
+3946,test,a role binding name,software,Single
+3955,Service-Accounts,An identity for a service running in a Kubernetes cluster.,resource,Single
+3961,,"the empty string, indicating that the rule applies to all API groups",software,Single
+3963,persistentvolumes,a resource type in Kubernetes that represents a persistent volume,software,Single
+3984,PersistentVolumeList,A list of PersistentVolumes in the cluster.,software,Single
+3990,/api/*,A non-resource URL pattern exposed by the API server.,network,Single
+3992,/apis/*,A non-resource URL pattern exposed by the API server.,network,Single
+3993,/healthz,A non-resource URL exposed by the API server.,network,Single
+3994,/swaggerapi,A non-resource URL exposed by the API server.,network,Single
+3995,/swaggerapi/*,A non-resource URL pattern exposed by the API server.,network,Single
+3996,/version,A non-resource URL exposed by the API server.,network,Single
+3998,get clusterrole system:discovery -o yaml,A command used to retrieve the system:discovery ClusterRole in YAML format.,software,Single
+4005,system:discovery,A specific ClusterRole and ClusterRoleBinding used for discovery purposes.,software,Single
+4009,system:authenticated,A group that represents all authenticated users in a Kubernetes cluster.,software,Single
+4010,system:unauthenticated,A group that represents all unauthenticated users in a Kubernetes cluster.,software,Single
+4011,authentication plugin,A component of the Kubernetes API server responsible for authenticating incoming requests.,software,Single
+4018,APIVersions,a Kubernetes concept for managing API versions,software,Single
+4020,view,a predefined ClusterRole that allows reading namespaced resources,software,Single
+4025,replicationcontrollers,a type of Kubernetes resource for managing replication and scaling,software,Single
+4035,/api/v1/pods,An API endpoint that lists pods across all namespaces.,API Endpoint,Single
+4036,/api/v1/namespaces/foo/pods,An API endpoint that lists pods in a specific namespace (foo).,API Endpoint,Single
+4056,localhost:8001/api/v1/namespaces/bar/pods,A URL endpoint for listing pods in the 'bar' namespace.,url,Single
+4057,system:serviceaccount:foo:default,A service account user with permissions to list pods in the 'foo' namespace.,user,Single
+4074,system:auth-delegator,a ClusterRole that grants authentication delegation permissions in a Kubernetes cluster,software,Single
+4075,system:basic-user,a ClusterRole that grants basic user permissions in a Kubernetes cluster,software,Single
+4076,system:controller:attachdetach-controller,a ClusterRole that grants attach/detach controller permissions in a Kubernetes cluster,software,Single
+4079,view ClusterRole,"It allows read-ing most resources in a namespace, except for Roles, RoleBindings, and Secrets.",software,Single
+4083,edit ClusterRole,"It allows you to modify resources in a namespace, but also allows both reading and modifying Secrets.",software,Single
+4084,admin ClusterRole,Complete control of the resources in a namespace is granted in the admin Cluster-Role.,software,Single
+4085,cluster-admin ClusterRole,"Subjects with this ClusterRole can read and modify any resource in the namespace, except ResourceQuotas (we’ll learn what those are in chapter 14) and the Namespace resource itself.",software,Single
+4086,ResourceQuotas,They’re used to limit the resources that a namespace can use.,software,Single
+4098,ClusterAdmin,The highest level of permissions in the cluster,application,Single
+4099,ServiceAccountName,A property that specifies the service account to use for a pod,application,Single
+4101,ServiceAccountToken,An authentication token used by a ServiceAccount to authenticate with the API server,database,Single
+4117,policies,rules that govern what pods can do,software,Single
+4120,IP and port space,Each pod gets its own IP and port space,network,Single
+4123,Inter-Process Communication (IPC),Mechanism for processes in the same pod to communicate,process,Single
+4124,hostNetwork property,Allow pods to use node's network interfaces instead of their own,network,Single
+4125,node's network adapters,Pods can use node's network adapters instead of virtual network adapters,hardware,Single
+4126,virtual network adapters,Pods have their own virtual network adapters,hardware,Single
+4130,eth1,Node's network interface,network,Single
+4137,ifconfig,a command to display network interface information,command,Single
+4141,veth1178d4f,a virtual Ethernet interface for a pod,hardware,Single
+4156,port 9000,A port on the node that is bound to the pod's port 8080.,hardware/network,Single
+4159,firewall-rules,Rules used to configure the firewall in GKE.,hardware/network,Single
+4163,pod-with-host-pid-and-ipc.yaml,A YAML file used to define a pod that uses the host's PID and IPC namespaces.,software/configuration,Single
+4164,kubia-hostport.yaml,A YAML file used to define a pod that binds to a port on the node.,software/configuration,Single
+4168,ps aux,Unix command to list processes,command,Single
+4170,Inter-Process Communication,mechanism for processes to communicate with each other,process,Single
+4172,user ID,ID of the user under which a process will run,process,Single
+4174,privileged mode,mode that gives full access to the node's kernel,property,Single
+4176,SELinux,Security Enhanced Linux options to lock down a container,property,Single
+4178,hostPID: true,property to enable processes in the pod's containers to communicate with host processes,property,Single
+4183,bin,system binary directory,hardware,Single
+4184,daemon,system daemon process,process,Single
+4185,sys,system group,group,Single
+4186,adm,administrators group,group,Single
+4188,wheel,superuser group,group,Single
+4189,floppy,floppy disk device group,hardware,Single
+4190,dialout,dial-out modem group,group,Single
+4191,tape,tape drive device group,hardware,Single
+4192,video,video display device group,hardware,Single
+4204,runAsNonRoot,A boolean flag that specifies whether a container should be allowed to run as root or not.,process,Single
+4215,/dev,A special file directory on Linux systems containing device files for all devices on the system.,directory,Single
+4216,device files,Special files used to communicate with devices on a Linux system.,files,Single
+4222,/dev/null,A special file in Linux systems used to discard output or redirect input.,file,Single
+4223,/dev/zero,A special file in Linux systems that generates a stream of zeros.,file,Single
+4224,/dev/random,A special file in Linux systems that generates a stream of random numbers.,file,Single
+4225,btrfs-control,device,hardware,Single
+4226,stderr,file descriptor,process,Single
+4227,tty48,terminal device,hardware,Single
+4228,core,system core file,software,Single
+4229,stdin,standard input stream,process,Single
+4230,tty49,terminal device,hardware,Single
+4231,stdout,standard output stream,process,Single
+4232,tty5,terminal device,hardware,Single
+4233,cpu_dma_latency,CPU DMA latency file,software,Single
+4234,termination-log,system log file,software,Single
+4235,tty50,terminal device,hardware,Single
+4236,fd,file descriptor,process,Single
+4237,tty,terminal device,hardware,Single
+4238,tty51,terminal device,hardware,Single
+4239,full,device,hardware,Single
+4240,tty0,terminal device,hardware,Single
+4241,fuse,file system,software,Single
+4242,tty1,terminal device,hardware,Single
+4243,hpet,high precision event timer,hardware,Single
+4244,tty10,terminal device,hardware,Single
+4245,hwrng,hardware random number generator,hardware,Single
+4246,tty11,terminal device,hardware,Single
+4247,privileged container,container with elevated privileges,software,Single
+4248,CAP_SYS_TIME,kernel capability to set system time,software,Single
+4253,Linux kernel capabilities,Capabilities that can be used by a container to perform specific actions.,software,Single
+4254,CAP_,Prefix for Linux kernel capabilities.,software,Single
+4262,pod-add-settime-capability,Name of a pod that has been created with the SYS_TIME capability.,container,Single
+4267,/tmp,Directory where temporary files are stored.,filesystem,Single
+4270,securityContext.capabilities.drop,property in Kubernetes Pod configuration to drop specific capabilities,configuration,Single
+4275,chown,Unix command to change file ownership,command,Single
+4276,securityContext.readOnlyRootFilesystem,property in Kubernetes Pod configuration to set the root filesystem as read-only,configuration,Single
+4277,Pod-with-readonly-filesystem,Kubernetes resource representing a Pod with a read-only root filesystem,resource,Single
+4286,touch,A command that creates a new file or updates the timestamp of an existing file.,command,Single
+4297,EmptyDir,In-memory volume that is deleted when the pod is terminated,process,Single
+4298,Security Context,Configuration to specify security settings for a pod or container,software,Single
+4299,fsGroup ID,User ID used by containers to access shared files,hardware,Single
+4300,Supplemental Group IDs,Additional group IDs used by containers to access shared files,hardware,Single
+4303,id command,shows the container is running with user ID 1111,command,Single
+4308,privileged pod,pod that has full access to the cluster node,pod type,Single
+4309,/volume/foo,file created in the mounted volume's directory,file,Single
+4310,/tmp/foo,file created in the container's filesystem,file,Single
+4311,fsGroup security context property,used when creating files in a volume,property,Single
+4319,host ports,Ports on the host machine that can be bound by pods,hardware,Single
+4320,user IDs,IDs under which containers can run,software,Single
+4323,PodSecurityPolicy admission control plugin,A plugin that validates pod definitions against configured PodSecurityPolicies,software,Single
+4325,apiserver.GenericServerRunOptions.AdmissionControl,An option that enables the PodSecurityPolicy admission control plugin,software,Single
+4327,LimitRanger,A feature that enforces resource limits on pods,software,Single
+4329,PersistentVolumeLabel,A feature that manages persistent volume labels,software,Single
+4330,DefaultStorageClass,A feature that sets a default storage class for pods,software,Single
+4332,DefaultTolerationSeconds,A feature that sets a default toleration period for pods,software,Single
+4333,BasicAuthFile,A file that contains basic authentication credentials,hardware,Single
+4334,password file,A file that contains password and user ID information,hardware,Single
+4335,kernel capabilities,,software,Single
+4336,SELinux labels,,software,Single
+4337,writable root filesystem,,hardware,Single
+4338,filesystem groups,,hardware,Single
+4339,volume types,,software,Single
+4344,hostPorts,allowing pods to bind to specific host ports,hardware,Single
+4359,MustRunAs rule,rule in PodSecurityPolicy that constrains user or group IDs,database,Single
+4360,ranges,field in MustRunAs rule that specifies allowed ID ranges,process,Single
+4363,2-10,"ID range allowed for user ID, filesystem group, and supplemental groups",database,Single
+4364,20-30,"ID range allowed for user ID, filesystem group, and supplemental groups",database,Single
+4372,USER directive,A command in a Dockerfile that sets the user ID for a container,command,Single
+4376,MustRunAsNonRoot,A rule that prevents users from deploying containers that run as root.,process,Single
+4380,allowedCapabilities,A field in the PodSecurityPolicy resource that specifies which capabilities containers can add.,field,Single
+4381,defaultAddCapabilities,A field in the PodSecurityPolicy resource that specifies which capabilities are automatically added to every container.,field,Single
+4385,SYS_ADMIN,A Linux kernel capability that allows a range of administrative operations.,capability,Single
+4386,SYS_MODULE,A Linux kernel capability that allows loading and unloading of Linux kernel modules.,capability,Single
+4389,security-related features,features related to security in pods,application,Single
+4390,CAPABILITIES,capabilities added to every deployed pod's containers,process,Single
+4393,PodSecurity-Policy Admission Control plugin,plugin adding capabilities to every container's security-Context.capabilities.drop field,application,Single
+4395,pod-add-sysadmin-capability.yaml,file containing YAML configuration for creating a pod with added capability,file,Single
+4400,persistentVolume-Claim,volume type allowing users to add persistent volume claims to their pods,database,Single
+4407,PodSecurityPolicy Admission Control plugin,A plugin that enforces PodSecurityPolicies when creating pods in Kubernetes.,software,Single
+4410,PodSecurityPolicy (psp),A shorthand for PodSecurityPolicy in Kubernetes.,software,Single
+4425,default policy,The default PodSecurityPolicy resource that allows running non-privileged containers.,resource,Single
+4426,privileged policy,A privileged PodSecurityPolicy resource that allows running privileged containers.,resource,Single
+4427,Alice,A user who can only deploy restricted (non-privileged) pods.,user,Single
+4428,Bob,A user who can deploy both non-privileged and privileged pods.,user,Single
+4429,PodSecurityPolicy resource,A PodSecurityPolicy resource defines a set of privileges that can be used by pods.,resource,Single
+4431,psp-default,A ClusterRole that allows the use of the default PodSecurityPolicy resource.,role,Single
+4434,psp-all-users,A ClusterRoleBinding that binds the psp-default ClusterRole to all authenticated users.,binding,Single
+4438,bob,user account in Kubernetes,application,Single
+4439,alice,user account in Kubernetes,application,Single
+4441,--user,option for specifying user credentials in kubectl commands,command,Single
+4442,podSecurityPolicy,resource that defines a set of permissions for pods,database,Single
+4443,context,configuration object that specifies user credentials and cluster information,software,Single
+4444,appendix A,section in the book that explains how to use kubectl with multiple clusters and contexts,hardware,Single
+4446,Admission Control,plugin for validating pod configurations,software,Single
+4449,ingress rules,rules for specifying which sources can access matched pods,software,Single
+4450,egress rules,rules for specifying which destinations can be accessed from matched pods,software,Single
+4452,namespace selector,selector for matching namespaces based on labels,software,Single
+4455,default-deny NetworkPolicy,NetworkPolicy that prevents all clients from connecting to any pod in a namespace,database,Single
+4466,5432,PostgreSQL database port number,process,Single
+4469,Kubernetes namespaces,a way to group resources in a Kubernetes cluster,application,Single
+4475,tenant,a label for identifying a tenant in a Kubernetes cluster,application,Single
+4476,manning,the name of a tenant,application,Single
+4477,shopping-cart,the name of a microservice,application,Single
+4479,microservice,a label for identifying a microservice in a Kubernetes cluster,application,Single
+4480,shopping-cart-netpolicy,a NetworkPolicy resource for allowing access to the shopping cart microservice,software,Single
+4489,ingress rule,A NetworkPolicy rule that allows traffic from a specific IP block or pod selector.,software,Single
+4493,shopping-cart microservice,A Kubernetes application that provides a shopping cart service.,application,Single
+4498,egress,An egress rule in a NetworkPolicy that limits outbound traffic,software,Single
+4499,to,A keyword indicating the destination of an egress rule,software,Single
+4508,devices,Hardware components that can be accessed by containers in privileged mode,hardware,Single
+4523,if=/dev/zero,"A file descriptor pointing to the /dev/zero device, which generates zeros on demand",filedescriptor,Single
+4524,of=/dev/null,"A file descriptor pointing to /dev/null, which discards any data written to it",filedescriptor,Single
+4537,Mem,memory usage metric,process,Single
+4540,top,command to display system information,software,Single
+4541,Minikube VM,virtual machine used for testing,hardware,Single
+4554,LeastRequestedPriority,A prioritization function that prefers nodes with fewer requested resources.,process,Single
+4555,MostRequestedPriority,A prioritization function that prefers nodes with the most requested resources.,process,Single
+4560,Capacity,"total resources available on a node, including CPU and memory",hardware,Single
+4580,PodScheduled,A condition indicating whether a pod has been scheduled on a node.,application,Single
+4581,FailedScheduling,An event indicating that scheduling of a pod has failed.,application,Single
+4582,Insufficient cpu,A reason for failing to schedule a pod due to insufficient CPU resources on a node.,hardware,Single
+4584,cores,"A measure of a computer's processing power, equivalent to the number of CPUs available.",hardware,Single
+4587,dflt-http-b...,pod name,process,Single
+4588,kube-addon-...,pod name,process,Single
+4589,kube-dns-26...,pod name,process,Single
+4590,kubernetes-...,pod name,process,Single
+4591,nginx-ingre...,pod name,process,Single
+4594,CPU Requests,resource type,hardware,Single
+4595,CPU Limits,resource type,hardware,Single
+4596,Memory Requests,resource type,hardware,Single
+4597,Memory Limits,resource type,hardware,Single
+4610,custom resources,"Resources added by the user to a node, such as Opaque Integer Resources or Extended Resources.",resource_management,Single
+4611,Extended Resources,A type of custom resource in Kubernetes that provides additional resources to pods and containers.,resource_management,Single
+4612,Opaque Integer Resources,An older type of custom resource in Kubernetes that was replaced by Extended Resources.,resource_management,Single
+4613,CPU time sharing,The process of distributing unused CPU time among pods and containers based on their CPU requests.,resource_management,Single
+4616,PATCH HTTP request,HTTP request method to update a resource,protocol,Single
+4617,capacity field,Field in the Node object to specify custom resources,field,Single
+4618,example.org/my-resource,Custom resource name,resource,Single
+4619,quantity,Integer value for custom resource allocation,parameter,Single
+4620,resources.requests field,Field in the container spec to specify requested resources,field,Single
+4622,GPU units,Custom resource representing available GPU units,resource,Single
+4625,resources.requests,Parameter to specify requested resources for a pod,parameter,Single
+4641,overcommitting,The ability to allocate more resources than available on the node,process,Single
+4653,container restart policy,the policy for restarting a container when it crashes,process,Single
+4658,CPU limit,the maximum amount of CPU time available to a container,resource,Single
+4661,top command,system monitoring command that displays memory and CPU usage statistics,process,Single
+4662,dd command,data duplication command used to generate load on the system,process,Single
+4666,Java Virtual Machine,JVM that runs Java apps,software,Single
+4667,-Xmx option,option to set maximum heap size for JVM,software,Single
+4669,OOMKill,out-of-memory kill signal sent by the kernel,process,Single
+4671,cgroups system,system that controls resource usage for containers,software,Single
+4672,/sys/fs/cgroup/cpu/cpu.cfs_quota_us,file that stores the configured CPU limit,filesystem,Single
+4673,/sys/fs/cgroup/cpu/cpu.cfs_period_us,file that stores the period of time over which the CPU limit is enforced,filesystem,Single
+4675,BestEffort class,"Lowest priority QoS class, assigned to pods with no resource requests or limits set",application,Single
+4676,Burstable class,QoS class for pods that can burst beyond their requested resources,application,Single
+4677,Guaranteed class,"Highest priority QoS class, assigned to pods with equal requests and limits set for all resources",application,Single
+4698,YAML/JSON manifest,File format for storing configuration data in Kubernetes,software,Single
+4699,status.qosClass field,Field in the pod's YAML/JSON manifest that shows its QoS class,field,Single
+4703,Table 14.1,Table showing QoS classes for single-container pods based on resource requests and limits,table,Single
+4704,Table 14.2,Table showing a Pod’s QoS class derived from the classes of its containers,table,Single
+4712,Validation,The process of checking the validity of resources in a cluster,software,Single
+4718,Namespace XYZ,A specific namespace with a LimitRange resource,network,Single
+4720,LimitRanger Admission Control plugin,A Kubernetes plugin that validates pod specs against LimitRange resources.,software,Single
+4723,LimitRange object,A Kubernetes resource that specifies limits for pods and containers.,software,Single
+4758,cpu usage,Maximum CPU usage per pod or container,process,Single
+4759,memory usage,Maximum memory usage per pod or container,process,Single
+4769,LimitRanger plugin,an Admission Control plugin that enforces policies configured in LimitRange resources,software,Single
+4770,ResourceQuota Admission Control plugin,an Admission Control plugin that checks whether a pod being created would cause the configured ResourceQuota to be exceeded,software,Single
+4778,hard,a field in the ResourceQuota object that defines the maximum amount of resources allowed,software,Single
+4791,kubectl describe command,command used to see how much of the quota is already used up,application,Single
+4792,cpu-and-mem,ResourceQuota object name,database,Single
+4794,limits.cpu 200m,maximum total CPU limits in the namespace,process,Single
+4795,limits.memory 100Mi,maximum total limits for memory resources,process,Single
+4796,requests.cpu 100m,maximum amount of CPU pods can request,process,Single
+4797,requests.memory 10Mi,maximum total requests for memory resources,process,Single
+4810,Storage,A resource that can be limited by ResourceQuota,hardware,Single
+4818,loadbalancers,A Service that distributes incoming traffic across multiple Pods,software,Single
+4819,nodeports,A Service that exposes a single port on the node's IP address,networking,Single
+4823,quota scopes,"Four quota scopes available: BestEffort, NotBestEffort, Terminating, and NotTerminating.",software,Single
+4824,BestEffort scope,Applies to pods with the BestEffort QoS class or with one of the other two classes (Burstable and Guaranteed).,software,Single
+4825,NotBestEffort scope,Determines whether the quota applies to pods with the NotBestEffort QoS class.,software,Single
+4826,Terminating scope,"Applies to pods that have the activeDeadlineSeconds set, marking them as Failed and then terminated.",software,Single
+4827,NotTerminating scope,Applies to pods that don't have an active deadline set.,software,Single
+4831,CPU/memory requests,"Resource limits for pods, which can be limited by a ResourceQuota.",hardware,Single
+4832,CPU/memory limits,"Resource limits for pods, which can be limited by a ResourceQuota.",hardware,Single
+4846,kubectl top command,A command used to display resource usages for nodes and individual pods.,command,Single
+4848,minikube addons enable heapster command,A command used to enable Heapster as an add-on in Minikube.,command,Single
+4849,kubectl top node command,A command used to display actual CPU and memory usage of all pods running on a node.,command,Single
+4851,kubectl top pod command,A command used to display actual CPU and memory usage of individual pods.,command,Single
+4854,top_pod.go,file containing top pod command implementation,software,Single
+4860,Google Cloud Monitoring,service for monitoring Google Kubernetes Engine clusters,cloud service,Single
+4866,resource consumption statistics,data about how much CPU or memory pods consumed throughout a period,software,Single
+4872,cluster-info,A command to display information about the Kubernetes cluster,command,Single
+4883,network,A type of computational resource that measures data transfer rate,hardware,Single
+4892,Resource limits,The maximum amount of resources a pod can use,process,Single
+4894,Memory usage,The amount of memory used by a container,resource,Single
+4895,QoS classes,A way to prioritize pods based on their resource needs,process,Single
+4896,CPU request,The amount of processing power requested by a pod,resource,Single
+4897,Memory request,The amount of memory requested by a pod,resource,Single
+4910,Replicas field,"A field in the ReplicationController, ReplicaSet, and Deployment resources that determines how many replicas of a pod to run.",software,Single
+4912,custom metrics,"User-defined metrics that can be used to determine the load on a system, used for automatic horizontal scaling.",software,Single
+4917,autoscaling,Feature in Kubernetes that scales pods and nodes,feature,Single
+4923,REST calls,Method used by HPA to query Heapster for metrics,protocol,Single
+4935,Pod metrics,Metrics collected from pods to determine the required number of replicas.,software,Single
+4939,Resource metrics API,An API that provides metrics for resources in a cluster.,application,Single
+4940,Metrics collector,A component that collects metrics from pods and other sources.,software,Single
+4941,Autoscaling operation,The final step of an autoscaling operation,process,Single
+4942,desired replica count field,A field on the scaled resource object,field,Single
+4945,Autoscaler controller,A controller that modifies the replicas field through the Scale sub-resource,controller,Single
+4946,Scale sub-resource,A sub-resource of the API server that exposes the scaleable resource,resource,Single
+4954,Target CPU utilization,A target value for CPU utilization,target,Single
+4955,Target QPS,A target value for QPS,target,Single
+4984,replicas: 3,The initial number of replicas for the Deployment.,application,Single
+4986,metadata: name: kubia,"Information about the pod being created, including its name.",software,Single
+4987,labels: app: kubia,Labels applied to the pod for identification and organization.,software,Single
+4989,image: luksa/kubia:v1,The image being used to create the container.,software,Single
+4990,name: nodejs,The name of the container being created.,container,Single
+4994,kubectl autoscale command,A command used to create a HorizontalPodAutoscaler (HPA) object and enable horizontal autoscaling.,command,Single
+5004,autoscaling/v2beta1,API version for Horizontal Pod Autoscaler,software,Single
+5012,Metrics,Data collected by Heapster to monitor the cluster,data,Single
+5014,Target,"Desired value for a metric, in this case, CPU utilization",data,Single
+5015,MinPods,Minimum number of pods allowed by the autoscaler,process,Single
+5016,MaxPods,Maximum number of pods allowed by the autoscaler,process,Single
+5018,SuccessfulRescale,,process,Single
+5019,New size: 1; reason: All metrics below target,,message,Single
+5020,horizontal-pod-autoscaler,,software,Single
+5022,target,,process,Single
+5027,"$ watch -n 1 kubectl get hpa,deployment",,command,Single
+5028,hpa/kubia,,software,Single
+5030,MINPODS,,process,Single
+5031,MAXPODS,,process,Single
+5032,REPLICAS,,process,Single
+5034,"hpa,deployment",,software,Single
+5035,$ kubectl run -it --rm --restart=Never loadgenerator --image=busybox ,,command,Single
+5036,loadgenerator,,software,Single
+5037,--image=busybox,,process,Single
+5038,sh -c,,process,Single
+5039,wget -O - -q http://kubia.default,,command,Single
+5041,-it,option to attach console to process,software,Single
+5042,--rm,option to delete pod after execution,software,Single
+5043,--restart=Never,option to create unmanaged pod directly,software,Single
+5058,targetAverageUtilization field,field in HPA resource to set CPU utilization target,field,Single
+5059,maxReplicas parameter,parameter to set maximum number of replicas,parameter,Single
+5060,metrics section,section in HPA resource to specify metrics for scaling,section,Single
+5061,Resource type,type of resource being scaled (e.g. CPU),resource type,Single
+5062,autoscaler controller,controller that detects changes to HPA resource and scales pods accordingly,process,Single
+5065,Horizontal Autoscaler,Kubernetes component for scaling pods,software,Single
+5067,memory consumption,Metric used to scale pods based on memory usage,metric,Single
+5070,HPA (Horizontal Pod Autoscaler),Kubernetes component for scaling pods based on CPU utilization,software,Single
+5076,metrics field,A field in the HPA object that defines the metric to use for scaling.,software,Single
+5078,Pods metric,"A type of metric that is based on the pod itself, such as QPS or message queue size.",application,Single
+5079,Object metric,"A type of metric that is not directly related to the pod, but rather to another cluster object, like an Ingress object.",application,Single
+5081,container's resource requests,"The resources requested by a container, such as CPU or memory.",application,Single
+5082,Queries-Per-Second (QPS),A metric that measures the number of queries per second.,software,Single
+5083,message broker's queue,"A message queue used by a message broker, such as RabbitMQ or Apache Kafka.",application,Single
+5085,Ingress object,A Kubernetes object that defines an ingress point for incoming HTTP requests.,software,Single
+5086,Object,"A Kubernetes object, such as a pod or deployment",software,Single
+5088,latencyMillis,A metric measuring latency in milliseconds,software,Single
+5089,targetValue,"The target value for a metric, used by the horizontal pod autoscaler",software,Single
+5093,frontend,The name of a Kubernetes ingress object,software,Single
+5102,Vertical pod autoscaling,A feature that allows pods to be scaled down to zero and brought up when a new request comes in.,application,Single
+5109,InitialResources,An experimental feature that sets CPU and memory requests on newly created pods.,application,Single
+5111,Tag,A label used to identify a specific version or build of a container image.,hardware,Single
+5112,Historical resource usage data,Data about the past resource usage of a pod's containers.,application,Single
+5113,Vertical scaling,The process of increasing the resources (CPU and memory) available to a pod.,application,Single
+5116,Pod Autoscaler,Automatically scales pod instances,application,Single
+5120,Node group,Group of same-sized nodes or nodes with the same features,hardware,Single
+5124,API call,Request to cloud provider to add additional node,process,Single
+5130,CPU and memory requests,the amount of CPU and memory resources required by pods running on a node,hardware,Single
+5131,system pods,"pods that run on every node in the cluster, such as those deployed by a DaemonSet",software,Single
+5132,unmanaged pod,a pod that is not managed by a controller or ReplicaSet,software,Single
+5133,pod with local storage,a pod that requires access to local storage on a node,software,Single
+5136,node group,a collection of nodes in a Kubernetes cluster that can be scaled up or down together,software,Single
+5140,Google Compute Engine (GCE),"a service for running virtual machines in the cloud, provided by Google Cloud Platform",cloud platform,Single
+5141,Amazon Web Services (AWS),a comprehensive cloud computing platform provided by Amazon,cloud platform,Single
+5142,Microsoft Azure,a cloud computing platform provided by Microsoft,cloud platform,Single
+5144,cordon,a kubectl command that marks a node as unschedulable but doesn't evict pods,command,Single
+5145,drain,a kubectl command that marks a node as unschedulable and evicts all pods from the node,command,Single
+5146,uncordon,"a kubectl command that unmarks a node as unschedulable, allowing new pods to be scheduled on it",command,Single
+5148,Pod-DisruptionBudget,a Kubernetes resource that specifies the minimum number of pods that must always be available,software,Single
+5153,Drain command,"a kubectl command that evicts a node from the cluster, allowing it to be updated or replaced",software,Single
+5154,MinAvailable,a field in the Pod-DisruptionBudget resource that specifies the minimum number of pods that must always be available,process,Single
+5155,MaxUnavailable,a field in the Pod-DisruptionBudget resource that specifies the maximum number of pods that can be unavailable,process,Single
+5164,minAvailable,Parameter for specifying the minimum available pods,parameter,Single
+5166,CTRL+C,Key combination for stopping and deleting a pod,key combination,Single
+5169,node selector,Mechanism to specify a node for pod scheduling,process,Single
+5172,node affinity rules,Alternative to node selectors for pod scheduling,process,Single
+5182,describe node,A command used to display information about a node in a Kubernetes cluster,software,Single
+5184,Control Plane pods,Pods that run the control plane components of a Kubernetes cluster,application,Single
+5185,master node,The master node in a Kubernetes cluster,hardware,Single
+5190,node-role.kubernetes.io/master,a taint applied to the master node,kubernetes,Single
+5193,Exists:NoExecute,a toleration effect that prevents pods from running on a node if it is unreachable or not ready,kubernetes,Single
+5200,Tolerations,Allow pods to run on tainted nodes,process,Single
+5204,Taints,Mark nodes with specific conditions,process,Single
+5205,kubectl taint command,Command to add custom taints to a node,command,Single
+5208,NoSchedule effect,Effect that prevents pod scheduling on a node,effect,Single
+5213,pod YAML,YAML snippet for adding tolerations to pods,yaml,Single
+5229,toleration,Mechanism to specify how long Kubernetes should wait before rescheduling a pod,process,Single
+5230,$ kubectl get po prod-350605-1ph5h -o yaml,Command to retrieve pod information in YAML format,command,Single
+5232,node.alpha.kubernetes.io/unreachable,Label for a node that is unreachable,label,Single
+5233,tolerationSeconds,Field to specify how long Kubernetes should wait before rescheduling a pod,field,Single
+5235,--feature-gates=Taint-BasedEvictions=true,Option to enable taint-based evictions in the Controller Manager,option,Single
+5239,Listing 16.6,Reference to a listing in the chapter,reference,Single
+5242,Node Selectors,A feature that allows you to specify which nodes a pod can be scheduled on.,Software/Application,Single
+5246,GKE (Google Kubernetes Engine),A managed container orchestration service provided by Google Cloud Platform.,Cloud Service,Single
+5247,Node Pools,A group of nodes that can be used for scheduling pods.,Software/Application,Single
+5248,Region,The geographical region where a node is located.,Hardware/Location,Single
+5249,Zone,The availability zone where a node is located.,Hardware/Location,Single
+5255,requiredDuringSchedulingIgnoredDuringExecution,"a field in the nodeAffinity rule that specifies the labels a node must have for the pod to be scheduled to it, and ignores existing pods on the node","software,application",Single
+5258,key: gpu,a key-value pair in the matchExpressions that specifies the label to match for the node selector,"hardware,label",Single
+5259,operator: In,an operator in the matchExpressions that specifies how to match the label for the node selector,"software,application",Single
+5260,values: - true,a list of values in the matchExpressions that specifies the value to match for the node selector,"hardware,label",Single
+5265,gpu label,a specific label on a node that indicates it has a GPU,hardware,Single
+5267,availability zone,"a separate availability zone, such as a datacenter across different countries",hardware,Single
+5280,pref,Name of a Deployment with preferred node affinity,Software,Single
+5281,preferred-deployment.yaml,Deployment manifest for specifying preferential node affinity rules,Software,Single
+5292,zone1,a specific availability zone,hardware,Single
+5293,dedicated,a specific share type,hardware,Single
+5296,-o wide,option to display pod information in wide format,software,Single
+5300,pref-607515-1rnwv,pod name and ID,container,Single
+5301,pref-607515-27wp0,pod name and ID,container,Single
+5302,pref-607515-5xd0z,pod name and ID,container,Single
+5303,pref-607515-jx9wt,pod name and ID,container,Single
+5304,pref-607515-mlgqm,pod name and ID,container,Single
+5305,Selector-SpreadPriority,Kubernetes scheduling function to spread pods across nodes,software,Single
+5309,frontend pod,type of pod for a frontend service,container,Single
+5311,pod affinity configuration,configuration to place pods near each other,software,Single
+5324,get po -o wide,a command for getting pod information in wide format,command,Single
+5326,frontend-podaffinity-host.yaml,a YAML file defining a frontend pod with pod affinity rules,file,Single
+5332,podAffinity configuration,a set of rules defining how pods are scheduled based on affinity labels,software,Single
+5334,frontend pods,a set of frontend pods that were scheduled to node2.k8s based on pod affinity rules,container,Single
+5336,anti-affinity,a scheduling strategy that prevents pods from being deployed on the same node,application,Single
+5337,backend-qhqj6,a pod name,container,Single
+5340,InterPodAffinityPriority,a scheduling priority for inter-pod affinity,application,Single
+5341,SelectorSpreadPriority,a scheduling priority for selector spread,application,Single
+5342,NodeAffinityPriority,a scheduling priority for node affinity,application,Single
+5345,failure-domain.beta.kubernetes.io/zone,a label key for specifying an availability zone,label,Single
+5346,failure-domain.beta.kubernetes.io/region,a label key for specifying a geographical region,label,Single
+5363,podAffinityTerm,a specification for the pod affinity term,software,Single
+5374,backend-257820-ssrgj,pod name and ID,container,Single
+5375,frontend-941083-3mff9,pod name and ID,container,Single
+5376,frontend-941083-7fp7d,pod name and ID,container,Single
+5377,frontend-941083-cq23b,pod name and ID,container,Single
+5378,frontend-941083-m70sw,pod name and ID,container,Single
+5379,frontend-941083-wsjv8,pod name and ID,container,Single
+5380,podAntiAffinity,property for specifying pod anti-affinity preferences,software,Single
+5383,Topology key,key used to specify the topology of a node,software,Single
+5385,Pod Affinity,A feature that allows you to schedule pods on specific nodes based on labels and selectors.,Software/Application,Single
+5387,Pod AntiAffinity,A feature that prevents pods from being scheduled on the same node based on labels and selectors.,Software/Application,Single
+5391,LabelSelector,A selector used to match pods based on labels attached to them.,Software/Application,Single
+5392,TopologyKey,"A key used to identify the topology of a node, such as its hostname or IP address.",Software/Framework,Single
+5396,$ kubectl get po -l app=frontend -o wide,A command used to retrieve information about pods with a specific label.,Software/Command,Single
+5399,taint,a label that prevents pods from being scheduled on a node,process,Single
+5402,affinity,a property of a pod that specifies which nodes it can be scheduled on,process,Single
+5405,hard requirement,a type of node affinity that requires pods to be scheduled on specific nodes,process,Single
+5409,Resources,Components that make up a Kubernetes application,application,Single
+5410,Hooks,Functions that run at specific points in the pod lifecycle,process,Single
+5411,Init containers,Containers that run before the main container in a pod,container,Single
+5418,Volume(s),Provides persistent storage for pods,hardware,Single
+5419,ReplicaSet(s),Manages the number of replicas of a pod,software,Single
+5421,Health probes,Checks the health of a container or pod,software,Single
+5423,Volume mounts,Mounts a volume to a container's file system,hardware,Single
+5424,Resource reqs/limits,Defines resource constraints for pods and containers,software,Single
+5427,Secret(s),"Stores sensitive data, such as passwords and API keys",software,Single
+5429,Persistent Volume Claim,Requests storage resources from a cluster,hardware,Single
+5454,clustered app,Application running in multiple pods,application,Single
+5458,OOMKiller,Process that kills processes when the node runs out of memory,process,Single
+5461,pod-scoped volume,Volume that lives and dies together with the pod,storage,Single
+5465,Writes to,An operation that saves data to a file or filesystem.,Process,Single
+5467,Writable layer,A part of the container's filesystem where changes can be made.,Software,Single
+5468,Read-only layer,A part of the container's filesystem that cannot be modified.,Software,Single
+5469,Image layers,Pre-built components that make up a container image.,Software,Single
+5471,New container,A new instance of a container created to replace an existing one.,Software,Single
+5472,New process,A new program in execution within a container.,Process,Single
+5473,Filesystem volumeMount,The ability to mount a filesystem as a directory within a container.,Hardware,Single
+5502,fortune-client pod,a pod that requires the fortune Service to be up before its main container starts,application,Single
+5503,initContainers field,specifies init containers in a pod's YAML spec,software,Single
+5505,while true loop,a loop that runs until the fortune Service is up,programming language,Single
+5506,wget command,used to check if the fortune Service is responding to requests,command,Single
+5508,init container,An init container is a special type of container that runs before the main container(s) in a pod.,container,Single
+5512,fortune-server pod,A pod that runs the fortune server.,application,Single
+5515,lifecycle hooks,Hooks that can be used to execute commands or perform HTTP requests when a container starts or stops.,process,Single
+5516,post-start hooks,A type of lifecycle hook that is executed when a container starts.,process,Single
+5517,pre-stop hooks,A type of lifecycle hook that is executed before a container stops.,process,Single
+5518,Post-Start Hook,A hook executed immediately after the container's main process is started.,Container Lifecycle,Single
+5522,Pending,The status of a pod while its containers are being created.,Pod Status,Single
+5531,postStart,A field in the lifecycle hook specification that specifies a post-start hook to be executed when the container starts.,Lifecycle Hook,Single
+5534,sh,The shell used to execute a shell script or binary executable file stored in the container image.,Shell,Single
+5536,exit,A command used to terminate the execution of a hook with a specified exit code.,Hook Command,Single
+5537,PostStart Hook,A hook executed immediately after a container starts.,container lifecycle,Single
+5538,FailedSync,"An error syncing pod, skipping: failed to start container.",pod events,Single
+5539,PostStart handler,A command executed immediately after a container starts.,container lifecycle,Single
+5540,Get http://10.32.0.2:9090/postStart,An HTTP GET hook handler.,container lifecycle,Single
+5541,dial tcp 10.32.0.2:9090,A network error connecting to port 9090.,network,Single
+5547,kubectl exec my-pod cat logfile.txt,A command to execute a process in a pod and display its output.,command,Single
+5552,scheme,A field used to specify the scheme (HTTP or HTTPS) for an HTTP GET request.,process,Single
+5554,httpHeaders,A field used to specify headers that should be sent in an HTTP GET request.,process,Single
+5559,shell script,A script that runs as the main container process and can handle signals and pass them on to child processes.,script,Single
+5566,deletionTimestamp,A field in a Pod object that indicates when the pod is scheduled to be deleted.,database,Single
+5572,spec.terminationGracePeriodSeconds,A field in the pod spec that configures the termination grace period.,command,Single
+5579,pod instances,The individual containers that make up a pod.,container,Single
+5589,data-migrating pod,A pod that runs a script to migrate data from one location to another.,pod,Single
+5593,Service Endpoints,List of IP addresses of pods providing a service,network,Single
+5595,HTTP GET,Request method for retrieving data from a server,protocol,Single
+5601,Scale down,Action to reduce the number of replicas,process,Single
+5605,client requests,requests handled properly by Kubernetes,application,Single
+5615,pod deletion notification,notification sent to components when a pod is deleted,event,Single
+5623,Iptables rules,Rules used to filter and manage incoming and outgoing network traffic in a Linux system.,network,Single
+5624,Connection Refused error,An error that occurs when a client tries to connect to a terminated pod.,error,Single
+5625,REST request,A type of HTTP request used for interacting with web services.,protocol,Single
+5627,Watcher(s),Components in the Kubernetes control plane that monitor and respond to changes in cluster resources.,software,Single
+5633,deletionTimestamp field,A field in the pod's spec that indicates when it will be deleted,database,Single
+5634,kube-proxies,Components that modify iptables rules,application,Single
+5636,load balancers,Components that distribute traffic across multiple servers,network,Single
+5637,client-side load-balancing,A technique used by clients to distribute traffic across multiple servers,application,Single
+5642,termination signal,A signal sent to a pod to terminate it,process,Single
+5658,FROM scratch directive,Instruction in a Dockerfile for creating an empty image,software,Single
+5660,dig,DNS lookup tool,software,Single
+5663,latest tag,Tag used to refer to the most recent image version,software,Single
+5665,tags,container tags with version designator,software,Single
+5669,multi-dimensional labels,multiple labels per resource for selection across dimensions,software,Single
+5679,/dev/termination-log,Default file for termination message,file,Single
+5683,Container definition,Section in the pod spec that defines a container,software,Single
+5685,/var/termination-reason,Custom file for termination message,file,Single
+5687,Error,Reason for container termination,error,Single
+5688,Exit Code,Code returned by the container when it exits,field,Single
+5692,terminationMessagePolicy field,a field that determines how a termination message is handled,field,Single
+5693,FallbackToLogsOnError policy,a policy that uses the last few lines of a container's log as its termination message when it terminates unsuccessfully,policy,Single
+5694,standard output,the default output stream for an application,output,Single
+5695,kubernetes logs command,a command to view container logs,command,Single
+5697,cat command,a command to display the contents of a file,command,Single
+5698,kubectl cp command,a command to copy files from and into a container,command,Single
+5700,log file,a file containing application logs,data storage,Single
+5701,termination message,a message written to a file by a container when it terminates,message,Single
+5702,application logging,the process of writing logs from an application,logging,Single
+5707,logging,process of recording events and errors,application,Single
+5708,centralized logging,system for collecting and storing logs in a central location,software,Single
+5709,cluster-wide logging,system for collecting and storing logs across multiple nodes,software,Single
+5712,ELK stack,collection of tools for logging and analytics,software,Single
+5713,EFK stack,modified version of ELK stack using FluentD instead of Logstash,software,Single
+5724,Java,A programming language where exception stack traces can span multiple lines.,programming language,Single
+5726,node-level FluentD agent,A configuration of the FluentD agent on a node to process JSON logs.,software,Single
+5727,logging sidecar container,A container that processes JSON logs and writes them to a file.,container,Single
+5728,IDE,An Integrated Development Environment where developers can run apps directly without containers.,application,Single
+5729,BACKEND_SERVICE_HOST,An environment variable used to find the coordinates of a backend Service.,environment variable,Single
+5730,BACKEND_SERVICE_PORT,An environment variable used to find the port number of a backend Service.,environment variable,Single
+5745,Docker volumes,Feature that allows mounting local filesystems into containers,software,Single
+5747,DOCKER_HOST,An environment variable that points to the Docker daemon.,environment variable,Single
+5748,minikube docker-env,A command that sets up the environment variables for Minikube.,command,Single
+5754,Version Control System,"A system for storing and managing code, such as Git or SVN.",system,Single
+5761,Kube-applier,A tool that automates the deployment of Kubernetes manifests,application,Single
+5762,Version Control System (VCS),A system for managing and tracking changes to code,software,Single
+5764,Kubernetes resource manifests,Files that define the configuration of Kubernetes resources,database,Single
+5772,CI/CD,Continuous Integration and Continuous Delivery pipeline,process,Single
+5773,Fabric8 project,An integrated development platform for Kubernetes,application,Single
+5774,Jenkins,An open-source automation system,software,Single
+5777,container lifecycle hooks,Hooks that can be used to customize container startup and shutdown,software,Single
+5779,manifests,Files that define the desired state of a Kubernetes resource,software,Single
+5780,image sizes,small image sizes for apps,software,Single
+5784,Mini-kube,local Kubernetes cluster,software,Single
+5787,Platform-as-a-Service,PaaS solutions on top of Kubernetes,software,Single
+5791,Platform-as-a-Service (PaaS),cloud computing model for deploying applications,application,Single
+5792,API servers,components that handle requests to custom API objects,software,Single
+5794,OpenShift Container Platform,Red Hat's PaaS solution built on top of Kubernetes,application,Single
+5795,Deis Workflow and Helm,tools for deploying applications to Kubernetes,software,Single
+5800,CustomResourceDefinitions,Kubernetes feature for defining custom resources,software,Single
+5802,Queue resource,High-level object representing a messaging broker,software,Single
+5806,Third-PartyResource,Deprecated Kubernetes feature for defining custom resources,software,Single
+5810,Website resource,Custom resource type for running static websites in Kubernetes,software,Single
+5820,scope,Scope of the custom resource (namespaced or cluster-wide),software,Single
+5821,Namespaced,Scope for the custom resource (namespaced),software,Single
+5824,website-crd.yaml,File containing the CustomResourceDefinition manifest,software,Single
+5825,imaginary-kubia-website.yaml,File containing an imaginary custom resource definition,software,Single
+5826,Custom Resource Definition,A CustomResourceDefinition (CRD) is used to define custom API objects.,Software,Single
+5828,API Group,A way to group related API resources together.,Software,Single
+5829,Version,The version number of an API resource.,Software,Single
+5831,Website,A custom API object representing a website.,Software,Single
+5835,apps/v1beta1,The API group and version for Deployments.,Software,Single
+5836,extensions.example.com,The API group for the custom Website resource.,Software,Single
+5846,websites,custom resource type for storing website configurations,database,Single
+5848,Website.v1.extensions.example.com,API group and version for the custom Website resource,software,Single
+5849,extensions.example.com/v1,API group and version for the custom Website resource,software,Single
+5856,website,resource type for storing website configurations,database,Single
+5877,nginx server,Web server software,software,Single
+5878,git-sync process,Process that keeps a local directory synced with a Git repo,process,Single
+5885,DELETED watch event,an event sent by the API server when a Website resource instance is deleted,process,Single
+5892,Deployment resource,a Kubernetes resource that manages replicas of a pod,application,Single
+5906,serviceAccountName,the name of a service account,software,Single
+5910,luksa/website-controller,the image name for the website controller,software,Single
+5914,Role Based Access Control (RBAC),a mechanism for controlling access to resources in a Kubernetes cluster,software,Single
+5921,kubia Website,a type of Kubernetes resource that represents the kubia website,software,Single
+5923,website-controller,the name of the website controller service account,software,Single
+5925,proxy sidecar,a type of container that provides proxy functionality,software,Single
+5931,"get deploy,svc,po","The command used to list all Deployments, Services, and Pods.",command,Single
+5932,cluster-IP,The Cluster IP address of the Service.,network,Single
+5940,validation schema,A validation schema to validate the contents of the YAML.,software,Single
+5942,gitRepo field,A required field in the Website object.,database,Single
+5945,CustomResourceValidation,Feature gate for validating custom objects,software,Single
+5946,JSON schema,Schema for validating custom object definitions,software,Single
+5950,API server aggregation,Feature for integrating multiple API servers into a single location,software,Single
+5952,Custom API server,API server responsible for handling custom objects,software,Single
+5953,Main API server,Primary API server for Kubernetes,software,Single
+5957,etcd store,Key-value store for storing Kubernetes resources,database,Single
+5958,APIService,Resource for registering a custom API server,software,Single
+5959,API group,Namespace for APIs (e.g. extensions.example.com),network,Single
+5963,custom API server,API server built on top of Kubernetes,software,Single
+5965,GitHub repos,Kubernetes source code repository on GitHub,software development,Single
+5970,Client pod,Pod that uses a service to authenticate,container,Single
+5978,Team,Group of users who are responsible for deploying general services,group,Single
+5979,Ticket,Request for a service to be provisioned by the team,request,Single
+5980,Manifests,Files that define the configuration and deployment of a service,file,Single
+5990,ServiceBroker,Resource representing a service broker,resource,Single
+5992,Client pods,Pods that use provisioned services,container,Single
+5993,Provisioned services,Services provided by external systems,resource,Single
+5994,Broker A and Broker B,External service brokers,software,Single
+5996,Service Brokers,External service providers that implement the OpenServiceBroker API,application,Single
+5997,OpenServiceBroker API,REST API for interacting with Service Brokers,software,Single
+5998,GET /v2/catalog,Operation to retrieve the list of services from a Service Broker,operation,Single
+5999,PUT /v2/service_instances/:id,Operation to provision a service instance from a Service Broker,operation,Single
+6000,PATCH /v2/service_instances/:id,Operation to update a service instance from a Service Broker,operation,Single
+6001,PUT /v2/service_instances/:id/service_bindings/:binding_id,Operation to bind a service instance from a Service Broker,operation,Single
+6002,DELETE /v2/service_instances/:id/service_bindings/:binding_id,Operation to unbind a service instance from a Service Broker,operation,Single
+6003,DELETE /v2/service_instances/:id,Operation to deprovision a service instance from a Service Broker,operation,Single
+6010,url,Field in the ClusterServiceBroker resource manifest specifying the URL of the Service Broker's OpenServiceBroker API,field,Single
+6012,service plans,Options for choosing the level of service needed for a particular type of service,option,Single
+6020,bindable,Flag indicating whether a service can be bound to a cluster,flag,Single
+6021,brokerName,Name of the broker providing a service,identifier,Single
+6022,plans,List of available plans for a ClusterServiceClass,list,Single
+6023,planUpdatable,Flag indicating whether a plan can be updated,flag,Single
+6024,osbFree,Flag indicating whether a plan is free or paid,flag,Single
+6028,postgres-database,ClusterServiceClass for PostgreSQL database,software,Single
+6031,--data-checksums,Parameter for initializing database,command,Single
+6033,get instance,Command for retrieving service instance status,command,Single
+6039,clusterServiceClassName,Field in ServiceInstance manifest,field,Single
+6040,clusterServicePlanName,Field in ServiceInstance manifest,field,Single
+6041,Kubernetes Service Catalog,A Kubernetes feature that allows users to provision and use external services,software,Single
+6048,instanceRef,A reference to the ServiceInstance being bound,software,Single
+6049,secretName,The name of the Secret that will store the credentials for accessing the service,software,Single
+6051,Database broker,A component that interacts with the Database service to provision and bind ServiceInstances,software,Single
+6052,PodPresets,A new Kubernetes feature that will allow pods to be pre-configured with credentials for accessing services,software,Single
+6054,PostgreSQL database,An external service being provisioned and used by the Service Catalog,database,Single
+6056,get secret,command to retrieve a Secret resource from a Kubernetes cluster,software,Single
+6057,postgres-secret,Secret resource holding database credentials,database,Single
+6062,username,field containing username for database connection,database,Single
+6063,password,field containing password for database connection,database,Single
+6070,servicebroker,component responsible for managing service instances,software,Single
+6073,servicebinding,resource representing a binding between a service and a pod,application,Single
+6077,broker,Software component for provisioning services,software,Single
+6078,Amazon Web Services,Cloud computing platform,cloud service,Single
+6082,Red Hat OpenShift,Platform-as-a-Service and container application platform,application,Single
+6083,developer experience,Focus area for Red Hat OpenShift,software feature,Single
+6085,scaling,Process of adjusting application resources,process,Single
+6086,maintenance,Process of keeping applications up-to-date and secure,process,Single
+6087,user management,Feature for managing user access to Kubernetes resources,software feature,Single
+6088,group management,Feature for managing group access to Kubernetes resources,software feature,Single
+6090,projects,Additional resource in OpenShift,resource,Single
+6093,Templates,A parameterizable list in OpenShift that allows a manifest to be instantiated with parameter values.,software,Single
+6094,BuildConfigs,A configuration for building images in OpenShift.,software,Single
+6095,DeploymentConfigs,A configuration for deploying applications in OpenShift.,software,Single
+6096,ImageStreams,A stream of images in OpenShift that can be used to deploy applications.,software,Single
+6097,Routes,A way to expose an application running in OpenShift to the outside world.,software,Single
+6099,Projects,"A concept in OpenShift that represents a set of resources, similar to a namespace in Kubernetes.",software,Single
+6100,Users,An entity in OpenShift that has access to certain projects and can perform actions on resources within those projects.,hardware,Single
+6101,Groups,A collection of users in OpenShift that have shared permissions.,hardware,Single
+6102,Roles-Based Access Control (RBAC),A standard access control mechanism in Kubernetes that defines permissions for users and groups.,software,Single
+6107,Templates (parameterizable),A way to define resources in OpenShift using placeholders that get replaced with parameter values when instantiated.,software,Single
+6109,OpenShift,Cloud platform built on top of Kubernetes,software,Single
+6113,Java EE application,Type of application that can be run using OpenShift templates,application,Single
+6114,Application Server,Component used to connect to a back-end database,component,Single
+6117,Source To Image,Build mechanism that detects application type and runs proper build procedure,process,Single
+6118,Maven,Build tool used for Java projects,tool,Single
+6127,Builder pod,OpenShift component for building images,component,Single
+6131,Build trigger,OpenShift component for triggering builds,component,Single
+6132,Git repo,Version control system,software,Single
+6133,Minishift,Tool for running OpenShift locally,software,Single
+6134,OpenShift Online Starter,"Free, hosted version of OpenShift",service,Single
+6142,git,Version control system,software,Single
+6145,Charts,Helm packages containing application configuration and resources,software,Single
+6146,Config,Configuration information merged into a Chart to create a Release,software,Single
+6150,Linux system,Operating system,hardware/software,Single
+6152,PostgreSQL,Database management system,database,Single
+6153,MySQL,Database management system,database,Single
+6154,Helm chart,Package for deploying applications to Kubernetes,software,Single
+6159,OpenVPN,Virtual private network software,software,Single
+6161,helm CLI tool,Command-line interface for interacting with Helm,software,Single
+6164,Custom-ResourceDefinition,API server object for registering custom resources,software,Single
+6170,Resource manifests,Files that define the resources needed by an application,software,Single
+6171,API aggregation,Kubernetes feature that allows custom API servers to be added,software,Single
+6176,kubeconfig,Configuration file for kubectl to interact with clusters,configuration,Single
+6177,minikube start,Command to start a Minikube cluster and reconfigure kubectl,command,Single
+6178,gcloud container clusters get-credentials,Command to configure kubectl to use a GKE cluster,command,Single
+6180,multiple clusters,ability to manage multiple Kubernetes clusters simultaneously,application,Single
+6183,KUBECONFIG environment variable,environment variable used to specify the location of kubeconfig files,process,Single
+6184,clusters,list of Kubernetes clusters defined in the kubeconfig file,database,Single
+6186,contexts,"list of kubectl contexts that define a cluster, user, and namespace",database,Single
+6187,current-context,name of the current kubectl context being used,process,Single
+6190,certificate-authority,field in the cluster definition that specifies the certificate authority,database,Single
+6191,/home/luksa/.minikube/ca.crt,path to the certificate authority file,hardware,Single
+6193,https://192.168.99.100:8443,address of the Kubernetes server,network,Single
+6197,user,field in the context definition that specifies the user being used,database,Single

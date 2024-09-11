@@ -1,0 +1,46 @@
+59
+Introducing pods
+ Having said that, do you think a multi-tier application consisting of a frontend
+application server and a backend database should be configured as a single pod or as
+two pods?
+SPLITTING MULTI-TIER APPS INTO MULTIPLE PODS
+Although nothing is stopping you from running both the frontend server and the
+database in a single pod with two containers, it isn’t the most appropriate way. We’ve
+said that all containers of the same pod always run co-located, but do the web server
+and the database really need to run on the same machine? The answer is obviously no,
+so you don’t want to put them into a single pod. But is it wrong to do so regardless? In
+a way, it is.
+ If both the frontend and backend are in the same pod, then both will always be
+run on the same machine. If you have a two-node Kubernetes cluster and only this sin-
+gle pod, you’ll only be using a single worker node and not taking advantage of the
+computational resources (CPU and memory) you have at your disposal on the second
+node. Splitting the pod into two would allow Kubernetes to schedule the frontend to
+one node and the backend to the other node, thereby improving the utilization of
+your infrastructure.
+SPLITTING INTO MULTIPLE PODS TO ENABLE INDIVIDUAL SCALING
+Another reason why you shouldn’t put them both into a single pod is scaling. A pod is
+also the basic unit of scaling. Kubernetes can’t horizontally scale individual contain-
+ers; instead, it scales whole pods. If your pod consists of a frontend and a backend con-
+tainer, when you scale up the number of instances of the pod to, let’s say, two, you end
+up with two frontend containers and two backend containers. 
+ Usually, frontend components have completely different scaling requirements
+than the backends, so we tend to scale them individually. Not to mention the fact that
+backends such as databases are usually much harder to scale compared to (stateless)
+frontend web servers. If you need to scale a container individually, this is a clear indi-
+cation that it needs to be deployed in a separate pod. 
+UNDERSTANDING WHEN TO USE MULTIPLE CONTAINERS IN A POD
+The main reason to put multiple containers into a single pod is when the application
+consists of one main process and one or more complementary processes, as shown in
+figure 3.3.
+Pod
+Main container
+Supporting
+container 1
+Supporting
+container 2
+Volume
+Figure 3.3
+Pods should contain tightly coupled 
+containers, usually a main container and containers 
+that support the main one.
+ 
