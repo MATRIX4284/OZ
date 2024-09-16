@@ -1,0 +1,654 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+10,99,0,[],"67
+Organizing pods with labels
+FORWARDING A LOCAL NETWORK PORT TO A PORT IN THE POD
+When you want to talk to a specific pod without going through a service (for debug-
+ging or other reasons), Kubernetes allows you to configure port forwarding to the
+pod. This is done through the kubectl port-forward command. The following
+command will forward your machine’s local port 8888 to port 8080 of your kubia-
+manual pod:
+$ kubectl port-forward kubia-manual 8888:8080
+... Forwarding from 127.0.0.1:8888 -> 8080
+... Forwarding from [::1]:8888 -> 8080
+The port forwarder is running and you can now connect to your pod through the
+local port. 
+CONNECTING TO THE POD THROUGH THE PORT FORWARDER
+In a different terminal, you can now use curl to send an HTTP request to your pod
+through the kubectl port-forward proxy running on localhost:8888:
+$ curl localhost:8888
+You’ve hit kubia-manual
+Figure 3.5 shows an overly simplified view of what happens when you send the request.
+In reality, a couple of additional components sit between the kubectl process and the
+pod, but they aren’t relevant right now.
+Using port forwarding like this is an effective way to test an individual pod. You’ll
+learn about other similar methods throughout the book. 
+3.3
+Organizing pods with labels
+At this point, you have two pods running in your cluster. When deploying actual
+applications, most users will end up running many more pods. As the number of
+pods increases, the need for categorizing them into subsets becomes more and
+more evident.
+ For example, with microservices architectures, the number of deployed microser-
+vices can easily exceed 20 or more. Those components will probably be replicated
+Kubernetes cluster
+Port
+8080
+Local machine
+kubectl
+port-forward
+process
+curl
+Port
+8888
+Pod:
+kubia-manual
+Figure 3.5
+A simplified view of what happens when you use curl with kubectl port-forward
+ 
+","[  Port\n8888\nkubectl\ncurl port-forward\nprocess Col1  \
+0                                            None        
+
+  Port\n8080\nPod:\nkubia-manual  
+0                           None  ]","[{'entity': 'pod', 'description': 'A pod is a logical host that can contain one or more containers.', 'category': 'container'}, {'entity': 'label', 'description': 'A label is used to categorize pods into subsets.', 'category': 'process'}, {'entity': 'kubectl', 'description': 'The command-line tool for interacting with a Kubernetes cluster.', 'category': 'command'}, {'entity': 'port-forward', 'description': 'A feature of kubectl that allows forwarding a local network port to a pod.', 'category': 'process'}, {'entity': 'kubia-manual', 'description': 'The name of a specific pod being used as an example.', 'category': 'pod'}, {'entity': 'curl', 'description': 'A command-line tool for sending HTTP requests.', 'category': 'command'}, {'entity': 'localhost:8888', 'description': ""The local machine's port being used to connect to the pod."", 'category': 'port'}, {'entity': '8080', 'description': 'The port number on the pod being accessed.', 'category': 'port'}, {'entity': 'pod', 'description': 'A group of one or more containers running in a Kubernetes cluster.', 'category': 'container'}, {'entity': 'cluster', 'description': 'A collection of pods and other resources managed by Kubernetes.', 'category': 'application'}]","[{'source_entity': '""curl""', 'description': 'executes a GET request', 'destination_entity': '""localhost:8888""'}, {'source_entity': '""port-forward""', 'description': 'forwards traffic from localhost to kubia-manual pod', 'destination_entity': '""kubia-manual""'}, {'source_entity': '""kubectl""', 'description': 'labels the pod with a specific label', 'destination_entity': '""pod""'}, {'source_entity': '""kubectl""', 'description': 'displays information about the cluster', 'destination_entity': '""cluster""'}, {'source_entity': '""kubectl""', 'description': 'executes a command to access kubia-manual pod manually', 'destination_entity': '""kubia-manual""'}, {'source_entity': '""curl""', 'description': 'sends an HTTP request to the port-forwarded address', 'destination_entity': '""8080""'}]","['[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes a GET request"",\n    ""summary_er"": ""Curl executes a GET request to interact with a pod, retrieving data or resources.""\n  }\n]', '[\n  {\n    ""source"": ""port-forward"",\n    ""destination"": ""kubia-manual"",\n    ""relation_description"": ""forwards traffic from localhost to kubia-manual pod"",\n    ""summary_er"": ""Port forwarding allows local access to a Kubernetes pod, in this case \'kubia-manual\', by redirecting traffic from the host machine.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""labels the pod with a specific label"",\n    ""summary_er"": ""Kubectl labels a pod with a specific label, allowing for easy identification and filtering of pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays information about the cluster"",\n    ""summary_er"": ""Kubectl displays pod details, providing insights into the cluster\'s performance and resource utilization.""\n  },\n  {\n    ""source"": ""cluster"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A cluster contains multiple pods, each running a specific application or service within the Kubernetes environment.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""kubia-manual"",\n    ""relation_description"": ""executes a command to access kubia-manual pod manually"",\n    ""summary_er"": ""Kubectl executes a command to manually access the Kubia manual pod, allowing for direct interaction with the pod\'s processes and data.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sends an HTTP request"",\n    ""summary_er"": ""Curl sends a GET request to the port-forwarded address of a pod, allowing for direct communication between the client and server.""\n  },\n  {\n    ""source"": ""8080"",\n    ""destination"": ""port"",\n    ""relation_description"": ""port-forwarded address"",\n    ""summary_er"": ""Port 8080 is used as the port-forwarded address to receive HTTP requests from curl, enabling communication with the pod\'s exposed service.""\n  }\n]']","Kubernetes allows port forwarding to a specific pod through the `kubectl port-forward` command, enabling direct access for debugging or testing purposes. This can be achieved by running `$ kubectl port-forward kubia-manual 8888:8080` and sending an HTTP request using `curl localhost:8888`. This method is effective for testing individual pods, especially in microservices architectures where many pods need to be categorized and managed.","[{'highlight': 'You can configure port forwarding to a specific pod using the kubectl port-forward command, which allows you to talk to the pod without going through a service.'}, {'highlight': ""The kubectl port-forward command forwards your machine's local port 8888 to port 8080 of your kubia-manual pod, and you can connect to your pod through the local port using curl.""}, {'highlight': ""Port forwarding is an effective way to test an individual pod, and you'll learn about other similar methods throughout the book.""}, {'highlight': 'As the number of pods increases, the need for categorizing them into subsets becomes more evident, especially in microservices architectures where 20 or more components are deployed.'}, {'highlight': 'Kubernetes allows you to use labels to organize and categorize pods, making it easier to manage a large number of pods in your cluster.'}]"
+11,100,0,[],"68
+CHAPTER 3
+Pods: running containers in Kubernetes
+(multiple copies of the same component will be deployed) and multiple versions or
+releases (stable, beta, canary, and so on) will run concurrently. This can lead to hun-
+dreds of pods in the system. Without a mechanism for organizing them, you end up
+with a big, incomprehensible mess, such as the one shown in figure 3.6. The figure
+shows pods of multiple microservices, with several running multiple replicas, and others
+running different releases of the same microservice.
+It’s evident you need a way of organizing them into smaller groups based on arbitrary
+criteria, so every developer and system administrator dealing with your system can eas-
+ily see which pod is which. And you’ll want to operate on every pod belonging to a cer-
+tain group with a single action instead of having to perform the action for each pod
+individually. 
+ Organizing pods and all other Kubernetes objects is done through labels.
+3.3.1
+Introducing labels
+Labels are a simple, yet incredibly powerful, Kubernetes feature for organizing not
+only pods, but all other Kubernetes resources. A label is an arbitrary key-value pair you
+attach to a resource, which is then utilized when selecting resources using label selectors
+(resources are filtered based on whether they include the label specified in the selec-
+tor). A resource can have more than one label, as long as the keys of those labels are
+unique within that resource. You usually attach labels to resources when you create
+them, but you can also add additional labels or even modify the values of existing
+labels later without having to recreate the resource. 
+UI pod
+UI pod
+UI pod
+Account
+Service
+pod
+Product
+Catalog
+pod
+Product
+Catalog
+pod
+Product
+Catalog
+pod
+Shopping
+Cart
+pod
+Shopping
+Cart
+pod
+Order
+Service
+pod
+UI pod
+UI pod
+Product
+Catalog
+pod
+Product
+Catalog
+pod
+Order
+Service
+pod
+Account
+Service
+pod
+Product
+Catalog
+pod
+Product
+Catalog
+pod
+Order
+Service
+pod
+Figure 3.6
+Uncategorized pods in a microservices architecture
+ 
+",[],"[{'entity': 'Pods', 'description': 'running containers in Kubernetes', 'category': 'container'}, {'entity': 'Kubernetes', 'description': 'a container orchestration system', 'category': 'software'}, {'entity': 'Labels', 'description': 'a simple, yet incredibly powerful, Kubernetes feature for organizing resources', 'category': 'feature'}, {'entity': 'Resource', 'description': 'any object in Kubernetes that can be labeled', 'category': 'object'}, {'entity': 'Selector', 'description': 'a way to filter resources based on labels', 'category': 'mechanism'}, {'entity': 'Pod', 'description': 'a running container in Kubernetes', 'category': 'container'}, {'entity': 'Microservice', 'description': 'a small, independent service that can be deployed independently', 'category': 'application'}, {'entity': 'Replica', 'description': 'a copy of a pod or microservice', 'category': 'copy'}, {'entity': 'Release', 'description': 'a version of a pod or microservice', 'category': 'version'}, {'entity': 'UI Pod', 'description': 'a pod running the user interface for an application', 'category': 'container'}, {'entity': 'Account Service', 'description': 'a service handling account-related functionality', 'category': 'service'}, {'entity': 'Product Catalog', 'description': 'a service handling product catalog-related functionality', 'category': 'service'}, {'entity': 'Shopping Cart', 'description': 'a service handling shopping cart-related functionality', 'category': 'service'}, {'entity': 'Order Service', 'description': 'a service handling order-related functionality', 'category': 'service'}]","[{'source_entity': 'Kubernetes', 'description': 'manages', 'destination_entity': 'Pods'}, {'source_entity': 'Microservice', 'description': 'provides functionality for', 'destination_entity': 'Order Service'}, {'source_entity': 'Labels', 'description': 'are used to identify and select', 'destination_entity': 'Resource'}, {'source_entity': 'Selector', 'description': 'is used to select specific', 'destination_entity': 'Pod'}, {'source_entity': 'Shopping Cart', 'description': 'uses', 'destination_entity': 'Product Catalog'}, {'source_entity': 'Account Service', 'description': 'provides functionality for', 'destination_entity': 'Order Service'}, {'source_entity': 'Release', 'description': 'is a process of deploying', 'destination_entity': 'Microservice'}, {'source_entity': 'UI Pod', 'description': 'is responsible for rendering the', 'destination_entity': 'Shopping Cart'}, {'source_entity': 'Replica', 'description': 'ensures high availability of', 'destination_entity': 'Pod'}]","['[{\n  ""source"": ""Kubernetes"",\n  ""destination"": ""Pods"",\n  ""relation_description"": ""manages"",\n  ""summary_er"": ""Kubernetes manages pods by orchestrating their creation, scaling, and termination to ensure efficient resource utilization.""\n}]', '[\n  {\n    ""source"": ""Microservice"",\n    ""destination"": ""Order Service"",\n    ""relation_description"": ""provides functionality for"",\n    ""summary_er"": ""The Microservice provides functional capabilities to the Order Service.""\n  }\n]', '[\n  {\n    ""source"": ""Labels"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""are used to identify and select"",\n    ""summary_er"": ""Labels are key-value pairs that help identify and select a specific Pod in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""Resource"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is a container running on the pod"",\n    ""summary_er"": ""A Resource is a container running within a Pod, providing isolation and allocation of compute resources.""\n  }\n]', '[\n  {\n    ""source"": ""Selector"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is used to select specific"",\n    ""summary_er"": ""A selector is used to identify a specific pod based on labels, allowing for targeted actions and resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""Shopping Cart"",\n    ""destination"": ""Product Catalog"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The Shopping Cart system utilizes the Product Catalog to retrieve product information and display it to customers.""\n  }\n]', '[\n  {\n    ""source"": ""Account Service"",\n    ""destination"": ""Order Service"",\n    ""relation_description"": ""provides functionality for"",\n    ""summary_er"": ""The Account Service provides functional capabilities to the Order Service.""\n  }\n]', '[\n  {\n    ""source"": ""Release"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is a process of deploying"",\n    ""summary_er"": ""A release is a deployment process that deploys a microservice to a pod, enabling its execution and management within the Kubernetes environment.""\n  }\n]', '[{\n  ""source"": ""UI Pod"",\n  ""destination"": ""Shopping Cart"",\n  ""relation_description"": ""is responsible for rendering the"",\n  ""summary_er"": ""The UI Pod is responsible for rendering the Shopping Cart, ensuring a seamless user interface for cart-related interactions.""\n}]', '[\n  {\n    ""source"": ""Replica"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""ensures high availability of"",\n    ""summary_er"": ""A Replica ensures that a specified number of identical Pods are running, providing high availability and fault tolerance.""\n  }\n]']","Kubernetes allows running multiple copies of the same component and different versions concurrently, which can lead to hundreds of pods without organization. To manage this, labels are used to organize pods and other Kubernetes resources into smaller groups based on arbitrary criteria, allowing developers and administrators to easily identify and operate on specific pods or groups with a single action.","[{'highlight': 'Kubernetes has a mechanism for organizing hundreds of pods into smaller groups based on arbitrary criteria.'}, {'highlight': 'Labels are used to organize Kubernetes resources, including pods, and can be attached when creating or modifying them.'}, {'highlight': 'A resource can have multiple labels with unique keys, and labels can be added or modified without recreating the resource.'}, {'highlight': 'Label selectors filter resources based on specified labels, allowing for efficient selection and operation on groups of resources.'}, {'highlight': 'Organizing pods into smaller groups using labels enables developers and administrators to easily identify and operate on specific pods.'}]"
+12,101,0,[],"69
+Organizing pods with labels
+ Let’s turn back to the microservices example from figure 3.6. By adding labels to
+those pods, you get a much-better-organized system that everyone can easily make
+sense of. Each pod is labeled with two labels:
+
+app, which specifies which app, component, or microservice the pod belongs to. 
+
+rel, which shows whether the application running in the pod is a stable, beta,
+or a canary release.
+DEFINITION
+A canary release is when you deploy a new version of an applica-
+tion next to the stable version, and only let a small fraction of users hit the
+new version to see how it behaves before rolling it out to all users. This pre-
+vents bad releases from being exposed to too many users.
+By adding these two labels, you’ve essentially organized your pods into two dimen-
+sions (horizontally by app and vertically by release), as shown in figure 3.7.
+Every developer or ops person with access to your cluster can now easily see the sys-
+tem’s structure and where each pod fits in by looking at the pod’s labels.
+3.3.2
+Specifying labels when creating a pod
+Now, you’ll see labels in action by creating a new pod with two labels. Create a new file
+called kubia-manual-with-labels.yaml with the contents of the following listing.
+apiVersion: v1                                         
+kind: Pod                                              
+metadata:                                              
+  name: kubia-manual-v2
+Listing 3.3
+A pod with labels: kubia-manual-with-labels.yaml
+UI pod
+app: ui
+rel: stable
+rel=stable
+app=ui
+Account
+Service
+pod
+app: as
+rel: stable
+app=as
+app: pc
+rel: stable
+app=pc
+app: sc
+rel: stable
+app=sc
+app: os
+rel: stable
+app=os
+Product
+Catalog
+pod
+Shopping
+Cart
+pod
+Order
+Service
+pod
+UI pod
+app: ui
+rel: beta
+rel=beta
+app: pc
+rel: beta
+app: os
+rel: beta
+Product
+Catalog
+pod
+Order
+Service
+pod
+rel=canary
+Account
+Service
+pod
+app: as
+rel: canary
+app: pc
+rel: canary
+app: os
+rel: canary
+Product
+Catalog
+pod
+Order
+Service
+pod
+Figure 3.7
+Organizing pods in a microservices architecture with pod labels
+ 
+",[],"[{'entity': 'pods', 'description': 'A group of one or more containers running as a single entity', 'category': 'container'}, {'entity': 'labels', 'description': 'Key-value pairs that provide metadata to pods', 'category': 'metadata'}, {'entity': 'app', 'description': 'A label that specifies which app, component, or microservice the pod belongs to', 'category': 'label'}, {'entity': 'rel', 'description': 'A label that shows whether the application running in the pod is a stable, beta, or canary release', 'category': 'label'}, {'entity': 'canary release', 'description': 'A deployment strategy where a new version of an application is deployed next to the stable version', 'category': 'deployment strategy'}, {'entity': 'stable release', 'description': 'A deployment strategy where a new version of an application is deployed as the primary version', 'category': 'deployment strategy'}, {'entity': 'beta release', 'description': 'A deployment strategy where a new version of an application is deployed for testing and feedback', 'category': 'deployment strategy'}, {'entity': 'kubia-manual-with-labels.yaml', 'description': 'A YAML file that specifies labels when creating a pod', 'category': 'file'}, {'entity': 'apiVersion', 'description': 'A field in the YAML file that specifies the API version of the resource', 'category': 'field'}, {'entity': 'kind', 'description': 'A field in the YAML file that specifies the type of resource being created', 'category': 'field'}, {'entity': 'metadata', 'description': 'A field in the YAML file that specifies metadata about the pod', 'category': 'field'}, {'entity': 'name', 'description': 'A field in the YAML file that specifies the name of the pod', 'category': 'field'}, {'entity': 'ui pod', 'description': 'A pod with a label specifying it as a UI component', 'category': 'pod'}, {'entity': 'account service', 'description': 'A pod with a label specifying it as an account service component', 'category': 'pod'}, {'entity': 'product catalog', 'description': 'A pod with a label specifying it as a product catalog component', 'category': 'pod'}, {'entity': 'shopping cart', 'description': 'A pod with a label specifying it as a shopping cart component', 'category': 'pod'}, {'entity': 'order service', 'description': 'A pod with a label specifying it as an order service component', 'category': 'pod'}]","[{'source_entity': '""beta release""', 'description': 'is associated with', 'destination_entity': '""kubia-manual-with-labels.yaml""'}, {'source_entity': '""apiVersion""', 'description': 'defines the version of the Kubernetes API', 'destination_entity': '""product catalog""'}, {'source_entity': '""order service""', 'description': 'is responsible for managing orders in the product catalog', 'destination_entity': '""product catalog""'}, {'source_entity': '""account service""', 'description': 'handles customer account management', 'destination_entity': '""product catalog""'}, {'source_entity': '""pods""', 'description': 'are used to deploy the UI pod for the product catalog', 'destination_entity': '""ui pod""'}, {'source_entity': '""rel""', 'description': 'is a relationship between the order service and the product catalog', 'destination_entity': '""order service""'}, {'source_entity': '""kind""', 'description': 'defines the type of resource, in this case, a pod', 'destination_entity': '""pods""'}, {'source_entity': '""name""', 'description': 'is used to identify the UI pod for the product catalog', 'destination_entity': '""ui pod""'}, {'source_entity': '""labels""', 'description': 'are used to add metadata to the UI pod for the product catalog', 'destination_entity': '""ui pod""'}, {'source_entity': '""stable release""', 'description': 'is a type of release that is not associated with canary releases', 'destination_entity': '""canary release""'}, {'source_entity': '""shopping cart""', 'description': 'is a feature of the product catalog', 'destination_entity': '""product catalog""'}, {'source_entity': '""app""', 'description': 'is associated with the UI pod for the product catalog', 'destination_entity': '""ui pod""'}, {'source_entity': '""metadata""', 'description': 'provides additional information about the UI pod for the product catalog', 'destination_entity': '""ui pod""'}]","['[\n  {\n    ""source"": ""beta release"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is associated with"",\n    ""summary_er"": ""The beta release is linked to a pod, which is a containerized application instance in Kubernetes.""\n  },\n  {\n    ""source"": ""kubia-manual-with-labels.yaml"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A YAML file named kubia-manual-with-labels defines the configuration for a pod in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes API"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""defines the version of the Kubernetes API"",\n    ""summary_er"": ""The Kubernetes API defines the version of the API used by a pod, ensuring compatibility and functionality.""\n  },\n  {\n    ""source"": ""Product Catalog"",\n    ""destination"": ""API Version"",\n    ""relation_description"": ""related to product catalog"",\n    ""summary_er"": ""A product catalog is related to the API version, which defines the structure and format of data exchanged between systems.""\n  }\n]', '[\n  {\n    ""source"": ""Order Service"",\n    ""destination"": ""Product Catalog"",\n    ""relation_description"": ""is responsible for managing orders"",\n    ""summary_er"": ""The Order Service manages product orders in the Product Catalog, ensuring accurate and timely order processing.""\n  }\n]', '[\n  {\n    ""source"": ""Account Service"",\n    ""destination"": ""Product Catalog"",\n    ""relation_description"": ""Handles Customer Account Management"",\n    ""summary_er"": ""The Account Service manages customer accounts, interacting with the Product Catalog to retrieve product information for account-related tasks.""\n  }\n]', '[\n  {\n    ""source"": ""pods"",\n    ""destination"": ""ui pod"",\n    ""relation_description"": ""are used to deploy the UI pod for the product catalog"",\n    ""summary_er"": ""Pods are deployed to run the UI component of the product catalog, ensuring seamless user experience.""\n  }\n]', '[\n  {\n    ""source"": ""Order Service"",\n    ""destination"": ""Product Catalog"",\n    ""relation_description"": ""is a relationship between the order service and the product catalog"",\n    ""summary_er"": ""The Order Service interacts with the Product Catalog to retrieve product information.""\n  },\n  {\n    ""source"": ""Order Service"",\n    ""destination"": ""Destination Pod"",\n    ""relation_description"": ""the destination pod"",\n    ""summary_er"": ""The Order Service communicates with the Destination Pod for order processing and fulfillment.""\n  }\n]', '[\n  {\n    ""source"": ""kind"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the type of resource"",\n    ""summary_er"": ""The kind field defines a pod\'s type, which can be a specific container or an empty Pod.""\n  },\n  {\n    ""source"": ""pods"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""list of pods"",\n    ""summary_er"": ""A list of pods is a collection of running containers in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""product catalog"",\n    ""destination"": ""UI pod"",\n    ""relation_description"": ""is used to identify"",\n    ""summary_er"": ""The product catalog is identified by a UI pod, which provides a graphical interface for users to interact with the catalog.""\n  }\n]', '[\n  {\n    ""source"": ""labels"",\n    ""destination"": ""UI Pod"",\n    ""relation_description"": ""are used to add metadata"",\n    ""summary_er"": ""Labels are added to the UI pod for product catalog metadata.""\n  }\n]', '[\n  {\n    ""source"": ""stable release"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a type of release"",\n    ""summary_er"": ""A stable release is a type of release that does not involve canary releases, ensuring consistent and reliable software deployment.""\n  },\n  {\n    ""source"": ""canary release"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is associated with"",\n    ""summary_er"": ""A canary release is a type of release associated with testing new software features or updates in a controlled environment before full deployment.""\n  }\n]', '[\n  {\n    ""source"": ""Shopping Cart"",\n    ""destination"": ""Product Catalog"",\n    ""relation_description"": ""is a feature of"",\n    ""summary_er"": ""The shopping cart is an integral part of the product catalog, enabling customers to add and manage products during checkout.""\n  }\n]', '[\n  {\n    ""source"": ""app"",\n    ""destination"": ""UI Pod"",\n    ""relation_description"": ""is associated with"",\n    ""summary_er"": ""The app is linked to a UI Pod responsible for displaying the product catalog.""\n  }\n]', '[\n  {\n    ""source"": ""metadata"",\n    ""destination"": ""ui pod"",\n    ""relation_description"": ""provides additional information about the UI pod for the product catalog"",\n    ""summary_er"": ""The metadata provides context to the ui pod, enabling it to display relevant info for the product catalog.""\n  }\n]']","Adding labels to pods in a Kubernetes system allows for easy organization and understanding of the system's structure. Labels can specify which app or microservice a pod belongs to, as well as whether it's a stable, beta, or canary release. By using these labels, developers and ops personnel can easily see where each pod fits in, making it easier to manage complex microservices architectures.","[{'highlight': 'By adding labels to those pods, you get a much-better-organized system that everyone can easily make sense of.'}, {'highlight': 'A canary release is when you deploy a new version of an application next to the stable version, and only let a small fraction of users hit the new version to see how it behaves before rolling it out to all users.'}, {'highlight': ""Every developer or ops person with access to your cluster can now easily see the system's structure and where each pod fits in by looking at the pod's labels.""}, {'highlight': 'A pod with labels: kubia-manual-with-labels.yaml'}, {'highlight': ""By organizing pods into two dimensions (horizontally by app and vertically by release), as shown in figure 3.7, you can easily see the system's structure.""}]"
+13,102,0,[],"70
+CHAPTER 3
+Pods: running containers in Kubernetes
+  labels:    
+    creation_method: manual          
+    env: prod                        
+spec: 
+  containers: 
+  - image: luksa/kubia
+    name: kubia
+    ports: 
+    - containerPort: 8080
+      protocol: TCP
+You’ve included the labels creation_method=manual and env=data.labels section.
+You’ll create this pod now:
+$ kubectl create -f kubia-manual-with-labels.yaml
+pod ""kubia-manual-v2"" created
+The kubectl get pods command doesn’t list any labels by default, but you can see
+them by using the --show-labels switch:
+$ kubectl get po --show-labels
+NAME            READY  STATUS   RESTARTS  AGE LABELS
+kubia-manual    1/1    Running  0         16m <none>
+kubia-manual-v2 1/1    Running  0         2m  creat_method=manual,env=prod
+kubia-zxzij     1/1    Running  0         1d  run=kubia
+Instead of listing all labels, if you’re only interested in certain labels, you can specify
+them with the -L switch and have each displayed in its own column. List pods again
+and show the columns for the two labels you’ve attached to your kubia-manual-v2 pod:
+$ kubectl get po -L creation_method,env
+NAME            READY   STATUS    RESTARTS   AGE   CREATION_METHOD   ENV
+kubia-manual    1/1     Running   0          16m   <none>            <none>
+kubia-manual-v2 1/1     Running   0          2m    manual            prod
+kubia-zxzij     1/1     Running   0          1d    <none>            <none>
+3.3.3
+Modifying labels of existing pods
+Labels can also be added to and modified on existing pods. Because the kubia-man-
+ual pod was also created manually, let’s add the creation_method=manual label to it: 
+$ kubectl label po kubia-manual creation_method=manual
+pod ""kubia-manual"" labeled
+Now, let’s also change the env=prod label to env=debug on the kubia-manual-v2 pod,
+to see how existing labels can be changed.
+NOTE
+You need to use the --overwrite option when changing existing labels.
+$ kubectl label po kubia-manual-v2 env=debug --overwrite
+pod ""kubia-manual-v2"" labeled
+Two labels are 
+attached to the pod.
+ 
+",[],"[{'entity': 'Pods', 'description': 'running containers in Kubernetes', 'category': 'application'}, {'entity': 'labels', 'description': 'creation_method: manual and env: prod', 'category': 'process'}, {'entity': 'spec', 'description': 'containers: image: luksa/kubia, name: kubia, ports: containerPort: 8080, protocol: TCP', 'category': 'application'}, {'entity': 'kubectl', 'description': 'create command to create a pod', 'category': 'command'}, {'entity': 'get', 'description': 'kubectl get pods command to list pods', 'category': 'command'}, {'entity': '--show-labels', 'description': 'switch to show labels in kubectl get pods output', 'category': 'option'}, {'entity': '-L', 'description': 'switch to specify labels to display in kubectl get pods output', 'category': 'option'}, {'entity': 'creation_method', 'description': 'label attached to a pod', 'category': 'process'}, {'entity': 'env', 'description': 'label attached to a pod', 'category': 'process'}, {'entity': 'kubia-manual-v2', 'description': 'pod name', 'category': 'application'}, {'entity': 'kubectl label', 'description': 'command to add or modify labels on a pod', 'category': 'command'}, {'entity': '--overwrite', 'description': 'option to overwrite existing labels when modifying them', 'category': 'option'}]","[{'source_entity': '""spec""', 'description': 'defines', 'destination_entity': '""Pods""'}, {'source_entity': '""get""', 'description': 'retrieves information about', 'destination_entity': '""Pods""'}, {'source_entity': '""--show-labels""', 'description': 'displays labels of', 'destination_entity': '""Pods""'}, {'source_entity': '""creation_method""', 'description': 'specifies the method used for creation of', 'destination_entity': '""Pods""'}, {'source_entity': '""env""', 'description': 'sets environment variables for', 'destination_entity': '""Pods""'}, {'source_entity': '""--overwrite""', 'description': 'overwrites existing labels of', 'destination_entity': '""Pods""'}, {'source_entity': '""kubectl label""', 'description': 'applies labels to', 'destination_entity': '""Pods""'}, {'source_entity': '""kubectl""', 'description': 'executes command to manage', 'destination_entity': '""kubia-manual-v2""'}]","['[\n  {\n    ""source"": ""Spec"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""The spec entity defines the Pods entity, which represents a containerized application in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""get"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""retrieves information about"",\n    ""summary_er"": ""Retrieves details of running Pods in a Kubernetes cluster, including their status and configuration.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""displays labels of"",\n    ""summary_er"": ""In Kubernetes, the \'--show-labels\' command displays labels associated with a pod.""\n  }\n]', '[\n  {\n    ""source"": ""Docker"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""creation_method"",\n    ""summary_er"": ""Docker is used to create Pods, specifying the method for creation.""\n  }\n]', '[\n  {\n    ""source"": ""env"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets environment variables for"",\n    ""summary_er"": ""The \'env\' entity sets environment variables for a \'pod\', configuring its execution context.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""overwrites existing labels of"",\n    ""summary_er"": ""In Kubernetes, the \'--overwrite\' flag overwrites existing labels on a pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies labels to"",\n    ""summary_er"": ""Kubectl command applies labels to a specific pod, allowing for custom metadata to be added.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes command to manage"",\n    ""summary_er"": ""Kubectl executes commands to manage pods in a Kubernetes cluster.""\n  }\n]']","This chapter is about pods in Kubernetes, specifically running containers and adding/removing labels. Labels can be added to or modified on existing pods using kubectl label command. The --overwrite option is required when changing existing labels. Examples of labeling a new pod, viewing labels with kubectl get po --show-labels, and modifying labels on an existing pod are shown.","[{'highlight': ""You've included the labels creation_method=manual and env=data.labels section.""}, {'highlight': 'The kubectl get pods command doesn’t list any labels by default, but you can see them by using the --show-labels switch:'}, {'highlight': 'Instead of listing all labels, if you’re only interested in certain labels, you can specify them with the -L switch and have each displayed in its own column.'}, {'highlight': 'Labels can also be added to and modified on existing pods. Because the kubia-manual pod was also created manually, let’s add the creation_method=manual label to it:'}, {'highlight': 'You need to use the --overwrite option when changing existing labels.'}]"
+14,103,0,[],"71
+Listing subsets of pods through label selectors
+List the pods again to see the updated labels:
+$ kubectl get po -L creation_method,env
+NAME            READY   STATUS    RESTARTS   AGE   CREATION_METHOD   ENV
+kubia-manual    1/1     Running   0          16m   manual            <none>
+kubia-manual-v2 1/1     Running   0          2m    manual            debug
+kubia-zxzij     1/1     Running   0          1d    <none>            <none>
+As you can see, attaching labels to resources is trivial, and so is changing them on
+existing resources. It may not be evident right now, but this is an incredibly powerful
+feature, as you’ll see in the next chapter. But first, let’s see what you can do with these
+labels, in addition to displaying them when listing pods.
+3.4
+Listing subsets of pods through label selectors
+Attaching labels to resources so you can see the labels next to each resource when list-
+ing them isn’t that interesting. But labels go hand in hand with label selectors. Label
+selectors allow you to select a subset of pods tagged with certain labels and perform an
+operation on those pods. A label selector is a criterion, which filters resources based
+on whether they include a certain label with a certain value. 
+ A label selector can select resources based on whether the resource
+Contains (or doesn’t contain) a label with a certain key
+Contains a label with a certain key and value
+Contains a label with a certain key, but with a value not equal to the one you
+specify
+3.4.1
+Listing pods using a label selector
+Let’s use label selectors on the pods you’ve created so far. To see all pods you created
+manually (you labeled them with creation_method=manual), do the following:
+$ kubectl get po -l creation_method=manual
+NAME              READY     STATUS    RESTARTS   AGE
+kubia-manual      1/1       Running   0          51m
+kubia-manual-v2   1/1       Running   0          37m
+To list all pods that include the env label, whatever its value is:
+$ kubectl get po -l env
+NAME              READY     STATUS    RESTARTS   AGE
+kubia-manual-v2   1/1       Running   0          37m
+And those that don’t have the env label:
+$ kubectl get po -l '!env'
+NAME           READY     STATUS    RESTARTS   AGE
+kubia-manual   1/1       Running   0          51m
+kubia-zxzij    1/1       Running   0          10d
+ 
+",[],"[{'entity': 'kubectl', 'description': 'Command-line tool for managing Kubernetes clusters', 'category': 'software'}, {'entity': 'get', 'description': 'Command to retrieve information about pods, services, etc.', 'category': 'command'}, {'entity': 'po', 'description': 'Pods are the basic execution unit in a containerized system', 'category': 'resource'}, {'entity': 'label selectors', 'description': 'Criteria for selecting resources based on labels', 'category': 'feature'}, {'entity': 'labels', 'description': 'Key-value pairs attached to resources for filtering and sorting', 'category': 'metadata'}, {'entity': 'creation_method', 'description': 'Label key used to track how pods were created', 'category': 'label'}, {'entity': 'env', 'description': 'Label key used to track environment-related information', 'category': 'label'}, {'entity': 'manual', 'description': 'Value of the creation_method label for manually-created pods', 'category': 'label value'}, {'entity': 'debug', 'description': 'Value of the env label for a specific pod', 'category': 'label value'}, {'entity': 'none', 'description': 'Value of the creation_method and env labels for certain pods', 'category': 'label value'}, {'entity': 'pod', 'description': 'Basic execution unit in a containerized system', 'category': 'resource'}, {'entity': 'service', 'description': 'Abstracted interface to access resources, such as pods or deployments', 'category': 'resource'}, {'entity': 'deployment', 'description': 'Resource that manages the rollout of new versions of an application', 'category': 'resource'}]","[{'source_entity': 'get', 'description': 'retrieve information about a deployment', 'destination_entity': 'deployment'}, {'source_entity': 'kubectl', 'description': 'use to manage and interact with Kubernetes resources, including deployments', 'destination_entity': 'deployment'}, {'source_entity': 'get', 'description': 'display detailed information about a pod', 'destination_entity': 'pod'}, {'source_entity': 'kubectl', 'description': 'use to manage and interact with Kubernetes resources, including pods', 'destination_entity': 'pod'}, {'source_entity': 'get', 'description': 'show the labels associated with a pod', 'destination_entity': 'labels'}, {'source_entity': 'kubectl', 'description': 'use to manage and interact with Kubernetes resources, including labels', 'destination_entity': 'labels'}, {'source_entity': 'get', 'description': 'display the environment variables for a pod', 'destination_entity': 'env'}, {'source_entity': 'kubectl', 'description': 'use to manage and interact with Kubernetes resources, including environment variables', 'destination_entity': 'env'}, {'source_entity': 'get', 'description': 'show the debug information for a pod', 'destination_entity': 'debug'}, {'source_entity': 'kubectl', 'description': 'use to manage and interact with Kubernetes resources, including debug information', 'destination_entity': 'debug'}, {'source_entity': 'get', 'description': 'display the creation method for a service', 'destination_entity': 'creation_method'}, {'source_entity': 'kubectl', 'description': 'use to manage and interact with Kubernetes resources, including services', 'destination_entity': 'service'}, {'source_entity': 'get', 'description': 'show the label selectors for a pod', 'destination_entity': 'label selectors'}, {'source_entity': 'kubectl', 'description': 'use to manage and interact with Kubernetes resources, including label selectors', 'destination_entity': 'label selectors'}]","['[\n  {\n    ""source"": ""get"",\n    ""destination"": ""deployment"",\n    ""relation_description"": ""retrieve information about a deployment"",\n    ""summary_er"": ""The \'get\' command retrieves detailed information about a specific deployment in Kubernetes, including its configuration, status, and other relevant details.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""use to manage and interact with Kubernetes resources, including deployments"",\n    ""summary_er"": ""kubectl is used to manage and interact with pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""get"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""display detailed information about a pod"",\n    ""summary_er"": ""Get detailed info about a specific pod in Kubernetes, including its status, containers, and logs.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""use to manage and interact with Kubernetes resources"",\n    ""summary_er"": ""kubectl is used to manage and interact with pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""get"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""show the labels associated with a pod"",\n    ""summary_er"": ""The \'get\' command displays the labels of a specific pod in Kubernetes, providing information about its metadata and configuration.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""use to manage and interact with Kubernetes resources, including labels"",\n    ""summary_er"": ""kubectl manages and interacts with Kubernetes resources, including pod labels.""\n  }\n]', '[\n  {\n    ""source"": ""get"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""display environment variables"",\n    ""summary_er"": ""Displaying environment variables for a specific pod, allowing users to view and manage pod-specific configuration.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""use to manage and interact with Kubernetes resources"",\n    ""summary_er"": ""kubectl manages and interacts with pods in a Kubernetes cluster, including environment variables.""\n  }\n]', '[\n  {\n    ""source"": ""get"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""show the debug information"",\n    ""summary_er"": ""Get debug information for a Kubernetes Pod using kubectl command.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""debug information"",\n    ""summary_er"": ""Use kubectl to display detailed information about a running Pod in the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""use to manage and interact with Kubernetes resources"",\n    ""summary_er"": ""kubectl is used to manage and interact with pods in a Kubernetes cluster, providing debug information for troubleshooting purposes.""\n  }\n]', '[\n  {\n    ""source"": ""get"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""display the creation method for a service"",\n    ""summary_er"": ""The get command displays the creation method for a service by retrieving information from the pod that created it.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""use to manage and interact with Kubernetes resources"",\n    ""summary_er"": ""kubectl is used to manage and interact with pods in a Kubernetes cluster, allowing for creation, deletion, and modification of pod resources.""\n  }\n]', '[\n  {\n    ""source"": ""get"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""show the label selectors"",\n    ""summary_er"": ""Get the label selectors of a pod, which are key-value pairs that define labels for the pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""use to manage and interact with Kubernetes resources, including label selectors"",\n    ""summary_er"": ""kubectl manages and interacts with Kubernetes resources, including pods and label selectors.""\n  }\n]']","Label selectors allow selecting subsets of pods based on labels. A label selector can filter resources by key, value, or not equal to a specified value. Examples include listing pods with creation_method=manual, env label, or no env label.","[{'highlight': 'You can list pods using label selectors by specifying a criterion that filters resources based on whether they include a certain label with a certain value.'}, {'highlight': 'Label selectors allow you to select a subset of pods tagged with certain labels and perform an operation on those pods.'}, {'highlight': 'To list all pods created manually, use the command: $ kubectl get po -l creation_method=manual'}, {'highlight': 'You can also list pods that include or do not include specific labels using label selectors, such as listing pods with or without the env label.'}, {'highlight': 'Label selectors are a powerful feature in Kubernetes that allows you to filter resources based on their labels and perform operations on those resources.'}]"
+15,104,0,[],"72
+CHAPTER 3
+Pods: running containers in Kubernetes
+NOTE
+Make sure to use single quotes around !env, so the bash shell doesn’t
+evaluate the exclamation mark.
+Similarly, you could also match pods with the following label selectors:
+
+creation_method!=manual to select pods with the creation_method label with
+any value other than manual
+
+env in (prod,devel) to select pods with the env label set to either prod or
+devel
+
+env notin (prod,devel) to select pods with the env label set to any value other
+than prod or devel
+Turning back to the pods in the microservices-oriented architecture example, you
+could select all pods that are part of the product catalog microservice by using the
+app=pc label selector (shown in the following figure).
+3.4.2
+Using multiple conditions in a label selector
+A selector can also include multiple comma-separated criteria. Resources need to
+match all of them to match the selector. If, for example, you want to select only pods
+running the beta release of the product catalog microservice, you’d use the following
+selector: app=pc,rel=beta (visualized in figure 3.9).
+ Label selectors aren’t useful only for listing pods, but also for performing actions
+on a subset of all pods. For example, later in the chapter, you’ll see how to use label
+selectors to delete multiple pods at once. But label selectors aren’t used only by
+kubectl. They’re also used internally, as you’ll see next.
+UI pod
+app: ui
+rel: stable
+rel=stable
+app=ui
+Account
+Service
+pod
+app: as
+rel: stable
+app=as
+app: pc
+rel: stable
+app=pc
+app: sc
+rel: stable
+app=sc
+app: os
+rel: stable
+app=os
+Product
+Catalog
+pod
+Shopping
+Cart
+pod
+Order
+Service
+pod
+UI pod
+app: ui
+rel: beta
+rel=beta
+app: pc
+rel: beta
+app: os
+rel: beta
+Product
+Catalog
+pod
+Order
+Service
+pod
+rel=canary
+Account
+Service
+pod
+app: as
+rel: canary
+app: pc
+rel: canary
+app: os
+rel: canary
+Product
+Catalog
+pod
+Order
+Service
+pod
+Figure 3.8
+Selecting the product catalog microservice pods using the “app=pc” label selector
+ 
+","[  app=ui app=as\nrel=stable\napp: ui app: as\nAccount\nUI pod rel: stable Service rel: stable\npod\napp: ui rel=beta\nUI pod rel: beta\nrel=canary\napp: as\nAccount\nService rel: canary\npod  \
+0                                               None                                                                                                                                             
+
+                                              app=pc  \
+0  app: pc\nProduct\nCatalog rel: stable\npod\nap...   
+
+  app=sc app=os\napp: sc app: os\nShopping Order\nCart rel: stable Service rel: stable\npod pod\napp: os\nOrder\nService rel: beta\npod\napp: os\nOrder\nService rel: canary\npod  
+0                                               None                                                                                                                               ]","[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'Pods', 'description': 'Running containers in Kubernetes', 'category': 'software'}, {'entity': '!env', 'description': 'Bash shell variable', 'category': 'process'}, {'entity': 'creation_method!=manual', 'description': 'Label selector for pods created manually', 'category': 'label_selector'}, {'entity': 'env in (prod,devel)', 'description': 'Label selector for pods with env label set to prod or devel', 'category': 'label_selector'}, {'entity': 'env notin (prod,devel)', 'description': 'Label selector for pods with env label not set to prod or devel', 'category': 'label_selector'}, {'entity': 'app=pc', 'description': 'Label selector for product catalog microservice pods', 'category': 'label_selector'}, {'entity': 'rel=beta', 'description': 'Label selector for beta release of product catalog microservice', 'category': 'label_selector'}, {'entity': 'app=ui', 'description': 'Label selector for UI pod', 'category': 'label_selector'}, {'entity': 'rel=stable', 'description': 'Label selector for stable release of various services', 'category': 'label_selector'}, {'entity': 'app=sc', 'description': 'Label selector for Shopping Cart pod', 'category': 'label_selector'}, {'entity': 'rel=canary', 'description': 'Label selector for canary release of various services', 'category': 'label_selector'}, {'entity': 'kubectl', 'description': 'Command-line tool for interacting with Kubernetes', 'category': 'software'}]","[{'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""Kubernetes""'}, {'source_entity': '""app=sc""', 'description': 'has', 'destination_entity': '""creation_method!=manual""'}, {'source_entity': '""env notin (prod,devel)""', 'description': 'is', 'destination_entity': '""!env""'}, {'source_entity': '""env in (prod,devel)""', 'description': 'includes', 'destination_entity': '""(prod,devel)""'}, {'source_entity': '""kubectl""', 'description': 'manages', 'destination_entity': '""Pods""'}, {'source_entity': '""Kubernetes""', 'description': 'supports', 'destination_entity': '""app=ui""'}, {'source_entity': '""Kubernetes""', 'description': 'supports', 'destination_entity': '""app=pc""'}, {'source_entity': '""rel=stable""', 'description': 'is', 'destination_entity': '""rel=canary""'}, {'source_entity': '""rel=stable""', 'description': 'is', 'destination_entity': '""rel=beta""'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubectl, a command-line tool for Kubernetes, uses pods to manage containerized applications.""\n  }\n]', '[{\n    ""source"": ""app=sc"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""has"",\n    ""summary_er"": ""The application \\""sc\\"" has a pod.""\n}]', '[\n  {\n    ""source"": ""env"",\n    ""destination"": ""notin (prod,devel)"",\n    ""relation_description"": ""is"",\n    ""summary_er"": ""The environment variable is not in production or development mode.""\n  },\n  {\n    ""source"": ""!env"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""and"",\n    ""summary_er"": ""The pod condition is also applied.""\n  }\n]', '[\n  {\n    ""source"": ""env"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""includes"",\n    ""summary_er"": ""The environment variable \'env\' includes a list of valid values for the pod\'s deployment environment, which can be either \'prod\' or \'devel\'.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubectl manages pods, which are the basic execution units in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""supports"",\n    ""summary_er"": ""Kubernetes provides a runtime environment for pods, supporting their execution and management.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""supports"",\n    ""summary_er"": ""Kubernetes manages and orchestrates containerized applications, including pods, which are the basic execution unit in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""stable"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is"",\n    ""summary_er"": ""The stable relation indicates that a pod is in a stable state, meaning it\'s running smoothly without any issues.""\n  },\n  {\n    ""source"": ""canary"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""and"",\n    ""summary_er"": ""The canary relation implies that a pod is being used as a canary deployment, which means it\'s a test or trial run before rolling out to the main production environment.""\n  }\n]', '[\n  {\n    ""source"": ""rel=stable"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is"",\n    ""summary_er"": ""A stable pod is a container that has been successfully deployed and is running without issues.""\n  },\n  {\n    ""source"": ""rel=beta"",\n    ""destination"": ""Pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""A beta pod is a container that is being tested and validated before it\'s considered stable.""\n  }\n]']","This chapter discusses Kubernetes Pods, specifically focusing on running containers in a cluster. Label selectors are used to identify and select pods based on labels, with examples including creation_method!=manual, env in (prod,devel), and app=pc for selecting the product catalog microservice pods. Multiple conditions can be combined using comma-separated criteria, as shown in the selector app=pc,rel=beta. Label selectors are not only used for listing pods but also for performing actions on a subset of all pods.","[{'highlight': 'Make sure to use single quotes around !env, so the bash shell doesn’t evaluate the exclamation mark.'}, {'highlight': 'A selector can also include multiple comma-separated criteria. Resources need to match all of them to match the selector.'}, {'highlight': 'Label selectors aren’t useful only for listing pods, but also for performing actions on a subset of all pods.'}, {'highlight': 'You could select all pods that are part of the product catalog microservice by using the app=pc label selector.'}, {'highlight': 'Resources need to match all of them to match the selector, such as app=pc,rel=beta for selecting only pods running the beta release of the product catalog microservice.'}]"
+16,105,0,[],"73
+Using labels and selectors to constrain pod scheduling
+3.5
+Using labels and selectors to constrain pod scheduling
+All the pods you’ve created so far have been scheduled pretty much randomly across
+your worker nodes. As I’ve mentioned in the previous chapter, this is the proper way
+of working in a Kubernetes cluster. Because Kubernetes exposes all the nodes in the
+cluster as a single, large deployment platform, it shouldn’t matter to you what node a
+pod is scheduled to. Because each pod gets the exact amount of computational
+resources it requests (CPU, memory, and so on) and its accessibility from other pods
+isn’t at all affected by the node the pod is scheduled to, usually there shouldn’t be any
+need for you to tell Kubernetes exactly where to schedule your pods. 
+ Certain cases exist, however, where you’ll want to have at least a little say in where
+a pod should be scheduled. A good example is when your hardware infrastructure
+isn’t homogenous. If part of your worker nodes have spinning hard drives, whereas
+others have SSDs, you may want to schedule certain pods to one group of nodes and
+the rest to the other. Another example is when you need to schedule pods perform-
+ing intensive GPU-based computation only to nodes that provide the required GPU
+acceleration. 
+ You never want to say specifically what node a pod should be scheduled to, because
+that would couple the application to the infrastructure, whereas the whole idea of
+Kubernetes is hiding the actual infrastructure from the apps that run on it. But if you
+want to have a say in where a pod should be scheduled, instead of specifying an exact
+node, you should describe the node requirements and then let Kubernetes select a
+node that matches those requirements. This can be done through node labels and
+node label selectors. 
+UI pod
+app: ui
+rel: stable
+rel=stable
+app=ui
+Account
+Service
+pod
+app: as
+rel: stable
+app=as
+app: pc
+rel: stable
+app=pc
+app: sc
+rel: stable
+app=sc
+app: os
+rel: stable
+app=os
+Product
+Catalog
+pod
+Shopping
+Cart
+pod
+Order
+Service
+pod
+UI pod
+app: ui
+rel: beta
+rel=beta
+app: pc
+rel: beta
+app: os
+rel: beta
+Product
+Catalog
+pod
+Order
+Service
+pod
+rel=canary
+Account
+Service
+pod
+app: as
+rel: canary
+app: pc
+rel: canary
+app: os
+rel: canary
+Product
+Catalog
+pod
+Order
+Service
+pod
+Figure 3.9
+Selecting pods with multiple label selectors
+ 
+","[  app=ui app=as\nrel=stable\napp: ui app: as\nAccount\nUI pod rel: stable Service rel: stable\npod  \
+0                                               None                                                 
+1                 app: ui rel=beta\nUI pod rel: beta                                                 
+2  rel=canary\napp: as\nAccount\nService rel: can...                                                 
+
+                                       app=pc  \
+0  app: pc\nProduct\nCatalog rel: stable\npod   
+1    app: pc\nProduct\nCatalog rel: beta\npod   
+2  app: pc\nProduct\nCatalog rel: canary\npod   
+
+  app=sc app=os\napp: sc app: os\nShopping Order\nCart rel: stable Service rel: stable\npod pod  
+0                                               None                                             
+1             app: os\nOrder\nService rel: beta\npod                                             
+2           app: os\nOrder\nService rel: canary\npod                                             ]","[{'entity': 'labels', 'description': 'a way to describe node requirements and let Kubernetes select a node that matches those requirements', 'category': 'software'}, {'entity': 'selectors', 'description': 'used to constrain pod scheduling based on node labels', 'category': 'software'}, {'entity': 'pods', 'description': 'the basic execution unit in a Kubernetes cluster', 'category': 'application'}, {'entity': 'node labels', 'description': 'used to describe node requirements and let Kubernetes select a node that matches those requirements', 'category': 'software'}, {'entity': 'Kubernetes', 'description': 'an open-source container orchestration system for automating the deployment, scaling, and management of containers', 'category': 'software'}, {'entity': 'worker nodes', 'description': 'nodes in a Kubernetes cluster that run pods', 'category': 'hardware'}, {'entity': 'CPU', 'description': 'a measure of computational resources required by a pod', 'category': 'hardware'}, {'entity': 'memory', 'description': 'a measure of computational resources required by a pod', 'category': 'hardware'}, {'entity': 'SSDs', 'description': 'solid-state drives used in some worker nodes', 'category': 'hardware'}, {'entity': 'spinning hard drives', 'description': 'a type of storage device used in some worker nodes', 'category': 'hardware'}, {'entity': 'GPU acceleration', 'description': 'the use of graphics processing units to accelerate computation', 'category': 'hardware'}, {'entity': 'node requirements', 'description': 'a description of the resources required by a pod', 'category': 'software'}, {'entity': 'UI pod', 'description': 'a pod running a user interface application', 'category': 'application'}, {'entity': 'app: ui', 'description': 'a label used to identify the UI pod', 'category': 'software'}, {'entity': 'rel: stable', 'description': 'a label used to indicate the stability of the UI pod', 'category': 'software'}, {'entity': 'Account Service', 'description': 'a service provided by a pod', 'category': 'application'}, {'entity': 'app: as', 'description': 'a label used to identify the Account Service pod', 'category': 'software'}, {'entity': 'rel: stable', 'description': 'a label used to indicate the stability of the Account Service pod', 'category': 'software'}]","[{'source_entity': 'Kubernetes', 'description': 'manages', 'destination_entity': 'pods'}, {'source_entity': 'worker nodes', 'description': 'run', 'destination_entity': 'pods'}, {'source_entity': 'selectors', 'description': 'select', 'destination_entity': 'pods'}, {'source_entity': 'spinning hard drives', 'description': 'store', 'destination_entity': 'data'}, {'source_entity': 'SSDs', 'description': 'store', 'destination_entity': 'data'}, {'source_entity': 'Kubernetes', 'description': 'allocate', 'destination_entity': 'memory'}, {'source_entity': 'UI pod', 'description': 'use', 'destination_entity': 'GPU acceleration'}, {'source_entity': 'UI pod', 'description': 'run', 'destination_entity': 'app: ui'}, {'source_entity': 'Account Service', 'description': 'use', 'destination_entity': 'labels'}, {'source_entity': 'Kubernetes', 'description': 'manage', 'destination_entity': 'node labels'}, {'source_entity': 'worker nodes', 'description': 'run', 'destination_entity': 'app: as'}]","['[{\n  ""source"": ""Kubernetes"",\n  ""destination"": ""pod"",\n  ""relation_description"": ""manages"",\n  ""summary_er"": ""Kubernetes manages a collection of containers called pods, providing resource allocation and lifecycle management.""\n}]', '[\n  {\n    ""source"": ""worker nodes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""run"",\n    ""summary_er"": ""Worker nodes execute pods by running them on their respective machines.""\n  }\n]', '[\n  {\n    ""source"": ""selectors"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""select"",\n    ""summary_er"": ""Selectors are used to filter and select specific Pods in a Kubernetes cluster, allowing for targeted management and deployment of resources.""\n  }\n]', '[\n  {\n    ""source"": ""spinning hard drives"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""store"",\n    ""summary_er"": ""Spinning hard drives are used to store data in a pod, providing a reliable and efficient storage solution.""\n  }\n]', '[\n  {\n    ""source"": ""SSDs"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""store"",\n    ""summary_er"": ""SSDs are used to store data in a pod, providing persistent storage for applications.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allocate"",\n    ""summary_er"": ""Kubernetes allocates resources, such as memory, to a pod for efficient container execution.""\n  }\n]', '[\n  {\n    ""source"": ""UI pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""use"",\n    ""summary_er"": ""The UI pod utilizes a standard pod for its functionality.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""GPU acceleration"",\n    ""relation_description"": ""and the destination pod"",\n    ""summary_er"": ""A standard pod leverages GPU acceleration to enhance performance.""\n  }\n]', '[\n  {\n    ""source"": ""UI pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""run"",\n    ""summary_er"": ""The UI pod is executed or run on a containerized environment.""\n  }\n]', '[\n  {\n    ""source"": ""Account Service"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""use"",\n    ""summary_er"": ""The Account Service utilizes a pod for its operation, leveraging the pod\'s capabilities to manage and execute its tasks.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manage"",\n    ""summary_er"": ""Kubernetes manages pods by assigning them to nodes based on labels.""\n  },\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""node labels"",\n    ""relation_description"": ""assign"",\n    ""summary_er"": ""Kubernetes assigns pods to nodes based on their labels for efficient resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""worker nodes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""run"",\n    ""summary_er"": ""Worker nodes execute pods by running containers with the specified application.""\n  },\n  {\n    ""source"": ""app"",\n    ""destination"": ""as"",\n    ""relation_description"": """",\n    ""summary_er"": ""The app is executed as a container in Kubernetes, utilizing Docker for containerization.""\n  }\n]']","In Kubernetes, using labels and selectors is a way to constrain pod scheduling without specifying exact node placement. This allows for flexible scheduling based on node requirements, such as hardware infrastructure or GPU acceleration. Labels can be applied to nodes, and selectors can be used to match those labels, ensuring that pods are scheduled to nodes that meet specific criteria, while maintaining the decoupling of applications from infrastructure.","[{'highlight': 'You never want to say specifically what node a pod should be scheduled to, because that would couple the application to the infrastructure, whereas the whole idea of Kubernetes is hiding the actual infrastructure from the apps that run on it.'}, {'highlight': 'This can be done through node labels and node label selectors.'}, {'highlight': ""A good example is when your hardware infrastructure isn't homogenous. If part of your worker nodes have spinning hard drives, whereas others have SSDs, you may want to schedule certain pods to one group of nodes and the rest to the other.""}, {'highlight': 'You should describe the node requirements and then let Kubernetes select a node that matches those requirements.'}, {'highlight': 'Node labels and node label selectors can be used to constrain pod scheduling, allowing you to specify requirements for where pods should be scheduled.'}]"
+17,106,0,[],"74
+CHAPTER 3
+Pods: running containers in Kubernetes
+3.5.1
+Using labels for categorizing worker nodes
+As you learned earlier, pods aren’t the only Kubernetes resource type that you can
+attach a label to. Labels can be attached to any Kubernetes object, including nodes.
+Usually, when the ops team adds a new node to the cluster, they’ll categorize the node
+by attaching labels specifying the type of hardware the node provides or anything else
+that may come in handy when scheduling pods. 
+ Let’s imagine one of the nodes in your cluster contains a GPU meant to be used
+for general-purpose GPU computing. You want to add a label to the node showing this
+feature. You’re going to add the label gpu=true to one of your nodes (pick one out of
+the list returned by kubectl get nodes):
+$ kubectl label node gke-kubia-85f6-node-0rrx gpu=true
+node ""gke-kubia-85f6-node-0rrx"" labeled
+Now you can use a label selector when listing the nodes, like you did before with pods.
+List only nodes that include the label gpu=true:
+$ kubectl get nodes -l gpu=true
+NAME                      STATUS AGE
+gke-kubia-85f6-node-0rrx  Ready  1d
+As expected, only one node has this label. You can also try listing all the nodes and tell
+kubectl to display an additional column showing the values of each node’s gpu label
+(kubectl get nodes -L gpu).
+3.5.2
+Scheduling pods to specific nodes
+Now imagine you want to deploy a new pod that needs a GPU to perform its work.
+To ask the scheduler to only choose among the nodes that provide a GPU, you’ll
+add a node selector to the pod’s YAML. Create a file called kubia-gpu.yaml with the
+following listing’s contents and then use kubectl create -f kubia-gpu.yaml to cre-
+ate the pod.
+apiVersion: v1                                         
+kind: Pod                                              
+metadata:                                              
+  name: kubia-gpu
+spec: 
+  nodeSelector:               
+    gpu: ""true""               
+  containers: 
+  - image: luksa/kubia
+    name: kubia
+Listing 3.4
+Using a label selector to schedule a pod to a specific node: kubia-gpu.yaml
+nodeSelector tells Kubernetes 
+to deploy this pod only to 
+nodes containing the 
+gpu=true label.
+ 
+",[],"[{'entity': 'Pods', 'description': 'running containers in Kubernetes', 'category': 'application'}, {'entity': 'labels', 'description': 'attached to any Kubernetes object, including nodes', 'category': 'software'}, {'entity': 'nodes', 'description': 'Kubernetes resource type that can attach a label to', 'category': 'hardware'}, {'entity': 'GPU', 'description': 'general-purpose GPU computing', 'category': 'hardware'}, {'entity': 'kubectl', 'description': 'command-line tool for interacting with Kubernetes', 'category': 'software'}, {'entity': 'label selector', 'description': 'used to list nodes that include a specific label', 'category': 'software'}, {'entity': 'nodeSelector', 'description': ""added to the pod's YAML to schedule it to specific nodes"", 'category': 'software'}, {'entity': 'pod', 'description': 'container that needs a GPU to perform its work', 'category': 'application'}, {'entity': 'YAML', 'description': ""file format used to define the pod's configuration"", 'category': 'software'}, {'entity': 'apiVersion', 'description': 'header in the YAML file that specifies the API version', 'category': 'software'}, {'entity': 'kind', 'description': 'header in the YAML file that specifies the type of resource', 'category': 'software'}, {'entity': 'metadata', 'description': 'section in the YAML file that contains metadata about the pod', 'category': 'software'}, {'entity': 'spec', 'description': ""section in the YAML file that contains the pod's specification"", 'category': 'software'}, {'entity': 'nodeSelector', 'description': 'header in the YAML file that specifies the node selector', 'category': 'software'}, {'entity': 'gpu', 'description': 'label that indicates a node has a GPU', 'category': 'hardware'}]","[{'source_entity': 'apiVersion', 'description': 'specifies the API version for the Kubernetes resource', 'destination_entity': 'spec'}, {'source_entity': 'nodeSelector', 'description': 'selects nodes based on labels', 'destination_entity': 'nodes'}, {'source_entity': 'kind', 'description': 'defines the type of Kubernetes resource', 'destination_entity': 'Pods'}, {'source_entity': 'labels', 'description': 'assigns key-value pairs to a pod', 'destination_entity': 'pod'}, {'source_entity': 'kubectl', 'description': 'runs commands on clusters or configures cluster-wide settings', 'destination_entity': 'metadata'}, {'source_entity': 'label selector', 'description': 'selects pods based on labels', 'destination_entity': 'nodes'}, {'source_entity': 'GPU', 'description': 'requests a node with a GPU', 'destination_entity': 'nodeSelector'}]","['[\n  {\n    ""source"": ""apiVersion"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the API version for the Kubernetes resource"",\n    ""summary_er"": ""The apiVersion field specifies the API version for a pod, which determines the set of valid fields and their semantics.""\n  }\n]', '[\n  {\n    ""source"": ""nodeSelector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""selects nodes based on labels"",\n    ""summary_er"": ""Node selector allows pods to be scheduled on specific nodes based on label matching.""\n  }\n]', '[\n  {\n    ""source"": ""kind"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the type of Kubernetes resource"",\n    ""summary_er"": ""The kind field in a Kubernetes configuration defines the type of resource, such as a pod, which is a basic execution unit in the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""labels"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assigns key-value pairs"",\n    ""summary_er"": ""Labels are used in Kubernetes to assign key-value pairs to a pod, providing metadata and configuration details.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs commands on clusters or configures cluster-wide settings"",\n    ""summary_er"": ""Kubectl interacts with pods to execute commands and configure cluster settings.""\n  }\n]', '[\n  {\n    ""source"": ""label selector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""selects pods based on labels"",\n    ""summary_er"": ""A label selector is used to select pods based on their labels, allowing for targeted management and scaling of pod resources.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""node"",\n    ""relation_description"": ""runs on"",\n    ""summary_er"": ""Pods are scheduled to run on specific nodes within a Kubernetes cluster, taking into account factors like resource availability and affinity rules.""\n  }\n]', '[\n  {\n    ""source"": ""GPU"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests a node with a GPU"",\n    ""summary_er"": ""A GPU requests a specific node to run on, ensuring access to its processing capabilities.""\n  }\n]']","Labels can be attached to Kubernetes objects like pods and nodes. Using labels, the ops team categorizes new nodes by hardware type or features like GPU availability. To schedule a pod that requires a GPU, create a YAML file with a node selector set to gpu=true and use kubectl create -f to deploy the pod.","[{'highlight': 'You can attach labels to any Kubernetes object, including nodes.'}, {'highlight': ""To ask the scheduler to only choose among the nodes that provide a GPU, you'll add a node selector to the pod's YAML.""}, {'highlight': 'nodeSelector tells Kubernetes to deploy this pod only to nodes containing the gpu=true label.'}, {'highlight': 'You can use a label selector when listing the nodes, like you did before with pods. List only nodes that include the label gpu=true:'}, {'highlight': ""kubectl get nodes -L gpu displays an additional column showing the values of each node's gpu label.""}]"
+18,107,0,[],"75
+Annotating pods
+You’ve added a nodeSelector field under the spec section. When you create the pod,
+the scheduler will only choose among the nodes that contain the gpu=true label
+(which is only a single node in your case). 
+3.5.3
+Scheduling to one specific node
+Similarly, you could also schedule a pod to an exact node, because each node also has
+a unique label with the key kubernetes.io/hostname and value set to the actual host-
+name of the node. But setting the nodeSelector to a specific node by the hostname
+label may lead to the pod being unschedulable if the node is offline. You shouldn’t
+think in terms of individual nodes. Always think about logical groups of nodes that sat-
+isfy certain criteria specified through label selectors.
+ This was a quick demonstration of how labels and label selectors work and how
+they can be used to influence the operation of Kubernetes. The importance and use-
+fulness of label selectors will become even more evident when we talk about Replication-
+Controllers and Services in the next two chapters. 
+NOTE
+Additional ways of influencing which node a pod is scheduled to are
+covered in chapter 16.
+3.6
+Annotating pods
+In addition to labels, pods and other objects can also contain annotations. Annotations
+are also key-value pairs, so in essence, they’re similar to labels, but they aren’t meant to
+hold identifying information. They can’t be used to group objects the way labels can.
+While objects can be selected through label selectors, there’s no such thing as an
+annotation selector. 
+ On the other hand, annotations can hold much larger pieces of information and
+are primarily meant to be used by tools. Certain annotations are automatically added
+to objects by Kubernetes, but others are added by users manually.
+ Annotations are also commonly used when introducing new features to Kuberne-
+tes. Usually, alpha and beta versions of new features don’t introduce any new fields to
+API objects. Annotations are used instead of fields, and then once the required API
+changes have become clear and been agreed upon by the Kubernetes developers, new
+fields are introduced and the related annotations deprecated.
+ A great use of annotations is adding descriptions for each pod or other API object,
+so that everyone using the cluster can quickly look up information about each individ-
+ual object. For example, an annotation used to specify the name of the person who
+created the object can make collaboration between everyone working on the cluster
+much easier.
+3.6.1
+Looking up an object’s annotations
+Let’s see an example of an annotation that Kubernetes added automatically to the
+pod you created in the previous chapter. To see the annotations, you’ll need to
+ 
+",[],"[{'entity': 'nodeSelector', 'description': 'a field under the spec section used to select a node for pod creation', 'category': 'software'}, {'entity': 'gpu=true label', 'description': 'a label on a node indicating it has a GPU', 'category': 'hardware'}, {'entity': 'kubernetes.io/hostname', 'description': 'a unique label on each node with its hostname', 'category': 'software'}, {'entity': 'label selectors', 'description': 'a way to select nodes based on labels', 'category': 'software'}, {'entity': 'labels', 'description': 'key-value pairs used to identify and group objects', 'category': 'software'}, {'entity': 'annotations', 'description': 'key-value pairs used to hold additional information, not for identification', 'category': 'software'}, {'entity': 'pod', 'description': 'a container in Kubernetes that can run one or more containers', 'category': 'application'}, {'entity': 'node', 'description': 'a machine in a cluster', 'category': 'hardware'}, {'entity': 'scheduler', 'description': 'a component that assigns pods to nodes', 'category': 'software'}, {'entity': 'Replication-Controllers', 'description': 'a Kubernetes resource that manages multiple replicas of a pod', 'category': 'application'}, {'entity': 'Services', 'description': 'a Kubernetes resource that provides a network identity and load balancing for accessing applications', 'category': 'application'}, {'entity': 'chapter 16', 'description': 'a reference to additional information on scheduling pods', 'category': 'software'}]","[{'source_entity': 'scheduler', 'description': 'manages', 'destination_entity': 'Services'}, {'source_entity': 'Services', 'description': 'are managed by', 'destination_entity': 'scheduler'}, {'source_entity': 'nodeSelector', 'description': 'selects', 'destination_entity': 'node'}, {'source_entity': 'nodeSelector', 'description': 'is used to select', 'destination_entity': 'pod'}, {'source_entity': 'Services', 'description': 'are created and managed by', 'destination_entity': 'Replication-Controllers'}, {'source_entity': 'annotations', 'description': 'provide additional information about', 'destination_entity': 'pod'}, {'source_entity': 'label selectors', 'description': 'match against', 'destination_entity': 'labels'}, {'source_entity': 'kubernetes.io/hostname', 'description': 'is a label used to identify', 'destination_entity': 'node'}, {'source_entity': 'gpu=true label', 'description': 'specifies the type of node required by', 'destination_entity': 'pod'}, {'source_entity': 'Replication-Controllers', 'description': 'are responsible for managing', 'destination_entity': 'Services'}, {'source_entity': 'node', 'description': 'is selected and managed by', 'destination_entity': 'scheduler'}]","['[\n  {\n    ""source"": ""scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The Kubernetes scheduler is responsible for managing and scheduling pods to run on available nodes in a cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Services"",\n    ""destination"": ""Pod Scheduler"",\n    ""relation_description"": ""are managed by"",\n    ""summary_er"": ""Services are managed by the Pod Scheduler, which schedules and manages containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""nodeSelector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""selects"",\n    ""summary_er"": ""Node selector is a field in Kubernetes that allows you to select nodes for your pod based on labels, ensuring it runs on specific hardware or resources.""\n  }\n]', '[\n  {\n    ""source"": ""nodeSelector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to select"",\n    ""summary_er"": ""Node selector is a key-value pair that selects nodes based on labels, allowing pods to be scheduled on specific nodes.""\n  }\n]', '[\n  {\n    ""source"": ""Services"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are created and managed by"",\n    ""summary_er"": ""Services are dynamically provisioned and managed by pods, providing a layer of abstraction for network communication.""\n  }\n]', '[\n  {\n    ""source"": ""annotations"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provide additional information about"",\n    ""summary_er"": ""Annotations in Kubernetes provide metadata about a pod, such as labels and configuration details.""\n  }\n]', '[\n  {\n    ""source"": ""label selectors"",\n    ""destination"": ""pod labels"",\n    ""relation_description"": ""match against"",\n    ""summary_er"": ""Label selectors are used to filter pods based on their labels, which match against specific criteria such as key-value pairs.""\n  }\n]', '[\n  {\n    ""source"": ""kubernetes.io/hostname"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a label used to identify"",\n    ""summary_er"": ""The \'kubernetes.io/hostname\' label is used to identify a pod\'s node.""\n  }\n]', '[\n  {\n    ""source"": ""gpu=true label"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the type of node required by"",\n    ""summary_er"": ""A GPU label specifies the type of node required for a pod to run, indicating that the pod needs a specific GPU resource.""\n  }\n]', '[\n  {\n    ""source"": ""Replication-Controllers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are responsible for managing"",\n    ""summary_er"": ""Replication Controllers manage pods, ensuring a specified number of replicas are running and available.""\n  }\n]', '[\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod scheduler"",\n    ""relation_description"": ""is selected and managed by"",\n    ""summary_er"": ""A node selects and manages a pod scheduler, which is responsible for scheduling pods on the node.""\n  }\n]']","Pods can be annotated with labels and annotations. Labels are key-value pairs used for identification and grouping, while annotations hold larger pieces of information primarily meant for tools. Annotations are automatically added by Kubernetes or manually by users and are useful for adding descriptions, specifying creator names, and introducing new features. The importance of label selectors will become evident in future chapters on Replication-Controllers and Services.","[{'highlight': 'You can schedule a pod to a specific node by using the kubernetes.io/hostname label and value set to the actual hostname of the node.'}, {'highlight': 'Annotations are key-value pairs that hold larger pieces of information and are primarily meant to be used by tools, unlike labels which are meant for identifying information.'}, {'highlight': ""Annotations can't be used to group objects like labels can, but they're commonly used when introducing new features to Kubernetes.""}, {'highlight': 'Annotations can hold much larger pieces of information and are useful for adding descriptions for each pod or other API object, making it easier for everyone using the cluster to quickly look up information about each individual object.'}, {'highlight': 'Kubernetes automatically adds certain annotations to objects, but users can also add annotations manually to provide additional information about the object.'}]"
+19,108,0,[],"76
+CHAPTER 3
+Pods: running containers in Kubernetes
+request the full YAML of the pod or use the kubectl describe command. You’ll use the
+first option in the following listing.
+$ kubectl get po kubia-zxzij -o yaml
+apiVersion: v1
+kind: pod
+metadata:
+  annotations:
+    kubernetes.io/created-by: |
+      {""kind"":""SerializedReference"", ""apiVersion"":""v1"", 
+      ""reference"":{""kind"":""ReplicationController"", ""namespace"":""default"", ...
+Without going into too many details, as you can see, the kubernetes.io/created-by
+annotation holds JSON data about the object that created the pod. That’s not some-
+thing you’d want to put into a label. Labels should be short, whereas annotations can
+contain relatively large blobs of data (up to 256 KB in total).
+NOTE
+The kubernetes.io/created-by annotations was deprecated in ver-
+sion 1.8 and will be removed in 1.9, so you will no longer see it in the YAML.
+3.6.2
+Adding and modifying annotations
+Annotations can obviously be added to pods at creation time, the same way labels can.
+They can also be added to or modified on existing pods later. The simplest way to add
+an annotation to an existing object is through the kubectl annotate command. 
+ You’ll try adding an annotation to your kubia-manual pod now:
+$ kubectl annotate pod kubia-manual mycompany.com/someannotation=""foo bar""
+pod ""kubia-manual"" annotated
+You added the annotation mycompany.com/someannotation with the value foo bar.
+It’s a good idea to use this format for annotation keys to prevent key collisions. When
+different tools or libraries add annotations to objects, they may accidentally override
+each other’s annotations if they don’t use unique prefixes like you did here.
+ You can use kubectl describe to see the annotation you added:
+$ kubectl describe pod kubia-manual
+...
+Annotations:    mycompany.com/someannotation=foo bar
+...
+3.7
+Using namespaces to group resources
+Let’s turn back to labels for a moment. We’ve seen how they organize pods and other
+objects into groups. Because each object can have multiple labels, those groups of
+objects can overlap. Plus, when working with the cluster (through kubectl for example),
+if you don’t explicitly specify a label selector, you’ll always see all objects. 
+Listing 3.5
+A pod’s annotations
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command-line tool for interacting with Kubernetes clusters', 'category': 'software'}, {'entity': 'yaml', 'description': 'human-readable serialization format for configuration data', 'category': 'software'}, {'entity': 'apiVersion', 'description': 'field in YAML files specifying the API version of the object', 'category': 'software'}, {'entity': 'kind', 'description': 'field in YAML files specifying the type of object being described', 'category': 'software'}, {'entity': 'metadata', 'description': 'field in YAML files containing metadata about the object', 'category': 'software'}, {'entity': 'annotations', 'description': 'field in YAML files containing additional data about the object', 'category': 'software'}, {'entity': 'kubernetes.io/created-by', 'description': 'annotation key used to store information about the creator of a pod', 'category': 'software'}, {'entity': 'JSON', 'description': 'data format for storing and exchanging data between systems', 'category': 'software'}, {'entity': 'labels', 'description': 'field in YAML files used to categorize objects into groups', 'category': 'software'}, {'entity': 'kubectl annotate', 'description': 'command for adding or modifying annotations on existing pods', 'category': 'software'}, {'entity': 'mycompany.com/someannotation', 'description': 'example annotation key used to store additional data about a pod', 'category': 'software'}, {'entity': 'kubectl describe', 'description': 'command for displaying detailed information about an object', 'category': 'software'}, {'entity': 'namespace', 'description': 'field in YAML files specifying the namespace of an object', 'category': 'software'}, {'entity': 'ReplicationController', 'description': 'type of Kubernetes object used to manage replication of pods', 'category': 'software'}]","[{'source_entity': '""kubectl annotate""', 'description': 'annotate', 'destination_entity': '""JSON""'}, {'source_entity': '""kubectl annotate""', 'description': 'add annotation', 'destination_entity': '""mycompany.com/someannotation""'}, {'source_entity': '""kubectl describe""', 'description': 'describe', 'destination_entity': '""ReplicationController""'}, {'source_entity': '""kubectl describe""', 'description': 'show metadata', 'destination_entity': '""metadata""'}, {'source_entity': '""kubectl describe""', 'description': 'display labels', 'destination_entity': '""labels""'}, {'source_entity': '""kubectl annotate""', 'description': 'update annotation', 'destination_entity': '""apiVersion""'}, {'source_entity': '""kubectl annotate""', 'description': 'set namespace', 'destination_entity': '""namespace""'}, {'source_entity': '""kubectl describe""', 'description': 'show kind', 'destination_entity': '""kind""'}, {'source_entity': '""kubectl annotate""', 'description': 'add annotation', 'destination_entity': '""annotations""'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""annotate"",\n    ""summary_er"": ""Kubectl annotates a pod with additional metadata, such as labels or annotations.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""add annotation"",\n    ""summary_er"": ""Using kubectl to add an annotation to a pod in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""describe"",\n    ""summary_er"": ""Get detailed information about a pod using kubectl describe command.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""describe"",\n    ""summary_er"": ""Kubectl command to display detailed information about a pod, including its metadata.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl describe"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""display labels"",\n    ""summary_er"": ""Displays labels associated with a pod, providing detailed information about its configuration and metadata.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""annotate"",\n    ""summary_er"": ""Update annotations on a pod using kubectl annotate command.""\n  },\n  {\n    ""source"": ""apiVersion"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""Specify the API version for a pod in Kubernetes configuration.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl annotate"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""set namespace"",\n    ""summary_er"": ""Set a namespace for a pod using kubectl annotate command.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl describe"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""show kind"",\n    ""summary_er"": ""Displays information about a Kubernetes pod, including its kind.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""add annotation"",\n    ""summary_er"": ""Using kubectl to add annotations to a pod, which allows attaching metadata to the pod for easier management and identification.""\n  }\n]']","Kubernetes pods can have labels and annotations, where labels are short and used for organization, while annotations can contain large blobs of data up to 256KB. Annotations like kubernetes.io/created-by were deprecated in version 1.8 and removed in 1.9. Annotations can be added or modified using the kubectl annotate command, and it's recommended to use unique prefixes to prevent key collisions.","[{'highlight': 'The kubernetes.io/created-by annotation holds JSON data about the object that created the pod.'}, {'highlight': 'Annotations can obviously be added to pods at creation time, the same way labels can.'}, {'highlight': 'You can use kubectl describe to see the annotation you added:'}, {'highlight': ""It's a good idea to use unique prefixes like mycompany.com/someannotation for annotation keys to prevent key collisions.""}, {'highlight': ""When working with the cluster (through kubectl for example), if you don't explicitly specify a label selector, you'll always see all objects.""}]"

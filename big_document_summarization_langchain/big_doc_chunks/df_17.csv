@@ -1,0 +1,616 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+170,259,0,[],"227
+Passing metadata through the Downward API
+The namespace the pod belongs to
+The name of the node the pod is running on
+The name of the service account the pod is running under
+The CPU and memory requests for each container
+The CPU and memory limits for each container
+The pod’s labels
+The pod’s annotations
+Most of the items in the list shouldn’t require further explanation, except perhaps the
+service account and CPU/memory requests and limits, which we haven’t introduced
+yet. We’ll cover service accounts in detail in chapter 12. For now, all you need to know
+is that a service account is the account that the pod authenticates as when talking to
+the API server. CPU and memory requests and limits are explained in chapter 14.
+They’re the amount of CPU and memory guaranteed to a container and the maxi-
+mum amount it can get.
+ Most items in the list can be passed to containers either through environment vari-
+ables or through a downwardAPI volume, but labels and annotations can only be
+exposed through the volume. Part of the data can be acquired by other means (for
+example, from the operating system directly), but the Downward API provides a sim-
+pler alternative.
+ Let’s look at an example to pass metadata to your containerized process.
+8.1.2
+Exposing metadata through environment variables
+First, let’s look at how you can pass the pod’s and container’s metadata to the con-
+tainer through environment variables. You’ll create a simple single-container pod
+from the following listing’s manifest.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: downward
+spec:
+  containers:
+  - name: main
+    image: busybox
+    command: [""sleep"", ""9999999""]
+    resources:
+      requests:
+        cpu: 15m
+        memory: 100Ki
+      limits:
+        cpu: 100m
+        memory: 4Mi
+    env:
+    - name: POD_NAME
+Listing 8.1
+Downward API used in environment variables: downward-api-env.yaml
+ 
+",[],"[{'entity': 'namespace', 'description': 'The namespace the pod belongs to', 'category': 'software'}, {'entity': 'node', 'description': 'The name of the node the pod is running on', 'category': 'hardware'}, {'entity': 'service account', 'description': 'The service account the pod is running under', 'category': 'software'}, {'entity': 'CPU requests', 'description': 'The CPU and memory requests for each container', 'category': 'process'}, {'entity': 'memory requests', 'description': 'The CPU and memory requests for each container', 'category': 'process'}, {'entity': 'CPU limits', 'description': 'The CPU and memory limits for each container', 'category': 'process'}, {'entity': 'memory limits', 'description': 'The CPU and memory limits for each container', 'category': 'process'}, {'entity': 'labels', 'description': 'The pod’s labels', 'category': 'software'}, {'entity': 'annotations', 'description': 'The pod’s annotations', 'category': 'software'}, {'entity': 'Downward API', 'description': 'A simpler alternative to acquire metadata', 'category': 'software'}, {'entity': 'environment variables', 'description': 'Variables passed to containers through environment variables', 'category': 'process'}, {'entity': 'Pod', 'description': 'The pod that contains the container', 'category': 'software'}, {'entity': 'container', 'description': 'A process running inside a pod', 'category': 'process'}, {'entity': 'API server', 'description': 'The server that manages access to cluster resources', 'category': 'hardware'}, {'entity': 'manifest', 'description': 'A file that defines the configuration of a pod or other resource', 'category': 'software'}]","[{'source_entity': 'container', 'description': 'can have', 'destination_entity': 'labels'}, {'source_entity': 'container', 'description': 'can have', 'destination_entity': 'annotations'}, {'source_entity': 'container', 'description': 'can use', 'destination_entity': 'Downward API'}, {'source_entity': 'container', 'description': 'can be configured with', 'destination_entity': 'environment variables'}, {'source_entity': 'container', 'description': 'can request', 'destination_entity': 'CPU requests'}, {'source_entity': 'container', 'description': 'can have', 'destination_entity': 'memory requests'}, {'source_entity': 'container', 'description': 'runs within', 'destination_entity': 'Pod'}, {'source_entity': 'container', 'description': 'is defined in', 'destination_entity': 'manifest'}, {'source_entity': 'container', 'description': 'uses resources from', 'destination_entity': 'service account'}, {'source_entity': 'container', 'description': 'can be limited by', 'destination_entity': 'memory limits'}, {'source_entity': 'container', 'description': 'can be deployed in', 'destination_entity': 'namespace'}, {'source_entity': 'container', 'description': 'can run on', 'destination_entity': 'node'}, {'source_entity': 'API server', 'description': 'provides an interface for', 'destination_entity': 'container'}]","['[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can have"",\n    ""summary_er"": ""A container can have one or more labels assigned to it, which are used for identification and organization purposes.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can have"",\n    ""summary_er"": ""A container can be part of one or more pods, which are the basic execution units in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can use"",\n    ""summary_er"": ""A container can utilize a pod\'s resources, such as CPU and memory.""\n  },\n  {\n    ""source"": ""Downward API"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The Downward API provides a way to expose pod information to containers running within it.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be configured with"",\n    ""summary_er"": ""A container can be configured to run within a pod, allowing for shared resources and environment variables.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can request"",\n    ""summary_er"": ""A container within a pod can request CPU resources from the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can have"",\n    ""summary_er"": ""A container can be part of a pod, which is a logical host in Kubernetes.""\n  },\n  {\n    ""source"": ""container"",\n    ""destination"": ""memory requests"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""Containers within a pod share the same memory resources and request memory from the pod\'s allocated resources.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs within"",\n    ""summary_er"": ""A container runs within a pod, which provides shared resources and networking for multiple containers.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is defined in"",\n    ""summary_er"": ""A container is a runtime environment that defines how to run an application, and its configuration is specified in a pod manifest.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses resources from"",\n    ""summary_er"": ""A container utilizes system resources, such as CPU and memory, allocated by a pod.""\n  },\n  {\n    ""source"": ""container"",\n    ""destination"": ""service account"",\n    ""relation_description"": ""uses resources from"",\n    ""summary_er"": ""A container leverages credentials and permissions provided by a service account to access cluster resources.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""memory limits"",\n    ""summary_er"": ""A container\'s memory usage can be limited by a pod\'s overall memory allocation, ensuring efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be deployed in"",\n    ""summary_er"": ""A container can be deployed within a pod, allowing for co-location and resource sharing between multiple containers.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can run on"",\n    ""summary_er"": ""A container can be executed within a pod, allowing for co-location and resource sharing.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides an interface for"",\n    ""summary_er"": ""The API server offers a user interface to interact with pods, enabling communication and management.""\n  }\n]']","The Downward API allows passing metadata such as namespace, node name, service account, CPU and memory requests/limits, labels, and annotations to containers through environment variables or a volume. This can be useful for providing containerized processes with information about their environment. An example is provided in the form of a simple single-container pod manifest that passes the pod's and container's metadata to the container using environment variables.","[{'highlight': 'The Downward API allows passing metadata through environment variables or a volume.'}, {'highlight': ""Metadata that can be passed includes the namespace, node name, service account, CPU and memory requests and limits, pod's labels, and annotations.""}, {'highlight': 'Labels and annotations can only be exposed through the Downward API volume.'}, {'highlight': 'Environment variables can be used to pass metadata such as POD_NAME.'}, {'highlight': 'The Downward API provides a simpler alternative to acquiring data from other means.'}]"
+171,260,0,[],"228
+CHAPTER 8
+Accessing pod metadata and other resources from applications
+      valueFrom:                            
+        fieldRef:                           
+          fieldPath: metadata.name          
+    - name: POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.podIP
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: SERVICE_ACCOUNT
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.serviceAccountName
+    - name: CONTAINER_CPU_REQUEST_MILLICORES
+      valueFrom:                                   
+        resourceFieldRef:                          
+          resource: requests.cpu                   
+          divisor: 1m                            
+    - name: CONTAINER_MEMORY_LIMIT_KIBIBYTES
+      valueFrom:
+        resourceFieldRef:
+          resource: limits.memory
+          divisor: 1Ki
+When your process runs, it can look up all the environment variables you defined in
+the pod spec. Figure 8.2 shows the environment variables and the sources of their val-
+ues. The pod’s name, IP, and namespace will be exposed through the POD_NAME,
+POD_IP, and POD_NAMESPACE environment variables, respectively. The name of the
+node the container is running on will be exposed through the NODE_NAME variable.
+The name of the service account is made available through the SERVICE_ACCOUNT
+environment variable. You’re also creating two environment variables that will hold
+the amount of CPU requested for this container and the maximum amount of mem-
+ory the container is allowed to consume.
+ For environment variables exposing resource limits or requests, you specify a divi-
+sor. The actual value of the limit or the request will be divided by the divisor and the
+result exposed through the environment variable. In the previous example, you’re set-
+ting the divisor for CPU requests to 1m (one milli-core, or one one-thousandth of a
+CPU core). Because you’ve set the CPU request to 15m, the environment variable
+CONTAINER_CPU_REQUEST_MILLICORES will be set to 15. Likewise, you set the memory
+limit to 4Mi (4 mebibytes) and the divisor to 1Ki (1 Kibibyte), so the CONTAINER_MEMORY
+_LIMIT_KIBIBYTES environment variable will be set to 4096. 
+Instead of specifying an absolute value, 
+you’re referencing the metadata.name 
+field from the pod manifest.
+A container’s CPU and memory 
+requests and limits are referenced 
+by using resourceFieldRef instead 
+of fieldRef.
+For resource fields, you 
+define a divisor to get the 
+value in the unit you need.
+ 
+",[],"[{'entity': 'fieldRef', 'description': ""a reference to a field in the pod's metadata"", 'category': 'kubernetes'}, {'entity': 'metadata.name', 'description': 'the name of the pod', 'category': 'kubernetes'}, {'entity': 'POD_NAMESPACE', 'description': 'an environment variable that holds the namespace of the pod', 'category': 'environment-variable'}, {'entity': 'fieldPath', 'description': ""a path to a field in the pod's metadata"", 'category': 'kubernetes'}, {'entity': 'status.podIP', 'description': 'the IP address of the pod', 'category': 'kubernetes'}, {'entity': 'POD_IP', 'description': 'an environment variable that holds the IP address of the pod', 'category': 'environment-variable'}, {'entity': 'spec.nodeName', 'description': 'the name of the node on which the container is running', 'category': 'kubernetes'}, {'entity': 'NODE_NAME', 'description': 'an environment variable that holds the name of the node', 'category': 'environment-variable'}, {'entity': 'spec.serviceAccountName', 'description': 'the name of the service account associated with the pod', 'category': 'kubernetes'}, {'entity': 'SERVICE_ACCOUNT', 'description': 'an environment variable that holds the name of the service account', 'category': 'environment-variable'}, {'entity': 'requests.cpu', 'description': 'the CPU request for the container', 'category': 'kubernetes'}, {'entity': 'CONTAINER_CPU_REQUEST_MILLICORES', 'description': 'an environment variable that holds the CPU request for the container', 'category': 'environment-variable'}, {'entity': 'limits.memory', 'description': 'the memory limit for the container', 'category': 'kubernetes'}, {'entity': 'CONTAINER_MEMORY_LIMIT_KIBIBYTES', 'description': 'an environment variable that holds the memory limit for the container', 'category': 'environment-variable'}, {'entity': 'resourceFieldRef', 'description': ""a reference to a resource field in the pod's metadata"", 'category': 'kubernetes'}, {'entity': 'divisor', 'description': 'a divisor used to calculate the value of a resource field', 'category': 'kubernetes'}]","[{'source_entity': '""spec.serviceAccountName""', 'description': 'is assigned to', 'destination_entity': '""SERVICE_ACCOUNT""'}, {'source_entity': '""fieldPath""', 'description': 'references a field in', 'destination_entity': '""metadata.name""'}, {'source_entity': '""divisor""', 'description': 'is used to calculate the value of', 'destination_entity': '""limits.memory""'}, {'source_entity': '""POD_NAMESPACE""', 'description': 'is a namespace for', 'destination_entity': '""metadata.name""'}, {'source_entity': '""metadata.name""', 'description': 'is the name of the', 'destination_entity': '""POD""'}, {'source_entity': '""SERVICE_ACCOUNT""', 'description': 'is a service account for', 'destination_entity': '""CONTAINER_CPU_REQUEST_MILLICORES""'}, {'source_entity': '""POD_IP""', 'description': 'is the IP address of the', 'destination_entity': '""NODE_NAME""'}, {'source_entity': '""NODE_NAME""', 'description': 'is the name of the node where', 'destination_entity': '""CONTAINER_MEMORY_LIMIT_KIBIBYTES""'}, {'source_entity': '""limits.memory""', 'description': 'is a memory limit for', 'destination_entity': '""resourceFieldRef""'}, {'source_entity': '""resourceFieldRef""', 'description': 'references a resource field in', 'destination_entity': '""CONTAINER_CPU_REQUEST_MILLICORES""'}, {'source_entity': '""spec.nodeName""', 'description': 'is the name of the node where', 'destination_entity': '""status.podIP""'}, {'source_entity': '""requests.cpu""', 'description': 'is a CPU request for', 'destination_entity': '""CONTAINER_MEMORY_LIMIT_KIBIBYTES""'}, {'source_entity': '""fieldRef""', 'description': 'references a field in', 'destination_entity': '""metadata.name""'}]","['[\n  {\n    ""source"": ""spec.serviceAccountName"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is assigned to"",\n    ""summary_er"": ""The service account is assigned to a pod, providing it with necessary credentials and permissions.""\n  }\n]', '[\n  {\n    ""source"": ""fieldPath"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""references a field in Kubernetes metadata"",\n    ""summary_er"": ""In Kubernetes, fieldPath references a field within pod metadata.""\n  },\n  {\n    ""source"": ""metadata.name"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is the name of the pod"",\n    ""summary_er"": ""The metadata.name field specifies the name of the pod in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""divisor"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to calculate the value of"",\n    ""summary_er"": ""The divisor is a parameter that determines the memory limit for a pod, ensuring efficient resource allocation.""\n  },\n  {\n    ""source"": ""limits.memory"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to calculate the value of"",\n    ""summary_er"": ""Memory limits are set using \'limits.memory\' to prevent pods from consuming excessive memory resources.""\n  }\n]', '[\n  {\n    ""source"": ""POD_NAMESPACE"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a namespace for"",\n    ""summary_er"": ""A POD_NAMESPACE is a Kubernetes namespace that serves as a container for pods, providing isolation and organization.""\n  },\n  {\n    ""source"": ""metadata.name"",\n    ""destination"": ""POD_NAMESPACE"",\n    ""relation_description"": ""contains the name of"",\n    ""summary_er"": ""The metadata.name field within a pod contains its unique identifier, which is often used to reference the pod in Kubernetes configurations.""\n  }\n]', '[\n  {\n    ""source"": ""metadata.name"",\n    ""destination"": ""POD"",\n    ""relation_description"": ""is the name of the"",\n    ""summary_er"": ""The metadata name is a label that identifies a pod, providing its unique identifier.""\n  }\n]', '[\n  {\n    ""source"": ""SERVICE_ACCOUNT"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a service account for"",\n    ""summary_er"": ""A service account is used to authenticate and authorize pods, allowing them to access resources such as secrets and config maps.""\n  },\n  {\n    ""source"": ""CONTAINER_CPU_REQUEST_MILLICORES"",\n    ""destination"": ""container"",\n    ""relation_description"": ""request millicores"",\n    ""summary_er"": ""Container CPU request is the amount of CPU resources a container requests from the host, measured in millicores.""\n  }\n]', '[\n  {\n    ""source"": ""POD_IP"",\n    ""destination"": ""NODE_NAME"",\n    ""relation_description"": ""is assigned by"",\n    ""summary_er"": ""\\""POD_IP is assigned an IP address by its host node, which is identified by NODE_NAME.\\""""\n  },\n  {\n    ""source"": ""POD_IP"",\n    ""destination"": ""NODE_NAME"",\n    ""relation_description"": ""is the IP address of the"",\n    ""summary_er"": ""\\""POD_IP is the IP address assigned to a pod running on NODE_NAME.\\""""\n  }\n]', '[\n  {\n    ""source"": ""NODE_NAME"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is the name of the node where"",\n    ""summary_er"": ""The NODE_NAME is a unique identifier for a Kubernetes node, which hosts one or more pods.""\n  },\n  {\n    ""source"": ""CONTAINER_MEMORY_LIMIT_KIBIBYTES"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""The CONTAINER_MEMORY_LIMIT_KIBIBYTES is the maximum amount of memory allocated to a container within a pod.""\n  }\n]', '[\n  {\n    ""source"": ""limits.memory"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a memory limit for"",\n    ""summary_er"": ""Memory limit is set to restrict pod resource usage.""\n  },\n  {\n    ""source"": ""resourceFieldRef"",\n    ""destination"": ""limits.memory"",\n    ""relation_description"": ""refers to"",\n    ""summary_er"": ""Resource field reference points to memory limits configuration.""\n  }\n]', '[\n  {\n    ""source"": ""resourceFieldRef"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""references a resource field in"",\n    ""summary_er"": ""Resource field reference in pod, referencing a specific field within the pod\'s resources.""\n  },\n  {\n    ""source"": ""CONTAINER_CPU_REQUEST_MILLICORES"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""container CPU request in millicores"",\n    ""summary_er"": ""Container CPU request in millicores, specifying the requested CPU resources for a container within the pod.""\n  }\n]', '[\n  {\n    ""source"": ""spec.nodeName"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is the name of the node where"",\n    ""summary_er"": ""The Kubernetes specification contains a field called nodeName, which specifies the name of the node where a pod is running.""\n  },\n  {\n    ""source"": ""status.podIP"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is the IP address of the pod"",\n    ""summary_er"": ""A pod\'s status includes an IP address that uniquely identifies it within the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""requests.cpu"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a CPU request for"",\n    ""summary_er"": ""The pod receives a CPU request from requests.cpu, indicating its required processing power.""\n  },\n  {\n    ""source"": ""CONTAINER_MEMORY_LIMIT_KIBIBYTES"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is the memory limit for"",\n    ""summary_er"": ""The pod has a memory limit of CONTAINER_MEMORY_LIMIT_KIBIBYTES, controlling its allocated RAM.""\n  }\n]', '[\n  {\n    ""source"": ""fieldRef"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""references a field in"",\n    ""summary_er"": ""Field reference to a pod\'s metadata, specifically its name.""\n  }\n]']","The process can access environment variables defined in the pod spec. Environment variables expose pod metadata such as name, IP, namespace, and node name. Additionally, variables are created for CPU requests and memory limits with a divisor to convert values into desired units.","[{'highlight': ""The pod's name, IP, and namespace will be exposed through the POD_NAME, POD_IP, and POD_NAMESPACE environment variables, respectively.""}, {'highlight': ""You're also creating two environment variables that will hold the amount of CPU requested for this container and the maximum amount of memory the container is allowed to consume.""}, {'highlight': 'For resource fields, you define a divisor to get the value in the unit you need.'}, {'highlight': ""A container's CPU and memory requests and limits are referenced by using resourceFieldRef instead of fieldRef.""}, {'highlight': 'The actual value of the limit or the request will be divided by the divisor and the result exposed through the environment variable.'}]"
+172,261,0,[],"229
+Passing metadata through the Downward API
+The divisor for CPU limits and requests can be either 1, which means one whole core,
+or 1m, which is one millicore. The divisor for memory limits/requests can be 1 (byte),
+1k (kilobyte) or 1Ki (kibibyte), 1M (megabyte) or 1Mi (mebibyte), and so on.
+ After creating the pod, you can use kubectl exec to see all these environment vari-
+ables in your container, as shown in the following listing.
+$ kubectl exec downward env
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+HOSTNAME=downward
+CONTAINER_MEMORY_LIMIT_KIBIBYTES=4096
+POD_NAME=downward
+POD_NAMESPACE=default
+POD_IP=10.0.0.10
+NODE_NAME=gke-kubia-default-pool-32a2cac8-sgl7
+SERVICE_ACCOUNT=default
+CONTAINER_CPU_REQUEST_MILLICORES=15
+KUBERNETES_SERVICE_HOST=10.3.240.1
+KUBERNETES_SERVICE_PORT=443
+...
+Listing 8.2
+Environment variables in the downward pod
+Pod manifest
+metadata:
+name: downward
+namespace: default
+spec:
+nodeName: minikube
+serviceAccountName: default
+containers:
+- name: main
+image: busybox
+command: [""sleep"", ""9999999""]
+resources:
+requests:
+cpu: 15m
+memory: 100Ki
+limits:
+cpu: 100m
+memory: 4Mi
+...
+status:
+podIP: 172.17.0.4
+...
+Pod: downward
+Container: main
+Environment variables
+POD_NAME=downward
+POD_NAMESPACE=default
+POD_IP=172.17.0.4
+NODE_NAME=minikube
+SERVICE_ACCOUNT=default
+CONTAINER_CPU_REQUEST_MILLICORES=15
+CONTAINER_MEMORY_LIMIT_KIBIBYTES=4096
+divisor: 1m
+divisor: 1Ki
+Figure 8.2
+Pod metadata and attributes can be exposed to the pod through environment variables.
+ 
+","[Empty DataFrame
+Columns: [Container: main
+Environment variables
+POD_NAME=downward
+POD_NAMESPACE=default
+POD_IP=172.17.0.4
+NODE_NAME=minikube
+SERVICE_ACCOUNT=default divisor
+CONTAINER_CPU_REQUEST_MILLICORES=15
+CONTAINER_MEMORY_LIMIT_KIBIBYTES=4096
+divisor
+Pod: downward, Pod manifest
+metadata:
+name: downward
+namespace: default
+spec:
+nodeName: minikube
+serviceAccountName: default
+containers:
+- name: main
+image: busybox
+command: [""sleep"", ""9999999""]
+resources:
+requests:
+: 1m
+cpu: 15m
+memory: 100Ki
+limits:
+cpu: 100m
+: 1Ki
+memory: 4Mi
+...
+status:
+podIP: 172.17.0.4
+...]
+Index: [], Empty DataFrame
+Columns: [r, :]
+Index: [], Empty DataFrame
+Columns: [r, :]
+Index: []]","[{'entity': 'Downward API', 'description': 'A Kubernetes feature that allows passing metadata through environment variables.', 'category': 'software'}, {'entity': 'CPU limits and requests', 'description': 'Resource constraints for container execution.', 'category': 'process'}, {'entity': 'Memory limits/requests', 'description': 'Resource constraints for container memory usage.', 'category': 'process'}, {'entity': 'kubectl exec', 'description': 'A command to execute a command in a running pod.', 'category': 'command'}, {'entity': 'Pod', 'description': 'A Kubernetes object that represents a logical host.', 'category': 'application'}, {'entity': 'Container', 'description': 'A lightweight and standalone execution environment.', 'category': 'container'}, {'entity': 'Environment variables', 'description': 'Variables passed to the container through the Downward API.', 'category': 'process'}, {'entity': 'PATH', 'description': 'An environment variable that specifies the search path for executables.', 'category': 'environmental variable'}, {'entity': 'HOSTNAME', 'description': 'An environment variable that specifies the hostname of the pod.', 'category': 'environmental variable'}, {'entity': 'CONTAINER_MEMORY_LIMIT_KIBIBYTES', 'description': 'An environment variable that specifies the memory limit for the container in kibibytes.', 'category': 'environmental variable'}, {'entity': 'POD_NAME', 'description': 'An environment variable that specifies the name of the pod.', 'category': 'environmental variable'}, {'entity': 'POD_NAMESPACE', 'description': 'An environment variable that specifies the namespace of the pod.', 'category': 'environmental variable'}, {'entity': 'POD_IP', 'description': 'An environment variable that specifies the IP address of the pod.', 'category': 'environmental variable'}, {'entity': 'NODE_NAME', 'description': 'An environment variable that specifies the name of the node running the pod.', 'category': 'environmental variable'}, {'entity': 'SERVICE_ACCOUNT', 'description': 'An environment variable that specifies the service account associated with the pod.', 'category': 'environmental variable'}, {'entity': 'CONTAINER_CPU_REQUEST_MILLICORES', 'description': 'An environment variable that specifies the CPU request for the container in millicores.', 'category': 'environmental variable'}, {'entity': 'KUBERNETES_SERVICE_HOST', 'description': 'An environment variable that specifies the hostname of the Kubernetes service.', 'category': 'environmental variable'}, {'entity': 'KUBERNETES_SERVICE_PORT', 'description': 'An environment variable that specifies the port number of the Kubernetes service.', 'category': 'environmental variable'}]","[{'source_entity': '""Downward API""', 'description': 'provides', 'destination_entity': '""Pod""'}, {'source_entity': '""CPU limits and requests""', 'description': 'defines', 'destination_entity': '""Container""'}, {'source_entity': '""POD_NAMESPACE""', 'description': 'contains', 'destination_entity': '""Environment variables""'}, {'source_entity': '""SERVICE_ACCOUNT""', 'description': 'provides', 'destination_entity': '""Pod""'}, {'source_entity': '""PATH""', 'description': 'specifies', 'destination_entity': '""Container""'}, {'source_entity': '""POD_IP""', 'description': 'assigns', 'destination_entity': '""Pod""'}, {'source_entity': '""Memory limits/requests""', 'description': 'sets', 'destination_entity': '""Container""'}, {'source_entity': '""NODE_NAME""', 'description': 'identifies', 'destination_entity': '""Node""'}, {'source_entity': '""KUBERNETES_SERVICE_PORT""', 'description': 'exposes', 'destination_entity': '""Service""'}, {'source_entity': '""KUBERNETES_SERVICE_HOST""', 'description': 'specifies', 'destination_entity': '""Service""'}, {'source_entity': '""CONTAINER_CPU_REQUEST_MILLICORES""', 'description': 'allocates', 'destination_entity': '""Container""'}, {'source_entity': '""kubectl exec""', 'description': 'executes', 'destination_entity': '""Command""'}, {'source_entity': '""HOSTNAME""', 'description': 'assigns', 'destination_entity': '""Pod""'}, {'source_entity': '""CONTAINER_MEMORY_LIMIT_KIBIBYTES""', 'description': 'limits', 'destination_entity': '""Container""'}, {'source_entity': '""Environment variables""', 'description': 'defines', 'destination_entity': '""Pod""'}, {'source_entity': '""POD_NAME""', 'description': 'names', 'destination_entity': '""Pod""'}]","['[\n  {\n    ""source"": ""Downward API"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The Downward API allows a Pod to provide information about itself to its containers.""\n  }\n]', '[\n  {\n    ""source"": ""CPU limits and requests"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""CPU limits and requests define the maximum CPU resources a pod can consume, ensuring efficient resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""POD_NAMESPACE"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""The POD_NAMESPACE environment variable defines the namespace for a Kubernetes pod, which contains the pod\'s configuration and resources.""\n  }\n]', '[\n  {\n    ""source"": ""SERVICE_ACCOUNT"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""A Service Account provides an identity for a Pod to authenticate with, allowing it to access cluster resources.""\n  }\n]', '[\n  {\n    ""source"": ""PATH"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The PATH environment variable specifies the container in a pod.""\n  }\n]', '[\n  {\n    ""source"": ""POD_IP"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""assigns"",\n    ""summary_er"": ""The POD_IP assigns a unique IP address to each Pod in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Memory limits/requests"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets"",\n    ""summary_er"": ""The Memory limits/requests parameter sets the memory limit for a pod.""\n  }\n]', '[\n  {\n    ""source"": ""NODE_NAME"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""identifies"",\n    ""summary_er"": ""\\""The Node Name\\"" identifies a \\""Pod\\"", which is a containerized application in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""KUBERNETES_SERVICE_PORT"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""A Kubernetes service port exposes a specific port of a pod to allow external access.""\n  }\n]', '[\n  {\n    ""source"": ""KUBERNETES_SERVICE_HOST"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The KUBERNETES_SERVICE_HOST variable specifies a pod in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""CONTAINER_CPU_REQUEST_MILLICORES"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""allocates"",\n    ""summary_er"": ""A container allocates CPU resources in millicores to a pod, allowing it to utilize available processing power.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl exec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""\\""kubectl exec\\"" command executes a command inside a running pod.""\n  }\n]', '[\n  {\n    ""source"": ""HOSTNAME"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""assigns"",\n    ""summary_er"": ""The HOSTNAME entity assigns a Pod entity, which refers to a containerized application in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""CONTAINER_MEMORY_LIMIT_KIBIBYTES"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits"",\n    ""summary_er"": ""The container\'s memory limit in KiB (kilobits) is set by the pod to ensure efficient resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""Environment variables"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""Environment variables define configuration settings for a pod, providing essential information to run and manage containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""POD_NAME"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""names"",\n    ""summary_er"": ""A POD in Kubernetes has a unique name assigned to it, which serves as an identifier for the pod.""\n  }\n]']","The Downward API allows passing metadata from a pod's or container's attributes as environment variables to the running application. This is demonstrated by creating a pod with specified CPU and memory limits, then using kubectl exec to show the resulting environment variables in the container. The divisor for CPU limits can be 1 (one whole core) or 1m (one millicore), while memory limits can use units such as 1K or 1Mi.","[{'highlight': 'The divisor for CPU limits and requests can be either 1, which means one whole core, or 1m, which is one millicore.'}, {'highlight': 'The divisor for memory limits/requests can be 1 (byte), 1k (kilobyte) or 1Ki (kibibyte), 1M (megabyte) or 1Mi (mebibyte), and so on.'}, {'highlight': 'After creating the pod, you can use kubectl exec to see all these environment variables in your container'}, {'highlight': 'Pod metadata and attributes can be exposed to the pod through environment variables using the Downward API'}, {'highlight': 'The divisor for memory limits/requests can include units such as byte, kilobyte, kibibyte, megabyte, mebibyte, etc.'}]"
+173,262,0,[],"230
+CHAPTER 8
+Accessing pod metadata and other resources from applications
+All processes running inside the container can read those variables and use them how-
+ever they need. 
+8.1.3
+Passing metadata through files in a downwardAPI volume
+If you prefer to expose the metadata through files instead of environment variables,
+you can define a downwardAPI volume and mount it into your container. You must use
+a downwardAPI volume for exposing the pod’s labels or its annotations, because nei-
+ther can be exposed through environment variables. We’ll discuss why later.
+ As with environment variables, you need to specify each metadata field explicitly if
+you want to have it exposed to the process. Let’s see how to modify the previous exam-
+ple to use a volume instead of environment variables, as shown in the following listing.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: downward
+  labels:                  
+    foo: bar               
+  annotations:             
+    key1: value1           
+    key2: |                
+      multi                
+      line                 
+      value                
+spec:
+  containers:
+  - name: main
+    image: busybox
+    command: [""sleep"", ""9999999""]
+    resources:
+      requests:
+        cpu: 15m
+        memory: 100Ki
+      limits:
+        cpu: 100m
+        memory: 4Mi
+    volumeMounts:                        
+    - name: downward                     
+      mountPath: /etc/downward           
+  volumes:
+  - name: downward                 
+    downwardAPI:                   
+      items:
+      - path: ""podName""                     
+        fieldRef:                           
+          fieldPath: metadata.name          
+      - path: ""podNamespace""
+        fieldRef:
+          fieldPath: metadata.namespace
+Listing 8.3
+Pod with a downwardAPI volume: downward-api-volume.yaml
+These labels and 
+annotations will be 
+exposed through the 
+downwardAPI volume.
+You’re mounting the 
+downward volume 
+under /etc/downward.
+You’re defining a downwardAPI 
+volume with the name downward.
+The pod’s name (from the metadata.name 
+field in the manifest) will be written to 
+the podName file.
+ 
+",[],"[{'entity': 'pod', 'description': 'A container running on a Kubernetes cluster', 'category': 'container'}, {'entity': 'metadata', 'description': 'Information about the pod, such as its name and labels', 'category': 'resource'}, {'entity': 'environment variables', 'description': 'Variables set by the pod that can be accessed by processes inside the container', 'category': 'process'}, {'entity': 'downwardAPI volume', 'description': 'A way to expose metadata from the pod to the container through files', 'category': 'volume'}, {'entity': 'labels', 'description': 'Key-value pairs that describe the pod, such as its name and namespace', 'category': 'metadata'}, {'entity': 'annotations', 'description': 'Additional information about the pod, such as its key-value pairs', 'category': 'metadata'}, {'entity': 'fieldRef', 'description': ""A reference to a field in the pod's metadata"", 'category': 'resource'}, {'entity': 'fieldPath', 'description': ""The path to a field in the pod's metadata"", 'category': 'resource'}, {'entity': 'volumes', 'description': 'Resources that can be mounted into the container, such as downwardAPI volumes', 'category': 'resource'}, {'entity': 'volumeMounts', 'description': 'The way to mount a volume into the container', 'category': 'process'}, {'entity': 'container', 'description': 'A process running inside the pod', 'category': 'process'}, {'entity': 'cpu', 'description': 'A unit of measurement for computing resources', 'category': 'resource'}, {'entity': 'memory', 'description': 'A unit of measurement for memory resources', 'category': 'resource'}]","[{'source_entity': '""container""', 'description': 'is associated with', 'destination_entity': '""labels""'}, {'source_entity': '""container""', 'description': 'has', 'destination_entity': '""volumes""'}, {'source_entity': '""container""', 'description': 'contains', 'destination_entity': '""metadata""'}, {'source_entity': '""container""', 'description': 'defines', 'destination_entity': '""environment variables""'}, {'source_entity': '""container""', 'description': 'specifies', 'destination_entity': '""annotations""'}, {'source_entity': '""labels""', 'description': 'are used to', 'destination_entity': '""fieldPath""'}, {'source_entity': '""volumes""', 'description': 'are mounted at', 'destination_entity': '""volumeMounts""'}, {'source_entity': '""metadata""', 'description': 'provides information about', 'destination_entity': '""pod""'}, {'source_entity': '""environment variables""', 'description': 'are used to configure', 'destination_entity': '""container""'}, {'source_entity': '""annotations""', 'description': 'are used to add', 'destination_entity': '""metadata""'}, {'source_entity': '""fieldRef""', 'description': 'is used to reference', 'destination_entity': '""labels""'}, {'source_entity': '""memory""', 'description': 'is a resource that is allocated to', 'destination_entity': '""container""'}, {'source_entity': '""downwardAPI volume""', 'description': 'is used to provide', 'destination_entity': '""environment variables""'}, {'source_entity': '""volumeMounts""', 'description': 'are used to mount', 'destination_entity': '""volumes""'}, {'source_entity': '""pod""', 'description': 'is a logical host that runs', 'destination_entity': '""container""'}, {'source_entity': '""cpu""', 'description': 'is a resource that is allocated to', 'destination_entity': '""container""'}]","['[{""source"": ""container"", ""destination"": ""pod"", ""relation_description"": ""is associated with"", ""summary_er"": ""A container is a runtime environment for an application, and it is associated with a pod in Kubernetes.""}]', '[{""source"": ""container"", ""destination"": ""pod"", ""relation_description"": ""has"", ""summary_er"": ""A container runs within a pod, sharing resources and namespaces.""}, {""source"": ""volumes"", ""destination"": ""pod"", ""relation_description"": ""has"", ""summary_er"": ""A pod can have one or more volumes for persistent storage.""}]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A container holds a pod\'s metadata, encapsulating its configuration and data.""\n  }\n]', '[{""source"": ""container"", ""destination"": ""pod"", ""relation_description"": ""defines"", ""summary_er"": ""A container defines a pod by specifying its configuration, including environment variables.""}]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""A container specification within a pod, defining its properties and behavior.""\n  },\n  {\n    ""source"": ""annotations"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""Key-value pairs that provide additional metadata to a pod, used for configuration or identification purposes.""\n  }\n]', '[\n  {\n    ""source"": ""labels"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to identify"",\n    ""summary_er"": ""Labels in Kubernetes are key-value pairs that help identify and manage pods, providing metadata for organization and filtering.""\n  },\n  {\n    ""source"": ""fieldPath"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the path"",\n    ""summary_er"": ""FieldPath in Kubernetes specifies the path to a field within a pod\'s configuration, allowing for efficient access to specific data.""\n  }\n]', '[\n  {\n    ""source"": ""volumes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are mounted at"",\n    ""summary_er"": ""Persistent storage volumes are attached to a Kubernetes pod for data persistence.""\n  },\n  {\n    ""source"": ""volumeMounts"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are mounted at"",\n    ""summary_er"": ""Pods mount persistent storage volumes using volume mounts for data access.""\n  }\n]', '[\n  {\n    ""source"": ""metadata"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides information about"",\n    ""summary_er"": ""Metadata provides details about a Kubernetes Pod, including its configuration and state.""\n  }\n]', '[\n  {\n    ""source"": ""environment variables"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to configure"",\n    ""summary_er"": ""Environment variables are used to pass configuration settings to a pod, allowing it to access and use external resources.""\n  },\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""A container is a lightweight and portable way to deploy an application, which can be run within a pod for resource sharing and management.""\n  }\n]', '[\n  {\n    ""source"": ""annotations"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to add"",\n    ""summary_er"": ""Annotations in Kubernetes are key-value pairs that can be added to pods, services, and other resources to provide additional metadata.""\n  },\n  {\n    ""source"": ""metadata"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""the destination"",\n    ""summary_er"": ""Metadata in Kubernetes provides information about a pod\'s identity, labels, and annotations, which are used to manage and organize resources.""\n  }\n]', '[\n  {\n    ""source"": ""fieldRef"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to reference"",\n    ""summary_er"": ""Field reference is a mechanism to reference a field of an object, typically used to access or modify pod labels.""\n  },\n  {\n    ""source"": ""labels"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""and the destination pod"",\n    ""summary_er"": ""Labels are key-value pairs that can be attached to a pod, providing metadata and enabling filtering and selection.""\n  }\n]', '[\n  {\n    ""source"": ""memory"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a resource that is allocated to"",\n    ""summary_er"": ""Memory is a resource allocated to pods in Kubernetes, enabling efficient container execution.""\n  },\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a process running within"",\n    ""summary_er"": ""A container is a process running within a pod in Docker, providing isolation and resource management.""\n  }\n]', '[\n  {\n    ""source"": ""downwardAPI volume"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to provide"",\n    ""summary_er"": ""Downward API volumes are used to inject environment variables into a pod, allowing for dynamic configuration and secrets management.""\n  },\n  {\n    ""source"": ""environment variables"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are set by"",\n    ""summary_er"": ""Environment variables are set by the Downward API volume in a pod, enabling configuration and secret injection into containers.""\n  }\n]', '[\n  {\n    ""source"": ""volumeMounts"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to mount"",\n    ""summary_er"": ""Volume mounts are used in Kubernetes to attach a volume to a pod, allowing it to access and use data stored in the volume.""\n  },\n  {\n    ""source"": ""volumes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to mount"",\n    ""summary_er"": ""Volumes in Kubernetes are used to provide persistent storage for pods, which can be accessed by attaching a volume mount to the pod.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""container"",\n    ""relation_description"": ""is a logical host that runs"",\n    ""summary_er"": ""A pod is a logical host that runs one or more containers, providing a shared environment for them to execute.""\n  }\n]', '[\n  {\n    ""source"": ""cpu"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a resource that is allocated to"",\n    ""summary_er"": ""CPU is a resource allocated to pods, enabling efficient processing and utilization.""\n  },\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a process running within"",\n    ""summary_er"": ""Containers are processes running within pods, providing isolation and resource management.""\n  }\n]']","Pods can expose metadata through environment variables or files in a downwardAPI volume. Environment variables can only pass single-value metadata, while a downwardAPI volume allows exposing labels and annotations. A Pod's name and namespace can be exposed through a downwardAPI volume by specifying the fieldRef path to the metadata.name and metadata.namespace fields.","[{'highlight': 'All processes running inside the container can read those variables and use them however they need.'}, {'highlight': 'You must use a downwardAPI volume for exposing the pod’s labels or its annotations, because neither can be exposed through environment variables.'}, {'highlight': 'You need to specify each metadata field explicitly if you want to have it exposed to the process.'}, {'highlight': 'The pod’s name (from the metadata.name field in the manifest) will be written to the podName file.'}, {'highlight': 'You’re mounting the downward volume under /etc/downward.'}]"
+174,263,0,[],"231
+Passing metadata through the Downward API
+      - path: ""labels""                       
+        fieldRef:                            
+          fieldPath: metadata.labels         
+      - path: ""annotations""                       
+        fieldRef:                                 
+          fieldPath: metadata.annotations         
+      - path: ""containerCpuRequestMilliCores""
+        resourceFieldRef:
+          containerName: main
+          resource: requests.cpu
+          divisor: 1m
+      - path: ""containerMemoryLimitBytes""
+        resourceFieldRef:
+          containerName: main
+          resource: limits.memory
+          divisor: 1
+Instead of passing the metadata through environment variables, you’re defining a vol-
+ume called downward and mounting it in your container under /etc/downward. The
+files this volume will contain are configured under the downwardAPI.items attribute
+in the volume specification.
+ Each item specifies the path (the filename) where the metadata should be written
+to and references either a pod-level field or a container resource field whose value you
+want stored in the file (see figure 8.3).
+The pod’s labels will be written 
+to the /etc/downward/labels file.
+The pod’s annotations will be 
+written to the /etc/downward/
+annotations file.
+downwardAPI volume
+Pod manifest
+metadata:
+name: downward
+namespace: default
+labels:
+foo: bar
+annotations:
+key1: value1
+...
+spec:
+containers:
+- name: main
+image: busybox
+command: [""sleep"", ""9999999""]
+resources:
+requests:
+cpu: 15m
+memory: 100Ki
+limits:
+cpu: 100m
+memory: 4Mi
+...
+/podName
+/podNamespace
+/labels
+/annotations
+/containerCpuRequestMilliCores
+/containerMemoryLimitBytes
+divisor: 1
+divisor: 1m
+Container: main
+Pod: downward
+Filesystem
+/
+etc/
+downward/
+Figure 8.3
+Using a downwardAPI volume to pass metadata to the container
+ 
+","[Empty DataFrame
+Columns: [o, r]
+Index: [], Empty DataFrame
+Columns: [o, r]
+Index: []]","[{'entity': 'Downward API', 'description': 'A Kubernetes feature that allows passing metadata from a pod or container to a file within the container.', 'category': 'Kubernetes'}, {'entity': 'labels', 'description': 'Metadata labels associated with a pod or container.', 'category': 'Kubernetes'}, {'entity': 'annotations', 'description': 'Metadata annotations associated with a pod or container.', 'category': 'Kubernetes'}, {'entity': 'containerCpuRequestMilliCores', 'description': 'The CPU request for a container, measured in milli-cores.', 'category': 'Container Resource'}, {'entity': 'containerMemoryLimitBytes', 'description': 'The memory limit for a container, measured in bytes.', 'category': 'Container Resource'}, {'entity': 'volume', 'description': 'A Kubernetes resource that allows sharing data between containers or pods.', 'category': 'Kubernetes'}, {'entity': 'downwardAPI volume', 'description': 'A specific type of volume that passes metadata from a pod or container to a file within the container.', 'category': 'Kubernetes'}, {'entity': 'pod manifest', 'description': ""A YAML or JSON file that defines a pod's configuration, including its metadata and containers."", 'category': 'Kubernetes'}, {'entity': 'metadata', 'description': 'Information about a pod or container, such as its name, namespace, labels, and annotations.', 'category': 'Kubernetes'}, {'entity': '/etc/downward/labels', 'description': ""A file within the container that contains the pod's labels."", 'category': 'Filesystem'}, {'entity': '/etc/downward/annotations', 'description': ""A file within the container that contains the pod's annotations."", 'category': 'Filesystem'}, {'entity': '/podName', 'description': 'A placeholder for the name of the pod.', 'category': 'Kubernetes'}, {'entity': '/podNamespace', 'description': 'A placeholder for the namespace of the pod.', 'category': 'Kubernetes'}, {'entity': 'busybox', 'description': 'A lightweight Linux distribution used as a container image.', 'category': 'Container Image'}, {'entity': 'sleep', 'description': 'A command that pauses the execution of a process for a specified amount of time.', 'category': 'Command'}]","[{'source_entity': '""Downward API""', 'description': 'provides', 'destination_entity': '""volume""'}, {'source_entity': '""busybox""', 'description': 'uses', 'destination_entity': '""downwardAPI volume""'}, {'source_entity': '""containerMemoryLimitBytes""', 'description': 'limits', 'destination_entity': '""container""'}, {'source_entity': '""containerCpuRequestMilliCores""', 'description': 'requests', 'destination_entity': '""container""'}, {'source_entity': '""/podName""', 'description': 'contains', 'destination_entity': '""metadata""'}, {'source_entity': '""/etc/downward/annotations""', 'description': 'stores', 'destination_entity': '""Downward API annotations""'}, {'source_entity': '""/etc/downward/labels""', 'description': 'stores', 'destination_entity': '""Downward API labels""'}, {'source_entity': '""pod manifest""', 'description': 'defines', 'destination_entity': '""container""'}, {'source_entity': '""sleep""', 'description': 'executes', 'destination_entity': '""container""'}]","['[\n  {\n    ""source"": ""Downward API"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The Downward API allows a pod to provide information about itself to its containers through environment variables.""\n  }\n]', '[\n  {\n    ""source"": ""busybox"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Busybox container utilizes a downward API volume to access and utilize external data.""\n  }\n]', '[\n  {\n    ""source"": ""containerMemoryLimitBytes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits"",\n    ""summary_er"": ""The container memory limit in bytes is set for a pod, limiting its memory usage.""\n  }\n]', '[\n  {\n    ""source"": ""containerCpuRequestMilliCores"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""A container in a pod requests CPU resources in milli-cores.""\n  }\n]', '[\n  {\n    ""source"": ""/podName"",\n    ""destination"": ""metadata"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""\\""/podName\\"" contains metadata, which provides information about the pod\'s identity and configuration.""\n  }\n]', '[\n  {\n    ""source"": ""/etc/downward/annotations"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores"",\n    ""summary_er"": ""/etc/downward/annotations stores configuration for a pod""\n  }\n]', '[\n  {\n    ""source"": ""/etc/downward/labels"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores"",\n    ""summary_er"": ""/etc/downward/labels stores information about the Downward API labels in a pod.""\n  }\n]', '[\n  {\n    ""source"": ""Pod Manifest"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A Pod Manifest defines a containerized application, including its configuration and dependencies.""\n  },\n  {\n    ""source"": ""Container"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""runs within"",\n    ""summary_er"": ""A Container runs within a Pod, sharing the same network and storage resources.""\n  }\n]', '[\n  {\n    ""source"": ""sleep"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""The sleep command executes within a container in a pod, allowing for process execution and management.""\n  }\n]']","The Downward API allows passing metadata through a volume, mounting it in the container under /etc/downward. Each item specifies the path where metadata should be written and references either a pod-level field or a container resource field.","[{'highlight': 'The Downward API allows passing metadata through a volume called downward, which is mounted in the container under /etc/downward.'}, {'highlight': 'Each item in the downwardAPI.items attribute specifies the path where metadata should be written and references either a pod-level field or a container resource field.'}, {'highlight': ""The pod's labels will be written to the /etc/downward/labels file, and the pod's annotations will be written to the /etc/downward/annotations file.""}, {'highlight': 'A downwardAPI volume is defined in the Pod manifest with metadata specifying the name, namespace, labels, and annotations.'}, {'highlight': 'The container resources requests.cpu and limits.memory are referenced through the downwardAPI volume to pass metadata to the container.'}]"
+175,264,0,[],"232
+CHAPTER 8
+Accessing pod metadata and other resources from applications
+Delete the previous pod and create a new one from the manifest in the previous list-
+ing. Then look at the contents of the mounted downwardAPI volume directory. You
+mounted the volume under /etc/downward/, so list the files in there, as shown in the
+following listing.
+$ kubectl exec downward ls -lL /etc/downward
+-rw-r--r--   1 root   root   134 May 25 10:23 annotations
+-rw-r--r--   1 root   root     2 May 25 10:23 containerCpuRequestMilliCores
+-rw-r--r--   1 root   root     7 May 25 10:23 containerMemoryLimitBytes
+-rw-r--r--   1 root   root     9 May 25 10:23 labels
+-rw-r--r--   1 root   root     8 May 25 10:23 podName
+-rw-r--r--   1 root   root     7 May 25 10:23 podNamespace
+NOTE
+As with the configMap and secret volumes, you can change the file
+permissions through the downwardAPI volume’s defaultMode property in the
+pod spec.
+Each file corresponds to an item in the volume’s definition. The contents of files,
+which correspond to the same metadata fields as in the previous example, are the
+same as the values of environment variables you used before, so we won’t show them
+here. But because you couldn’t expose labels and annotations through environment
+variables before, examine the following listing for the contents of the two files you
+exposed them in.
+$ kubectl exec downward cat /etc/downward/labels
+foo=""bar""
+$ kubectl exec downward cat /etc/downward/annotations
+key1=""value1""
+key2=""multi\nline\nvalue\n""
+kubernetes.io/config.seen=""2016-11-28T14:27:45.664924282Z""
+kubernetes.io/config.source=""api""
+As you can see, each label/annotation is written in the key=value format on a sepa-
+rate line. Multi-line values are written to a single line with newline characters denoted
+with \n.
+UPDATING LABELS AND ANNOTATIONS
+You may remember that labels and annotations can be modified while a pod is run-
+ning. As you might expect, when they change, Kubernetes updates the files holding
+them, allowing the pod to always see up-to-date data. This also explains why labels and
+annotations can’t be exposed through environment variables. Because environment
+variable values can’t be updated afterward, if the labels or annotations of a pod were
+exposed through environment variables, there’s no way to expose the new values after
+they’re modified.
+Listing 8.4
+Files in the downwardAPI volume
+Listing 8.5
+Displaying labels and annotations in the downwardAPI volume
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command to execute a command inside a pod', 'category': 'software'}, {'entity': 'exec', 'description': 'subcommand to execute a command inside a pod', 'category': 'software'}, {'entity': 'downwardAPI', 'description': 'volume that exposes pod metadata and other resources', 'category': 'software'}, {'entity': '/etc/downward/', 'description': 'mounted volume directory', 'category': 'filesystem'}, {'entity': 'annotations', 'description': 'file containing pod annotations', 'category': 'file'}, {'entity': 'containerCpuRequestMilliCores', 'description': 'file containing container CPU request in milli-cores', 'category': 'file'}, {'entity': 'containerMemoryLimitBytes', 'description': 'file containing container memory limit in bytes', 'category': 'file'}, {'entity': 'labels', 'description': 'file containing pod labels', 'category': 'file'}, {'entity': 'podName', 'description': 'file containing pod name', 'category': 'file'}, {'entity': 'podNamespace', 'description': 'file containing pod namespace', 'category': 'file'}, {'entity': 'defaultMode', 'description': 'property to change file permissions through downwardAPI volume', 'category': 'software'}, {'entity': 'configMap', 'description': 'volume that exposes configuration data', 'category': 'software'}, {'entity': 'secret', 'description': 'volume that exposes sensitive information', 'category': 'software'}, {'entity': 'labels and annotations', 'description': 'metadata fields exposed through downwardAPI volume', 'category': 'software'}, {'entity': 'key=value format', 'description': 'format of labels and annotations in files', 'category': 'software'}, {'entity': '\n', 'description': 'newline character used to denote multi-line values', 'category': 'character'}]","[{'source_entity': '""kubectl""', 'description': 'used to execute commands', 'destination_entity': '""exec""'}, {'source_entity': '""labels""', 'description': 'defined and used by kubectl', 'destination_entity': '""configMap""'}, {'source_entity': '""downwardAPI""', 'description': 'used to provide configuration to pods', 'destination_entity': '""defaultMode""'}, {'source_entity': '""kubectl""', 'description': 'used to manage and configure pods', 'destination_entity': '""podName""'}, {'source_entity': '""labels and annotations""', 'description': 'defined in key=value format', 'destination_entity': '""annotations""'}, {'source_entity': '""kubectl""', 'description': 'used to manage and configure pods', 'destination_entity': '""podNamespace""'}, {'source_entity': '""downwardAPI""', 'description': 'used to provide configuration to pods', 'destination_entity': '""containerMemoryLimitBytes""'}, {'source_entity': '""kubectl""', 'description': 'used to manage and configure pods', 'destination_entity': '""secret""'}, {'source_entity': '""downwardAPI""', 'description': 'used to provide configuration to pods', 'destination_entity': '""containerCpuRequestMilliCores""'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to execute commands"",\n    ""summary_er"": ""Kubectl executes commands on a pod, allowing for remote access and management.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defined and used by"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) defines and uses a pod, which is a container running an application.""\n  },\n  {\n    ""source"": ""labels"",\n    ""destination"": ""configMap"",\n    ""relation_description"": ""defined and used by"",\n    ""summary_er"": ""Labels are defined and used in a configMap to provide metadata for Kubernetes objects.""\n  }\n]', '[\n  {\n    ""source"": ""Downward API"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""used to provide configuration to pods"",\n    ""summary_er"": ""The Downward API allows providing configuration to Pods, enabling dynamic configuration and secrets management.""\n  },\n  {\n    ""source"": ""Default Mode"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""default configuration mode for pods"",\n    ""summary_er"": ""Default Mode is the default configuration mode for Pods, ensuring consistent and predictable behavior in containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to manage and configure"",\n    ""summary_er"": ""Kubectl is used to manage and configure pods, which are the basic execution units in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""labels and annotations"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defined in key=value format"",\n    ""summary_er"": ""Labels and annotations are used to add metadata to a pod, defined as key-value pairs that provide additional information about the pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to manage and configure"",\n    ""summary_er"": ""Kubectl uses pods to manage and configure Kubernetes resources.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""podNamespace"",\n    ""relation_description"": ""used to manage and configure"",\n    ""summary_er"": ""Kubectl manages namespaces within pods to organize resources.""\n  }\n]', '[\n  {\n    ""source"": ""Downward API"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""used to provide configuration to pods"",\n    ""summary_er"": ""The Downward API allows providing configuration to pods, enabling dynamic configuration and customization.""\n  },\n  {\n    ""source"": ""Container Memory Limit Bytes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""container memory limit in bytes"",\n    ""summary_er"": ""Container Memory Limit Bytes specifies the maximum amount of memory a container can use within a pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to manage and configure"",\n    ""summary_er"": ""Kubectl is used to manage and configure pods, which are the basic execution units in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""secret"",\n    ""relation_description"": """",\n    ""summary_er"": """"\n  }\n]', '[\n  {\n    ""source"": ""downwardAPI"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to provide configuration to pods"",\n    ""summary_er"": ""Downward API provides configuration to pods, enabling dynamic configuration and flexibility.""\n  },\n  {\n    ""source"": ""containerCpuRequestMilliCores"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""resource request for CPU"",\n    ""summary_er"": ""Container CPU Request specifies the requested CPU resources for a pod, ensuring efficient resource allocation.""\n  }\n]']","This chapter discusses accessing pod metadata and other resources from applications using Kubernetes. It explains how to mount a downwardAPI volume, which makes available various metadata fields such as labels, annotations, and container resource requests as files within the pod's filesystem. The contents of these files can be accessed using kubectl exec commands. Additionally, it highlights that labels and annotations can be modified while a pod is running, and Kubernetes updates the corresponding files in the downwardAPI volume.","[{'highlight': 'You can access pod metadata and other resources from applications by mounting a downwardAPI volume.'}, {'highlight': 'The contents of files in the downwardAPI volume correspond to environment variables, but labels and annotations are written in key=value format on separate lines.'}, {'highlight': 'Labels and annotations can be modified while a pod is running, and Kubernetes updates the files holding them, allowing the pod to always see up-to-date data.'}, {'highlight': ""The downwardAPI volume's defaultMode property in the pod spec allows you to change file permissions for the mounted volume.""}, {'highlight': 'You can use kubectl exec to list and display files in the mounted downwardAPI volume, such as labels and annotations.'}]"
+176,265,0,[],"233
+Talking to the Kubernetes API server
+REFERRING TO CONTAINER-LEVEL METADATA IN THE VOLUME SPECIFICATION
+Before we wrap up this section, we need to point out one thing. When exposing con-
+tainer-level metadata, such as a container’s resource limit or requests (done using
+resourceFieldRef), you need to specify the name of the container whose resource
+field you’re referencing, as shown in the following listing.
+spec:
+  volumes:
+  - name: downward                       
+    downwardAPI:                         
+      items:
+      - path: ""containerCpuRequestMilliCores""
+        resourceFieldRef:
+          containerName: main       
+          resource: requests.cpu
+          divisor: 1m
+The reason for this becomes obvious if you consider that volumes are defined at the
+pod level, not at the container level. When referring to a container’s resource field
+inside a volume specification, you need to explicitly specify the name of the container
+you’re referring to. This is true even for single-container pods. 
+ Using volumes to expose a container’s resource requests and/or limits is slightly
+more complicated than using environment variables, but the benefit is that it allows
+you to pass one container’s resource fields to a different container if needed (but
+both containers need to be in the same pod). With environment variables, a container
+can only be passed its own resource limits and requests. 
+UNDERSTANDING WHEN TO USE THE DOWNWARD API
+As you’ve seen, using the Downward API isn’t complicated. It allows you to keep the
+application Kubernetes-agnostic. This is especially useful when you’re dealing with an
+existing application that expects certain data in environment variables. The Down-
+ward API allows you to expose the data to the application without having to rewrite
+the application or wrap it in a shell script, which collects the data and then exposes it
+through environment variables.
+ But the metadata available through the Downward API is fairly limited. If you need
+more, you’ll need to obtain it from the Kubernetes API server directly. You’ll learn
+how to do that next.
+8.2
+Talking to the Kubernetes API server
+We’ve seen how the Downward API provides a simple way to pass certain pod and con-
+tainer metadata to the process running inside them. It only exposes the pod’s own
+metadata and a subset of all of the pod’s data. But sometimes your app will need to
+know more about other pods and even other resources defined in your cluster. The
+Downward API doesn’t help in those cases.
+Listing 8.6
+Referring to container-level metadata in a downwardAPI volume
+Container name 
+must be specified
+ 
+",[],"[{'entity': 'Kubernetes API server', 'description': 'The central component that manages and coordinates all Kubernetes resources.', 'category': 'application'}, {'entity': 'container-level metadata', 'description': 'Information about a container, such as resource limits or requests.', 'category': 'metadata'}, {'entity': 'resourceFieldRef', 'description': ""A reference to a field in the Kubernetes API server that specifies a container's resource limit or request."", 'category': 'command'}, {'entity': 'containerName', 'description': 'The name of the container whose resource field is being referenced.', 'category': 'parameter'}, {'entity': 'volumes', 'description': ""A way to expose a container's resource fields to other containers in the same pod."", 'category': 'feature'}, {'entity': 'Downward API', 'description': 'A feature that allows passing certain pod and container metadata to processes running inside them.', 'category': 'feature'}, {'entity': 'environment variables', 'description': 'A way for a container to pass its own resource limits and requests to other containers in the same pod.', 'category': 'mechanism'}, {'entity': 'Kubernetes API server', 'description': 'The central component that manages and coordinates all Kubernetes resources.', 'category': 'application'}, {'entity': 'metadata', 'description': 'Information about a pod or container, such as resource limits or requests.', 'category': 'metadata'}, {'entity': 'container', 'description': 'A lightweight and standalone executable binary that contains an application and its dependencies.', 'category': 'process'}, {'entity': 'pod', 'description': 'The basic execution unit in Kubernetes, which can contain one or more containers.', 'category': 'process'}]","[{'source_entity': '""container""', 'description': 'provides', 'destination_entity': '""volumes""'}, {'source_entity': '""container""', 'description': 'contains', 'destination_entity': '""metadata""'}, {'source_entity': '""container""', 'description': 'uses', 'destination_entity': '""environment variables""'}, {'source_entity': '""Downward API""', 'description': 'provides', 'destination_entity': '""Kubernetes API server""'}, {'source_entity': '""resourceFieldRef""', 'description': 'references', 'destination_entity': '""container-level metadata""'}, {'source_entity': '""pod""', 'description': 'hosts', 'destination_entity': '""containerName""'}]","['[{""source"": ""container"", ""destination"": ""pod"", ""relation_description"": ""provides"", ""summary_er"": ""A container provides a service or functionality to a pod, allowing it to run and operate.""}, {""source"": ""volumes"", ""destination"": ""pod"", ""relation_description"": ""provides"", ""summary_er"": ""Volumes provide persistent storage to a pod, enabling data persistence across restarts and scaling.""}]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A container holds a pod\'s metadata, encapsulating its configuration and data.""\n  }\n]', '[{""source"": ""container"", ""destination"": ""pod"", ""relation_description"": ""uses"", ""summary_er"": ""A container uses a pod as its execution environment, leveraging the pod\'s resources for running the application.""}, {""source"": ""environment variables"", ""destination"": ""container"", ""relation_description"": ""set in"", ""summary_er"": ""Environment variables are set within a container to configure and customize its behavior, influencing how it runs and interacts with other components.""}]', '[\n  {\n    ""source"": ""Downward API"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The Downward API provides a way for pods to expose information about themselves to the Kubernetes API server.""\n  }\n]', '[\n  {\n    ""source"": ""resourceFieldRef"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""references"",\n    ""summary_er"": ""Resource field reference in Kubernetes refers to a way of referencing a pod\'s metadata at the container level, allowing for dynamic and flexible configuration.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""A Kubernetes pod is a logical host for one or more containers, providing shared resources and networking.""\n  },\n  {\n    ""source"": ""containerName"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""A container name is assigned to each container within a pod, allowing for identification and management.""\n  }\n]']","When exposing container-level metadata using the Downward API, you need to specify the name of the container whose resource field you're referencing. This is because volumes are defined at the pod level, not at the container level. Using the Downward API allows you to keep your application Kubernetes-agnostic by passing data from the pod and containers to the process running inside them. However, it only exposes a limited subset of metadata, so if your app needs more information about other pods or resources in the cluster, you'll need to obtain that directly from the Kubernetes API server.","[{'highlight': ""When exposing container-level metadata, such as a container's resource limit or requests (done using resourceFieldRef), you need to specify the name of the container whose resource field you're referencing.""}]"
+177,266,0,[],"234
+CHAPTER 8
+Accessing pod metadata and other resources from applications
+ As you’ve seen throughout the book, information about services and pods can be
+obtained by looking at the service-related environment variables or through DNS. But
+when the app needs data about other resources or when it requires access to the most
+up-to-date information as possible, it needs to talk to the API server directly (as shown
+in figure 8.4).
+Before you see how apps within pods can talk to the Kubernetes API server, let’s first
+explore the server’s REST endpoints from your local machine, so you can see what
+talking to the API server looks like.
+8.2.1
+Exploring the Kubernetes REST API
+You’ve learned about different Kubernetes resource types. But if you’re planning on
+developing apps that talk to the Kubernetes API, you’ll want to know the API first. 
+ To do that, you can try hitting the API server directly. You can get its URL by run-
+ning kubectl cluster-info:
+$ kubectl cluster-info
+Kubernetes master is running at https://192.168.99.100:8443
+Because the server uses HTTPS and requires authentication, it’s not simple to talk to
+it directly. You can try accessing it with curl and using curl’s --insecure (or -k)
+option to skip the server certificate check, but that doesn’t get you far:
+$ curl https://192.168.99.100:8443 -k
+Unauthorized
+Luckily, rather than dealing with authentication yourself, you can talk to the server
+through a proxy by running the kubectl proxy command. 
+ACCESSING THE API SERVER THROUGH KUBECTL PROXY 
+The kubectl proxy command runs a proxy server that accepts HTTP connections on
+your local machine and proxies them to the API server while taking care of authenti-
+cation, so you don’t need to pass the authentication token in every request. It also
+makes sure you’re talking to the actual API server and not a man in the middle (by
+verifying the server’s certificate on each request).
+Container
+API server
+Pod
+App process
+API objects
+Figure 8.4
+Talking to the API server 
+from inside a pod to get information 
+about other API objects
+ 
+","[Empty DataFrame
+Columns: [Container
+App process
+Pod, API server
+API objects]
+Index: []]","[{'entity': 'pod metadata', 'description': 'Information about pods', 'category': 'application'}, {'entity': 'services', 'description': 'Kubernetes service-related environment variables or DNS', 'category': 'application'}, {'entity': 'API server', 'description': 'Kubernetes API server', 'category': 'application'}, {'entity': 'REST endpoints', 'description': ""Kubernetes API server's REST endpoints"", 'category': 'application'}, {'entity': 'kubectl cluster-info', 'description': 'Command to get Kubernetes master URL', 'category': 'command'}, {'entity': 'curl', 'description': 'Command to access API server directly', 'category': 'command'}, {'entity': 'kubectl proxy', 'description': 'Command to run a proxy server for API server', 'category': 'command'}, {'entity': 'API objects', 'description': 'Kubernetes API objects', 'category': 'application'}, {'entity': 'container', 'description': 'Container in Kubernetes', 'category': 'hardware'}, {'entity': 'pod', 'description': 'Pod in Kubernetes', 'category': 'hardware'}, {'entity': 'app process', 'description': 'Application process running inside a pod', 'category': 'application'}]","[{'source_entity': '""container""', 'description': 'contains', 'destination_entity': '""pod""'}, {'source_entity': '""kubectl cluster-info""', 'description': 'displays information about', 'destination_entity': '""API server""'}, {'source_entity': '""curl""', 'description': 'makes a request to', 'destination_entity': '""REST endpoints""'}, {'source_entity': '""app process""', 'description': 'runs on top of', 'destination_entity': '""container""'}, {'source_entity': '""API objects""', 'description': 'are managed by', 'destination_entity': '""kubectl proxy""'}, {'source_entity': '""pod metadata""', 'description': 'is accessed through', 'destination_entity': '""kubectl cluster-info""'}, {'source_entity': '""services""', 'description': 'are exposed to', 'destination_entity': '""REST endpoints""'}, {'source_entity': '""kubectl proxy""', 'description': 'proxies requests to', 'destination_entity': '""API server""'}]","['[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A container holds a pod\'s application code, libraries, and settings.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays information about"",\n    ""summary_er"": ""The kubectl command displays detailed information about a pod, including its status and configuration.""\n  },\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The API server manages the lifecycle of a pod, creating and deleting it as needed.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""makes a request to"",\n    ""summary_er"": ""Curl makes HTTP requests to pods, interacting with them as if they were REST endpoints.""\n  },\n  {\n    ""source"": ""REST endpoints"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""interacts with"",\n    ""summary_er"": ""REST endpoints are used by pods to provide a interface for external interactions and API calls.""\n  }\n]', '[\n  {\n    ""source"": ""app process"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs on top of"",\n    ""summary_er"": ""An app process runs on top of a pod, utilizing its resources and environment.""\n  }\n]', '[\n  {\n    ""source"": ""API objects"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are managed by"",\n    ""summary_er"": ""API objects, such as deployments and services, are managed by a pod in Kubernetes.""\n  },\n  {\n    ""source"": ""kubectl proxy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""accesses"",\n    ""summary_er"": ""The kubectl proxy command accesses the API server running inside a pod in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""Pod Metadata"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is accessed through"",\n    ""summary_er"": ""Pod metadata provides information about a running pod, including its name, namespace, and IP address.""\n  },\n  {\n    ""source"": ""Kubectl Cluster-Info"",\n    ""destination"": ""Cluster Information"",\n    ""relation_description"": ""displays"",\n    ""summary_er"": ""kubectl cluster-info command displays the cluster\'s API server URL and other relevant information.""\n  }\n]', '[\n  {\n    ""source"": ""services"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are exposed to"",\n    ""summary_er"": ""Services expose REST endpoints, making them accessible to pods within a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""API server"",\n    ""relation_description"": ""proxies requests to"",\n    ""summary_er"": ""The kubectl command proxies HTTP requests from the client to the API server, allowing for communication between them.""\n  }\n]']","The Kubernetes API server provides REST endpoints for accessing pod metadata and other resources, but requires authentication. To access it directly, use kubectl proxy to run a proxy server that handles authentication and verifies the server's certificate on each request, allowing apps within pods to talk to the API server and get information about other resources or the most up-to-date data possible.","[{'highlight': 'You can get the Kubernetes API server URL by running kubectl cluster-info command.'}, {'highlight': 'The kubectl proxy command runs a proxy server that accepts HTTP connections on your local machine and proxies them to the API server while taking care of authentication.'}, {'highlight': 'To talk to the API server from inside a pod, you can use the kubectl proxy command to run a proxy server that takes care of authentication.'}, {'highlight': 'The Kubernetes API server uses HTTPS and requires authentication, making it not simple to talk to it directly without using a proxy or dealing with authentication manually.'}, {'highlight': 'You can use the kubectl cluster-info command to get the URL of the Kubernetes API server, which is necessary for accessing its REST endpoints.'}]"
+178,267,0,[],"235
+Talking to the Kubernetes API server
+ Running the proxy is trivial. All you need to do is run the following command:
+$ kubectl proxy
+Starting to serve on 127.0.0.1:8001
+You don’t need to pass in any other arguments, because kubectl already knows every-
+thing it needs (the API server URL, authorization token, and so on). As soon as it starts
+up, the proxy starts accepting connections on local port 8001. Let’s see if it works:
+$ curl localhost:8001
+{
+  ""paths"": [
+    ""/api"",
+    ""/api/v1"",
+    ...
+Voila! You sent the request to the proxy, it sent a request to the API server, and then
+the proxy returned whatever the server returned. Now, let’s start exploring.
+EXPLORING THE KUBERNETES API THROUGH THE KUBECTL PROXY
+You can continue to use curl, or you can open your web browser and point it to
+http:/
+/localhost:8001. Let’s examine what the API server returns when you hit its base
+URL more closely. The server responds with a list of paths, as shown in the follow-
+ing listing.
+$ curl http://localhost:8001
+{
+  ""paths"": [
+    ""/api"",
+    ""/api/v1"",                  
+    ""/apis"",
+    ""/apis/apps"",
+    ""/apis/apps/v1beta1"",
+    ...
+    ""/apis/batch"",              
+    ""/apis/batch/v1"",           
+    ""/apis/batch/v2alpha1"",     
+    ...
+These paths correspond to the API groups and versions you specify in your resource
+definitions when creating resources such as Pods, Services, and so on. 
+ You may recognize the batch/v1 in the /apis/batch/v1 path as the API group and
+version of the Job resources you learned about in chapter 4. Likewise, the /api/v1
+corresponds to the apiVersion: v1 you refer to in the common resources you created
+(Pods, Services, ReplicationControllers, and so on). The most common resource
+types, which were introduced in the earliest versions of Kubernetes, don’t belong to
+Listing 8.7
+Listing the API server’s REST endpoints: http:/
+/localhost:8001
+Most resource types 
+can be found here.
+The batch API 
+group and its 
+two versions
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command to run the proxy', 'category': 'software'}, {'entity': 'proxy', 'description': 'Kubernetes API server proxy', 'category': 'software'}, {'entity': 'API server URL', 'description': 'URL of the Kubernetes API server', 'category': 'network'}, {'entity': 'authorization token', 'description': 'token used for authorization with the API server', 'category': 'software'}, {'entity': 'curl', 'description': 'command to send HTTP requests', 'category': 'software'}, {'entity': 'localhost:8001', 'description': 'local port used by the proxy', 'category': 'network'}, {'entity': '/api', 'description': 'API path for Kubernetes API server', 'category': 'network'}, {'entity': '/api/v1', 'description': 'API path for Kubernetes v1 API group', 'category': 'network'}, {'entity': '/apis', 'description': 'API path for Kubernetes API groups', 'category': 'network'}, {'entity': '/apis/apps', 'description': 'API path for Kubernetes apps API group', 'category': 'network'}, {'entity': '/apis/apps/v1beta1', 'description': 'API path for Kubernetes apps v1beta1 API version', 'category': 'network'}, {'entity': '/apis/batch', 'description': 'API path for Kubernetes batch API group', 'category': 'network'}, {'entity': '/apis/batch/v1', 'description': 'API path for Kubernetes batch v1 API version', 'category': 'network'}, {'entity': '/apis/batch/v2alpha1', 'description': 'API path for Kubernetes batch v2alpha1 API version', 'category': 'network'}, {'entity': 'Pods', 'description': 'Kubernetes resource type', 'category': 'software'}, {'entity': 'Services', 'description': 'Kubernetes resource type', 'category': 'software'}, {'entity': 'ReplicationControllers', 'description': 'Kubernetes resource type', 'category': 'software'}, {'entity': 'Jobs', 'description': 'Kubernetes resource type', 'category': 'software'}]","[{'source_entity': '/api', 'description': 'provides an interface for interacting with Kubernetes API', 'destination_entity': '/apis'}, {'source_entity': '/api', 'description': 'exposes the Kubernetes API for applications to interact with', 'destination_entity': '/apis/apps'}, {'source_entity': '/api', 'description': 'provides access to batch-related APIs', 'destination_entity': '/apis/batch'}, {'source_entity': '/api', 'description': 'exposes the v2alpha1 version of the batch API', 'destination_entity': '/apis/batch/v2alpha1'}, {'source_entity': '/api', 'description': 'provides access to apps-related APIs', 'destination_entity': '/apis/apps'}, {'source_entity': '/api', 'description': 'exposes the v1beta1 version of the apps API', 'destination_entity': '/apis/apps/v1beta1'}, {'source_entity': 'kubectl', 'description': 'interacts with the Kubernetes API to manage resources', 'destination_entity': '/api'}, {'source_entity': 'kubectl', 'description': 'manages ReplicationControllers', 'destination_entity': 'ReplicationControllers'}, {'source_entity': 'curl', 'description': 'interacts with the Kubernetes API to retrieve data', 'destination_entity': '/api'}, {'source_entity': 'curl', 'description': 'retrieves Jobs information', 'destination_entity': 'Jobs'}, {'source_entity': 'kubectl', 'description': 'manages Services', 'destination_entity': 'Services'}, {'source_entity': 'kubectl', 'description': 'manages Pods', 'destination_entity': 'Pods'}, {'source_entity': '/apis/batch/v1', 'description': 'provides access to batch-related APIs', 'destination_entity': '/apis/batch'}]","['[\n  {\n    ""source"": ""/api"",\n    ""destination"": ""Kubernetes API"",\n    ""relation_description"": ""provides an interface for interacting with"",\n    ""summary_er"": ""/api provides access to Kubernetes API, enabling interaction and management of cluster resources.""\n  },\n  {\n    ""source"": ""/apis"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""interface for interacting with"",\n    ""summary_er"": ""/apis provides a way to interact with pods in the cluster, facilitating communication and data exchange.""\n  }\n]', '[\n  {\n    ""source"": ""/api"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes the Kubernetes API for applications to interact with"",\n    ""summary_er"": ""The Kubernetes API is exposed through /api, allowing applications to interact with pods.""\n  },\n  {\n    ""source"": ""/apis/apps"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""API endpoint for interacting with apps in the cluster"",\n    ""summary_er"": ""The /apis/apps endpoint provides access to app-related resources within a pod.""\n  }\n]', '[\n  {\n    ""source"": ""/api"",\n    ""destination"": ""/apis/batch"",\n    ""relation_description"": ""provides access to batch-related APIs"",\n    ""summary_er"": ""/api provides access to batch-related APIs through /apis/batch""\n  }\n]', '[\n  {\n    ""source"": ""/api"",\n    ""destination"": ""/apis/batch/v2alpha1"",\n    ""relation_description"": ""exposes the v2alpha1 version of the batch API"",\n    ""summary_er"": ""/api exposes the v2alpha1 batch API to /apis/batch/v2alpha1""\n  }\n]', '[\n  {\n    ""source"": ""/api"",\n    ""destination"": ""/apis/apps"",\n    ""relation_description"": ""provides access to apps-related APIs"",\n    ""summary_er"": ""/api provides access to apps-related APIs through /apis/apps""\n  }\n]', '[\n  {\n    ""source"": ""/api"",\n    ""destination"": ""/apis/apps/v1beta1"",\n    ""relation_description"": ""exposes the v1beta1 version of the apps API"",\n    ""summary_er"": ""/api exposes v1beta1 apps API to /apis/apps/v1beta1 pod""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""/api"",\n    ""summary_er"": ""Kubectl interacts with the Kubernetes API to manage resources, specifically interacting with pods through the /api endpoint.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""ReplicationController"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubectl manages Replication Controllers, ensuring efficient deployment and scaling of pods.""\n  },\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""replicates"",\n    ""summary_er"": ""A Replication Controller replicates pods to ensure desired availability and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""interacts with the Kubernetes API to retrieve data"",\n    ""summary_er"": ""Curl interacts with a Kubernetes pod to retrieve data from the API.""\n  }\n]', '[{\n  ""source"": ""curl"",\n  ""destination"": ""pod"",\n  ""relation_description"": ""retrieves Jobs information"",\n  ""summary_er"": ""The curl command retrieves job information from a pod, allowing users to access and manage jobs running on the cluster.""\n}]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) manages and orchestrates containerized applications, including pods, which are the basic execution unit in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubectl, a command-line tool, manages and controls Pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""/apis/batch/v1"",\n    ""destination"": ""/apis/batch"",\n    ""relation_description"": ""provides access to batch-related APIs"",\n    ""summary_er"": ""/apis/batch/v1 provides access to batch-related APIs for /apis/batch""\n  }\n]']","To explore the Kubernetes API through kubectl proxy, run $ kubectl proxy to start serving on 127.0.0.1:8001, then use curl or a web browser to navigate to http://localhost:8001 to list available API paths and resource types.",[{'highlight': 'Running the proxy is trivial. All you need to do is run the following command: $ kubectl proxy'}]
+179,268,0,[],"236
+CHAPTER 8
+Accessing pod metadata and other resources from applications
+any specific group, because Kubernetes initially didn’t even use the concept of API
+groups; they were introduced later. 
+NOTE
+These initial resource types without an API group are now considered
+to belong to the core API group.
+EXPLORING THE BATCH API GROUP’S REST ENDPOINT
+Let’s explore the Job resource API. You’ll start by looking at what’s behind the
+/apis/batch path (you’ll omit the version for now), as shown in the following listing.
+$ curl http://localhost:8001/apis/batch
+{
+  ""kind"": ""APIGroup"",
+  ""apiVersion"": ""v1"",
+  ""name"": ""batch"",
+  ""versions"": [
+    {
+      ""groupVersion"": ""batch/v1"",             
+      ""version"": ""v1""                         
+    },
+    {
+      ""groupVersion"": ""batch/v2alpha1"",       
+      ""version"": ""v2alpha1""                   
+    }
+  ],
+  ""preferredVersion"": {                    
+    ""groupVersion"": ""batch/v1"",            
+    ""version"": ""v1""                        
+  },
+  ""serverAddressByClientCIDRs"": null
+}
+The response shows a description of the batch API group, including the available ver-
+sions and the preferred version clients should use. Let’s continue and see what’s
+behind the /apis/batch/v1 path. It’s shown in the following listing.
+$ curl http://localhost:8001/apis/batch/v1
+{
+  ""kind"": ""APIResourceList"",              
+  ""apiVersion"": ""v1"",
+  ""groupVersion"": ""batch/v1"",             
+  ""resources"": [                          
+    {
+      ""name"": ""jobs"",             
+      ""namespaced"": true,         
+      ""kind"": ""Job"",              
+Listing 8.8
+Listing endpoints under /apis/batch: http:/
+/localhost:8001/apis/batch
+Listing 8.9
+Resource types in batch/v1: http:/
+/localhost:8001/apis/batch/v1
+The batch API 
+group contains 
+two versions.
+Clients should use the 
+v1 version instead of 
+v2alpha1.
+This is a list of API resources 
+in the batch/v1 API group.
+Here’s an array holding 
+all the resource types 
+in this group.
+This describes the 
+Job resource, which 
+is namespaced.
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'API groups', 'description': 'Grouping of API resources', 'category': 'software'}, {'entity': 'Batch API group', 'description': 'API group for batch jobs', 'category': 'software'}, {'entity': 'Job resource', 'description': 'Resource type in batch/v1 API group', 'category': 'software'}, {'entity': 'APIResourceList', 'description': 'API resource list object', 'category': 'software'}, {'entity': 'curl', 'description': 'Command-line tool for transferring data', 'category': 'command'}, {'entity': 'localhost:8001', 'description': 'Localhost address with port 8001', 'category': 'hardware/network'}, {'entity': 'APIResource', 'description': 'API resource object', 'category': 'software'}, {'entity': 'Job', 'description': 'Resource type in batch/v1 API group', 'category': 'software'}, {'entity': 'v1', 'description': 'Version of the batch API group', 'category': 'software'}, {'entity': 'v2alpha1', 'description': 'Deprecated version of the batch API group', 'category': 'software'}]","[{'source_entity': '""API groups""', 'description': 'define', 'destination_entity': '""Job""'}, {'source_entity': '""API groups""', 'description': 'contain', 'destination_entity': '""Batch API group""'}, {'source_entity': '""v2alpha1""', 'description': 'specify', 'destination_entity': '""APIResourceList""'}, {'source_entity': '""APIResourceList""', 'description': 'list', 'destination_entity': '""APIResource""'}, {'source_entity': '""Kubernetes""', 'description': 'use', 'destination_entity': '""v1""'}, {'source_entity': '""curl""', 'description': 'interact with', 'destination_entity': '""localhost:8001""'}, {'source_entity': '""Job resource""', 'description': 'be managed by', 'destination_entity': '""Kubernetes""'}]","['[\n  {\n    ""source"": ""API groups"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""define"",\n    ""summary_er"": ""API groups define a set of APIs that can be used by pods in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""Job"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""define"",\n    ""summary_er"": ""A Job defines a set of pods that run to completion, such as batch processing or data processing tasks.""\n  }\n]', '[\n  {\n    ""source"": ""API groups"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contain"",\n    ""summary_er"": ""API groups manage access to pods, containing configuration and permissions.""\n  },\n  {\n    ""source"": ""Batch API group"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contain"",\n    ""summary_er"": ""The Batch API group manages batch processing for pods, containing job scheduling and execution.""\n  }\n]', '[{""source"":""v2alpha1"",""destination"":""pod"",""relation_description"":""specify"",""summary_er"":""The v2alpha1 API resource list specifies a pod.""}]', '[\n  {\n    ""source"": ""APIResourceList"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""list"",\n    ""summary_er"": ""The APIResourceList resource lists all available API resources, including pods.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""use"",\n    ""summary_er"": ""Kubernetes manages and orchestrates containerized applications, including pods, which are the basic execution unit in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""interact with"",\n    ""summary_er"": ""Curl interacts with a pod to send HTTP requests or retrieve data from it.""\n  }\n]', '[\n  {\n    ""source"": ""Job resource"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""be managed by"",\n    ""summary_er"": ""A Job resource in Kubernetes manages a Pod, which is a container that runs an application.""\n  }\n]']","The Kubernetes batch API group has two versions (v1 and v2alpha1), with v1 being the preferred version. The /apis/batch path displays the available versions, while /apis/batch/v1 shows a list of resource types in this group, including jobs which are namespaced.","[{'highlight': 'The Kubernetes core API group contains initial resource types without an API group.'}, {'highlight': 'The batch API group contains two versions: v1 and v2alpha1.'}, {'highlight': 'Clients should use the v1 version instead of v2alpha1 in the batch API group.'}, {'highlight': 'The Job resource is a namespaced resource type in the batch/v1 API group.'}, {'highlight': 'The /apis/batch path shows a description of the batch API group, including available versions and preferred version for clients to use.'}]"

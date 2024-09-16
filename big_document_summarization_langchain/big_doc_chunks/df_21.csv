@@ -1,0 +1,593 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+210,299,0,[],"267
+Using Deployments for updating apps declaratively
+If you’ve run the curl loop, you’ll see requests initially hitting only the v1 pods; then
+more and more of them hit the v2 pods until, finally, all of them hit only the remain-
+ing v2 pods, after all v1 pods are deleted. This works much like the rolling update per-
+formed by kubectl.
+UNDERSTANDING THE AWESOMENESS OF DEPLOYMENTS
+Let’s think about what has happened. By changing the pod template in your Deploy-
+ment resource, you’ve updated your app to a newer version—by changing a single
+field! 
+ The controllers running as part of the Kubernetes control plane then performed
+the update. The process wasn’t performed by the kubectl client, like it was when you
+used kubectl rolling-update. I don’t know about you, but I think that’s simpler than
+having to run a special command telling Kubernetes what to do and then waiting
+around for the process to be completed.
+NOTE
+Be aware that if the pod template in the Deployment references a
+ConfigMap (or a Secret), modifying the ConfigMap will not trigger an
+update. One way to trigger an update when you need to modify an app’s con-
+fig is to create a new ConfigMap and modify the pod template so it references
+the new ConfigMap.
+The events that occurred below the Deployment’s surface during the update are simi-
+lar to what happened during the kubectl rolling-update. An additional ReplicaSet
+was created and it was then scaled up slowly, while the previous ReplicaSet was scaled
+down to zero (the initial and final states are shown in figure 9.10).
+You can still see the old ReplicaSet next to the new one if you list them:
+$ kubectl get rs
+NAME               DESIRED   CURRENT   AGE
+kubia-1506449474   0         0         24m
+kubia-1581357123   3         3         23m
+Pods: v1
+ReplicaSet: v1
+Replicas: --
+Before
+After
+ReplicaSet: v2
+Replicas: ++
+Deployment
+Pods: v2
+ReplicaSet: v1
+ReplicaSet: v2
+Deployment
+Figure 9.10
+A Deployment at the start and end of a rolling update
+ 
+",[],"[{'entity': 'Deployments', 'description': 'a way to update apps declaratively', 'category': 'software'}, {'entity': 'curl loop', 'description': 'a command used to test an app', 'category': 'command'}, {'entity': 'v1 pods', 'description': 'pods running the v1 version of an app', 'category': 'container'}, {'entity': 'v2 pods', 'description': 'pods running the v2 version of an app', 'category': 'container'}, {'entity': 'kubectl', 'description': 'a command-line tool for managing Kubernetes resources', 'category': 'command'}, {'entity': 'ReplicaSet', 'description': 'a resource that manages a set of identical pods', 'category': 'software'}, {'entity': 'ConfigMap', 'description': 'a resource that stores configuration data', 'category': 'database'}, {'entity': 'Secret', 'description': 'a resource that stores sensitive information', 'category': 'database'}, {'entity': 'ReplicaSet v1', 'description': 'an instance of ReplicaSet running the v1 version', 'category': 'software'}, {'entity': 'ReplicaSet v2', 'description': 'an instance of ReplicaSet running the v2 version', 'category': 'software'}, {'entity': 'Deployment', 'description': 'a resource that manages a set of identical pods', 'category': 'software'}]","[{'source_entity': '""v2 pods""', 'description': 'are created by', 'destination_entity': '""Deployments""'}, {'source_entity': '""Deployments""', 'description': 'manage the lifecycle of', 'destination_entity': '""v1 pods""'}, {'source_entity': '""kubectl""', 'description': 'is used to interact with', 'destination_entity': '""Deployments""'}, {'source_entity': '""ReplicaSet v2""', 'description': 'is a type of', 'destination_entity': '""Deployment""'}, {'source_entity': '""curl loop""', 'description': 'is used to interact with', 'destination_entity': '""ReplicaSet v1""'}, {'source_entity': '""Deployment""', 'description': 'uses a', 'destination_entity': '""Secret""'}, {'source_entity': '""Deployment""', 'description': 'uses a', 'destination_entity': '""ConfigMap""'}, {'source_entity': '""ReplicaSet v1""', 'description': 'is a type of', 'destination_entity': '""Deployments""'}]","['[\n  {\n    ""source"": ""v2 pods"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are created by"",\n    ""summary_er"": ""V2 pods are dynamically created by Kubernetes to manage containerized applications.""\n  },\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are created by"",\n    ""summary_er"": ""Deployments in Kubernetes create and manage pod instances to ensure application availability.""\n  }\n]', '[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manage the lifecycle of"",\n    ""summary_er"": ""Deployments manage the lifecycle of pods, ensuring they are created, updated, and deleted as needed.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to interact with"",\n    ""summary_er"": ""Kubectl is a command-line tool used to interact with Kubernetes resources, including pods.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""Deployments"",\n    ""relation_description"": ""is used to manage"",\n    ""summary_er"": ""Kubectl is used to manage Deployments in a Kubernetes cluster, ensuring smooth deployment and scaling of applications.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet v2"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a type of"",\n    ""summary_er"": ""A ReplicaSet v2 is a configuration object that ensures a specified number of pod replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""curl loop"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to interact with"",\n    ""summary_er"": ""The curl command is used to interact with a pod, allowing for communication between the two.""\n  },\n  {\n    ""source"": ""ReplicaSet v1"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""represents"",\n    ""summary_er"": ""A ReplicaSet v1 represents a set of identical pods that can be scaled up or down as needed.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""uses a"",\n    ""summary_er"": ""A Deployment in Kubernetes manages a set of identical replicas, using a Pod as its runtime environment.""\n  },\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""Secret"",\n    ""relation_description"": ""uses a"",\n    ""summary_er"": ""A Deployment in Kubernetes can use a Secret to store sensitive information, such as API keys or credentials.""\n  }\n]', '[{""source"": ""Deployment"", ""destination"": ""pod"", ""relation_description"": ""uses a"", ""summary_er"": ""A Deployment in Kubernetes manages a set of identical replicas, which are instances of a pod. It uses a pod template to create new replicas.""}]', '[\n  {\n    ""source"": ""ReplicaSet v1"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a type of"",\n    ""summary_er"": ""A ReplicaSet is a type of pod that ensures a specified number of replicas are running at any given time.""\n  },\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""ReplicaSet v1"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Deployments use ReplicaSets to manage the desired state of their pods and ensure they remain running as expected.""\n  }\n]']","Using Deployments allows for declarative updates to apps by changing the pod template in a single field, which is then performed by Kubernetes controllers. This process is simpler than running special commands with kubectl. Note that modifying ConfigMaps will not trigger an update unless referencing a new ConfigMap.","[{'highlight': 'By changing the pod template in your Deployment resource, you can update your app to a newer version by changing a single field!'}, {'highlight': 'The controllers running as part of the Kubernetes control plane performed the update, making it simpler than using kubectl rolling-update.'}, {'highlight': ""Modifying the ConfigMap referenced in the Deployment's pod template will not trigger an update; instead, create a new ConfigMap and modify the pod template to reference it.""}, {'highlight': 'During the update, an additional ReplicaSet was created and scaled up slowly while the previous ReplicaSet was scaled down to zero.'}, {'highlight': 'You can still see the old ReplicaSet next to the new one by listing them with kubectl get rs.'}]"
+211,300,0,[],"268
+CHAPTER 9
+Deployments: updating applications declaratively
+Similar to ReplicationControllers, all your new pods are now managed by the new
+ReplicaSet. Unlike before, the old ReplicaSet is still there, whereas the old Replication-
+Controller was deleted at the end of the rolling-update process. You’ll soon see what
+the purpose of this inactive ReplicaSet is. 
+ But you shouldn’t care about ReplicaSets here, because you didn’t create them
+directly. You created and operated only on the Deployment resource; the underlying
+ReplicaSets are an implementation detail. You’ll agree that managing a single Deploy-
+ment object is much easier compared to dealing with and keeping track of multiple
+ReplicationControllers. 
+ Although this difference may not be so apparent when everything goes well with a
+rollout, it becomes much more obvious when you hit a problem during the rollout
+process. Let’s simulate one problem right now.
+9.3.3
+Rolling back a deployment
+You’re currently running version v2 of your image, so you’ll need to prepare version 3
+first. 
+CREATING VERSION 3 OF YOUR APP
+In version 3, you’ll introduce a bug that makes your app handle only the first four
+requests properly. All requests from the fifth request onward will return an internal
+server error (HTTP status code 500). You’ll simulate this by adding an if statement at
+the beginning of the handler function. The following listing shows the new code, with
+all required changes shown in bold.
+const http = require('http');
+const os = require('os');
+var requestCount = 0;
+console.log(""Kubia server starting..."");
+var handler = function(request, response) {
+  console.log(""Received request from "" + request.connection.remoteAddress);
+  if (++requestCount >= 5) {
+    response.writeHead(500);
+    response.end(""Some internal error has occurred! This is pod "" + 
+os.hostname() + ""\n"");
+    return;
+  }
+  response.writeHead(200);
+  response.end(""This is v3 running in pod "" + os.hostname() + ""\n"");
+};
+var www = http.createServer(handler);
+www.listen(8080); 
+As you can see, on the fifth and all subsequent requests, the code returns a 500 error
+with the message “Some internal error has occurred...”
+Listing 9.8
+Version 3 of our app (a broken version): v3/app.js
+ 
+",[],"[{'entity': 'ReplicaSet', 'description': 'A resource that manages a set of replicas', 'category': 'software'}, {'entity': 'Deployment', 'description': 'A resource that manages a single deployment object', 'category': 'software'}, {'entity': 'ReplicationController', 'description': 'A resource that manages multiple pods', 'category': 'software'}, {'entity': 'Pod', 'description': 'A lightweight and portable container', 'category': 'container'}, {'entity': 'Kubernetes', 'description': 'An open-source container orchestration system', 'category': 'software'}, {'entity': 'Docker', 'description': 'A containerization platform', 'category': 'software'}, {'entity': 'http.createServer', 'description': 'A function that creates an HTTP server', 'category': 'function'}, {'entity': 'handler', 'description': 'A function that handles incoming requests', 'category': 'function'}, {'entity': 'requestCount', 'description': 'A variable that keeps track of the number of requests', 'category': 'variable'}, {'entity': 'os.hostname()', 'description': 'A function that returns the hostname of the machine', 'category': 'function'}, {'entity': 'response.writeHead', 'description': 'A method that sets the HTTP status code and headers', 'category': 'method'}, {'entity': 'response.end', 'description': 'A method that sends a response back to the client', 'category': 'method'}, {'entity': '500 error', 'description': 'An internal server error with an HTTP status code of 500', 'category': 'error'}]","[{'source_entity': 'response.writeHead', 'description': 'sets HTTP status code to 500 error', 'destination_entity': '500 error'}, {'source_entity': 'ReplicationController', 'description': 'manages replicas of a Deployment', 'destination_entity': 'Deployment'}, {'source_entity': 'handler', 'description': 'handles incoming requests from clients', 'destination_entity': 'requestCount'}, {'source_entity': 'Pod', 'description': 'runs a container with a specific image', 'destination_entity': 'Docker'}, {'source_entity': 'Kubernetes', 'description': 'orchestrates and manages multiple Pods', 'destination_entity': 'ReplicaSet'}, {'source_entity': 'http.createServer', 'description': 'creates an HTTP server to handle requests', 'destination_entity': 'handler'}, {'source_entity': 'os.hostname()', 'description': 'returns the hostname of the machine running the container', 'destination_entity': 'Pod'}]","['[\n  {\n    ""source"": ""response"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets HTTP status code"",\n    ""summary_er"": ""Response object sets HTTP status code to 500, indicating a server-side error, which can be triggered by a pod experiencing issues.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages replicas of a Deployment"",\n    ""summary_er"": ""ReplicationController ensures a specified number of replicas for a Deployment are running, managing pod creation and deletion.""\n  }\n]', '[\n  {\n    ""source"": ""handler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""handles incoming requests from clients"",\n    ""summary_er"": ""Handler receives client requests, which are then processed by a Pod in Kubernetes.""\n  },\n  {\n    ""source"": ""requestCount"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""counts incoming requests"",\n    ""summary_er"": ""Request Count tracks the number of incoming requests received by a Pod in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Docker"",\n    ""relation_description"": ""runs a container with a specific image"",\n    ""summary_er"": ""A Pod runs a container using a Docker image, providing a runtime environment for the application.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""orchestrates and manages multiple"",\n    ""summary_er"": ""Kubernetes manages and orchestrates multiple pods, ensuring efficient resource utilization and scalability.""\n  },\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""ReplicaSet"",\n    ""relation_description"": ""manages and ensures a specified number of replicas"",\n    ""summary_er"": ""Kubernetes ReplicaSet ensures a specified number of pod replicas are running at any given time, providing high availability.""\n  }\n]', '[\n  {\n    ""source"": ""http.createServer"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates an HTTP server to handle requests"",\n    ""summary_er"": ""Creates a Kubernetes Pod to serve HTTP requests using Node.js\'s http.createServer function.""\n  }\n]', '[\n  {\n    ""source"": ""os.hostname()"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""returns the hostname of the machine running the container"",\n    ""summary_er"": ""The os.hostname() function returns the hostname of the machine where a Pod is running, providing information about the physical host.""\n  }\n]']","This chapter discusses Deployments in Kubernetes, which allows for declarative updates to applications. A Deployment resource manages ReplicaSets, making it easier to manage compared to ReplicationControllers. The chapter simulates a problem during a rollout process by introducing a bug in version 3 of an app that returns a 500 error after the fifth request.","[{'highlight': 'Deployments: updating applications declaratively is similar to ReplicationControllers, but with a new ReplicaSet that remains active even after a rolling-update process.'}, {'highlight': 'The purpose of an inactive ReplicaSet is to manage pods during a rollout process, making it easier to deal with and keep track of multiple Deployments compared to ReplicationControllers.'}, {'highlight': 'A bug was introduced in version 3 of the app that makes it handle only the first four requests properly, returning an internal server error (HTTP status code 500) for all subsequent requests.'}, {'highlight': 'The new code in version 3 includes an if statement at the beginning of the handler function to simulate the bug and return a 500 error on the fifth and all subsequent requests.'}, {'highlight': 'The Deployment resource is used to manage pods, making it easier compared to dealing with and keeping track of multiple ReplicationControllers.'}]"
+212,301,0,[],"269
+Using Deployments for updating apps declaratively
+DEPLOYING VERSION 3
+I’ve made the v3 version of the image available as luksa/kubia:v3. You’ll deploy this
+new version by changing the image in the Deployment specification again: 
+$ kubectl set image deployment kubia nodejs=luksa/kubia:v3
+deployment ""kubia"" image updated
+You can follow the progress of the rollout with kubectl rollout status:
+$ kubectl rollout status deployment kubia
+Waiting for rollout to finish: 1 out of 3 new replicas have been updated...
+Waiting for rollout to finish: 2 out of 3 new replicas have been updated...
+Waiting for rollout to finish: 1 old replicas are pending termination...
+deployment ""kubia"" successfully rolled out
+The new version is now live. As the following listing shows, after a few requests, your
+web clients start receiving errors.
+$ while true; do curl http://130.211.109.222; done
+This is v3 running in pod kubia-1914148340-lalmx
+This is v3 running in pod kubia-1914148340-bz35w
+This is v3 running in pod kubia-1914148340-w0voh
+...
+This is v3 running in pod kubia-1914148340-w0voh
+Some internal error has occurred! This is pod kubia-1914148340-bz35w
+This is v3 running in pod kubia-1914148340-w0voh
+Some internal error has occurred! This is pod kubia-1914148340-lalmx
+This is v3 running in pod kubia-1914148340-w0voh
+Some internal error has occurred! This is pod kubia-1914148340-lalmx
+Some internal error has occurred! This is pod kubia-1914148340-bz35w
+Some internal error has occurred! This is pod kubia-1914148340-w0voh
+UNDOING A ROLLOUT
+You can’t have your users experiencing internal server errors, so you need to do some-
+thing about it fast. In section 9.3.6 you’ll see how to block bad rollouts automatically,
+but for now, let’s see what you can do about your bad rollout manually. Luckily,
+Deployments make it easy to roll back to the previously deployed version by telling
+Kubernetes to undo the last rollout of a Deployment:
+$ kubectl rollout undo deployment kubia
+deployment ""kubia"" rolled back
+This rolls the Deployment back to the previous revision. 
+TIP
+The undo command can also be used while the rollout process is still in
+progress to essentially abort the rollout. Pods already created during the roll-
+out process are removed and replaced with the old ones again.
+Listing 9.9
+Hitting your broken version 3
+ 
+",[],"[{'entity': 'Deployments', 'description': 'A Kubernetes resource that manages a set of replicas.', 'category': 'software'}, {'entity': 'kubectl', 'description': 'The command-line tool for interacting with Kubernetes.', 'category': 'software'}, {'entity': 'image', 'description': 'A container image in Docker.', 'category': 'container'}, {'entity': 'nodejs', 'description': 'A JavaScript runtime environment.', 'category': 'programming language'}, {'entity': 'luksa/kubia:v3', 'description': 'A specific version of the Kubia image.', 'category': 'image'}, {'entity': 'rollout status', 'description': 'The command to check the progress of a rollout.', 'category': 'command'}, {'entity': 'deployment kubia', 'description': 'A specific Deployment resource in Kubernetes.', 'category': 'resource'}, {'entity': 'pod', 'description': 'A running instance of a container.', 'category': 'container'}, {'entity': 'kubia-1914148340-lalmx', 'description': 'A specific pod name.', 'category': 'pod'}, {'entity': 'internal error', 'description': 'An error that occurs within the application.', 'category': 'error'}, {'entity': 'kubectl rollout undo', 'description': 'The command to roll back a Deployment.', 'category': 'command'}, {'entity': 'revision', 'description': 'A specific version of a Deployment.', 'category': 'resource'}]","[{'source_entity': '""Deployments""', 'description': 'create', 'destination_entity': '""luksa/kubia:v3""'}, {'source_entity': '""kubectl""', 'description': 'use', 'destination_entity': '""deployment kubia""'}, {'source_entity': '""kubectl""', 'description': 'check status of', 'destination_entity': '""rollout status""'}, {'source_entity': '""kubectl""', 'description': 'undo', 'destination_entity': '""rollout status""'}, {'source_entity': '""nodejs""', 'description': 'contain', 'destination_entity': '""image""'}, {'source_entity': '""kubia-1914148340-lalmx""', 'description': 'be affected by', 'destination_entity': '""internal error""'}]","['[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""create"",\n    ""summary_er"": ""A Deployment in Kubernetes creates a new Pod with image \'luksa/kubia:v3\'.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""use"",\n    ""summary_er"": ""Kubectl uses a pod to execute commands on a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""check status of"",\n    ""summary_er"": ""Use kubectl to check the status of a pod, including its running state and any errors.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""rollout"",\n    ""relation_description"": ""status"",\n    ""summary_er"": ""Use kubectl rollout status to check the status of a deployment or replica set, indicating whether it is ready and stable.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""undo"",\n    ""summary_er"": ""Kubectl command to undo changes made to a pod, reverting it to its previous state.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""rollout status"",\n    ""relation_description"": ""status"",\n    ""summary_er"": ""Kubectl command to display the status of a rollout, showing its current progress and any errors encountered.""\n  }\n]', '[\n  {\n    ""source"": ""nodejs"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contain"",\n    ""summary_er"": ""Node.js code is contained within a Docker container, which is then deployed as a pod in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""kubia-1914148340-lalmx"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""be affected by"",\n    ""summary_er"": ""The \'kubia-1914148340-lalmx\' container is impacted by an internal error in the pod.""\n  }\n]']","To update an app declaratively, change the image in the Deployment specification using $ kubectl set image deployment kubia nodejs=luksa/kubia:v3. Follow rollout progress with kubectl rollout status and roll back to previous revision with kubectl rollout undo deployment kubia.","[{'highlight': 'You can deploy a new version of an app by changing the image in the Deployment specification using $ kubectl set image deployment kubia nodejs=luksa/kubia:v3'}, {'highlight': 'You can follow the progress of the rollout with kubectl rollout status: $ kubectl rollout status deployment kubia'}, {'highlight': 'To undo a rollout, you can use $ kubectl rollout undo deployment kubia to roll back to the previously deployed version'}, {'highlight': 'Deployments make it easy to roll back to the previously deployed version by telling Kubernetes to undo the last rollout of a Deployment'}, {'highlight': 'The undo command can also be used while the rollout process is still in progress to essentially abort the rollout and replace with old pods again'}]"
+213,302,0,[],"270
+CHAPTER 9
+Deployments: updating applications declaratively
+DISPLAYING A DEPLOYMENT’S ROLLOUT HISTORY
+Rolling back a rollout is possible because Deployments keep a revision history. As
+you’ll see later, the history is stored in the underlying ReplicaSets. When a rollout
+completes, the old ReplicaSet isn’t deleted, and this enables rolling back to any revi-
+sion, not only the previous one. The revision history can be displayed with the
+kubectl rollout history command:
+$ kubectl rollout history deployment kubia
+deployments ""kubia"":
+REVISION    CHANGE-CAUSE
+2           kubectl set image deployment kubia nodejs=luksa/kubia:v2
+3           kubectl set image deployment kubia nodejs=luksa/kubia:v3
+Remember the --record command-line option you used when creating the Deploy-
+ment? Without it, the CHANGE-CAUSE column in the revision history would be empty,
+making it much harder to figure out what’s behind each revision.
+ROLLING BACK TO A SPECIFIC DEPLOYMENT REVISION
+You can roll back to a specific revision by specifying the revision in the undo com-
+mand. For example, if you want to roll back to the first version, you’d execute the fol-
+lowing command:
+$ kubectl rollout undo deployment kubia --to-revision=1
+Remember the inactive ReplicaSet left over when you modified the Deployment the
+first time? The ReplicaSet represents the first revision of your Deployment. All Replica-
+Sets created by a Deployment represent the complete revision history, as shown in fig-
+ure 9.11. Each ReplicaSet stores the complete information of the Deployment at that
+specific revision, so you shouldn’t delete it manually. If you do, you’ll lose that specific
+revision from the Deployment’s history, preventing you from rolling back to it.
+But having old ReplicaSets cluttering your ReplicaSet list is not ideal, so the length of
+the revision history is limited by the revisionHistoryLimit property on the Deploy-
+ment resource. It defaults to two, so normally only the current and the previous revision
+are shown in the history (and only the current and the previous ReplicaSet are pre-
+served). Older ReplicaSets are deleted automatically. 
+Deployment
+v1 ReplicaSet
+ReplicaSet
+Pods: v1
+ReplicaSet
+ReplicaSet
+ReplicaSet
+Revision 2
+Revision 4
+Revision 3
+Revision 1
+Revision history
+Current revision
+Figure 9.11
+A Deployment’s ReplicaSets also act as its revision history.
+ 
+",[],"[{'entity': 'Deployments', 'description': 'a way to update applications declaratively', 'category': 'application'}, {'entity': 'kubectl', 'description': 'command-line tool for interacting with Kubernetes', 'category': 'software'}, {'entity': 'rollout history', 'description': ""displaying a deployment's rollout history using kubectl command"", 'category': 'application'}, {'entity': 'kubectl set image', 'description': 'command for updating the image of a deployment', 'category': 'software'}, {'entity': 'ReplicaSets', 'description': 'a resource that represents a set of identical Pods', 'category': 'application'}, {'entity': '--record command-line option', 'description': 'option for recording the cause of changes in Deployments', 'category': 'software'}, {'entity': 'CHANGE-CAUSE column', 'description': 'column in the revision history that shows the reason for each change', 'category': 'database'}, {'entity': 'revisionHistoryLimit property', 'description': 'property on the Deployment resource that limits the length of the revision history', 'category': 'application'}, {'entity': 'ReplicaSet list', 'description': 'list of ReplicaSets associated with a Deployment', 'category': 'database'}, {'entity': 'Pods', 'description': 'the basic execution unit in Kubernetes', 'category': 'application'}, {'entity': 'revision history', 'description': 'history of changes to a Deployment, stored in ReplicaSets', 'category': 'database'}, {'entity': '--to-revision option', 'description': 'option for specifying the revision to roll back to', 'category': 'software'}, {'entity': 'undo command', 'description': 'command for rolling back a Deployment to a previous revision', 'category': 'application'}]","[{'source_entity': '""Deployments""', 'description': 'can be managed using', 'destination_entity': '""kubectl""'}, {'source_entity': '""kubectl""', 'description': 'is used to manage', 'destination_entity': '""Deployments""'}, {'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""--record command-line option""'}, {'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""--to-revision option""'}, {'source_entity': '""kubectl set image""', 'description': 'updates the image of a', 'destination_entity': '""Pods""'}, {'source_entity': '""kubectl set image""', 'description': 'uses', 'destination_entity': '""--to-revision option""'}, {'source_entity': '""revisionHistoryLimit property""', 'description': 'is used to limit the', 'destination_entity': '""rollout history""'}, {'source_entity': '""undo command""', 'description': 'can be used to undo changes made by', 'destination_entity': '""kubectl set image""'}, {'source_entity': '""ReplicaSets""', 'description': 'are managed using', 'destination_entity': '""kubectl""'}, {'source_entity': '""Pods""', 'description': 'can be updated using', 'destination_entity': '""kubectl set image""'}, {'source_entity': '""revision history""', 'description': 'is limited by the', 'destination_entity': '""revisionHistoryLimit property""'}, {'source_entity': '""ReplicaSet list""', 'description': 'can be displayed using', 'destination_entity': '""kubectl""'}, {'source_entity': '""CHANGE-CAUSE column""', 'description': 'is used to display the cause of changes made by', 'destination_entity': '""kubectl set image""'}]","['[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be managed using"",\n    ""summary_er"": ""Deployments can manage pods, utilizing kubectl for control.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to manage"",\n    ""summary_er"": ""Kubectl manages pods, ensuring they run smoothly and efficiently.""\n  },\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a type of"",\n    ""summary_er"": ""Deployments are a type of pod that provides a stable and scalable environment for applications.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubectl uses a pod to execute commands, leveraging its resources and capabilities.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubectl commands use pods as a fundamental execution unit, leveraging them to manage containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""updates the image of a"",\n    ""summary_er"": ""Updates the container image of a running Kubernetes pod using kubectl command.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Update a pod\'s image using kubectl with --to-revision option.""\n  }\n]', '[\n  {\n    ""source"": ""revisionHistoryLimit property"",\n    ""destination"": ""pod rollout history"",\n    ""relation_description"": ""is used to limit"",\n    ""summary_er"": ""The revisionHistoryLimit property limits the rollout history of a pod, controlling how many revisions are retained.""\n  }\n]', '[\n  {\n    ""source"": ""undo command"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be used to undo changes made by"",\n    ""summary_er"": ""The \'undo command\' can revert changes made to a pod, allowing for rollbacks and error corrections.""\n  },\n  {\n    ""source"": ""kubectl set image"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""command"",\n    ""summary_er"": ""The \'kubectl set image\' command updates the container image of a running pod, enabling version upgrades and fixes.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are managed using"",\n    ""summary_er"": ""ReplicaSets manage and scale pods in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""ReplicaSets"",\n    ""relation_description"": ""command used to"",\n    ""summary_er"": ""kubectl is used to interact with ReplicaSets and manage pod scaling.""\n  }\n]', '[\n  {\n    ""source"": ""Pods"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be updated using"",\n    ""summary_er"": ""Update a pod\'s image by running \'kubectl set image\' command, allowing for efficient container updates without disrupting the application.""\n  }\n]', '[\n  {\n    ""source"": ""revision history"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is limited by the"",\n    ""summary_er"": ""Revision history is limited by a pod, which controls the number of revisions stored.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet list"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be displayed using"",\n    ""summary_er"": ""A ReplicaSet list can be displayed by running a kubectl command, which shows the pods managed by the ReplicaSet.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""ReplicaSet list"",\n    ""relation_description"": ""command to display"",\n    ""summary_er"": ""The kubectl command is used to display a list of ReplicaSets, providing information on the pods they manage.""\n  }\n]', '[\n  {\n    ""source"": ""CHANGE-CAUSE column"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to display the cause of changes made by"",\n    ""summary_er"": ""The CHANGE-CAUSE column displays the reason for changes made to a pod.""\n  },\n  {\n    ""source"": ""kubectl set image"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""command"",\n    ""summary_er"": ""The kubectl set image command updates the image of a running pod.""\n  }\n]']","Deployments in Kubernetes keep a revision history of rollouts, which can be displayed with kubectl rollout history command. This history allows rolling back to any revision by specifying the revision number in the undo command. The length of the revision history is limited by the revisionHistoryLimit property and older ReplicaSets are deleted automatically.","[{'highlight': 'Deployments keep a revision history, which can be displayed with the kubectl rollout history command.'}, {'highlight': 'The revision history can be used to roll back to any revision, not only the previous one, by specifying the revision in the undo command.'}, {'highlight': 'Old ReplicaSets are automatically deleted after a certain period of time, limited by the revisionHistoryLimit property on the Deployment resource.'}, {'highlight': 'The --record command-line option should be used when creating a Deployment to record the CHANGE-CAUSE for each revision in the history.'}, {'highlight': 'Rolling back to a specific deployment revision can be done by executing the kubectl rollout undo command with the --to-revision option specifying the desired revision number.'}]"
+214,303,0,[],"271
+Using Deployments for updating apps declaratively
+NOTE
+The extensions/v1beta1 version of Deployments doesn’t have a default
+revisionHistoryLimit, whereas the default in version apps/v1beta2 is 10.
+9.3.4
+Controlling the rate of the rollout
+When you performed the rollout to v3 and tracked its progress with the kubectl
+rollout status command, you saw that first a new pod was created, and when it
+became available, one of the old pods was deleted and another new pod was created.
+This continued until there were no old pods left. The way new pods are created and
+old ones are deleted is configurable through two additional properties of the rolling
+update strategy. 
+INTRODUCING THE MAXSURGE AND MAXUNAVAILABLE PROPERTIES OF THE ROLLING UPDATE STRATEGY
+Two properties affect how many pods are replaced at once during a Deployment’s roll-
+ing update. They are maxSurge and maxUnavailable and can be set as part of the
+rollingUpdate sub-property of the Deployment’s strategy attribute, as shown in
+the following listing.
+spec:
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+What these properties do is explained in table 9.2.
+Because the desired replica count in your case was three, and both these properties
+default to 25%, maxSurge allowed the number of all pods to reach four, and
+Listing 9.10
+Specifying parameters for the rollingUpdate strategy
+Table 9.2
+Properties for configuring the rate of the rolling update
+Property
+What it does
+maxSurge
+Determines how many pod instances you allow to exist above the desired replica 
+count configured on the Deployment. It defaults to 25%, so there can be at most 
+25% more pod instances than the desired count. If the desired replica count is 
+set to four, there will never be more than five pod instances running at the same 
+time during an update. When converting a percentage to an absolute number, 
+the number is rounded up. Instead of a percentage, the value can also be an 
+absolute value (for example, one or two additional pods can be allowed).
+maxUnavailable
+Determines how many pod instances can be unavailable relative to the desired 
+replica count during the update. It also defaults to 25%, so the number of avail-
+able pod instances must never fall below 75% of the desired replica count. Here, 
+when converting a percentage to an absolute number, the number is rounded 
+down. If the desired replica count is set to four and the percentage is 25%, only 
+one pod can be unavailable. There will always be at least three pod instances 
+available to serve requests during the whole rollout. As with maxSurge, you can 
+also specify an absolute value instead of a percentage.
+ 
+","[                   Property                                       What it does
+0  maxSurge\nmaxUnavailable  Determines how many pod instances you allow to...]","[{'entity': 'Deployments', 'description': 'A Kubernetes resource that manages the deployment of applications', 'category': 'software'}, {'entity': 'extensions/v1beta1', 'description': 'A version of Deployments', 'category': 'software'}, {'entity': 'revisionHistoryLimit', 'description': 'A property that controls the number of revisions kept by a Deployment', 'category': 'software'}, {'entity': 'apps/v1beta2', 'description': 'A version of Deployments', 'category': 'software'}, {'entity': 'maxSurge', 'description': 'A property that controls the number of pods allowed to exist above the desired replica count', 'category': 'software'}, {'entity': 'maxUnavailable', 'description': 'A property that controls the number of pods that can be unavailable during an update', 'category': 'software'}, {'entity': 'rollingUpdate', 'description': 'A strategy for updating Deployments', 'category': 'software'}, {'entity': 'spec', 'description': 'A property of a Deployment that specifies its configuration', 'category': 'software'}, {'entity': 'strategy', 'description': 'A property of a Deployment that specifies its update strategy', 'category': 'software'}, {'entity': 'type', 'description': 'A property of a Deployment that specifies its type', 'category': 'software'}, {'entity': 'RollingUpdate', 'description': 'A type of update strategy for Deployments', 'category': 'software'}, {'entity': 'kubectl', 'description': 'A command-line tool for interacting with Kubernetes', 'category': 'software'}, {'entity': 'rollout status', 'description': 'A command used to track the progress of a rollout', 'category': 'software'}]","[{'source_entity': '""Deployments""', 'description': 'are managed by', 'destination_entity': '""kubectl""'}, {'source_entity': '""kubectl""', 'description': 'is used to manage', 'destination_entity': '""Deployments""'}, {'source_entity': '""revisionHistoryLimit""', 'description': 'is a parameter of', 'destination_entity': '""Deployments""'}, {'source_entity': '""type""', 'description': 'is a field in the', 'destination_entity': '""spec""'}, {'source_entity': '""maxSurge""', 'description': 'is a parameter of', 'destination_entity': '""strategy""'}, {'source_entity': '""spec""', 'description': 'contains information about', 'destination_entity': '""Deployments""'}, {'source_entity': '""strategy""', 'description': 'defines how to update', 'destination_entity': '""Deployments""'}, {'source_entity': '""extensions/v1beta1""', 'description': 'is the API version used for', 'destination_entity': '""Deployments""'}, {'source_entity': '""rollout status""', 'description': 'can be retrieved using', 'destination_entity': '""kubectl""'}, {'source_entity': '""apps/v1beta2""', 'description': 'is the API version used for', 'destination_entity': '""Deployments""'}, {'source_entity': '""maxUnavailable""', 'description': 'is a parameter of', 'destination_entity': '""rollingUpdate""'}, {'source_entity': '""rollingUpdate""', 'description': 'defines how to update', 'destination_entity': '""Deployments""'}, {'source_entity': '""RollingUpdate""', 'description': 'is a strategy for updating', 'destination_entity': '""Deployments""'}]","['[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are managed by"",\n    ""summary_er"": ""Deployments manage and orchestrate pods in a Kubernetes cluster, ensuring efficient resource utilization.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""Deployments"",\n    ""relation_description"": ""command to create"",\n    ""summary_er"": ""The kubectl command is used to create Deployments, which are then managed by the Kubernetes control plane.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to manage"",\n    ""summary_er"": ""Kubectl is a command-line tool that manages pods, including creating, scaling, and deleting them.""\n  }\n]', '[\n  {\n    ""source"": ""revisionHistoryLimit"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a parameter of"",\n    ""summary_er"": ""Revision history limit is a parameter that controls how many revisions of a pod are kept in memory.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""Deployments"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A pod contains one or more containers, which are the basic execution units of a deployment.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is a field in the"",\n    ""summary_er"": ""In Kubernetes, a Pod is a logical host for one or more application containers.""\n  },\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""spec"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""The spec of a Pod contains its configuration and settings, defining the container(s) to run within it.""\n  }\n]', '[\n  {\n    ""source"": ""maxSurge"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a parameter of"",\n    ""summary_er"": ""Max surge is a parameter that determines the maximum number of pods to run at any given time.""\n  },\n  {\n    ""source"": ""strategy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""and the destination pod"",\n    ""summary_er"": ""Strategy refers to the approach used to manage and deploy pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains information about"",\n    ""summary_er"": ""The spec entity holds metadata about a Kubernetes Pod, including its configuration and settings.""\n  },\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""A Deployment in Kubernetes is related to one or more Pods that run the same application or service.""\n  }\n]', '[\n  {\n    ""source"": ""Strategy"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""Defines how to update"",\n    ""summary_er"": ""A strategy determines how a deployment updates its associated pod, ensuring efficient and controlled changes.""\n  }\n]', '[\n  {\n    ""source"": ""extensions/v1beta1"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is the API version used for"",\n    ""summary_er"": ""The extensions/v1beta1 API is used to manage pods in Kubernetes.""\n  },\n  {\n    ""source"": ""extensions/v1beta1"",\n    ""destination"": ""Deployments"",\n    ""relation_description"": ""is the API version used for"",\n    ""summary_er"": ""The extensions/v1beta1 API is also used to manage Deployments in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""rollout status"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be retrieved using"",\n    ""summary_er"": ""Rollout status can be checked by retrieving information about a pod, which provides details on deployment progress and any issues encountered.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""command to retrieve"",\n    ""summary_er"": ""The kubectl command is used to interact with Kubernetes resources, including pods, allowing users to retrieve information about a pod\'s status and other details.""\n  }\n]', '[\n  {\n    ""source"": ""apps/v1beta2"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is the API version used for"",\n    ""summary_er"": ""The apps/v1beta2 API is used to manage pods, which are the basic execution units in Kubernetes.""\n  },\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a type of"",\n    ""summary_er"": ""A Deployment in Kubernetes is a type of pod that provides high availability and self-healing capabilities.""\n  }\n]', '[\n  {\n    ""source"": ""maxUnavailable"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a parameter of"",\n    ""summary_er"": ""Max unavailable is a parameter that determines the maximum number of pods that can be unavailable during a rolling update in Kubernetes.""\n  },\n  {\n    ""source"": ""rollingUpdate"",\n    ""destination"": ""maxUnavailable"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""Rolling update is related to max unavailable, which specifies the maximum number of pods that can be unavailable during an update.""\n  }\n]', '[\n  {\n    ""source"": ""rollingUpdate"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines how to update"",\n    ""summary_er"": ""Defines rolling update strategy for pods in a Deployment.""\n  }\n]', '[\n  {\n    ""source"": ""RollingUpdate"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a strategy for updating"",\n    ""summary_er"": ""RollingUpdate is a deployment strategy that updates pods incrementally to minimize downtime.""\n  },\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""and the destination"",\n    ""summary_er"": ""Deployments manage and update pods in a Kubernetes cluster, ensuring high availability and scalability.""\n  }\n]']",Deployments in Kubernetes allow for declarative updates to apps. The rollout process can be controlled using the `maxSurge` and `maxUnavailable` properties of the rolling update strategy. These properties determine how many pod instances are allowed above the desired replica count (maxSurge) and how many can be unavailable during the update (maxUnavailable). Both default to 25% but can also be specified as absolute values.,"[{'highlight': 'The extensions/v1beta1 version of Deployments doesn’t have a default revisionHistoryLimit, whereas the default in version apps/v1beta2 is 10.'}, {'highlight': 'Two properties affect how many pods are replaced at once during a Deployment’s rolling update. They are maxSurge and maxUnavailable'}, {'highlight': 'maxSurge allowed the number of all pods to reach four, and maxUnavailable defaults to 25%, so there can be at most 75% of the desired replica count available.'}, {'highlight': 'maxSurge determines how many pod instances you allow to exist above the desired replica count configured on the Deployment'}, {'highlight': 'maxUnavailable determines how many pod instances can be unavailable relative to the desired replica count during the update'}]"
+215,304,0,[],"272
+CHAPTER 9
+Deployments: updating applications declaratively
+maxUnavailable disallowed having any unavailable pods (in other words, three pods
+had to be available at all times). This is shown in figure 9.12.
+UNDERSTANDING THE MAXUNAVAILABLE PROPERTY
+The extensions/v1beta1 version of Deployments uses different defaults—it sets both
+maxSurge and maxUnavailable to 1 instead of 25%. In the case of three replicas, max-
+Surge is the same as before, but maxUnavailable is different (1 instead of 0). This
+makes the rollout process unwind a bit differently, as shown in figure 9.13.
+v1
+Number
+of pods
+3
+4
+2
+1
+Time
+v1
+3 available
+1 unavailable
+Create
+one
+v2 pod
+4 available
+3 available
+1 unavailable
+4 available
+3 available
+1 unavailable
+maxSurge = 1
+maxUnavailable = 0
+Desired replica count = 3
+3 available
+v2
+v1
+v1
+v2
+v2
+v1
+v1
+v1
+v1
+v1
+v1
+v1
+v1
+v1
+v1
+v2
+v2
+v2
+v2
+v2
+v2
+v2
+v2
+v1
+v2
+v2
+v2
+v2
+4 available
+Wait
+until
+it’s
+available
+Delete
+one v1
+pod and
+create one
+v2 pod
+Wait
+until
+it’s
+available
+Delete
+one v1
+pod and
+create one
+v2 pod
+Wait
+until
+it’s
+available
+Delete
+last
+v1 pod
+Figure 9.12
+Rolling update of a Deployment with three replicas and default maxSurge and maxUnavailable 
+v1
+Number
+of pods
+3
+4
+2
+1
+Time
+v1
+2 available
+2 unavailable
+4 available
+2 available
+1 unavailable
+3 available
+maxSurge = 1
+maxUnavailable = 1
+Desired replica count = 3
+v1
+v1
+v1
+v1
+v1
+v2
+v2
+v2
+v2
+v2
+v2
+v2
+v2
+v2
+v2
+Wait until
+both are
+available
+Delete
+two v1
+pods and
+create one
+v2 pod
+Delete v1
+pod and
+create two
+v2 pods
+Wait
+until it’s
+available
+Figure 9.13
+Rolling update of a Deployment with the maxSurge=1 and maxUnavailable=1
+ 
+","[   Col0 Col1  Col2 3-v2  Col4 5-v2  Col6 7-v2  Col8 9-v2 Col10 11-v2 Col12  \
+0         v1         v1         v1         v2         v2          v2         
+1  None   v1  None   v1  None   v1  None   v1  None   v1  None    v2  None   
+2  None   v1  None   v1  None   v1  None   v1  None   v1  None    v1  None   
+
+  13-v2 Col14 Col15  
+0    v2          v2  
+1    v2  None    v2  
+2    v1  None    v2  ,    Col0 Col1  Col2 3-v2  Col4 5-v2  Col6 Col7  Col8 Col9
+0         v1         v2         v2         v2         v2
+1         v1         v1         v1         v2         v2
+2  None   v1  None   v1  None   v1  None   v2  None   v2]","[{'entity': 'Deployments', 'description': 'a way to update applications declaratively', 'category': 'application'}, {'entity': 'maxUnavailable', 'description': 'property that sets the maximum number of unavailable pods', 'category': 'process'}, {'entity': 'pods', 'description': 'units of deployment in Kubernetes', 'category': 'container'}, {'entity': 'replicas', 'description': 'number of identical copies of a pod', 'category': 'application'}, {'entity': 'maxSurge', 'description': 'property that sets the maximum number of additional pods', 'category': 'process'}, {'entity': 'v1beta1', 'description': 'version of Deployments', 'category': 'software'}, {'entity': 'extensions', 'description': 'API group in Kubernetes', 'category': 'network'}, {'entity': 'Kubernetes', 'description': 'container orchestration system', 'category': 'application'}, {'entity': 'v1', 'description': 'version of Deployments', 'category': 'software'}, {'entity': 'Desired replica count', 'description': 'number of desired replicas for a deployment', 'category': 'process'}]","[{'source_entity': '""Deployments""', 'description': 'manages', 'destination_entity': '""pods""'}, {'source_entity': '""Deployments""', 'description': 'specifies', 'destination_entity': '""maxSurge""'}, {'source_entity': '""Kubernetes""', 'description': 'uses', 'destination_entity': '""v1beta1""'}, {'source_entity': '""Desired replica count""', 'description': 'is controlled by', 'destination_entity': '""Deployments""'}, {'source_entity': '""Kubernetes""', 'description': 'specifies', 'destination_entity': '""v1""'}, {'source_entity': '""replicas""', 'description': 'managed by', 'destination_entity': '""Deployments""'}, {'source_entity': '""maxUnavailable""', 'description': 'limits', 'destination_entity': '""extensions""'}]","['[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Deployments manage and orchestrate pods, ensuring efficient resource utilization and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""A deployment in Kubernetes specifies a desired state for a set of replicas, which are identical pods that run the same application.""\n  },\n  {\n    ""source"": ""maxSurge"",\n    ""destination"": ""Deployments"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""Max surge is a field in Deployments that specifies the maximum number of new replicas that can be created during a rollout, helping to prevent resource overload.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubernetes manages and orchestrates containerized applications, including pods, which are the basic execution unit in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Desired replica count"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is controlled by"",\n    ""summary_er"": ""The desired replica count is a parameter that determines how many replicas of a pod should be running at any given time.""\n  },\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""Deployments are used to manage the rollout and scaling of pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""Kubernetes specifies a pod\'s configuration and behavior.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSets"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""ReplicaSets manage the number of replicas (identical copies) of a Pod in a cluster.""\n  },\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""Deployments manage the rollout and scaling of Pods in a cluster, ensuring high availability.""\n  }\n]', '[\n  {\n    ""source"": ""maxUnavailable"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits"",\n    ""summary_er"": ""The maxUnavailable parameter sets a limit on the number of pods that can be unavailable during a rolling update.""\n  },\n  {\n    ""source"": ""extensions"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configuration"",\n    ""summary_er"": ""The extensions field in a pod configuration allows for additional metadata and settings to be specified.""\n  }\n]']","Deployments can be updated declaratively using `maxSurge` and `maxUnavailable` properties, which control the number of unavailable pods during a rollout. The `extensions/v1beta1` version sets both to 1 instead of 25%, affecting the rollout process as shown in figures 9.12 and 9.13.","[{'highlight': 'The extensions/v1beta1 version of Deployments uses different defaults—it sets both maxSurge and maxUnavailable to 1 instead of 25%.'}, {'highlight': 'maxUnavailable is disallowed having any unavailable pods (in other words, three pods had to be available at all times).'}, {'highlight': 'The rollout process unwinds differently when maxSurge = 1 and maxUnavailable = 1, as shown in figure 9.13.'}, {'highlight': 'maxSurge is the same as before, but maxUnavailable is different (1 instead of 0) for three replicas.'}, {'highlight': ""The desired replica count is 3, and the rollout process involves deleting one v1 pod and creating one v2 pod until it's available.""}]"
+216,305,0,[],"273
+Using Deployments for updating apps declaratively
+In this case, one replica can be unavailable, so if the desired replica count is three,
+only two of them need to be available. That’s why the rollout process immediately
+deletes one pod and creates two new ones. This ensures two pods are available and
+that the maximum number of pods isn’t exceeded (the maximum is four in this
+case—three plus one from maxSurge). As soon as the two new pods are available, the
+two remaining old pods are deleted.
+ This is a bit hard to grasp, especially since the maxUnavailable property leads you
+to believe that that’s the maximum number of unavailable pods that are allowed. If
+you look at the previous figure closely, you’ll see two unavailable pods in the second
+column even though maxUnavailable is set to 1. 
+ It’s important to keep in mind that maxUnavailable is relative to the desired
+replica count. If the replica count is set to three and maxUnavailable is set to one,
+that means that the update process must always keep at least two (3 minus 1) pods
+available, while the number of pods that aren’t available can exceed one.
+9.3.5
+Pausing the rollout process
+After the bad experience with version 3 of your app, imagine you’ve now fixed the bug
+and pushed version 4 of your image. You’re a little apprehensive about rolling it out
+across all your pods the way you did before. What you want is to run a single v4 pod
+next to your existing v2 pods and see how it behaves with only a fraction of all your
+users. Then, once you’re sure everything’s okay, you can replace all the old pods with
+new ones. 
+ You could achieve this by running an additional pod either directly or through an
+additional Deployment, ReplicationController, or ReplicaSet, but you do have another
+option available on the Deployment itself. A Deployment can also be paused during
+the rollout process. This allows you to verify that everything is fine with the new ver-
+sion before proceeding with the rest of the rollout.
+PAUSING THE ROLLOUT
+I’ve prepared the v4 image, so go ahead and trigger the rollout by changing the image
+to luksa/kubia:v4, but then immediately (within a few seconds) pause the rollout:
+$ kubectl set image deployment kubia nodejs=luksa/kubia:v4
+deployment ""kubia"" image updated
+$ kubectl rollout pause deployment kubia
+deployment ""kubia"" paused
+A single new pod should have been created, but all original pods should also still be
+running. Once the new pod is up, a part of all requests to the service will be redirected
+to the new pod. This way, you’ve effectively run a canary release. A canary release is a
+technique for minimizing the risk of rolling out a bad version of an application and it
+affecting all your users. Instead of rolling out the new version to everyone, you replace
+only one or a small number of old pods with new ones. This way only a small number
+of users will initially hit the new version. You can then verify whether the new version
+ 
+",[],[],,[],"A Deployment in Kubernetes allows for declarative updates to an application, ensuring that a minimum number of replicas are always available during the rollout process. The `maxUnavailable` property is relative to the desired replica count, meaning that at least one pod must be available when updating from three replicas. Additionally, Deployments can be paused during the rollout process, enabling the creation of a single new pod alongside existing ones for verification before proceeding with the full update.","[{'highlight': 'In this case, one replica can be unavailable, so if the desired replica count is three, only two of them need to be available.'}, {'highlight': 'maxUnavailable is relative to the desired replica count. If the replica count is set to three and maxUnavailable is set to one, that means that the update process must always keep at least two (3 minus 1) pods available,'}, {'highlight': 'A Deployment can also be paused during the rollout process. This allows you to verify that everything is fine with the new version before proceeding with the rest of the rollout.'}, {'highlight': 'You could achieve this by running an additional pod either directly or through an additional Deployment, ReplicationController, or ReplicaSet,'}, {'highlight': 'This way, you’ve effectively run a canary release. A canary release is a technique for minimizing the risk of rolling out a bad version of an application and it affecting all your users.'}]"
+217,306,0,[],"274
+CHAPTER 9
+Deployments: updating applications declaratively
+is working fine or not and then either continue the rollout across all remaining pods
+or roll back to the previous version. 
+RESUMING THE ROLLOUT
+In your case, by pausing the rollout process, only a small portion of client requests will
+hit your v4 pod, while most will still hit the v3 pods. Once you’re confident the new
+version works as it should, you can resume the deployment to replace all the old pods
+with new ones:
+$ kubectl rollout resume deployment kubia
+deployment ""kubia"" resumed
+Obviously, having to pause the deployment at an exact point in the rollout process
+isn’t what you want to do. In the future, a new upgrade strategy may do that automati-
+cally, but currently, the proper way of performing a canary release is by using two dif-
+ferent Deployments and scaling them appropriately. 
+USING THE PAUSE FEATURE TO PREVENT ROLLOUTS
+Pausing a Deployment can also be used to prevent updates to the Deployment from
+kicking off the rollout process, allowing you to make multiple changes to the Deploy-
+ment and starting the rollout only when you’re done making all the necessary changes.
+Once you’re ready for changes to take effect, you resume the Deployment and the
+rollout process will start.
+NOTE
+If a Deployment is paused, the undo command won’t undo it until you
+resume the Deployment.
+9.3.6
+Blocking rollouts of bad versions
+Before you conclude this chapter, we need to discuss one more property of the Deploy-
+ment resource. Remember the minReadySeconds property you set on the Deployment
+at the beginning of section 9.3.2? You used it to slow down the rollout, so you could see
+it was indeed performing a rolling update and not replacing all the pods at once. The
+main function of minReadySeconds is to prevent deploying malfunctioning versions, not
+slowing down a deployment for fun. 
+UNDERSTANDING THE APPLICABILITY OF MINREADYSECONDS
+The minReadySeconds property specifies how long a newly created pod should be
+ready before the pod is treated as available. Until the pod is available, the rollout pro-
+cess will not continue (remember the maxUnavailable property?). A pod is ready
+when readiness probes of all its containers return a success. If a new pod isn’t func-
+tioning properly and its readiness probe starts failing before minReadySeconds have
+passed, the rollout of the new version will effectively be blocked.
+ You used this property to slow down your rollout process by having Kubernetes
+wait 10 seconds after a pod was ready before continuing with the rollout. Usually,
+you’d set minReadySeconds to something much higher to make sure pods keep report-
+ing they’re ready after they’ve already started receiving actual traffic. 
+ 
+",[],"[{'entity': 'Deployment', 'description': 'A Kubernetes resource that manages a set of replicas (pods) and provides declarative updates to an application.', 'category': 'application'}, {'entity': 'kubectl', 'description': 'The command-line tool for interacting with Kubernetes clusters.', 'category': 'command'}, {'entity': 'rollout', 'description': 'The process of updating a Deployment to a new version.', 'category': 'process'}, {'entity': 'pause', 'description': 'A feature that allows pausing a Deployment and preventing updates from kicking off the rollout process.', 'category': 'feature'}, {'entity': 'resume', 'description': 'A command used to resume a paused Deployment and start the rollout process.', 'category': 'command'}, {'entity': 'minReadySeconds', 'description': 'A property of a Deployment that specifies how long a newly created pod should be ready before it is treated as available.', 'category': 'property'}, {'entity': 'readiness probes', 'description': 'Mechanisms used to determine whether a container is ready and can receive traffic.', 'category': 'mechanism'}, {'entity': 'maxUnavailable', 'description': 'A property of a Deployment that specifies the maximum number of unavailable replicas allowed during a rollout.', 'category': 'property'}, {'entity': 'pod', 'description': 'The basic execution unit in Kubernetes, representing a container running an application.', 'category': 'container'}, {'entity': 'replica', 'description': 'A copy of a pod that is managed by a Deployment.', 'category': 'application'}]","[{'source_entity': 'kubectl', 'description': 'used to interact with Kubernetes clusters', 'destination_entity': 'Kubernetes'}, {'source_entity': 'readiness probes', 'description': 'used to determine whether a pod is ready to serve traffic', 'destination_entity': 'pod'}, {'source_entity': 'Deployment', 'description': 'manages the rollout of new versions of an application', 'destination_entity': 'application'}, {'source_entity': 'minReadySeconds', 'description': 'used to specify the minimum number of seconds before a pod is considered ready', 'destination_entity': 'pod'}, {'source_entity': 'maxUnavailable', 'description': 'used to specify the maximum number of unavailable replicas during a rollout', 'destination_entity': 'replica'}, {'source_entity': 'pause', 'description': 'used to pause a rollout and prevent further updates', 'destination_entity': 'rollout'}, {'source_entity': 'resume', 'description': 'used to resume a paused rollout', 'destination_entity': 'rollout'}, {'source_entity': 'replica', 'description': 'used to manage the number of replicas in a deployment', 'destination_entity': 'Deployment'}, {'source_entity': 'rollout', 'description': 'used to manage the rollout of new versions of an application', 'destination_entity': 'application'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to interact with Kubernetes clusters"",\n    ""summary_er"": ""kubectl is used to manage and interact with pods in a Kubernetes cluster, allowing users to create, update, and delete pod resources.""\n  }\n]', '[\n  {\n    ""source"": ""readiness probes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to determine whether a pod is ready to serve traffic"",\n    ""summary_er"": ""Readiness probes ensure pod readiness for serving traffic by checking its health and status.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages the rollout of new versions of an application"",\n    ""summary_er"": ""A Deployment manages the rollout of a new version of an application by controlling the number of replicas of a Pod.""\n  }\n]', '[\n  {\n    ""source"": ""minReadySeconds"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to specify the minimum number of seconds before a pod is considered ready"",\n    ""summary_er"": ""This field specifies the minimum time a pod must be running before it\'s considered ready, ensuring reliable deployment and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""maxUnavailable"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to specify the maximum number of unavailable replicas during a rollout"",\n    ""summary_er"": ""Max Unavailable specifies the max replicas that can be unavailable during a pod rollout, ensuring minimal disruption.""\n  }\n]', '[\n  {\n    ""source"": ""pause"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to pause a rollout and prevent further updates"",\n    ""summary_er"": ""The \'pause\' command is used to temporarily halt a pod\'s rollout, preventing any further updates until it is resumed.""\n  }\n]', '[\n  {\n    ""source"": ""resume"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to resume a paused rollout"",\n    ""summary_er"": ""Resume a paused Kubernetes rollout by restarting the affected pod.""\n  }\n]', '[\n  {\n    ""source"": ""replica"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to manage the number of replicas in a deployment"",\n    ""summary_er"": ""Replicas are managed for pods within deployments, ensuring consistent scaling.""\n  }\n]', '[\n  {\n    ""source"": ""rollout"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to manage the rollout of new versions of an application"",\n    ""summary_er"": ""Rollout manages the deployment of new app versions by controlling pod updates.""\n  }\n]']","Deployments in Kubernetes can be paused or resumed using the `rollout pause` and `rollout resume` commands, allowing for a controlled rollout process. The `minReadySeconds` property can also be used to block rollouts of malfunctioning versions by specifying how long a new pod must be ready before being treated as available.","[{'highlight': 'You can pause a deployment and resume it later, allowing you to test a new version of an application before rolling it out to all users.'}, {'highlight': 'The minReadySeconds property in a Deployment resource prevents deploying malfunctioning versions by blocking the rollout process if a pod is not ready within the specified time.'}, {'highlight': 'Pausing a deployment can be used to prevent updates from kicking off the rollout process, allowing you to make multiple changes before starting the rollout.'}, {'highlight': 'The rollout process will not continue until all pods are available and have passed the readiness probes.'}, {'highlight': 'You can use two different Deployments for a canary release by scaling them appropriately and then switching to the new version when it is confirmed working fine.'}]"
+218,307,0,[],"275
+Using Deployments for updating apps declaratively
+ Although you should obviously test your pods both in a test and in a staging envi-
+ronment before deploying them into production, using minReadySeconds is like an
+airbag that saves your app from making a big mess after you’ve already let a buggy ver-
+sion slip into production. 
+ With a properly configured readiness probe and a proper minReadySeconds set-
+ting, Kubernetes would have prevented us from deploying the buggy v3 version ear-
+lier. Let me show you how.
+DEFINING A READINESS PROBE TO PREVENT OUR V3 VERSION FROM BEING ROLLED OUT FULLY
+You’re going to deploy version v3 again, but this time, you’ll have the proper readi-
+ness probe defined on the pod. Your Deployment is currently at version v4, so before
+you start, roll back to version v2 again so you can pretend this is the first time you’re
+upgrading to v3. If you wish, you can go straight from v4 to v3, but the text that fol-
+lows assumes you returned to v2 first.
+ Unlike before, where you only updated the image in the pod template, you’re now
+also going to introduce a readiness probe for the container at the same time. Up until
+now, because there was no explicit readiness probe defined, the container and the
+pod were always considered ready, even if the app wasn’t truly ready or was returning
+errors. There was no way for Kubernetes to know that the app was malfunctioning and
+shouldn’t be exposed to clients. 
+ To change the image and introduce the readiness probe at once, you’ll use the
+kubectl apply command. You’ll use the following YAML to update the deployment
+(you’ll store it as kubia-deployment-v3-with-readinesscheck.yaml), as shown in
+the following listing.
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: kubia
+spec:
+  replicas: 3
+  minReadySeconds: 10           
+  strategy:
+    rollingUpdate:
+      maxSurge: 1                  
+      maxUnavailable: 0         
+    type: RollingUpdate
+  template:
+    metadata:
+      name: kubia
+      labels:
+        app: kubia
+    spec:
+      containers:
+      - image: luksa/kubia:v3
+Listing 9.11
+Deployment with a readiness probe: kubia-deployment-v3-with-
+readinesscheck.yaml
+You’re keeping 
+minReadySeconds 
+set to 10.
+You’re keeping maxUnavailable 
+set to 0 to make the deployment 
+replace pods one by one
+ 
+",[],"[{'entity': 'Deployments', 'description': 'A way to update apps declaratively in Kubernetes', 'category': 'software'}, {'entity': 'minReadySeconds', 'description': 'A setting that prevents a buggy version from being rolled out fully', 'category': 'hardware'}, {'entity': 'readiness probe', 'description': 'A way to define a readiness check for a pod in Kubernetes', 'category': 'software'}, {'entity': 'kubectl apply command', 'description': 'A command used to update the deployment with a readiness probe', 'category': 'command'}, {'entity': 'YAML', 'description': 'A file format used to define the deployment with a readiness probe', 'category': 'software'}, {'entity': 'apiVersion', 'description': 'A field in the YAML file that specifies the API version', 'category': 'field'}, {'entity': 'kind', 'description': 'A field in the YAML file that specifies the kind of resource', 'category': 'field'}, {'entity': 'metadata', 'description': 'A field in the YAML file that contains metadata about the deployment', 'category': 'field'}, {'entity': 'spec', 'description': 'A field in the YAML file that specifies the specification of the deployment', 'category': 'field'}, {'entity': 'replicas', 'description': 'A field in the YAML file that specifies the number of replicas', 'category': 'field'}, {'entity': 'minReadySeconds', 'description': 'A field in the YAML file that specifies the minimum ready seconds', 'category': 'field'}, {'entity': 'strategy', 'description': 'A field in the YAML file that specifies the strategy for rolling updates', 'category': 'field'}, {'entity': 'rollingUpdate', 'description': 'A sub-field of the strategy field that specifies a rolling update strategy', 'category': 'field'}, {'entity': 'maxSurge', 'description': 'A field in the YAML file that specifies the maximum surge value', 'category': 'field'}, {'entity': 'maxUnavailable', 'description': 'A field in the YAML file that specifies the maximum unavailable value', 'category': 'field'}, {'entity': 'type', 'description': 'A field in the YAML file that specifies the type of strategy', 'category': 'field'}, {'entity': 'template', 'description': 'A field in the YAML file that specifies a template for the deployment', 'category': 'field'}, {'entity': 'metadata', 'description': 'A sub-field of the template field that contains metadata about the pod', 'category': 'field'}, {'entity': 'name', 'description': 'A field in the YAML file that specifies the name of the pod', 'category': 'field'}, {'entity': 'labels', 'description': 'A field in the YAML file that specifies labels for the pod', 'category': 'field'}, {'entity': 'app', 'description': 'A key-value pair in the labels field that specifies an application label', 'category': 'key-value pair'}, {'entity': 'spec', 'description': 'A sub-field of the template field that specifies the specification of the pod', 'category': 'field'}, {'entity': 'containers', 'description': 'A field in the YAML file that specifies a list of containers for the pod', 'category': 'field'}, {'entity': 'image', 'description': 'A field in the YAML file that specifies the image for the container', 'category': 'field'}, {'entity': 'luksa/kubia:v3', 'description': 'The name of the image for the container', 'category': 'image'}]","[{'source_entity': '""luksa/kubia:v3""', 'description': 'is used as an image for', 'destination_entity': '""Deployments""'}, {'source_entity': '""maxSurge""', 'description': 'defines the maximum number of old replicas that can still exist during a rollout', 'destination_entity': '""rollingUpdate""'}, {'source_entity': '""rollingUpdate""', 'description': 'is used to define the strategy for updating Deployments', 'destination_entity': '""Deployments""'}, {'source_entity': '""kind""', 'description': 'defines the type of Kubernetes resource being created', 'destination_entity': '""Deployments""'}, {'source_entity': '""Deployments""', 'description': 'is a type of Kubernetes resource that manages rolling updates and rollbacks of Deployments', 'destination_entity': '""kind""'}, {'source_entity': '""name""', 'description': 'defines the name of the Deployment', 'destination_entity': '""Deployments""'}, {'source_entity': '""type""', 'description': 'defines the type of Kubernetes resource being created', 'destination_entity': '""Deployments""'}, {'source_entity': '""strategy""', 'description': 'defines the strategy for updating Deployments', 'destination_entity': '""rollingUpdate""'}, {'source_entity': '""apiVersion""', 'description': 'defines the API version of the Kubernetes resource being created', 'destination_entity': '""Deployments""'}, {'source_entity': '""template""', 'description': 'defines the template for creating a Deployment', 'destination_entity': '""Deployments""'}, {'source_entity': '""labels""', 'description': 'defines the labels associated with the Deployment', 'destination_entity': '""metadata""'}, {'source_entity': '""metadata""', 'description': 'defines the metadata for the Deployment', 'destination_entity': '""Deployments""'}, {'source_entity': '""containers""', 'description': 'defines the containers associated with the Deployment', 'destination_entity': '""spec""'}, {'source_entity': '""kubectl apply command""', 'description': 'is used to create or update a Deployment', 'destination_entity': '""Deployments""'}, {'source_entity': '""readiness probe""', 'description': 'defines the readiness probe for the containers in the Deployment', 'destination_entity': '""containers""'}, {'source_entity': '""YAML""', 'description': 'defines the YAML configuration for the Deployment', 'destination_entity': '""template""'}, {'source_entity': '""app""', 'description': 'defines the name of the application being deployed', 'destination_entity': '""image""'}, {'source_entity': '""image""', 'description': 'defines the image used for the containers in the Deployment', 'destination_entity': '""containers""'}, {'source_entity': '""spec""', 'description': 'defines the specification for the Deployment', 'destination_entity': '""Deployments""'}, {'source_entity': '""minReadySeconds""', 'description': 'defines the minimum number of seconds that a container must be ready before it is considered available', 'destination_entity': '""spec""'}, {'source_entity': '""replicas""', 'description': 'defines the number of replicas for the Deployment', 'destination_entity': '""spec""'}, {'source_entity': '""maxUnavailable""', 'description': 'defines the maximum number of unavailable replicas during a rollout', 'destination_entity': '""rollingUpdate""'}]","['[\n  {\n    ""source"": ""luksa/kubia:v3"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used as an image for"",\n    ""summary_er"": ""The Docker image \'luksa/kubia:v3\' is utilized by a pod in Kubernetes.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""Deployments"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A pod contains one or more Deployments, which are the primary units of deployment in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""maxSurge"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the maximum number of old replicas that can still exist during a rollout"",\n    ""summary_er"": ""MaxSurge defines the max number of old pod replicas allowed during a rollout, ensuring smooth transition to new versions.""\n  }\n]', '[\n  {\n    ""source"": ""rollingUpdate"",\n    ""destination"": ""Deployments"",\n    ""relation_description"": ""is used to define the strategy for updating"",\n    ""summary_er"": ""Defines update strategy for Deployments, ensuring smooth pod updates.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""defines the type of Kubernetes resource being created"",\n    ""summary_er"": ""A Deployment in Kubernetes defines a set of replicas (identical copies) of a pod that can be scaled up or down, ensuring high availability and reliability.""\n  }\n]', '[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is a type of Kubernetes resource that manages rolling updates and rollbacks"",\n    ""summary_er"": ""Deployments manage rolling updates and rollbacks for Pods, ensuring high availability.""\n  },\n  {\n    ""source"": ""kind"",\n    ""destination"": ""Deployment"",\n    ""relation_description"": ""field in a Kubernetes configuration file"",\n    ""summary_er"": ""The kind field specifies the type of resource being defined, which is a Deployment in this case.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""defines the name of the Deployment"",\n    ""summary_er"": ""A Deployment in Kubernetes defines a template for creating one or more Pods, and this name is used to identify the Pod.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the type of Kubernetes resource being created"",\n    ""summary_er"": ""A Kubernetes deployment is a set of one or more replicas of a pod, managed as a single unit to ensure high availability and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""strategy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the strategy for updating Deployments"",\n    ""summary_er"": ""The strategy defines how to update pods in a Deployment, ensuring smooth rollouts and minimal downtime.""\n  }\n]', '[\n  {\n    ""source"": ""apiVersion"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the API version of the Kubernetes resource being created"",\n    ""summary_er"": ""API version defines the type and version of the Kubernetes resource, ensuring compatibility with the cluster.""\n  },\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""relationship between Deployments and Pods"",\n    ""summary_er"": ""Deployments manage replicas of a pod, providing scalability and high availability for applications.""\n  }\n]', '[\n  {\n    ""source"": ""template"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the template for creating a Deployment"",\n    ""summary_er"": ""A template used to create a deployment, which manages a set of identical pod instances.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""defines the labels associated with the Deployment"",\n    ""summary_er"": ""The Deployment defines labels for a Pod, which are key-value pairs that provide metadata about the Pod.""\n  },\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""Metadata"",\n    ""relation_description"": ""defines the labels associated with the Deployment"",\n    ""summary_er"": ""A Deployment\'s labels define its metadata, providing context and information about the Deployment itself.""\n  }\n]', '[\n  {\n    ""source"": ""metadata"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the metadata for the Deployment"",\n    ""summary_er"": ""The metadata entity defines the characteristics of a pod, which is a deployable unit in Kubernetes.""\n  },\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""related to Deployments"",\n    ""summary_er"": ""A deployment is a way to manage and update pods in Kubernetes, ensuring high availability and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A Deployment in Kubernetes defines a set of replicas (pods) that run an application, and specifies the desired state of those pods.""\n  },\n  {\n    ""source"": ""spec"",\n    ""destination"": ""Deployment"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""The spec field in a Kubernetes Deployment object defines the configuration and settings for the deployment.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl apply command"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to create or update a Deployment"",\n    ""summary_er"": ""The \'kubectl apply\' command is used to deploy or update a pod, which is a fundamental building block of a Kubernetes application.""\n  }\n]', '[\n  {\n    ""source"": ""readiness probe"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the readiness probe for the containers in the Deployment"",\n    ""summary_er"": ""A readiness probe is a mechanism to determine if a container is ready to serve traffic. It\'s defined for each container in a Deployment and ensures that the pod is healthy before sending traffic.""\n  }\n]', '[\n  {\n    ""source"": ""YAML"",\n    ""destination"": ""Deployment"",\n    ""relation_description"": ""defines the YAML configuration"",\n    ""summary_er"": ""YAML defines the configuration for Deployment, specifying its settings and parameters.""\n  },\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""template"",\n    ""summary_er"": ""The template is used to create a pod, defining its structure and properties.""\n  }\n]', '[\n  {\n    ""source"": ""app"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the name of the application being deployed"",\n    ""summary_er"": ""The \'app\' entity defines the name of an application being deployed, which is linked to a pod in Kubernetes.""\n  },\n  {\n    ""source"": ""image"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""An image is used to create a new container, which is then run as a process within a pod in Docker.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the image used for the containers"",\n    ""summary_er"": ""A Deployment in Kubernetes defines the image used for its associated pod\'s containers.""\n  },\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""containers"",\n    ""relation_description"": ""used for the containers"",\n    ""summary_er"": ""The Deployment uses a specific image for its associated containers.""\n  }\n]', '[\n  {\n    ""source"": ""spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the specification for the Deployment"",\n    ""summary_er"": ""The spec entity defines the configuration details for a pod, which is a fundamental unit of deployment in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""minReadySeconds"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the minimum number of seconds that a container must be ready before it is considered available"",\n    ""summary_er"": ""This field ensures containers are fully initialized and operational for a specified time period, guaranteeing pod readiness.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""replicas"",\n    ""summary_er"": ""The Deployment defines the number of replicas for a pod, controlling how many instances of the pod are running.""\n  },\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""spec"",\n    ""relation_description"": ""spec"",\n    ""summary_er"": ""The spec section in a Deployment configuration contains detailed specifications for the deployment, including replica count and other settings.""\n  }\n]', '[\n  {\n    ""source"": ""maxUnavailable"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the maximum number of unavailable replicas during a rollout"",\n    ""summary_er"": ""This parameter controls the maximum number of pod replicas that can be unavailable during a rolling update, ensuring minimal disruption to services.""\n  },\n  {\n    ""source"": ""rollingUpdate"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the strategy for rolling updates"",\n    ""summary_er"": ""This field specifies the strategy for updating pod replicas, allowing for controlled and gradual changes to deployed applications.""\n  }\n]']","Deployments can be used for updating apps declaratively, with a properly configured readiness probe and minReadySeconds setting, Kubernetes can prevent deploying buggy versions. A Deployment is updated using kubectl apply command with YAML that includes apiVersion, kind, metadata, spec, replicas, minReadySeconds, strategy, rollingUpdate, maxSurge, maxUnavailable, type, template, metadata, name, labels, app, and containers with image set to luksa/kubia:v3.","[{'highlight': 'Using minReadySeconds is like an airbag that saves your app from making a big mess after you’ve already let a buggy version slip into production.'}, {'highlight': 'With a properly configured readiness probe and a proper minReadySeconds setting, Kubernetes would have prevented us from deploying the buggy v3 version earlier.'}, {'highlight': 'You’re going to deploy version v3 again, but this time, you’ll have the proper readiness probe defined on the pod.'}, {'highlight': 'To change the image and introduce the readiness probe at once, you’ll use the kubectl apply command with the following YAML to update the deployment.'}, {'highlight': 'You’re keeping minReadySeconds set to 10 and maxUnavailable set to 0 to make the deployment replace pods one by one.'}]"
+219,308,0,[],"276
+CHAPTER 9
+Deployments: updating applications declaratively
+        name: nodejs
+        readinessProbe:
+          periodSeconds: 1       
+          httpGet:                  
+            path: /                 
+            port: 8080              
+UPDATING A DEPLOYMENT WITH KUBECTL APPLY
+To update the Deployment this time, you’ll use kubectl apply like this:
+$ kubectl apply -f kubia-deployment-v3-with-readinesscheck.yaml 
+deployment ""kubia"" configured
+The apply command updates the Deployment with everything that’s defined in the
+YAML file. It not only updates the image but also adds the readiness probe definition
+and anything else you’ve added or modified in the YAML. If the new YAML also con-
+tains the replicas field, which doesn’t match the number of replicas on the existing
+Deployment, the apply operation will also scale the Deployment, which isn’t usually
+what you want. 
+TIP
+To keep the desired replica count unchanged when updating a Deploy-
+ment with kubectl apply, don’t include the replicas field in the YAML. 
+Running the apply command will kick off the update process, which you can again
+follow with the rollout status command:
+$ kubectl rollout status deployment kubia
+Waiting for rollout to finish: 1 out of 3 new replicas have been updated...
+Because the status says one new pod has been created, your service should be hitting it
+occasionally, right? Let’s see:
+$ while true; do curl http://130.211.109.222; done
+This is v2 running in pod kubia-1765119474-jvslk
+This is v2 running in pod kubia-1765119474-jvslk
+This is v2 running in pod kubia-1765119474-xk5g3
+This is v2 running in pod kubia-1765119474-pmb26
+This is v2 running in pod kubia-1765119474-pmb26
+This is v2 running in pod kubia-1765119474-xk5g3
+...
+Nope, you never hit the v3 pod. Why not? Is it even there? List the pods:
+$ kubectl get po
+NAME                     READY     STATUS    RESTARTS   AGE
+kubia-1163142519-7ws0i   0/1       Running   0          30s
+kubia-1765119474-jvslk   1/1       Running   0          9m
+kubia-1765119474-pmb26   1/1       Running   0          9m
+kubia-1765119474-xk5g3   1/1       Running   0          8m
+You’re defining a readiness probe 
+that will be executed every second.
+The readiness probe will 
+perform an HTTP GET request 
+against our container.
+ 
+",[],"[{'entity': 'nodejs', 'description': 'A JavaScript runtime environment', 'category': 'software'}, {'entity': 'readinessProbe', 'description': 'A mechanism to check if a pod is ready to serve traffic', 'category': 'process'}, {'entity': 'kubectl apply', 'description': 'A command to update a deployment with a YAML file', 'category': 'command'}, {'entity': 'kubia-deployment-v3-with-readinesscheck.yaml', 'description': 'A YAML file containing the deployment configuration', 'category': 'file'}, {'entity': 'deployment', 'description': 'A Kubernetes resource to manage a set of replicas', 'category': 'application'}, {'entity': 'replicas', 'description': 'The number of pods in a deployment', 'category': 'process'}, {'entity': 'rollout status', 'description': 'A command to check the rollout status of a deployment', 'category': 'command'}, {'entity': 'curl', 'description': 'A command to send an HTTP request', 'category': 'command'}, {'entity': 'httpGet', 'description': 'An HTTP GET request method', 'category': 'process'}, {'entity': 'periodSeconds', 'description': 'The interval at which a readiness probe is executed', 'category': 'parameter'}, {'entity': 'port', 'description': 'The port number to use for an HTTP request', 'category': 'parameter'}, {'entity': 'path', 'description': 'The URL path to use for an HTTP request', 'category': 'parameter'}]","[{'source_entity': '""kubectl apply""', 'description': 'applies a configuration to create a deployment', 'destination_entity': '""kubia-deployment-v3-with-readinesscheck.yaml""'}, {'source_entity': '""kubectl apply""', 'description': 'specifies the path to the deployment configuration file', 'destination_entity': '""path""'}, {'source_entity': '""httpGet""', 'description': 'performs an HTTP GET request to check the readiness of a pod', 'destination_entity': '""readinessProbe""'}, {'source_entity': '""curl""', 'description': 'sends an HTTP GET request to retrieve data from a server', 'destination_entity': '""port""'}, {'source_entity': '""rollout status""', 'description': 'displays the current status of a rollout', 'destination_entity': '""deployment""'}, {'source_entity': '""replicas""', 'description': 'specifies the number of replicas to create for a deployment', 'destination_entity': '""deployment""'}, {'source_entity': '""periodSeconds""', 'description': 'specifies the interval between readiness checks for a pod', 'destination_entity': '""readinessProbe""'}]","['[\n  {\n    ""source"": ""kubectl apply"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies a configuration to create a deployment"",\n    ""summary_er"": ""The \'kubectl apply\' command applies a configuration file to create a deployment, which in turn creates a pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl apply"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the path to the deployment configuration file"",\n    ""summary_er"": ""The \'kubectl apply\' command specifies the path to a deployment configuration file, which is used to create or update a pod in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""httpGet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""performs an HTTP GET request to check the readiness of a pod"",\n    ""summary_er"": ""The httpGet relation checks the readiness of a pod by performing an HTTP GET request.""\n  },\n  {\n    ""source"": ""readinessProbe"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""checks the readiness of a pod"",\n    ""summary_er"": ""The readinessProbe relation ensures a pod is ready for use by checking its status.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sends an HTTP GET request"",\n    ""summary_er"": ""Curl sends a GET request to a server, which is managed by a pod in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""rollout status"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays the current status of a rollout"",\n    ""summary_er"": ""The rollout status displays the current state of a pod, indicating whether it\'s running or not.""\n  },\n  {\n    ""source"": ""deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deployment"",\n    ""summary_er"": ""A deployment is responsible for managing and scaling pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Replica"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""specifies the number of replicas to create"",\n    ""summary_er"": ""A ReplicaSet ensures a specified number of identical Pod replicas run at any given time, creating or deleting Pods as needed.""\n  }\n]', '[\n  {\n    ""source"": ""periodSeconds"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the interval between readiness checks"",\n    ""summary_er"": ""The periodSeconds parameter determines how often a pod\'s readiness probe is executed, ensuring timely checks for its readiness.""\n  }\n]']","To update a Deployment with kubectl apply, use the command $ kubectl apply -f kubia-deployment-v3-with-readinesscheck.yaml. This updates the Deployment with everything defined in the YAML file, including the image and readiness probe definition. To keep the desired replica count unchanged, don't include the replicas field in the YAML. The rollout status command can be used to follow the update process, which will create new pods but doesn't guarantee that they'll be used.","[{'highlight': 'To update the Deployment this time, you’ll use kubectl apply like this: $ kubectl apply -f kubia-deployment-v3-with-readinesscheck.yaml deployment ""kubia"" configured'}, {'highlight': 'The apply command updates the Deployment with everything that’s defined in the YAML file. It not only updates the image but also adds the readiness probe definition and anything else you’ve added or modified in the YAML.'}, {'highlight': 'To keep the desired replica count unchanged when updating a Deployment with kubectl apply, don’t include the replicas field in the YAML.'}, {'highlight': 'You’re defining a readiness probe that will be executed every second. The readiness probe will perform an HTTP GET request against our container.'}, {'highlight': '$ kubectl rollout status deployment kubia Waiting for rollout to finish: 1 out of 3 new replicas have been updated...'}]"

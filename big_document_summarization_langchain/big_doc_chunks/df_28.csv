@@ -1,0 +1,514 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+280,369,0,[],"337
+Inter-pod networking
+ The interface in the host’s network namespace is attached to a network bridge that
+the container runtime is configured to use. The eth0 interface in the container is
+assigned an IP address from the bridge’s address range. Anything that an application
+running inside the container sends to the eth0 network interface (the one in the con-
+tainer’s namespace), comes out at the other veth interface in the host’s namespace
+and is sent to the bridge. This means it can be received by any network interface that’s
+connected to the bridge. 
+ If pod A sends a network packet to pod B, the packet first goes through pod A’s
+veth pair to the bridge and then through pod B’s veth pair. All containers on a node
+are connected to the same bridge, which means they can all communicate with each
+other. But to enable communication between containers running on different nodes,
+the bridges on those nodes need to be connected somehow. 
+ENABLING COMMUNICATION BETWEEN PODS ON DIFFERENT NODES
+You have many ways to connect bridges on different nodes. This can be done with
+overlay or underlay networks or by regular layer 3 routing, which we’ll look at next.
+ You know pod IP addresses must be unique across the whole cluster, so the bridges
+across the nodes must use non-overlapping address ranges to prevent pods on differ-
+ent nodes from getting the same IP. In the example shown in figure 11.16, the bridge
+on node A is using the 10.1.1.0/24 IP range and the bridge on node B is using
+10.1.2.0/24, which ensures no IP address conflicts exist.
+ Figure 11.16 shows that to enable communication between pods across two nodes
+with plain layer 3 networking, the node’s physical network interface needs to be con-
+nected to the bridge as well. Routing tables on node A need to be configured so all
+packets destined for 10.1.2.0/24 are routed to node B, whereas node B’s routing
+tables need to be configured so packets sent to 10.1.1.0/24 are routed to node A.
+ With this type of setup, when a packet is sent by a container on one of the nodes
+to a container on the other node, the packet first goes through the veth pair, then
+Node A
+Pod A
+Network
+eth0
+10.1.1.1
+veth123
+Pod B
+eth0
+10.1.1.2
+veth234
+Bridge
+10.1.1.0/24
+eth0
+10.100.0.1
+Node B
+Pod C
+eth0
+10.1.2.1
+veth345
+Pod D
+eth0
+10.1.2.2
+veth456
+Bridge
+10.1.2.0/24
+eth0
+10.100.0.2
+Figure 11.16
+For pods on different nodes to communicate, the bridges need to be connected 
+somehow.
+ 
+","[  Node A\nPod A\neth0\nveth123\n10.1.1.1\nBridge\n10.1.1.0/24\nPod B\neth0 eth0\nveth234\n10.1.1.2 10.100.0.1  \
+0                                                                                                               
+1                                            Network                                                            
+
+  Node B\nPod C\neth0\nveth345\n10.1.2.1\nBridge\n10.1.2.0/24\nPod D\neth0 eth0\nveth456\n10.100.0.2 10.1.2.2  \
+0                                               None                                                            
+1                                               None                                                            
+
+   Col2  
+0        
+1  None  ]","[{'entity': 'interface', 'description': ""The interface in the host's network namespace is attached to a network bridge."", 'category': 'network'}, {'entity': 'container runtime', 'description': 'The container runtime is configured to use the network bridge.', 'category': 'software'}, {'entity': 'eth0', 'description': ""The eth0 interface in the container is assigned an IP address from the bridge's address range."", 'category': 'network'}, {'entity': 'veth pair', 'description': ""Anything that an application running inside the container sends to the eth0 network interface comes out at the other veth interface in the host's namespace and is sent to the bridge."", 'category': 'network'}, {'entity': 'bridge', 'description': 'All containers on a node are connected to the same bridge, which means they can all communicate with each other.', 'category': 'network'}, {'entity': 'pod A', 'description': 'Pod A sends a network packet to pod B.', 'category': 'application'}, {'entity': 'pod B', 'description': ""The packet first goes through pod A's veth pair to the bridge and then through pod B's veth pair."", 'category': 'application'}, {'entity': 'overlay networks', 'description': ""This can be done with overlay or underlay networks or by regular layer 3 routing, which we'll look at next."", 'category': 'network'}, {'entity': 'underlay networks', 'description': ""This can be done with overlay or underlay networks or by regular layer 3 routing, which we'll look at next."", 'category': 'network'}, {'entity': 'layer 3 routing', 'description': ""The node's physical network interface needs to be connected to the bridge as well."", 'category': 'network'}, {'entity': 'routing tables', 'description': ""Routing tables on node A need to be configured so all packets destined for 10.1.2.0/24 are routed to node B, whereas node B's routing tables need to be configured so packets sent to 10.1.1.0/24 are routed to node A."", 'category': 'network'}, {'entity': 'pod C', 'description': 'Pod C is running on Node B and has an IP address of 10.1.2.1.', 'category': 'application'}, {'entity': 'pod D', 'description': 'Pod D is running on Node B and has an IP address of 10.1.2.2.', 'category': 'application'}]","[{'source_entity': '""overlay networks""', 'description': 'provides connectivity to', 'destination_entity': '""underlay networks""'}, {'source_entity': '""overlay networks""', 'description': 'uses', 'destination_entity': '""veth pair""'}, {'source_entity': '""bridge""', 'description': 'connects', 'destination_entity': '""pod B""'}, {'source_entity': '""container runtime""', 'description': 'manages', 'destination_entity': '""pod A""'}, {'source_entity': '""pod A""', 'description': 'uses', 'destination_entity': '""eth0""'}, {'source_entity': '""layer 3 routing""', 'description': 'provides connectivity to', 'destination_entity': '""routing tables""'}, {'source_entity': '""pod C""', 'description': 'uses', 'destination_entity': '""interface""'}, {'source_entity': '""pod D""', 'description': 'uses', 'destination_entity': '""overlay networks""'}]","['[\n  {\n    ""source"": ""overlay networks"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides connectivity to"",\n    ""summary_er"": ""Overlay networks enable connectivity for pods, allowing them to communicate with each other and access shared resources.""\n  },\n  {\n    ""source"": ""underlay networks"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides connectivity to"",\n    ""summary_er"": ""Underlay networks provide the underlying infrastructure for overlay networks, enabling pods to connect to external services and resources.""\n  }\n]', '[\n  {\n    ""source"": ""overlay networks"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Overlay networks enable communication between pods in a Kubernetes cluster, using veth pairs to establish network connectivity.""\n  }\n]', '[\n  {\n    ""source"": ""bridge"",\n    ""destination"": ""pod B"",\n    ""relation_description"": ""connects"",\n    ""summary_er"": ""The bridge entity connects to the pod B entity, facilitating communication and data transfer between them.""\n  }\n]', '[\n  {\n    ""source"": ""container runtime"",\n    ""destination"": ""pod A"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The container runtime manages and runs the pod A, ensuring its execution and lifecycle.""\n  }\n]', '[\n  {\n    ""source"": ""pod A"",\n    ""destination"": ""eth0"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Pod A utilizes network interface eth0 for communication.""\n  }\n]', '[\n    {\n        ""source"": ""layer 3 routing"",\n        ""destination"": ""pod"",\n        ""relation_description"": ""provides connectivity to"",\n        ""summary_er"": ""Layer 3 routing enables connectivity between pods by providing a network path for data transmission.""\n    },\n    {\n        ""source"": ""routing tables"",\n        ""destination"": ""pod"",\n        ""relation_description"": ""used in"",\n        ""summary_er"": ""Routing tables are used in layer 3 routing to determine the best path for data transmission within a pod.""\n    }\n]', '[\n  {\n    ""source"": ""pod C"",\n    ""destination"": ""interface"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Pod C utilizes interface for communication and resource sharing.""\n  }\n]', '[\n  {\n    ""source"": ""Pod D"",\n    ""destination"": ""Overlay Networks"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Pod D utilizes overlay networks for communication and resource sharing.""\n  }\n]']","Pods in a Kubernetes cluster can communicate with each other using the container runtime's network bridge. To enable communication between pods on different nodes, bridges must use non-overlapping IP address ranges and can be connected through overlay or underlay networks, regular layer 3 routing, or by configuring node physical network interfaces and routing tables to route packets between nodes.","[{'highlight': ""The interface in the host's network namespace is attached to a network bridge that the container runtime is configured to use.""}, {'highlight': 'All containers on a node are connected to the same bridge, which means they can all communicate with each other.'}, {'highlight': ""To enable communication between pods across two nodes with plain layer 3 networking, the node's physical network interface needs to be connected to the bridge as well.""}, {'highlight': ""Routing tables on node A need to be configured so all packets destined for 10.1.2.0/24 are routed to node B, whereas node B's routing tables need to be configured so packets sent to 10.1.1.0/24 are routed to node A.""}, {'highlight': 'The bridges on different nodes must use non-overlapping address ranges to prevent pods on different nodes from getting the same IP.'}]"
+281,370,0,[],"338
+CHAPTER 11
+Understanding Kubernetes internals
+through the bridge to the node’s physical adapter, then over the wire to the other
+node’s physical adapter, through the other node’s bridge, and finally through the veth
+pair of the destination container.
+ This works only when nodes are connected to the same network switch, without
+any routers in between; otherwise those routers would drop the packets because
+they refer to pod IPs, which are private. Sure, the routers in between could be con-
+figured to route packets between the nodes, but this becomes increasingly difficult
+and error-prone as the number of routers between the nodes increases. Because of
+this, it’s easier to use a Software Defined Network (SDN), which makes the nodes
+appear as though they’re connected to the same network switch, regardless of the
+actual underlying network topology, no matter how complex it is. Packets sent
+from the pod are encapsulated and sent over the network to the node running the
+other pod, where they are de-encapsulated and delivered to the pod in their origi-
+nal form.
+11.4.3 Introducing the Container Network Interface
+To make it easier to connect containers into a network, a project called Container
+Network Interface (CNI) was started. The CNI allows Kubernetes to be configured to
+use any CNI plugin that’s out there. These plugins include
+Calico
+Flannel
+Romana
+Weave Net 
+And others
+We’re not going to go into the details of these plugins; if you want to learn more about
+them, refer to https:/
+/kubernetes.io/docs/concepts/cluster-administration/addons/.
+ Installing a network plugin isn’t difficult. You only need to deploy a YAML con-
+taining a DaemonSet and a few other supporting resources. This YAML is provided
+on each plugin’s project page. As you can imagine, the DaemonSet is used to deploy
+a network agent on all cluster nodes. It then ties into the CNI interface on the node,
+but be aware that the Kubelet needs to be started with --network-plugin=cni to
+use CNI. 
+11.5
+How services are implemented
+In chapter 5 you learned about Services, which allow exposing a set of pods at a long-
+lived, stable IP address and port. In order to focus on what Services are meant for and
+how they can be used, we intentionally didn’t go into how they work. But to truly
+understand Services and have a better feel for where to look when things don’t behave
+the way you expect, you need to understand how they are implemented. 
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'bridge', 'description': 'Network device that connects two or more networks together', 'category': 'hardware/network'}, {'entity': 'physical adapter', 'description': 'Hardware component that connects a computer to a network', 'category': 'hardware/network'}, {'entity': 'veth pair', 'description': 'Virtual Ethernet device used for container networking', 'category': 'software/container'}, {'entity': 'pod', 'description': 'Lightweight and portable container runtime environment', 'category': 'software/container'}, {'entity': 'Software Defined Network (SDN)', 'description': 'Network architecture that uses software to manage network behavior', 'category': 'hardware/network'}, {'entity': 'Container Network Interface (CNI)', 'description': 'Project that allows Kubernetes to use any CNI plugin', 'category': 'software/container'}, {'entity': 'Calico', 'description': 'CNI plugin for container networking', 'category': 'software/container'}, {'entity': 'Flannel', 'description': 'CNI plugin for container networking', 'category': 'software/container'}, {'entity': 'Romana', 'description': 'CNI plugin for container networking', 'category': 'software/container'}, {'entity': 'Weave Net', 'description': 'CNI plugin for container networking', 'category': 'software/container'}, {'entity': 'DaemonSet', 'description': 'Kubernetes resource that ensures a pod is running on every node in the cluster', 'category': 'software/container'}, {'entity': 'YAML', 'description': 'Human-readable serialization format for data', 'category': 'software/configuration'}, {'entity': 'Kubelet', 'description': 'Agent that runs on each node in a Kubernetes cluster and is responsible for running pods', 'category': 'software/container'}, {'entity': 'Services', 'description': 'Kubernetes resource that allows exposing a set of pods at a long-lived, stable IP address and port', 'category': 'software/container'}]","[{'source_entity': 'Calico', 'description': 'provides network connectivity to', 'destination_entity': 'pod'}, {'source_entity': 'DaemonSet', 'description': 'manages and updates', 'destination_entity': 'Container Network Interface (CNI)'}, {'source_entity': 'Flannel', 'description': 'uses to create a network overlay', 'destination_entity': 'veth pair'}, {'source_entity': 'Calico', 'description': 'utilizes to provide network segmentation', 'destination_entity': 'bridge'}, {'source_entity': 'physical adapter', 'description': 'connects to', 'destination_entity': 'Services'}, {'source_entity': 'Weave Net', 'description': 'provides network connectivity to', 'destination_entity': 'pod'}, {'source_entity': 'Kubernetes', 'description': 'manages and schedules', 'destination_entity': 'pod'}, {'source_entity': 'YAML', 'description': 'configures and defines', 'destination_entity': 'Kubelet'}, {'source_entity': 'Romana', 'description': 'uses to provide a Software Defined Network (SDN)', 'destination_entity': 'physical adapter'}]","['[\n  {\n    ""source"": ""Calico"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides network connectivity to"",\n    ""summary_er"": ""Calico provides network connectivity to pods, enabling communication between them.""\n  }\n]', '[\n  {\n    ""source"": ""DaemonSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages and updates"",\n    ""summary_er"": ""A DaemonSet manages and updates a pod, ensuring it runs on every node in a cluster.""\n  },\n  {\n    ""source"": ""Container Network Interface (CNI)"",\n    ""destination"": ""None"",\n    ""relation_description"": ""None"",\n    ""summary_er"": """"\n  }\n]', '[\n  {\n    ""source"": ""Flannel"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to create a network overlay"",\n    ""summary_er"": ""Flannel creates a network overlay for pods, enabling communication between them.""\n  }\n]', '[\n  {\n    ""source"": ""Calico"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""utilizes to provide network segmentation"",\n    ""summary_er"": ""Calico provides network segmentation for pods, ensuring isolation and security.""\n  }\n]', '[\n  {\n    ""source"": ""physical adapter"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""connects to"",\n    ""summary_er"": ""A physical adapter connects a pod to a network, enabling communication and data exchange.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""Services"",\n    ""relation_description"": ""connects to"",\n    ""summary_er"": ""A pod can connect to one or more Services, allowing it to access shared resources and functionality.""\n  }\n]', '[\n  {\n    ""source"": ""Weave Net"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides network connectivity to"",\n    ""summary_er"": ""Weave Net provides network connectivity to pods, enabling communication between them.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages and schedules"",\n    ""summary_er"": ""Kubernetes manages and schedules pods, ensuring efficient resource allocation and deployment.""\n  }\n]', '[\n  {\n    ""source"": ""YAML"",\n    ""destination"": ""Kubelet"",\n    ""relation_description"": ""configures and defines"",\n    ""summary_er"": ""YAML configures and defines Kubelet, which manages pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Romana"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to provide a Software Defined Network (SDN)"",\n    ""summary_er"": ""Romana provides SDN capabilities to pods, enabling network programmability and automation.""\n  }\n]']","Kubernetes uses a veth pair to connect containers on the same network switch without routers in between. To make it easier, a Software Defined Network (SDN) can be used, or a Container Network Interface (CNI) plugin such as Calico, Flannel, Romana, Weave Net can be installed by deploying a YAML containing a DaemonSet and supporting resources. Services are implemented to expose a set of pods at a long-lived, stable IP address and port.","[{'highlight': 'Kubernetes uses a bridge to connect containers on the same network switch without routers in between.'}, {'highlight': 'Software Defined Network (SDN) makes nodes appear connected to the same network switch, regardless of underlying topology.'}, {'highlight': 'Container Network Interface (CNI) allows Kubernetes to use any CNI plugin, including Calico, Flannel, Romana, and Weave Net.'}, {'highlight': 'Installing a network plugin involves deploying a YAML containing a DaemonSet and supporting resources.'}, {'highlight': 'Services are implemented by exposing a set of pods at a long-lived, stable IP address and port using a bridge or SDN.'}]"
+282,371,0,[],"339
+How services are implemented
+11.5.1 Introducing the kube-proxy
+Everything related to Services is handled by the kube-proxy process running on each
+node. Initially, the kube-proxy was an actual proxy waiting for connections and for
+each incoming connection, opening a new connection to one of the pods. This was
+called the userspace proxy mode. Later, a better-performing iptables proxy mode
+replaced it. This is now the default, but you can still configure Kubernetes to use the
+old mode if you want.
+ Before we continue, let’s quickly review a few things about Services, which are rele-
+vant for understanding the next few paragraphs.
+ We’ve learned that each Service gets its own stable IP address and port. Clients
+(usually pods) use the service by connecting to this IP address and port. The IP
+address is virtual—it’s not assigned to any network interfaces and is never listed as
+either the source or the destination IP address in a network packet when the packet
+leaves the node. A key detail of Services is that they consist of an IP and port pair (or
+multiple IP and port pairs in the case of multi-port Services), so the service IP by itself
+doesn’t represent anything. That’s why you can’t ping them. 
+11.5.2 How kube-proxy uses iptables
+When a service is created in the API server, the virtual IP address is assigned to it
+immediately. Soon afterward, the API server notifies all kube-proxy agents running on
+the worker nodes that a new Service has been created. Then, each kube-proxy makes
+that service addressable on the node it’s running on. It does this by setting up a few
+iptables rules, which make sure each packet destined for the service IP/port pair is
+intercepted and its destination address modified, so the packet is redirected to one of
+the pods backing the service. 
+ Besides watching the API server for changes to Services, kube-proxy also watches
+for changes to Endpoints objects. We talked about them in chapter 5, but let me
+refresh your memory, as it’s easy to forget they even exist, because you rarely create
+them manually. An Endpoints object holds the IP/port pairs of all the pods that back
+the service (an IP/port pair can also point to something other than a pod). That’s
+why the kube-proxy must also watch all Endpoints objects. After all, an Endpoints
+object changes every time a new backing pod is created or deleted, and when the
+pod’s readiness status changes or the pod’s labels change and it falls in or out of scope
+of the service. 
+ Now let’s see how kube-proxy enables clients to connect to those pods through the
+Service. This is shown in figure 11.17.
+ The figure shows what the kube-proxy does and how a packet sent by a client pod
+reaches one of the pods backing the Service. Let’s examine what happens to the
+packet when it’s sent by the client pod (pod A in the figure). 
+ The packet’s destination is initially set to the IP and port of the Service (in the
+example, the Service is at 172.30.0.1:80). Before being sent to the network, the
+ 
+",[],"[{'entity': 'kube-proxy', 'description': 'process running on each node that handles everything related to Services', 'category': 'process'}, {'entity': 'Services', 'description': 'a stable IP address and port used by clients (usually pods) to connect to a pod', 'category': 'application'}, {'entity': 'iptables', 'description': 'rules set up by kube-proxy to intercept packets destined for the service IP/port pair', 'category': 'software'}, {'entity': 'API server', 'description': 'notifies all kube-proxy agents running on worker nodes when a new Service is created', 'category': 'application'}, {'entity': 'Endpoints objects', 'description': 'holds the IP/port pairs of all the pods that back the service', 'category': 'database'}, {'entity': 'pods', 'description': 'the actual processes running in containers, backed by a Service', 'category': 'process'}, {'entity': 'containers', 'description': 'the runtime environments for pods, where applications run', 'category': 'container'}, {'entity': 'network interfaces', 'description': 'not assigned to the service IP address and port', 'category': 'hardware'}, {'entity': 'packet', 'description': 'a unit of data sent over a network, intercepted by kube-proxy', 'category': 'data'}, {'entity': 'kube-proxy agents', 'description': 'running on worker nodes, notified by API server when a new Service is created', 'category': 'process'}]","[{'source_entity': '""iptables""', 'description': 'is used to manage', 'destination_entity': '""Endpoints objects""'}, {'source_entity': '""iptables""', 'description': 'is used to filter', 'destination_entity': '""packet""'}, {'source_entity': '""kube-proxy agents""', 'description': 'are responsible for', 'destination_entity': '""Services""'}, {'source_entity': '""kube-proxy agents""', 'description': 'use', 'destination_entity': '""iptables""'}, {'source_entity': '""pods""', 'description': 'contain', 'destination_entity': '""containers""'}, {'source_entity': '""Services""', 'description': 'are exposed to', 'destination_entity': '""network interfaces""'}, {'source_entity': '""API server""', 'description': 'manages', 'destination_entity': '""Endpoints objects""'}, {'source_entity': '""kube-proxy""', 'description': 'is a component of', 'destination_entity': '""kube-proxy agents""'}]","['[\n  {\n    ""source"": ""iptables"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to manage"",\n    ""summary_er"": ""Iptables is a network traffic filter used to manage incoming and outgoing network traffic in pods.""\n  },\n  {\n    ""source"": ""iptables"",\n    ""destination"": ""Endpoints objects"",\n    ""relation_description"": ""are used with"",\n    ""summary_er"": ""Iptables rules are used with Endpoints objects to manage network traffic between pods and services.""\n  }\n]', '[\n  {\n    ""source"": ""iptables"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to filter"",\n    ""summary_er"": ""Iptables is a Linux utility that filters network packets based on source and destination IP addresses, ports, and protocols.""\n  },\n  {\n    ""source"": ""packet"",\n    ""destination"": ""iptables"",\n    ""relation_description"": ""filtered by"",\n    ""summary_er"": ""A packet is filtered by iptables to determine whether it should be allowed or blocked in the network flow.""\n  }\n]', '[\n  {\n    ""source"": ""kube-proxy agents"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are responsible for"",\n    ""summary_er"": ""Kube-proxy agents manage network traffic to pods, ensuring proper routing and communication between services.""\n  }\n]', '[\n  {\n    ""source"": ""kube-proxy agents"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""use"",\n    ""summary_er"": ""Kube-proxy agents utilize pods to manage network policies and traffic routing.""\n  }\n]', '[\n  {\n    ""source"": ""pods"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contain"",\n    ""summary_er"": ""A pod contains one or more containers, which are the smallest deployable units in Kubernetes.""\n  },\n  {\n    ""source"": ""containers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contain"",\n    ""summary_er"": ""A container is a process running within a pod, and can be thought of as a lightweight virtual machine.""\n  }\n]', '[\n  {\n    ""source"": ""Services"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are exposed to"",\n    ""summary_er"": ""Services in Kubernetes expose network interfaces to pods, enabling communication between them.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The API server manages a collection of pods, which are the basic execution units in Kubernetes.""\n  },\n  {\n    ""source"": ""Endpoints objects"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Endpoints objects manage access to a set of pod IP addresses, allowing for load balancing and other network configurations.""\n  }\n]', '[\n  {\n    ""source"": ""kube-proxy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a component of"",\n    ""summary_er"": ""Kube-proxy is a network proxy that runs on each node in a Kubernetes cluster, providing load balancing and networking services for pods.""\n  },\n  {\n    ""source"": ""kube-proxy agents"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs on top of"",\n    ""summary_er"": ""Kube-proxy agents are responsible for setting up and maintaining network connectivity between pods in a Kubernetes cluster.""\n  }\n]']","Kubernetes' kube-proxy handles Services by assigning a stable IP address and port, which clients connect to. The virtual IP address is assigned immediately upon service creation, and kube-proxy sets up iptables rules on worker nodes to redirect packets destined for the service IP/port pair to one of the backing pods. Kube-proxy also watches Endpoints objects for changes in backing pods.","[{'highlight': 'The kube-proxy process running on each node handles everything related to Services.'}, {'highlight': 'Services get their own stable IP address and port, which is virtual and not assigned to any network interfaces.'}, {'highlight': 'kube-proxy uses iptables rules to intercept packets destined for the service IP/port pair and redirect them to one of the pods backing the service.'}, {'highlight': 'kube-proxy watches for changes to Endpoints objects, which hold the IP/port pairs of all the pods that back the service.'}, {'highlight': 'The kube-proxy enables clients to connect to pods through the Service by modifying packet destinations using iptables rules.'}]"
+283,372,0,[],"340
+CHAPTER 11
+Understanding Kubernetes internals
+packet is first handled by node A’s kernel according to the iptables rules set up on
+the node. 
+ The kernel checks if the packet matches any of those iptables rules. One of them
+says that if any packet has the destination IP equal to 172.30.0.1 and destination port
+equal to 80, the packet’s destination IP and port should be replaced with the IP and
+port of a randomly selected pod. 
+ The packet in the example matches that rule and so its destination IP/port is
+changed. In the example, pod B2 was randomly selected, so the packet’s destination
+IP is changed to 10.1.2.1 (pod B2’s IP) and the port to 8080 (the target port specified
+in the Service spec). From here on, it’s exactly as if the client pod had sent the packet
+to pod B directly instead of through the service. 
+ It’s slightly more complicated than that, but that’s the most important part you
+need to understand.
+ 
+Node A
+Node B
+API server
+Pod A
+Pod B1
+Pod B2
+Pod B3
+Packet X
+Source:
+10.1.1.1
+Destination:
+172.30.0.1:80
+10.1.2.1:8080
+iptables
+Service B
+172.30.0.1:80
+Conﬁgures
+iptables
+Packet X
+Source:
+10.1.1.1
+Destination:
+172.30.0.1:80
+kube-proxy
+Endpoints B
+Pod A
+IP: 10.1.1.1
+Pod B1
+IP: 10.1.1.2
+Pod B2
+IP: 10.1.2.1
+Pod B3
+IP: 10.1.2.2
+Watches for changes to
+services and endpoints
+Figure 11.17
+Network packets sent to a Service’s virtual IP/port pair are 
+modified and redirected to a randomly selected backend pod.
+ 
+","[  Node A\nPod A Pod B1\nkube-proxy\nIP: 10.1.1.1 IP: 10.1.1.2\nConfigures\niptables\nSource:\nSource:\n10.1.1.1\n10.1.1.1\nDestination:\nDestination:\n172.30.0.1:8\n172.30.0.1:80 iptables 10.1.2.1:808\nPacket X Packet X  \
+0                                               None                                                                                                                                                                          
+1                                               None                                                                                                                                                                          
+2                                               None                                                                                                                                                                          
+
+                                                Col1  Col2  \
+0  Source:\n10.1.1.1\nDestination:\n172.30.0.1:8\...  None   
+1                                               None  0\n0   
+2                                               None         
+
+  Node B\nPod B2\nIP: 10.1.2.1\nPod B3\nIP: 10.1.2.2  
+0                                               None  
+1                                               None  
+2                                               None  ]","[{'entity': 'iptables', 'description': 'a Linux utility for managing network traffic rules', 'category': 'software'}, {'entity': 'kernel', 'description': 'the core part of an operating system that manages hardware resources', 'category': 'hardware'}, {'entity': 'packet', 'description': 'a unit of data carried by a network protocol', 'category': 'network'}, {'entity': 'node A', 'description': 'a Kubernetes node running on machine A', 'category': 'application'}, {'entity': 'node B', 'description': 'a Kubernetes node running on machine B', 'category': 'application'}, {'entity': 'API server', 'description': 'the central component of the Kubernetes control plane', 'category': 'software'}, {'entity': 'Pod A', 'description': 'a containerized application running on a Kubernetes pod', 'category': 'container'}, {'entity': 'Pod B1', 'description': 'a containerized application running on a Kubernetes pod', 'category': 'container'}, {'entity': 'Pod B2', 'description': 'a containerized application running on a Kubernetes pod', 'category': 'container'}, {'entity': 'Pod B3', 'description': 'a containerized application running on a Kubernetes pod', 'category': 'container'}, {'entity': 'Packet X', 'description': 'an example network packet being routed through the service', 'category': 'network'}, {'entity': 'Service B', 'description': 'a Kubernetes service providing access to multiple backend pods', 'category': 'application'}, {'entity': 'kube-proxy', 'description': 'a component of the Kubernetes control plane responsible for routing traffic', 'category': 'software'}, {'entity': 'Endpoints B', 'description': 'a collection of IP addresses and ports associated with a Kubernetes service', 'category': 'database'}]","[{'source_entity': '""iptables""', 'description': 'rules', 'destination_entity': '""kernel""'}, {'source_entity': '""kube-proxy""', 'description': 'manages', 'destination_entity': '""Pod B1""'}, {'source_entity': '""kube-proxy""', 'description': 'manages', 'destination_entity': '""Pod B3""'}, {'source_entity': '""node B""', 'description': 'hosts', 'destination_entity': '""Pod B1""'}, {'source_entity': '""node B""', 'description': 'hosts', 'destination_entity': '""Pod B3""'}, {'source_entity': '""Service B""', 'description': 'provides', 'destination_entity': '""Endpoints B""'}, {'source_entity': '""Packet X""', 'description': 'transmitted to', 'destination_entity': '""node A""'}, {'source_entity': '""API server""', 'description': 'communicates with', 'destination_entity': '""kube-proxy""'}, {'source_entity': '""iptables""', 'description': 'rules applied on', 'destination_entity': '""Packet X""'}]","['[\n  {\n    ""source"": ""iptables"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""rules"",\n    ""summary_er"": ""Iptables enforces network security rules within a pod.""\n  },\n  {\n    ""source"": ""iptables"",\n    ""destination"": ""kernel"",\n    ""relation_description"": ""integration"",\n    ""summary_er"": ""Iptables integrates with the kernel to enforce network policies.""\n  }\n]', '[\n  {\n    ""source"": ""kube-proxy"",\n    ""destination"": ""pod B1"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kube-proxy manages Pod B1, ensuring network connectivity and routing for the pod.""\n  }\n]', '[\n  {\n    ""source"": ""kube-proxy"",\n    ""destination"": ""Pod B3"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kube-proxy manages Pod B3 by ensuring network connectivity and routing traffic to it.""\n  }\n]', '[\n  {\n    ""source"": ""Node B"",\n    ""destination"": ""Pod B1"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""Node B hosts Pod B1, indicating that Pod B1 is running on Node B.""\n  }\n]', '[\n  {\n    ""source"": ""Node B"",\n    ""destination"": ""Pod B3"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""Node B hosts Pod B3, indicating a container runtime environment where Pod B3 is executed.""\n  }\n]', '[\n  {\n    ""source"": ""Service B"",\n    ""destination"": ""Endpoints B"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""Service B provides access to Endpoints B, enabling communication between them.""\n  }\n]', '[\n  {\n    ""source"": ""Packet X"",\n    ""destination"": ""node A"",\n    ""relation_description"": ""transmitted to"",\n    ""summary_er"": ""A packet of data was transmitted from Packet X to node A, indicating a communication flow between the two entities.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""kube-proxy"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The API server communicates with kube-proxy to manage network traffic and routing within the Kubernetes cluster.""\n  }\n]', '[{\n  ""source"": ""iptables"",\n  ""destination"": ""Packet X"",\n  ""relation_description"": ""rules applied on"",\n  ""summary_er"": ""\\""Iptables applies rules to incoming packets, such as Packet X.\\""""\n}]']","A packet sent to a Kubernetes service's virtual IP is modified by the kernel on the node it's received on, according to iptables rules. If the packet matches a rule, its destination IP and port are changed to point to a randomly selected backend pod. This process is handled by kube-proxy, which watches for changes to services and endpoints.","[{'highlight': 'The kernel checks if the packet matches any of those iptables rules.'}, {'highlight': ""One of them says that if any packet has the destination IP equal to 172.30.0.1 and destination port equal to 80, the packet's destination IP and port should be replaced with the IP and port of a randomly selected pod.""}, {'highlight': 'The packet in the example matches that rule and so its destination IP/port is changed.'}, {'highlight': ""From here on, it's exactly as if the client pod had sent the packet to pod B directly instead of through the service.""}, {'highlight': ""Network packets sent to a Service's virtual IP/port pair are modified and redirected to a randomly selected backend pod.""}]"
+284,373,0,[],"341
+Running highly available clusters
+11.6
+Running highly available clusters
+One of the reasons for running apps inside Kubernetes is to keep them running with-
+out interruption with no or limited manual intervention in case of infrastructure
+failures. For running services without interruption it’s not only the apps that need to
+be up all the time, but also the Kubernetes Control Plane components. We’ll look at
+what’s involved in achieving high availability next.
+11.6.1 Making your apps highly available
+When running apps in Kubernetes, the various controllers make sure your app keeps
+running smoothly and at the specified scale even when nodes fail. To ensure your app
+is highly available, you only need to run them through a Deployment resource and
+configure an appropriate number of replicas; everything else is taken care of by
+Kubernetes. 
+RUNNING MULTIPLE INSTANCES TO REDUCE THE LIKELIHOOD OF DOWNTIME
+This requires your apps to be horizontally scalable, but even if that’s not the case in
+your app, you should still use a Deployment with its replica count set to one. If the
+replica becomes unavailable, it will be replaced with a new one quickly, although that
+doesn’t happen instantaneously. It takes time for all the involved controllers to notice
+that a node has failed, create the new pod replica, and start the pod’s containers.
+There will inevitably be a short period of downtime in between. 
+USING LEADER-ELECTION FOR NON-HORIZONTALLY SCALABLE APPS
+To avoid the downtime, you need to run additional inactive replicas along with the
+active one and use a fast-acting lease or leader-election mechanism to make sure only
+one is active. In case you’re unfamiliar with leader election, it’s a way for multiple app
+instances running in a distributed environment to come to an agreement on which is
+the leader. That leader is either the only one performing tasks, while all others are
+waiting for the leader to fail and then becoming leaders themselves, or they can all be
+active, with the leader being the only instance performing writes, while all the others
+are providing read-only access to their data, for example. This ensures two instances
+are never doing the same job, if that would lead to unpredictable system behavior due
+to race conditions.
+ The mechanism doesn’t need to be incorporated into the app itself. You can use a
+sidecar container that performs all the leader-election operations and signals the
+main container when it should become active. You’ll find an example of leader elec-
+tion in Kubernetes at https:/
+/github.com/kubernetes/contrib/tree/master/election.
+ Ensuring your apps are highly available is relatively simple, because Kubernetes
+takes care of almost everything. But what if Kubernetes itself fails? What if the servers
+running the Kubernetes Control Plane components go down? How are those compo-
+nents made highly available?
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'Deployment', 'description': 'Resource for managing app replicas', 'category': 'software'}, {'entity': 'Replica', 'description': 'Instance of an application or service', 'category': 'software'}, {'entity': 'Controller', 'description': 'Component responsible for managing app state', 'category': 'software'}, {'entity': 'Pod', 'description': 'Lightweight and portable container runtime environment', 'category': 'container'}, {'entity': 'Container', 'description': 'Lightweight and portable runtime environment for apps', 'category': 'container'}, {'entity': 'Leader-election mechanism', 'description': 'Method for multiple app instances to agree on a leader', 'category': 'software'}, {'entity': 'Sidecar container', 'description': 'Container that performs additional tasks for the main container', 'category': 'container'}, {'entity': 'Kubernetes Control Plane components', 'description': 'Components responsible for managing Kubernetes cluster state', 'category': 'software'}]","[{'source_entity': 'Kubernetes Control Plane components', 'description': 'manages and orchestrates', 'destination_entity': 'Container'}, {'source_entity': 'Kubernetes Control Plane components', 'description': 'orchestrates and schedules', 'destination_entity': 'Pod'}, {'source_entity': 'Kubernetes Control Plane components', 'description': 'manages and coordinates', 'destination_entity': 'Sidecar container'}, {'source_entity': 'Kubernetes', 'description': 'uses', 'destination_entity': 'Deployment'}, {'source_entity': 'Leader-election mechanism', 'description': 'elects', 'destination_entity': 'Controller'}, {'source_entity': 'Controller', 'description': 'manages and updates', 'destination_entity': 'Replica'}]","['[\n  {\n    ""source"": ""Kubernetes Control Plane"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages and orchestrates"",\n    ""summary_er"": ""The Kubernetes Control Plane manages and orchestrates pods, ensuring efficient resource allocation and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes Control Plane components"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""orchestrates and schedules"",\n    ""summary_er"": ""The Kubernetes Control Plane components manage and schedule pods, ensuring efficient resource utilization and application deployment.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes Control Plane components"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages and coordinates"",\n    ""summary_er"": ""The Kubernetes Control Plane manages and coordinates with pods, ensuring efficient resource utilization and application deployment.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubernetes manages and orchestrates containerized applications, including pods, which are the basic execution unit in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""Leader-election mechanism"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""elects"",\n    ""summary_er"": ""The leader-election mechanism selects a single controller pod to manage the cluster, ensuring only one instance of the controller is running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""Controller"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages and updates"",\n    ""summary_er"": ""The Controller is responsible for managing and updating a Pod, ensuring its proper functioning and lifecycle.""\n  }\n]']","To achieve high availability in Kubernetes, apps can be run through a Deployment resource with an appropriate number of replicas. If a replica becomes unavailable, it will be replaced quickly, although there may be a short period of downtime. For non-horizontally scalable apps, leader-election mechanisms can be used to ensure only one instance is active at a time, avoiding downtime. Kubernetes itself requires high availability, and its Control Plane components can be made highly available using techniques such as load balancing and multiple masters.","[{'highlight': 'Running apps inside Kubernetes is to keep them running without interruption with no or limited manual intervention in case of infrastructure failures.'}, {'highlight': 'To ensure your app is highly available, you only need to run them through a Deployment resource and configure an appropriate number of replicas; everything else is taken care of by Kubernetes.'}, {'highlight': 'Using leader-election for non-horizontally scalable apps can avoid downtime by running additional inactive replicas along with the active one and using a fast-acting lease or leader-election mechanism to make sure only one is active.'}, {'highlight': 'Kubernetes takes care of almost everything when ensuring your apps are highly available, but what if Kubernetes itself fails? What if the servers running the Kubernetes Control Plane components go down?'}, {'highlight': ""Leader election doesn't need to be incorporated into the app itself and can be used with a sidecar container that performs all the leader-election operations and signals the main container when it should become active.""}]"
+285,374,0,[],"342
+CHAPTER 11
+Understanding Kubernetes internals
+11.6.2 Making Kubernetes Control Plane components highly available
+In the beginning of this chapter, you learned about the few components that make up
+a Kubernetes Control Plane. To make Kubernetes highly available, you need to run
+multiple master nodes, which run multiple instances of the following components:
+etcd, which is the distributed data store where all the API objects are kept
+API server
+Controller Manager, which is the process in which all the controllers run
+Scheduler
+Without going into the actual details of how to install and run these components, let’s
+see what’s involved in making each of these components highly available. Figure 11.18
+shows an overview of a highly available cluster.
+RUNNING AN ETCD CLUSTER
+Because etcd was designed as a distributed system, one of its key features is the ability
+to run multiple etcd instances, so making it highly available is no big deal. All you
+need to do is run it on an appropriate number of machines (three, five, or seven, as
+explained earlier in the chapter) and make them aware of each other. You do this by
+including the list of all the other instances in every instance’s configuration. For
+example, when starting an instance, you specify the IPs and ports where the other etcd
+instances can be reached. 
+ etcd will replicate data across all its instances, so a failure of one of the nodes when
+running a three-machine cluster will still allow the cluster to accept both read and
+write operations. To increase the fault tolerance to more than a single node, you need
+to run five or seven etcd nodes, which would allow the cluster to handle two or three
+Node 1
+Kubelet
+Node 2
+Kubelet
+Node 3
+Kubelet
+Node 4
+Kubelet
+Node 5
+Kubelet
+...
+Node N
+Kubelet
+Load
+balancer
+Master 3
+etcd
+API server
+Scheduler
+Controller
+Manager
+[standing-by]
+[standing-by]
+Master 2
+etcd
+API server
+Scheduler
+Controller
+Manager
+[standing-by]
+[standing-by]
+Master 1
+etcd
+API server
+Scheduler
+Controller
+Manager
+[active]
+[active]
+Figure 11.18
+A highly-available cluster with three master nodes
+ 
+","[Empty DataFrame
+Columns: [Controller
+Manager, Scheduler]
+Index: []]","[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'Control Plane', 'description': 'Components that make up a Kubernetes Control Plane', 'category': 'application'}, {'entity': 'etcd', 'description': 'Distributed data store where all API objects are kept', 'category': 'database'}, {'entity': 'API server', 'description': 'Component that handles incoming requests', 'category': 'application'}, {'entity': 'Controller Manager', 'description': 'Process in which all controllers run', 'category': 'process'}, {'entity': 'Scheduler', 'description': 'Component that schedules pods on nodes', 'category': 'application'}, {'entity': 'etcd cluster', 'description': 'Multiple etcd instances running together', 'category': 'database'}, {'entity': 'Kubelet', 'description': 'Agent that runs on each node and communicates with the API server', 'category': 'process'}, {'entity': 'Load balancer', 'description': 'Component that distributes incoming traffic across multiple nodes', 'category': 'application'}, {'entity': 'Master node', 'description': 'Node that runs the Control Plane components', 'category': 'node'}]","[{'source_entity': 'Load balancer', 'description': 'distributes incoming network traffic across multiple instances', 'destination_entity': 'Master node'}, {'source_entity': 'Controller Manager', 'description': ""manages the cluster's control plane components"", 'destination_entity': 'Control Plane'}, {'source_entity': 'Scheduler', 'description': 'allocates resources to container workloads', 'destination_entity': 'Master node'}, {'source_entity': 'etcd', 'description': 'stores and manages cluster-wide configuration data', 'destination_entity': 'Kubernetes'}, {'source_entity': 'Kubelet', 'description': 'communicates with the API server to manage container workloads', 'destination_entity': 'API server'}, {'source_entity': 'etcd cluster', 'description': 'maintains a distributed key-value store for Kubernetes data', 'destination_entity': 'Kubernetes'}, {'source_entity': 'Control Plane', 'description': ""manages the cluster's control plane components"", 'destination_entity': 'Master node'}, {'source_entity': 'API server', 'description': 'exposes the Kubernetes API to users and applications', 'destination_entity': 'Kubernetes'}]","['[\n  {\n    ""source"": ""Load Balancer"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""distributes incoming network traffic across multiple instances"",\n    ""summary_er"": ""The Load Balancer distributes incoming traffic to multiple Pod instances for load balancing and high availability.""\n  }\n]', '[\n  {\n    ""source"": ""Controller Manager"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The Controller Manager component manages the cluster\'s control plane components, specifically controlling and managing pods.""\n  }\n]', '[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allocates resources to container workloads"",\n    ""summary_er"": ""The Scheduler allocates resources to pods, ensuring efficient container workload management.""\n  }\n]', '[\n  {\n    ""source"": ""etcd"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores and manages cluster-wide configuration data"",\n    ""summary_er"": ""Etcd stores and manages configuration data for pods in a Kubernetes cluster, ensuring consistency across all nodes.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""API Server"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""Kubelet communicates with API Server to manage container workloads.""\n  }\n]', '[\n  {\n    ""source"": ""etcd cluster"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""maintains a distributed key-value store for Kubernetes data"",\n    ""summary_er"": ""The etcd cluster stores and retrieves Kubernetes data, enabling communication between pods.""\n  }\n]', '[\n  {\n    ""source"": ""Control Plane"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages the cluster\'s control plane components"",\n    ""summary_er"": ""The Control Plane manages the cluster\'s control plane components, ensuring smooth operation of the pod.""\n  },\n  {\n    ""source"": ""Control Plane"",\n    ""destination"": ""Master node"",\n    ""relation_description"": ""manages the cluster\'s control plane components"",\n    ""summary_er"": ""The Control Plane is responsible for managing the Master node, overseeing its control plane components and ensuring efficient operation.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes the Kubernetes API to users and applications"",\n    ""summary_er"": ""The API server provides a gateway for users and applications to interact with the Kubernetes cluster, making it accessible through RESTful APIs.""\n  }\n]']","To make Kubernetes highly available, run multiple master nodes with etcd, API server, Controller Manager, and Scheduler components. Each component can be made highly available by running multiple instances and replicating data across them, ensuring the cluster can handle failures and maintain read/write operations.","[{'highlight': 'To make Kubernetes highly available, you need to run multiple master nodes, which run multiple instances of the following components: etcd, API server, Controller Manager, and Scheduler.'}, {'highlight': 'etcd can be made highly available by running it on an appropriate number of machines (three, five, or seven) and making them aware of each other, with data replicated across all instances.'}, {'highlight': 'A three-machine etcd cluster can still accept both read and write operations even if one node fails, while a five- or seven-node cluster can handle two or three node failures.'}, {'highlight': 'The Kubernetes Control Plane components (etcd, API server, Controller Manager, and Scheduler) should be run on multiple master nodes to ensure high availability.'}, {'highlight': 'A highly available cluster with three master nodes is shown in Figure 11.18, with each node running etcd, API server, Scheduler, and Controller Manager components.'}]"
+286,375,0,[],"343
+Running highly available clusters
+node failures, respectively. Having more than seven etcd instances is almost never nec-
+essary and begins impacting performance.
+RUNNING MULTIPLE INSTANCES OF THE API SERVER
+Making the API server highly available is even simpler. Because the API server is (almost
+completely) stateless (all the data is stored in etcd, but the API server does cache it), you
+can run as many API servers as you need, and they don’t need to be aware of each other
+at all. Usually, one API server is collocated with every etcd instance. By doing this, the
+etcd instances don’t need any kind of load balancer in front of them, because every API
+server instance only talks to the local etcd instance. 
+ The API servers, on the other hand, do need to be fronted by a load balancer, so
+clients (kubectl, but also the Controller Manager, Scheduler, and all the Kubelets)
+always connect only to the healthy API server instances. 
+ENSURING HIGH AVAILABILITY OF THE CONTROLLERS AND THE SCHEDULER
+Compared to the API server, where multiple replicas can run simultaneously, run-
+ning multiple instances of the Controller Manager or the Scheduler isn’t as simple.
+Because controllers and the Scheduler all actively watch the cluster state and act when
+it changes, possibly modifying the cluster state further (for example, when the desired
+replica count on a ReplicaSet is increased by one, the ReplicaSet controller creates an
+additional pod), running multiple instances of each of those components would
+result in all of them performing the same action. They’d be racing each other, which
+could cause undesired effects (creating two new pods instead of one, as mentioned in
+the previous example).
+ For this reason, when running multiple instances of these components, only one
+instance may be active at any given time. Luckily, this is all taken care of by the compo-
+nents themselves (this is controlled with the --leader-elect option, which defaults to
+true). Each individual component will only be active when it’s the elected leader. Only
+the leader performs actual work, whereas all other instances are standing by and waiting
+for the current leader to fail. When it does, the remaining instances elect a new leader,
+which then takes over the work. This mechanism ensures that two components are never
+operating at the same time and doing the same work (see figure 11.19).
+Master 3
+Scheduler
+Controller
+Manager
+[standing-by]
+[standing-by]
+Master 1
+Scheduler
+Controller
+Manager
+[active]
+[active]
+Master 2
+Scheduler
+Controller
+Manager
+[standing-by]
+[standing-by]
+Only the controllers in
+this Controller Manager
+are reacting to API
+resources being created,
+updated, and deleted.
+These Controller Managers
+and Schedulers aren’t doing
+anything except waiting to
+become leaders.
+Only this Scheduler
+is scheduling pods.
+Figure 11.19
+Only a single Controller Manager and a single Scheduler are active; others are standing by.
+ 
+","[  Only the controllers in These Controller Managers\nthis Controller Manager and Schedulers aren’t doing\nare reacting to API Only this Scheduler anything except waiting to\nresources being created, is scheduling pods. become leaders.\nupdated, and deleted.\nController Controller Controller\nScheduler Scheduler Scheduler\nManager Manager Manager\n[active] [active] [standing-by] [standing-by] [standing-by] [standing-by]\nMaster 1 Master 2 Master 3  \
+0                                               None                                                                                                                                                                                                                                                                                                                                                                                                                 
+
+                                                Col1  \
+0  Controller\nScheduler\nManager\n[standing-by] ...   
+
+                                                Col2  
+0  Controller\nScheduler\nManager\n[standing-by] ...  ]","[{'entity': 'etcd', 'description': 'a distributed key-value store', 'category': 'database'}, {'entity': 'API server', 'description': 'a stateless server that talks to etcd for data', 'category': 'application'}, {'entity': 'load balancer', 'description': 'a component that distributes traffic across multiple instances', 'category': 'network'}, {'entity': 'Controller Manager', 'description': 'a component that watches the cluster state and acts on it', 'category': 'process'}, {'entity': 'Scheduler', 'description': 'a component that schedules pods in the cluster', 'category': 'process'}, {'entity': '--leader-elect option', 'description': 'an option that controls which instance is active at a time', 'category': 'command'}, {'entity': 'ReplicaSet', 'description': 'a resource that manages replicas of a pod', 'category': 'application'}, {'entity': 'Kubelets', 'description': 'components that run on worker nodes and manage pods', 'category': 'process'}, {'entity': 'kubectl', 'description': 'a command-line tool for interacting with the cluster', 'category': 'command'}]","[{'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""load balancer""'}, {'source_entity': '""Controller Manager""', 'description': 'manages', 'destination_entity': '""ReplicaSet""'}, {'source_entity': '""Scheduler""', 'description': 'schedules', 'destination_entity': '""Pods""'}, {'source_entity': '""etcd""', 'description': 'stores', 'destination_entity': '""cluster data""'}, {'source_entity': '""Kubelets""', 'description': 'communicates with', 'destination_entity': '""API server""'}, {'source_entity': '""--leader-elect option""', 'description': 'enables', 'destination_entity': '""etcd""'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubernetes command-line tool uses a pod to manage containerized applications.""\n  },\n  {\n    ""source"": ""load balancer"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""serves"",\n    ""summary_er"": ""Load balancer serves incoming traffic to multiple pods for high availability and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""Controller Manager"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The Controller Manager component manages the lifecycle of pods, ensuring they are created and deleted as needed.""\n  },\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A ReplicaSet is a controller that ensures a specified number of replicas (identical pod templates) are running at any given time, managing the lifecycle of pods.""\n  }\n]', '[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""schedules"",\n    ""summary_er"": ""The Scheduler component assigns tasks to Pods, ensuring efficient resource utilization and optimal performance.""\n  }\n]', '[\n  {\n    ""source"": ""etcd"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores"",\n    ""summary_er"": ""Etcd stores cluster data in a distributed key-value store, allowing pods to access and share data across the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The Kubelet communicates with a Pod to manage and monitor its lifecycle, ensuring it runs smoothly within the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""etcd"",\n    ""relation_description"": ""leader-elect option"",\n    ""summary_er"": ""The leader-elect option in Kubernetes enables a pod to elect itself as the leader, ensuring high availability and reliability for etcd.""\n  }\n]']","Running multiple instances of etcd, API servers, controllers, and schedulers can provide high availability in Kubernetes clusters. However, careful consideration is needed for components like the Controller Manager and Scheduler to avoid racing conditions and undesired effects. The use of leader election mechanisms can help ensure that only one instance is active at a time, providing a stable and reliable system.","[{'highlight': 'Running multiple instances of the etcd is almost never necessary and begins impacting performance.'}, {'highlight': 'The API server can be run as many times as needed, without needing load balancers in front of them, but clients need to connect to a healthy API server instance through a load balancer.'}, {'highlight': ""Running multiple instances of the Controller Manager or Scheduler isn't simple due to their active watching and acting on cluster state, which can cause undesired effects if all instances perform the same action.""}, {'highlight': 'When running multiple instances of these components, only one instance may be active at any given time, controlled by the --leader-elect option, ensuring that two components are never operating at the same time and doing the same work.'}, {'highlight': 'Only a single Controller Manager and Scheduler are active; others are standing by, waiting to become leaders, with only one instance performing actual work at any given time.'}]"
+287,376,0,[],"344
+CHAPTER 11
+Understanding Kubernetes internals
+The Controller Manager and Scheduler can run collocated with the API server and
+etcd, or they can run on separate machines. When collocated, they can talk to the
+local API server directly; otherwise they connect to the API servers through the load
+balancer.
+UNDERSTANDING THE LEADER ELECTION MECHANISM USED IN CONTROL PLANE COMPONENTS
+What I find most interesting here is that these components don’t need to talk to each
+other directly to elect a leader. The leader election mechanism works purely by creat-
+ing a resource in the API server. And it’s not even a special kind of resource—the End-
+points resource is used to achieve this (abused is probably a more appropriate term).
+ There’s nothing special about using an Endpoints object to do this. It’s used
+because it has no side effects as long as no Service with the same name exists. Any
+other resource could be used (in fact, the leader election mechanism will soon use
+ConfigMaps instead of Endpoints). 
+ I’m sure you’re interested in how a resource can be used for this purpose. Let’s
+take the Scheduler, for example. All instances of the Scheduler try to create (and later
+update) an Endpoints resource called kube-scheduler. You’ll find it in the kube-
+system namespace, as the following listing shows.
+$ kubectl get endpoints kube-scheduler -n kube-system -o yaml
+apiVersion: v1
+kind: Endpoints
+metadata:
+  annotations:
+    control-plane.alpha.kubernetes.io/leader: '{""holderIdentity"":
+      ➥ ""minikube"",""leaseDurationSeconds"":15,""acquireTime"":
+      ➥ ""2017-05-27T18:54:53Z"",""renewTime"":""2017-05-28T13:07:49Z"",
+      ➥ ""leaderTransitions"":0}'
+  creationTimestamp: 2017-05-27T18:54:53Z
+  name: kube-scheduler
+  namespace: kube-system
+  resourceVersion: ""654059""
+  selfLink: /api/v1/namespaces/kube-system/endpoints/kube-scheduler
+  uid: f847bd14-430d-11e7-9720-080027f8fa4e
+subsets: []
+The control-plane.alpha.kubernetes.io/leader annotation is the important part.
+As you can see, it contains a field called holderIdentity, which holds the name of the
+current leader. The first instance that succeeds in putting its name there becomes
+the leader. Instances race each other to do that, but there’s always only one winner.
+ Remember the optimistic concurrency we explained earlier? That’s what ensures
+that if multiple instances try to write their name into the resource only one of them
+succeeds. Based on whether the write succeeded or not, each instance knows whether
+it is or it isn’t the leader. 
+ Once becoming the leader, it must periodically update the resource (every two sec-
+onds by default), so all other instances know that it’s still alive. When the leader fails,
+Listing 11.11
+The kube-scheduler Endpoints resource used for leader-election
+ 
+",[],"[{'entity': 'Controller Manager', 'description': 'a component in Kubernetes', 'category': 'software'}, {'entity': 'Scheduler', 'description': 'a component in Kubernetes', 'category': 'software'}, {'entity': 'API server', 'description': 'a component in Kubernetes', 'category': 'software'}, {'entity': 'etcd', 'description': 'a distributed key-value store used by Kubernetes', 'category': 'database'}, {'entity': 'leader election mechanism', 'description': 'a way to elect a leader in control plane components', 'category': 'process'}, {'entity': 'Endpoints resource', 'description': 'a type of resource used for leader-election', 'category': 'resource'}, {'entity': 'ConfigMaps', 'description': 'a type of resource that can be used for leader-election', 'category': 'resource'}, {'entity': 'kube-scheduler', 'description': 'an instance of the Scheduler component', 'category': 'software'}, {'entity': 'minikube', 'description': 'a local Kubernetes cluster', 'category': 'application'}, {'entity': 'kubectl', 'description': 'a command-line tool for interacting with Kubernetes', 'category': 'command'}, {'entity': 'get endpoints', 'description': 'a command used to retrieve information about an Endpoints resource', 'category': 'command'}, {'entity': 'leaderTransitions', 'description': 'a field in the leader election annotation', 'category': 'field'}, {'entity': 'leaseDurationSeconds', 'description': 'a field in the leader election annotation', 'category': 'field'}]","[{'source_entity': '""kube-scheduler""', 'description': 'uses', 'destination_entity': '""Endpoints resource""'}, {'source_entity': '""kube-scheduler""', 'description': 'manages', 'destination_entity': '""Endpoints resource""'}, {'source_entity': '""kubectl""', 'description': 'interacts with', 'destination_entity': '""Endpoints resource""'}, {'source_entity': '""kube-scheduler""', 'description': 'configures', 'destination_entity': '""leader election mechanism""'}, {'source_entity': '""Controller Manager""', 'description': 'coordinates', 'destination_entity': '""Scheduler""'}, {'source_entity': '""get endpoints""', 'description': 'requests', 'destination_entity': '""Endpoints resource""'}, {'source_entity': '""etcd""', 'description': 'stores', 'destination_entity': '""leaderTransitions""'}, {'source_entity': '""kube-scheduler""', 'description': 'uses', 'destination_entity': '""ConfigMaps""'}, {'source_entity': '""minikube""', 'description': 'utilizes', 'destination_entity': '""API server""'}, {'source_entity': '""Controller Manager""', 'description': 'communicates with', 'destination_entity': '""API server""'}]","['[\n  {\n    ""source"": ""kube-scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The kube-scheduler component utilizes a pod to manage and schedule containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""kube-scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The kube-scheduler component manages the scheduling of pods in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""Endpoints resource"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""The Endpoints resource provides information about the endpoints of a pod in a Kubernetes cluster, which can be used to manage and monitor the pod\'s network connections.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""interacts with"",\n    ""summary_er"": ""Kubectl, a command-line tool, interacts with pods to manage and deploy containerized applications.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""Endpoints resource"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubectl manages Endpoints resources to expose services and provide network connectivity to pods.""\n  }\n]', '[\n  {\n    ""source"": ""kube-scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures"",\n    ""summary_er"": ""Kube-Scheduler configures a leader election mechanism for pod management, ensuring efficient resource allocation and scheduling.""\n  }\n]', '[\n  {\n    ""source"": ""Controller Manager"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""coordinates"",\n    ""summary_er"": ""The Controller Manager is responsible for managing the state of pods in a Kubernetes cluster, ensuring they are properly coordinated and running as expected.""\n  },\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""Controller Manager"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The Scheduler communicates with the Controller Manager to determine which node to place a pod on, based on resource availability and other factors.""\n  }\n]', '[\n  {\n    ""source"": ""get endpoints"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""The get endpoints command sends requests to a pod, retrieving its Endpoints resource.""\n  }\n]', '[\n  {\n    ""source"": ""etcd"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores"",\n    ""summary_er"": ""Etcd stores data for a Kubernetes cluster, which is used by pods to manage their state.""\n  },\n  {\n    ""source"": ""leaderTransitions"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""leaderTransitions"",\n    ""summary_er"": ""Leader transitions in etcd refer to the process of electing a new leader for a pod, ensuring high availability and fault tolerance.""\n  }\n]', '[\n  {\n    ""source"": ""kube-scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""\\""Kube-Scheduler\\"" utilizes \\""Pods\\"" to manage container scheduling and resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""minikube"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""utilizes"",\n    ""summary_er"": ""Minikube uses a pod to run its API server, providing a lightweight and portable Kubernetes environment.""\n  }\n]', '[\n  {\n    ""source"": ""Controller Manager"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The Controller Manager communicates with pods to manage and orchestrate containerized applications.""\n  }\n]']","Kubernetes components such as Controller Manager and Scheduler can run collocated or on separate machines. Leader election is achieved by creating a resource in the API server using an Endpoints object, which has no side effects unless a Service with the same name exists. The first instance to successfully write its name into the resource becomes the leader, and periodic updates from the leader ensure that other instances know it's still alive.","[{'highlight': 'The Controller Manager and Scheduler can run collocated with the API server and etcd, or they can run on separate machines.'}, {'highlight': 'The leader election mechanism works purely by creating a resource in the API server using an Endpoints object, which has no side effects as long as no Service with the same name exists.'}, {'highlight': 'All instances of the Scheduler try to create (and later update) an Endpoints resource called kube-scheduler, and the control-plane.alpha.kubernetes.io/leader annotation is used to determine the current leader.'}, {'highlight': 'The first instance that succeeds in putting its name into the resource becomes the leader, and instances race each other to do so, with optimistic concurrency ensuring only one winner.'}, {'highlight': ""Once becoming the leader, it must periodically update the resource (every two seconds by default), so all other instances know that it's still alive.""}]"
+288,377,0,[],"345
+Summary
+other instances see that the resource hasn’t been updated for a while, and try to become
+the leader by writing their own name to the resource. Simple, right?
+11.7
+Summary
+Hopefully, this has been an interesting chapter that has improved your knowledge of
+the inner workings of Kubernetes. This chapter has shown you
+What components make up a Kubernetes cluster and what each component is
+responsible for
+How the API server, Scheduler, various controllers running in the Controller
+Manager, and the Kubelet work together to bring a pod to life
+How the infrastructure container binds together all the containers of a pod
+How pods communicate with other pods running on the same node through
+the network bridge, and how those bridges on different nodes are connected,
+so pods running on different nodes can talk to each other
+How the kube-proxy performs load balancing across pods in the same service by
+configuring iptables rules on the node
+How multiple instances of each component of the Control Plane can be run to
+make the cluster highly available
+Next, we’ll look at how to secure the API server and, by extension, the cluster as a whole.
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'container orchestration system', 'category': 'software'}, {'entity': 'API Server', 'description': 'component of Kubernetes that handles incoming requests', 'category': 'software'}, {'entity': 'Scheduler', 'description': 'component of Kubernetes that schedules pods on nodes', 'category': 'software'}, {'entity': 'Controller Manager', 'description': 'component of Kubernetes that runs controllers for the cluster', 'category': 'software'}, {'entity': 'Kubelet', 'description': 'component of Kubernetes that runs on each node and manages pods', 'category': 'software'}, {'entity': 'Pod', 'description': 'lightweight and portable container', 'category': 'container'}, {'entity': 'Infrastructure Container', 'description': 'binds together all containers of a pod', 'category': 'container'}, {'entity': 'Network Bridge', 'description': 'connects pods running on different nodes', 'category': 'network'}, {'entity': 'Kube-proxy', 'description': 'component that performs load balancing across pods in the same service', 'category': 'software'}]","[{'source_entity': '""Network Bridge""', 'description': 'provides connectivity', 'destination_entity': '""Infrastructure Container""'}, {'source_entity': '""Kubernetes""', 'description': 'manages and orchestrates', 'destination_entity': '""Pod""'}, {'source_entity': '""Kubelet""', 'description': 'monitors and manages', 'destination_entity': '""Pod""'}, {'source_entity': '""Kube-proxy""', 'description': 'handles network traffic', 'destination_entity': '""Infrastructure Container""'}, {'source_entity': '""API Server""', 'description': 'provides programmatic interface', 'destination_entity': '""Controller Manager""'}, {'source_entity': '""Controller Manager""', 'description': 'makes decisions and takes actions', 'destination_entity': '""Pod""'}, {'source_entity': '""Scheduler""', 'description': 'allocates resources and schedules tasks', 'destination_entity': '""Pod""'}]","['[\n  {\n    ""source"": ""Network Bridge"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides connectivity"",\n    ""summary_er"": ""The Network Bridge entity facilitates connectivity for a pod, enabling communication between them.""\n  },\n  {\n    ""source"": ""Infrastructure Container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""An Infrastructure Container hosts a pod, providing the necessary environment and resources for its execution.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages and orchestrates"",\n    ""summary_er"": ""Kubernetes manages and orchestrates pods, ensuring efficient resource allocation and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""monitors and manages"",\n    ""summary_er"": ""The Kubelet is responsible for monitoring and managing Pods, ensuring they are running correctly and efficiently.""\n  }\n]', '[\n  {\n    ""source"": ""Kube-proxy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""handles network traffic"",\n    ""summary_er"": ""Kube-proxy manages network traffic for pods, ensuring efficient communication between containers.""\n  }\n]', '[\n  {\n    ""source"": ""API Server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides programmatic interface"",\n    ""summary_er"": ""The API Server provides a programmatic interface to interact with Kubernetes resources, allowing users to create, update, and delete pods.""\n  }\n]', '[\n  {\n    ""source"": ""Controller Manager"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""makes decisions and takes actions"",\n    ""summary_er"": ""The Controller Manager component makes decisions and takes actions on behalf of a Pod, ensuring its proper functioning within the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""allocates resources and schedules tasks"",\n    ""summary_er"": ""The Scheduler allocates resources to Pods, scheduling tasks for efficient resource utilization.""\n  }\n]']","Kubernetes components such as API server, Scheduler, controllers, Kubelet, and kube-proxy work together to bring a pod to life. Each component has a specific role: API server receives requests, Scheduler assigns resources, controllers manage pods, Kubelet runs containers on nodes, and kube-proxy performs load balancing. High availability is achieved by running multiple instances of each component.","[{'highlight': 'Kubernetes components include API server, Scheduler, controllers in Controller Manager, Kubelet, and infrastructure container.'}, {'highlight': 'API server, Scheduler, controllers, Kubelet, and kube-proxy work together to bring a pod to life and enable communication between pods on different nodes.'}, {'highlight': 'Multiple instances of each Control Plane component can be run to make the cluster highly available.'}, {'highlight': 'The infrastructure container binds all containers of a pod, while kube-proxy performs load balancing across pods in the same service using iptables rules.'}, {'highlight': 'Securing the API server is crucial for securing the entire Kubernetes cluster.'}]"
+289,378,0,[],"346
+Securing the
+Kubernetes API server
+In chapter 8 you learned how applications running in pods can talk to the API
+server to retrieve or change the state of resources deployed in the cluster. To
+authenticate with the API server, you used the ServiceAccount token mounted into
+the pod. In this chapter, you’ll learn what ServiceAccounts are and how to config-
+ure their permissions, as well as permissions for other subjects using the cluster. 
+12.1
+Understanding authentication
+In the previous chapter, we said the API server can be configured with one or more
+authentication plugins (and the same is true for authorization plugins). When a
+request is received by the API server, it goes through the list of authentication
+This chapter covers
+Understanding authentication
+What ServiceAccounts are and why they’re used
+Understanding the role-based access control 
+(RBAC) plugin
+Using Roles and RoleBindings
+Using ClusterRoles and ClusterRoleBindings
+Understanding the default roles and bindings
+ 
+",[],"[{'entity': 'Kubernetes API server', 'description': 'The main entry point for interacting with a Kubernetes cluster.', 'category': 'application'}, {'entity': 'ServiceAccount token', 'description': 'A token used to authenticate with the Kubernetes API server.', 'category': 'process'}, {'entity': 'ServiceAccounts', 'description': 'An identity used by pods to interact with the Kubernetes cluster.', 'category': 'database'}, {'entity': 'permissions', 'description': 'Access control settings for ServiceAccounts and other subjects in the cluster.', 'category': 'process'}, {'entity': 'authentication plugins', 'description': 'Plugins used to authenticate requests to the Kubernetes API server.', 'category': 'software'}, {'entity': 'authorization plugins', 'description': 'Plugins used to authorize access to resources in the cluster.', 'category': 'software'}, {'entity': 'Roles', 'description': 'A set of permissions granted to a ServiceAccount or other subject.', 'category': 'database'}, {'entity': 'RoleBindings', 'description': 'A binding between a Role and a ServiceAccount or other subject.', 'category': 'process'}, {'entity': 'ClusterRoles', 'description': 'A set of permissions granted to all subjects in the cluster.', 'category': 'database'}, {'entity': 'ClusterRoleBindings', 'description': 'A binding between a ClusterRole and all subjects in the cluster.', 'category': 'process'}, {'entity': 'default roles and bindings', 'description': 'Pre-configured Roles and RoleBindings provided by Kubernetes.', 'category': 'database'}]","[{'source_entity': '""authorization plugins""', 'description': 'authenticate users', 'destination_entity': '""authentication plugins""'}, {'source_entity': '""Roles""', 'description': 'define permissions for users', 'destination_entity': '""permissions""'}, {'source_entity': '""ClusterRoleBindings""', 'description': 'bind roles to clusters', 'destination_entity': '""ClusterRoles""'}, {'source_entity': '""default roles and bindings""', 'description': 'configure default permissions for users', 'destination_entity': '""permissions""'}, {'source_entity': '""ClusterRoles""', 'description': 'define cluster-wide permissions', 'destination_entity': '""permissions""'}, {'source_entity': '""RoleBindings""', 'description': 'bind roles to users or groups', 'destination_entity': '""Roles""'}, {'source_entity': '""ServiceAccounts""', 'description': 'generate tokens for service accounts', 'destination_entity': '""ServiceAccount token""'}, {'source_entity': '""Kubernetes API server""', 'description': 'validate and authenticate incoming requests', 'destination_entity': '""authorization plugins""'}]","['[\n  {\n    ""source"": ""authorization plugins"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""authenticate users"",\n    ""summary_er"": ""Authorization plugins are used to authenticate users in a Kubernetes pod, ensuring secure access and identity verification.""\n  }\n]', '[\n  {\n    ""source"": ""Roles"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""define permissions for users"",\n    ""summary_er"": ""Roles define user permissions within a Kubernetes pod, controlling access to resources and ensuring security.""\n  }\n]', '[\n  {\n    ""source"": ""ClusterRoleBindings"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""bind roles to clusters"",\n    ""summary_er"": ""ClusterRoleBindings bind ClusterRoles to specific clusters, allowing pods within those clusters to access role permissions.""\n  }\n]', '[\n  {\n    ""source"": ""default roles and bindings"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configure default permissions for users"",\n    ""summary_er"": ""Default roles and bindings configure default permissions for users within a pod, ensuring access control for user interactions.""\n  }\n]', '[\n  {\n    ""source"": ""ClusterRoles"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""define cluster-wide permissions"",\n    ""summary_er"": ""ClusterRoles define permissions for pods within a Kubernetes cluster, controlling access to resources and actions.""\n  }\n]', '[\n  {\n    ""source"": ""RoleBindings"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""bind roles to users or groups"",\n    ""summary_er"": ""RoleBindings bind user-defined roles to pods, allowing for fine-grained access control and security.""\n  },\n  {\n    ""source"": ""Roles"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assign roles to users or groups"",\n    ""summary_er"": ""Roles define permissions and access levels within a Kubernetes cluster, which can be assigned to pods for secure resource management.""\n  }\n]', '[\n  {\n    ""source"": ""ServiceAccounts"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""generate tokens for service accounts"",\n    ""summary_er"": ""Service Accounts generate tokens to authenticate pods, enabling secure communication between services and pods.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""validate and authenticate incoming requests"",\n    ""summary_er"": ""The Kubernetes API server validates and authenticates incoming requests from pods, ensuring secure communication between clients and the cluster.""\n  }\n]']","This chapter covers authentication, ServiceAccounts, and permissions configuration in a Kubernetes cluster. It explains how the API server handles requests using authentication plugins and introduces the concept of ServiceAccounts for authenticating applications running in pods.","[{'highlight': 'The Kubernetes API server can be configured with one or more authentication plugins, which are used to authenticate requests received by the API server.'}, {'highlight': 'ServiceAccounts are used to authenticate applications running in pods with the API server, and their permissions can be configured using RoleBindings.'}, {'highlight': 'The RBAC plugin is used for role-based access control, which allows administrators to define roles and bindings for users or groups accessing the cluster.'}, {'highlight': 'Roles and RoleBindings are used to manage permissions for specific subjects in the cluster, while ClusterRoles and ClusterRoleBindings are used for cluster-wide permissions.'}, {'highlight': 'The default roles and bindings provide a set of pre-defined permissions that can be used as a starting point for configuring access control in the cluster.'}]"

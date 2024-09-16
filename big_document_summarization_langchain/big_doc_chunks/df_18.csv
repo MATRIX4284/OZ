@@ -1,0 +1,650 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+180,269,0,[],"237
+Talking to the Kubernetes API server
+      ""verbs"": [                 
+        ""create"",                
+        ""delete"",                
+        ""deletecollection"",      
+        ""get"",                   
+        ""list"",                  
+        ""patch"",                 
+        ""update"",                
+        ""watch""                  
+      ]
+    },
+    {
+      ""name"": ""jobs/status"",            
+      ""namespaced"": true,                  
+      ""kind"": ""Job"",
+      ""verbs"": [             
+        ""get"",               
+        ""patch"",             
+        ""update""             
+      ]
+    }
+  ]
+}
+As you can see, the API server returns a list of resource types and REST endpoints in
+the batch/v1 API group. One of those is the Job resource. In addition to the name of
+the resource and the associated kind, the API server also includes information on
+whether the resource is namespaced or not, its short name (if it has one; Jobs don’t),
+and a list of verbs you can use with the resource. 
+ The returned list describes the REST resources exposed in the API server. The
+""name"": ""jobs"" line tells you that the API contains the /apis/batch/v1/jobs end-
+point. The ""verbs"" array says you can retrieve, update, and delete Job resources
+through that endpoint. For certain resources, additional API endpoints are also
+exposed (such as the jobs/status path, which allows modifying only the status of
+a Job).
+LISTING ALL JOB INSTANCES IN THE CLUSTER
+To get a list of Jobs in your cluster, perform a GET request on path /apis/batch/
+v1/jobs, as shown in the following listing.
+$ curl http://localhost:8001/apis/batch/v1/jobs
+{
+  ""kind"": ""JobList"",
+  ""apiVersion"": ""batch/v1"",
+  ""metadata"": {
+    ""selfLink"": ""/apis/batch/v1/jobs"",
+    ""resourceVersion"": ""225162""
+  },
+Listing 8.10
+List of Jobs: http:/
+/localhost:8001/apis/batch/v1/jobs
+Here are the verbs that can be used 
+with this resource (you can create 
+Jobs; delete individual ones or a 
+collection of them; and retrieve, 
+watch, and update them).
+Resources also have a 
+special REST endpoint for 
+modifying their status.
+The status can be 
+retrieved, patched, 
+or updated.
+ 
+",[],"[{'entity': 'Kubernetes API server', 'description': 'API server that returns a list of resource types and REST endpoints', 'category': 'software'}, {'entity': 'verbs', 'description': 'list of allowed actions (create, delete, get, etc.)', 'category': 'software'}, {'entity': 'create', 'description': 'action to create a resource', 'category': 'software'}, {'entity': 'delete', 'description': 'action to delete a resource', 'category': 'software'}, {'entity': 'get', 'description': 'action to retrieve a resource', 'category': 'software'}, {'entity': 'list', 'description': 'action to list all resources of a type', 'category': 'software'}, {'entity': 'patch', 'description': 'action to update a resource partially', 'category': 'software'}, {'entity': 'update', 'description': 'action to update a resource fully', 'category': 'software'}, {'entity': 'watch', 'description': 'action to watch for changes in a resource', 'category': 'software'}, {'entity': 'jobs/status', 'description': 'special REST endpoint for modifying the status of a Job', 'category': 'software'}, {'entity': 'JobList', 'description': 'resource type that represents a list of Jobs', 'category': 'software'}, {'entity': 'curl', 'description': 'command-line tool for transferring data with URL syntax', 'category': 'software'}]","[{'source_entity': '""JobList""', 'description': 'can be updated', 'destination_entity': '""list""'}, {'source_entity': '""curl""', 'description': 'is used to send HTTP requests to', 'destination_entity': '""Kubernetes API server""'}, {'source_entity': '""get""', 'description': 'verb is used to retrieve information from', 'destination_entity': '""list""'}, {'source_entity': '""verbs""', 'description': 'include create, update, delete, and watch', 'destination_entity': '""JobList""'}, {'source_entity': '""create""', 'description': 'verb is used to add new jobs to', 'destination_entity': '""list""'}, {'source_entity': '""delete""', 'description': 'verb is used to remove jobs from', 'destination_entity': '""JobList""'}, {'source_entity': '""watch""', 'description': 'verb is used to monitor changes to', 'destination_entity': '""jobs/status""'}, {'source_entity': '""patch""', 'description': 'is used to update specific fields of', 'destination_entity': '""JobList""'}]","['[\n  {\n    ""source"": ""JobList"",\n    ""destination"": ""pod list"",\n    ""relation_description"": ""can be updated"",\n    ""summary_er"": ""A JobList can be updated by referencing a pod list, allowing for dynamic updates to job configurations.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""Kubernetes API server"",\n    ""relation_description"": ""is used to send HTTP requests to"",\n    ""summary_er"": ""The curl command is utilized by Kubernetes API server to send HTTP requests, enabling communication between clients and the API.""\n  }\n]', '[{""source"": ""Pod"", ""destination"": ""Information"", ""relation_description"": ""verb is used to retrieve"", ""summary_er"": ""The Pod retrieves information using the get verb.""},\n {""source"": ""Pod"", ""destination"": ""List"", ""relation_description"": ""list of all pods"", ""summary_er"": ""The Pod lists all available pods in a list format.""}]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""create"",\n    ""summary_er"": ""Kubernetes creates a new Pod instance, which is a container running an application.""\n  },\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""JobList"",\n    ""relation_description"": ""update"",\n    ""summary_er"": ""Kubernetes updates the JobList to reflect changes in job status and configuration.""\n  },\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""delete"",\n    ""summary_er"": ""Kubernetes deletes a Pod instance, which is no longer needed or has failed.""\n  },\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""JobList"",\n    ""relation_description"": ""watch"",\n    ""summary_er"": ""Kubernetes watches the JobList for changes in job status and configuration, providing real-time updates.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""create"",\n    ""summary_er"": ""In Kubernetes, a \'create\' relation is used to add new jobs to an existing pod.""\n  },\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Job"",\n    ""relation_description"": ""add"",\n    ""summary_er"": ""A \'create\' relation in Kubernetes adds new jobs to the system.""\n  },\n  {\n    ""source"": ""Docker"",\n    ""destination"": ""Container"",\n    ""relation_description"": ""list"",\n    ""summary_er"": ""In Docker, a \'list\' relation is used to display all running containers.""\n  }\n]', '[\n  {\n    ""source"": ""JobList"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""delete"",\n    ""summary_er"": ""The JobList entity is used to remove jobs from a pod, utilizing the delete verb.""\n  }\n]', '[{\n  ""source"": ""watch"",\n  ""destination"": ""pod"",\n  ""relation_description"": ""verb is used to monitor changes to"",\n  ""summary_er"": ""The \'watch\' verb monitors changes to pod, enabling real-time updates.""\n}]', '[\n  {\n    ""source"": ""patch"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to update specific fields of"",\n    ""summary_er"": ""A patch is applied to a pod to update its configuration or fix issues.""\n  },\n  {\n    ""source"": ""JobList"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains information about"",\n    ""summary_er"": ""A JobList holds details about running pods, including their status and resources used.""\n  }\n]']","The Kubernetes API server returns a list of resource types and REST endpoints in the batch/v1 API group. The Job resource is exposed with verbs to retrieve, update, delete, create, watch, patch and get. Additional API endpoints are also available for modifying job status.","[{'highlight': 'The API server returns a list of resource types and REST endpoints in the batch/v1 API group.'}, {'highlight': 'The returned list describes the REST resources exposed in the API server.'}, {'highlight': 'You can retrieve, update, and delete Job resources through the /apis/batch/v1/jobs endpoint.'}, {'highlight': 'A GET request on path /apis/batch/v1/jobs returns a list of Jobs in your cluster.'}, {'highlight': 'Resources also have a special REST endpoint for modifying their status, which allows retrieving, patching, or updating the status of a Job.'}]"
+181,270,0,[],"238
+CHAPTER 8
+Accessing pod metadata and other resources from applications
+  ""items"": [
+    {
+      ""metadata"": {
+        ""name"": ""my-job"",
+        ""namespace"": ""default"",
+        ...
+You probably have no Job resources deployed in your cluster, so the items array will be
+empty. You can try deploying the Job in Chapter08/my-job.yaml and hitting the REST
+endpoint again to get the same output as in listing 8.10.
+RETRIEVING A SPECIFIC JOB INSTANCE BY NAME
+The previous endpoint returned a list of all Jobs across all namespaces. To get back
+only one specific Job, you need to specify its name and namespace in the URL. To
+retrieve the Job shown in the previous listing (name: my-job; namespace: default),
+you need to request the following path: /apis/batch/v1/namespaces/default/jobs/
+my-job, as shown in the following listing.
+$ curl http://localhost:8001/apis/batch/v1/namespaces/default/jobs/my-job
+{
+  ""kind"": ""Job"",
+  ""apiVersion"": ""batch/v1"",
+  ""metadata"": {
+    ""name"": ""my-job"",
+    ""namespace"": ""default"",
+    ...
+As you can see, you get back the complete JSON definition of the my-job Job resource,
+exactly like you do if you run:
+$ kubectl get job my-job -o json
+You’ve seen that you can browse the Kubernetes REST API server without using any
+special tools, but to fully explore the REST API and interact with it, a better option is
+described at the end of this chapter. For now, exploring it with curl like this is enough
+to make you understand how an application running in a pod talks to Kubernetes. 
+8.2.2
+Talking to the API server from within a pod
+You’ve learned how to talk to the API server from your local machine, using the
+kubectl proxy. Now, let’s see how to talk to it from within a pod, where you (usually)
+don’t have kubectl. Therefore, to talk to the API server from inside a pod, you need
+to take care of three things:
+Find the location of the API server.
+Make sure you’re talking to the API server and not something impersonating it.
+Authenticate with the server; otherwise it won’t let you see or do anything.
+Listing 8.11
+Retrieving a resource in a specific namespace by name
+ 
+",[],"[{'entity': 'Job', 'description': 'A Kubernetes resource that represents a set of related tasks.', 'category': 'application'}, {'entity': 'kubectl', 'description': 'A command-line tool for interacting with a Kubernetes cluster.', 'category': 'software'}, {'entity': 'REST API server', 'description': 'The interface through which applications interact with the Kubernetes cluster.', 'category': 'application'}, {'entity': 'pod', 'description': 'A lightweight and portable container that runs a single application instance.', 'category': 'container'}, {'entity': 'namespace', 'description': 'A way to group related resources in a Kubernetes cluster.', 'category': 'application'}, {'entity': 'curl', 'description': 'A command-line tool for transferring data with URLs.', 'category': 'software'}, {'entity': 'API server', 'description': 'The interface through which applications interact with the Kubernetes cluster.', 'category': 'application'}, {'entity': 'Job resource', 'description': 'A Kubernetes resource that represents a set of related tasks.', 'category': 'application'}, {'entity': 'my-job', 'description': 'The name of a specific Job instance.', 'category': 'application'}, {'entity': 'default', 'description': 'The namespace in which the my-job Job instance is deployed.', 'category': 'namespace'}]","[{'source_entity': 'kubectl', 'description': 'creates', 'destination_entity': 'Job resource'}, {'source_entity': 'REST API server', 'description': 'manages', 'destination_entity': 'Job resource'}, {'source_entity': 'curl', 'description': 'requests', 'destination_entity': 'API server'}, {'source_entity': 'kubectl', 'description': 'deploys', 'destination_entity': 'pod'}, {'source_entity': 'Job resource', 'description': 'defines', 'destination_entity': 'namespace'}, {'source_entity': 'REST API server', 'description': 'serves', 'destination_entity': 'default'}, {'source_entity': 'kubectl', 'description': 'gets', 'destination_entity': 'Job resource'}, {'source_entity': 'curl', 'description': 'calls', 'destination_entity': 'REST API server'}, {'source_entity': 'my-job', 'description': 'is', 'destination_entity': 'Job resource'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) creates a new Pod resource, which is a container running an application.""\n  }\n]', '[\n  {\n    ""source"": ""REST API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The REST API server manages a pod, which is a containerized application that can be scaled and managed by Kubernetes.""\n  },\n  {\n    ""source"": ""REST API server"",\n    ""destination"": ""Job resource"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The REST API server manages the Job resource, which represents a batch of tasks to be executed in a containerized environment.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""The curl command sends HTTP requests to a pod, which is a containerized application running on a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) deploys a containerized application or service as a pod in the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Job resource"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A job resource in Kubernetes defines a set of tasks to be executed, which are then run as separate pods.""\n  }\n]', '[\n  {\n    ""source"": ""REST API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""serves"",\n    ""summary_er"": ""The REST API server provides services to a pod, handling incoming requests and returning responses.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""gets"",\n    ""summary_er"": ""Kubernetes command-line tool retrieves information about a running pod.""\n  },\n  {\n    ""source"": ""Job resource"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""A Job resource in Kubernetes is related to one or more pods that run the same task.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""REST API server"",\n    ""relation_description"": ""calls"",\n    ""summary_er"": ""The curl command makes an HTTP request to a REST API server, sending data or retrieving information.""\n  }\n]', '[\n  {\n    ""source"": ""my-job"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is"",\n    ""summary_er"": ""A Kubernetes job resource, \'my-job\', is a Pod that runs to completion.""\n  }\n]']","Accessing pod metadata and other resources from applications involves using Kubernetes REST API. You can retrieve information about pods, jobs, and namespaces using curl commands. To talk to the API server from within a pod, you need to find its location, authenticate with it, and ensure you're not talking to an impersonator. This allows applications running in pods to interact with Kubernetes services.","[{'highlight': 'To retrieve a list of all Jobs across all namespaces, use the path /apis/batch/v1/jobs and specify the namespace in the URL to get back only one specific Job.'}, {'highlight': 'The Kubernetes REST API server can be explored without using special tools by making GET requests with curl, but a better option is described at the end of this chapter.'}, {'highlight': ""To talk to the API server from within a pod, you need to find its location, ensure you're talking to the real server and not an impersonator, and authenticate with the server.""}, {'highlight': 'The Job resource can be retrieved by making a GET request to /apis/batch/v1/namespaces/default/jobs/my-job, where my-job is the name of the Job and default is its namespace.'}, {'highlight': 'You can use kubectl get job my-job -o json to retrieve the complete JSON definition of a Job resource, just like making a GET request to the API server with curl.'}]"
+182,271,0,[],"239
+Talking to the Kubernetes API server
+You’ll see how this is done in the next three sections. 
+RUNNING A POD TO TRY OUT COMMUNICATION WITH THE API SERVER
+The first thing you need is a pod from which to talk to the API server. You’ll run a pod
+that does nothing (it runs the sleep command in its only container), and then run a
+shell in the container with kubectl exec. Then you’ll try to access the API server from
+within that shell using curl.
+ Therefore, you need to use a container image that contains the curl binary. If you
+search for such an image on, say, Docker Hub, you’ll find the tutum/curl image, so
+use it (you can also use any other existing image containing the curl binary or you
+can build your own). The pod definition is shown in the following listing.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl
+spec:
+  containers:
+  - name: main
+    image: tutum/curl                
+    command: [""sleep"", ""9999999""]    
+After creating the pod, run kubectl exec to run a bash shell inside its container:
+$ kubectl exec -it curl bash
+root@curl:/#
+You’re now ready to talk to the API server.
+FINDING THE API SERVER’S ADDRESS
+First, you need to find the IP and port of the Kubernetes API server. This is easy,
+because a Service called kubernetes is automatically exposed in the default name-
+space and configured to point to the API server. You may remember seeing it every
+time you listed services with kubectl get svc:
+$ kubectl get svc
+NAME         CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+kubernetes   10.0.0.1     <none>        443/TCP   46d
+And you’ll remember from chapter 5 that environment variables are configured for
+each service. You can get both the IP address and the port of the API server by looking
+up the KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT variables (inside
+the container):
+root@curl:/# env | grep KUBERNETES_SERVICE
+KUBERNETES_SERVICE_PORT=443
+KUBERNETES_SERVICE_HOST=10.0.0.1
+KUBERNETES_SERVICE_PORT_HTTPS=443
+Listing 8.12
+A pod for trying out communication with the API server: curl.yaml
+Using the tutum/curl image, 
+because you need curl 
+available in the container
+You’re running the sleep 
+command with a long delay to 
+keep your container running.
+ 
+",[],"[{'entity': 'Kubernetes API server', 'description': 'The main entry point for interacting with Kubernetes resources', 'category': 'application'}, {'entity': 'Pod', 'description': 'A logical host within a cluster, running one or more containers', 'category': 'container'}, {'entity': 'Docker Hub', 'description': 'A registry for container images', 'category': 'service'}, {'entity': 'tutum/curl image', 'description': 'A container image containing the curl binary', 'category': 'container image'}, {'entity': 'kubectl exec', 'description': 'A command for running a shell inside a container', 'category': 'command'}, {'entity': 'bash', 'description': 'A Unix shell', 'category': 'shell'}, {'entity': 'curl', 'description': 'A command-line tool for transferring data', 'category': 'command'}, {'entity': 'Service', 'description': 'An abstraction layer for accessing a cluster resource', 'category': 'application'}, {'entity': 'kubernetes Service', 'description': 'A Service exposing the Kubernetes API server', 'category': 'service'}, {'entity': 'KUBERNETES_SERVICE_HOST', 'description': 'An environment variable containing the IP address of the API server', 'category': 'environment variable'}, {'entity': 'KUBERNETES_SERVICE_PORT', 'description': 'An environment variable containing the port number of the API server', 'category': 'environment variable'}]","[{'source_entity': '""Service""', 'description': 'provides', 'destination_entity': '""kubernetes Service""'}, {'source_entity': '""Kubernetes API server""', 'description': 'communicates with', 'destination_entity': '""Service""'}, {'source_entity': '""tutum/curl image""', 'description': 'uses', 'destination_entity': '""curl""'}, {'source_entity': '""Pod""', 'description': 'runs', 'destination_entity': '""bash""'}, {'source_entity': '""kubectl exec""', 'description': 'executes commands on', 'destination_entity': '""Pod""'}, {'source_entity': '""curl""', 'description': 'requests data from', 'destination_entity': '""Docker Hub""'}, {'source_entity': '""KUBERNETES_SERVICE_PORT""', 'description': 'exposes port for', 'destination_entity': '""Service""'}, {'source_entity': '""KUBERNETES_SERVICE_HOST""', 'description': 'hosts the API server at', 'destination_entity': '""Kubernetes API server""'}]","['[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""A Kubernetes service provides a network identity and load balancing for accessing a pod.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The Kubernetes API server interacts with pods to manage and orchestrate containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""tutum/curl image"",\n    ""destination"": ""curl"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The tutum/curl image utilizes the curl pod for its functionality.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""A Pod in Kubernetes runs a container, which can be an executable file like bash.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes commands on"",\n    ""summary_er"": ""Executes shell commands inside a running Pod using kubectl exec.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests data from"",\n    ""summary_er"": ""Curl requests data from a pod, which is a container running on a Docker Hub instance.""\n  },\n  {\n    ""source"": ""Docker Hub"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""Docker Hub hosts a pod, which is a container running on a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""KUBERNETES_SERVICE_PORT"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes port for"",\n    ""summary_er"": ""A Kubernetes service exposes a port to allow external access to a pod\'s internal services.""\n  }\n]', '[\n  {\n    ""source"": ""KUBERNETES_SERVICE_HOST"",\n    ""destination"": ""Kubernetes API server"",\n    ""relation_description"": ""hosts the API server at"",\n    ""summary_er"": ""The Kubernetes Service Host variable hosts the Kubernetes API server at a specific address, enabling communication between pods and the API server.""\n  }\n]']","To communicate with the Kubernetes API server, create a pod using the tutum/curl image and run a shell inside it. Find the API server's address by looking up environment variables KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT within the container.","[{'highlight': ""To talk to the Kubernetes API server, you'll run a pod that does nothing (runs the sleep command) and then access the API server from within a shell using curl.""}, {'highlight': 'You need to use a container image that contains the curl binary, such as tutum/curl, to access the API server.'}, {'highlight': ""The Kubernetes API server's address can be found by looking up the KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT variables inside the container.""}, {'highlight': 'A Service called kubernetes is automatically exposed in the default namespace and configured to point to the API server, with IP address 10.0.0.1 and port 443/TCP.'}, {'highlight': 'You can get both the IP address and the port of the API server by running env | grep KUBERNETES_SERVICE inside the container.'}]"
+183,272,0,[],"240
+CHAPTER 8
+Accessing pod metadata and other resources from applications
+You may also remember that each service also gets a DNS entry, so you don’t even
+need to look up the environment variables, but instead simply point curl to
+https:/
+/kubernetes. To be fair, if you don’t know which port the service is available at,
+you also either need to look up the environment variables or perform a DNS SRV
+record lookup to get the service’s actual port number. 
+ The environment variables shown previously say that the API server is listening on
+port 443, which is the default port for HTTPS, so try hitting the server through
+HTTPS:
+root@curl:/# curl https://kubernetes
+curl: (60) SSL certificate problem: unable to get local issuer certificate
+...
+If you'd like to turn off curl's verification of the certificate, use
+  the -k (or --insecure) option.
+Although the simplest way to get around this is to use the proposed -k option (and
+this is what you’d normally use when playing with the API server manually), let’s look
+at the longer (and correct) route. Instead of blindly trusting that the server you’re
+connecting to is the authentic API server, you’ll verify its identity by having curl check
+its certificate. 
+TIP
+Never skip checking the server’s certificate in an actual application.
+Doing so could make your app expose its authentication token to an attacker
+using a man-in-the-middle attack.
+VERIFYING THE SERVER’S IDENTITY
+In the previous chapter, while discussing Secrets, we looked at an automatically cre-
+ated Secret called default-token-xyz, which is mounted into each container at
+/var/run/secrets/kubernetes.io/serviceaccount/. Let’s see the contents of that Secret
+again, by listing files in that directory:
+root@curl:/# 
+ls 
+/var/run/secrets/kubernetes.io/serviceaccount/ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ca.crt    namespace    token
+The Secret has three entries (and therefore three files in the Secret volume). Right
+now, we’ll focus on the ca.crt file, which holds the certificate of the certificate author-
+ity (CA) used to sign the Kubernetes API server’s certificate. To verify you’re talking to
+the API server, you need to check if the server’s certificate is signed by the CA. curl
+allows you to specify the CA certificate with the --cacert option, so try hitting the API
+server again:
+root@curl:/# curl --cacert /var/run/secrets/kubernetes.io/serviceaccount
+             ➥ /ca.crt https://kubernetes
+Unauthorized
+NOTE
+You may see a longer error description than “Unauthorized.”
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'DNS', 'description': 'Domain Name System', 'category': 'network'}, {'entity': 'curl', 'description': 'Command-line tool for transferring data', 'category': 'application'}, {'entity': 'HTTPS', 'description': 'Secure Hypertext Transfer Protocol', 'category': 'protocol'}, {'entity': 'API server', 'description': 'Kubernetes API server', 'category': 'software'}, {'entity': 'port 443', 'description': 'Default port for HTTPS', 'category': 'hardware'}, {'entity': 'SSL certificate', 'description': 'Secure Sockets Layer certificate', 'category': 'security'}, {'entity': '-k option', 'description': 'Insecure option for curl', 'category': 'application'}, {'entity': 'Secrets', 'description': 'Kubernetes Secrets', 'category': 'software'}, {'entity': 'default-token-xyz', 'description': 'Automatically created Secret', 'category': 'software'}, {'entity': '/var/run/secrets/kubernetes.io/serviceaccount/', 'description': 'Directory for Secrets', 'category': 'filesystem'}, {'entity': 'ca.crt', 'description': 'Certificate authority certificate', 'category': 'security'}, {'entity': '--cacert option', 'description': 'Option to specify CA certificate', 'category': 'application'}]","[{'source_entity': '""Kubernetes""', 'description': 'provides', 'destination_entity': '""Secrets""'}, {'source_entity': '""Secrets""', 'description': 'contains', 'destination_entity': '""ca.crt""'}, {'source_entity': '""curl""', 'description': 'uses', 'destination_entity': '""--k option""'}, {'source_entity': '""curl""', 'description': 'ignores', 'destination_entity': '""SSL certificate""'}, {'source_entity': '""curl""', 'description': 'uses', 'destination_entity': '""HTTPS""'}, {'source_entity': '""--cacert option""', 'description': 'specifies', 'destination_entity': '""ca.crt""'}, {'source_entity': '""DNS""', 'description': 'resolves', 'destination_entity': '""default-token-xyz""'}, {'source_entity': '""Kubernetes""', 'description': 'uses', 'destination_entity': '""Secrets""'}, {'source_entity': '""API server""', 'description': 'communicates with', 'destination_entity': '""port 443""'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""Kubernetes manages and orchestrates containerized applications, providing a runtime environment for pods to run in.""\n  }\n]', '[\n  {\n    ""source"": ""Secrets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A Kubernetes Secret contains sensitive information, such as certificates and private keys, which are stored as key-value pairs within a pod.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The curl command utilizes a pod to execute its operations.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""ignores"",\n    ""summary_er"": ""The curl command ignores the pod when verifying SSL certificates.""\n  },\n  {\n    ""source"": ""SSL certificate"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""The SSL certificate is used to verify the identity of a pod.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""HTTPS"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Curl uses HTTPS protocol for secure communication.""\n  }\n]', '[\n  {\n    ""source"": ""command line"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The --cacert option specifies a file containing a certificate to be used for secure communication with the pod.""\n  }\n]', '[\n  {\n    ""source"": ""DNS"",\n    ""destination"": ""default-token-xyz"",\n    ""relation_description"": ""resolves"",\n    ""summary_er"": ""The DNS resolves to a specific pod, in this case \'default-token-xyz\', which provides authentication tokens for pods.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubernetes utilizes pods to manage containerized applications, ensuring efficient resource allocation and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The API server establishes communication with a pod to exchange data and requests.""\n  }\n]']","To access pod metadata and other resources from applications, use the environment variables to get the service's port number. However, always verify the server's identity by checking its certificate. Use curl with the --cacert option to specify the CA certificate, which is stored in a Secret called default-token-xyz. This verifies that the server's certificate is signed by the CA and prevents man-in-the-middle attacks.","[{'highlight': ""To verify the server's identity, use curl with the --cacert option to specify the CA certificate, which is stored in /var/run/secrets/kubernetes.io/serviceaccount/ca.crt.""}, {'highlight': 'The default port for HTTPS is 443, and the API server can be accessed through https://kubernetes.'}, {'highlight': ""To access pod metadata and other resources from applications, use environment variables or perform a DNS SRV record lookup to get the service's actual port number.""}, {'highlight': ""Never skip checking the server's certificate in an actual application, as doing so could expose the authentication token to an attacker using a man-in-the-middle attack.""}, {'highlight': ""The Secret volume contains three entries: ca.crt, namespace, and token, which can be used to verify the server's identity and access pod metadata and other resources.""}]"
+184,273,0,[],"241
+Talking to the Kubernetes API server
+Okay, you’ve made progress. curl verified the server’s identity because its certificate
+was signed by the CA you trust. As the Unauthorized response suggests, you still need
+to take care of authentication. You’ll do that in a moment, but first let’s see how to
+make life easier by setting the CURL_CA_BUNDLE environment variable, so you don’t
+need to specify --cacert every time you run curl:
+root@curl:/# export CURL_CA_BUNDLE=/var/run/secrets/kubernetes.io/
+             ➥ serviceaccount/ca.crt
+You can now hit the API server without using --cacert:
+root@curl:/# curl https://kubernetes
+Unauthorized
+This is much nicer now. Your client (curl) trusts the API server now, but the API
+server itself says you’re not authorized to access it, because it doesn’t know who
+you are.
+AUTHENTICATING WITH THE API SERVER
+You need to authenticate with the server, so it allows you to read and even update
+and/or delete the API objects deployed in the cluster. To authenticate, you need an
+authentication token. Luckily, the token is provided through the default-token Secret
+mentioned previously, and is stored in the token file in the secret volume. As the
+Secret’s name suggests, that’s the primary purpose of the Secret. 
+ You’re going to use the token to access the API server. First, load the token into an
+environment variable:
+root@curl:/# TOKEN=$(cat /var/run/secrets/kubernetes.io/
+             ➥ serviceaccount/token)
+The token is now stored in the TOKEN environment variable. You can use it when send-
+ing requests to the API server, as shown in the following listing.
+root@curl:/# curl -H ""Authorization: Bearer $TOKEN"" https://kubernetes
+{
+  ""paths"": [
+    ""/api"",
+    ""/api/v1"",
+    ""/apis"",
+    ""/apis/apps"",
+    ""/apis/apps/v1beta1"",
+    ""/apis/authorization.k8s.io"",    
+    ...
+    ""/ui/"",
+    ""/version""
+  ]
+}
+Listing 8.13
+Getting a proper response from the API server
+ 
+",[],"[{'entity': 'Kubernetes API server', 'description': 'The server that manages and provides access to Kubernetes resources', 'category': 'application'}, {'entity': 'curl', 'description': 'A command-line tool for transferring data with URLs', 'category': 'command'}, {'entity': 'CURL_CA_BUNDLE', 'description': 'An environment variable that specifies the CA bundle to use', 'category': 'environment variable'}, {'entity': '/var/run/secrets/kubernetes.io/', 'description': 'A directory containing secrets and certificates for Kubernetes', 'category': 'directory'}, {'entity': 'serviceaccount/ca.crt', 'description': 'A certificate used to verify the identity of the API server', 'category': 'file'}, {'entity': 'API objects', 'description': 'Resources managed by the Kubernetes API server, such as pods and services', 'category': 'application'}, {'entity': 'default-token Secret', 'description': 'A secret that contains an authentication token for the API server', 'category': 'secret'}, {'entity': 'token file', 'description': 'A file containing the authentication token for the API server', 'category': 'file'}, {'entity': 'TOKEN environment variable', 'description': 'An environment variable that stores the authentication token', 'category': 'environment variable'}, {'entity': 'Authorization header', 'description': 'A header used to authenticate requests to the API server', 'category': 'header'}, {'entity': '/api', 'description': 'A path in the Kubernetes API server for accessing resources', 'category': 'path'}, {'entity': '/apis', 'description': 'A path in the Kubernetes API server for accessing APIs', 'category': 'path'}, {'entity': '/ui/', 'description': 'A path in the Kubernetes API server for accessing the UI', 'category': 'path'}]","[{'source_entity': '""/api""', 'description': 'provides access to', 'destination_entity': '""API objects""'}, {'source_entity': '""/apis""', 'description': 'exposes', 'destination_entity': '""API objects""'}, {'source_entity': '""token file""', 'description': 'contains', 'destination_entity': '""Authorization header""'}, {'source_entity': '""Kubernetes API server""', 'description': 'uses', 'destination_entity': '""serviceaccount/ca.crt""'}, {'source_entity': '""CURL_CA_BUNDLE""', 'description': 'configures', 'destination_entity': '""curl""'}, {'source_entity': '""Authorization header""', 'description': 'is required for', 'destination_entity': '""API objects""'}, {'source_entity': '""/ui/""', 'description': 'provides a user interface for', 'destination_entity': '""Kubernetes API server""'}, {'source_entity': '""/var/run/secrets/kubernetes.io/""', 'description': 'stores', 'destination_entity': '""default-token Secret""'}, {'source_entity': '""curl""', 'description': 'uses', 'destination_entity': '""TOKEN environment variable""'}, {'source_entity': '""default-token Secret""', 'description': 'provides a token for', 'destination_entity': '""Kubernetes API server""'}]","['[\n  {\n    ""source"": ""/api"",\n    ""destination"": ""API objects"",\n    ""relation_description"": ""provides access to"",\n    ""summary_er"": ""/api provides access to API objects, enabling interaction with Kubernetes API resources.""\n  }\n]', '[\n  {\n    ""source"": ""/apis"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""/apis exposes API objects to a pod, allowing for communication between the two.""\n  }\n]', '[\n  {\n    ""source"": ""Token File"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A token file contains authentication credentials that are used to authorize access to a pod in Kubernetes.""\n  },\n  {\n    ""source"": ""Authorization Header"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""An authorization header is related to the security and access control of a pod, ensuring only authorized users can interact with it.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The Kubernetes API server utilizes a pod to execute its operations, leveraging the pod\'s resources and capabilities.""\n  }\n]', '[\n  {\n    ""source"": ""CURL_CA_BUNDLE"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures"",\n    ""summary_er"": ""The CURL_CA_BUNDLE configures a pod, which is an isolated environment for running applications.""\n  }\n]', '[\n  {\n    ""source"": ""Authorization header"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is required for"",\n    ""summary_er"": ""The Authorization header is a mandatory field that must be present for a pod to function correctly.""\n  },\n  {\n    ""source"": ""API objects"",\n    ""destination"": ""Kubernetes cluster"",\n    ""relation_description"": ""are managed by"",\n    ""summary_er"": ""API objects are the building blocks of a Kubernetes cluster, and their management is crucial for its proper functioning.""\n  }\n]', '[\n  {\n    ""source"": ""/ui/"",\n    ""destination"": ""Kubernetes API server"",\n    ""relation_description"": ""provides a user interface for"",\n    ""summary_er"": ""/ui/ provides a user interface for Kubernetes API server, enabling users to interact with the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""/var/run/secrets/kubernetes.io/"",\n    ""destination"": ""default-token Secret"",\n    ""relation_description"": ""stores"",\n    ""summary_er"": ""/var/run/secrets/kubernetes.io/ stores default-token Secret, which provides a secret to the pod.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The curl command utilizes a pod to execute its operations.""\n  },\n  {\n    ""source"": ""TOKEN environment variable"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is set by"",\n    ""summary_er"": ""A TOKEN environment variable is set by the pod for authentication purposes.""\n  }\n]', '[\n  {\n    ""source"": ""default-token Secret"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides a token for"",\n    ""summary_er"": ""The default-token Secret provides authentication credentials to pods, enabling them to access Kubernetes API services.""\n  },\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""default-token Secret"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The Kubernetes API server utilizes the default-token Secret for authentication and authorization purposes, ensuring secure interactions with pods and other components.""\n  }\n]']","To access the Kubernetes API server, set the CURL_CA_BUNDLE environment variable to trust its certificate. Then, authenticate with the server by loading an authentication token into an environment variable using TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token). Finally, send requests to the API server using curl -H ""Authorization: Bearer $TOKEN"" https://kubernetes","[{'highlight': 'You can set the CURL_CA_BUNDLE environment variable to avoid specifying --cacert every time you run curl.'}, {'highlight': 'To authenticate with the Kubernetes API server, you need an authentication token, which is provided through the default-token Secret.'}, {'highlight': 'The authentication token is stored in the token file in the secret volume and can be loaded into an environment variable using cat /var/run/secrets/kubernetes.io/serviceaccount/token.'}, {'highlight': 'You can use the curl command with the -H option to specify the Authorization header with a Bearer token, such as curl -H ""Authorization: Bearer $TOKEN"" https://kubernetes.'}, {'highlight': 'The Kubernetes API server responds with a list of available paths when authenticated correctly, including /api, /api/v1, and other API endpoints.'}]"
+185,274,0,[],"242
+CHAPTER 8
+Accessing pod metadata and other resources from applications
+As you can see, you passed the token inside the Authorization HTTP header in the
+request. The API server recognized the token as authentic and returned a proper
+response. You can now explore all the resources in your cluster, the way you did a few
+sections ago. 
+ For example, you could list all the pods in the same namespace. But first you need
+to know what namespace the curl pod is running in.
+GETTING THE NAMESPACE THE POD IS RUNNING IN
+In the first part of this chapter, you saw how to pass the namespace to the pod
+through the Downward API. But if you’re paying attention, you probably noticed
+your secret volume also contains a file called namespace. It contains the name-
+space the pod is running in, so you can read the file instead of having to explicitly
+pass the namespace to your pod through an environment variable. Load the con-
+tents of the file into the NS environment variable and then list all the pods, as shown
+in the following listing.
+root@curl:/# NS=$(cat /var/run/secrets/kubernetes.io/
+             ➥ serviceaccount/namespace)           
+root@curl:/# curl -H ""Authorization: Bearer $TOKEN""
+             ➥ https://kubernetes/api/v1/namespaces/$NS/pods
+{
+  ""kind"": ""PodList"",
+  ""apiVersion"": ""v1"",
+  ...
+And there you go. By using the three files in the mounted secret volume directory,
+you listed all the pods running in the same namespace as your pod. In the same man-
+ner, you could also retrieve other API objects and even update them by sending PUT or
+PATCH instead of simple GET requests. 
+Disabling role-based access control (RBAC)
+If you’re using a Kubernetes cluster with RBAC enabled, the service account may not
+be authorized to access (parts of) the API server. You’ll learn about service accounts
+and RBAC in chapter 12. For now, the simplest way to allow you to query the API
+server is to work around RBAC by running the following command:
+$ kubectl create clusterrolebinding permissive-binding \
+  --clusterrole=cluster-admin \
+  --group=system:serviceaccounts
+This gives all service accounts (we could also say all pods) cluster-admin privileges,
+allowing them to do whatever they want. Obviously, doing this is dangerous and
+should never be done on production clusters. For test purposes, it’s fine.
+Listing 8.14
+Listing pods in the pod’s own namespace
+ 
+",[],"[{'entity': 'Authorization HTTP header', 'description': 'A header used to pass a token for authentication', 'category': 'network'}, {'entity': 'API server', 'description': 'The server that manages access to Kubernetes resources', 'category': 'application'}, {'entity': 'curl pod', 'description': 'A pod running the curl command', 'category': 'container'}, {'entity': 'Downward API', 'description': 'An API used to pass data from the cluster to a pod', 'category': 'application'}, {'entity': 'secret volume', 'description': 'A volume that contains sensitive information', 'category': 'storage'}, {'entity': 'NS environment variable', 'description': 'An environment variable used to store the namespace of a pod', 'category': 'process'}, {'entity': 'TOKEN', 'description': 'A token used for authentication with the API server', 'category': 'network'}, {'entity': 'PodList', 'description': 'An object that contains a list of pods', 'category': 'database'}, {'entity': 'PUT or PATCH requests', 'description': 'HTTP requests used to update API objects', 'category': 'network'}, {'entity': 'RBAC', 'description': 'Role-Based Access Control, a system for managing access to Kubernetes resources', 'category': 'application'}, {'entity': 'service account', 'description': 'An account used by pods to authenticate with the API server', 'category': 'container'}, {'entity': 'clusterrolebinding', 'description': 'A binding that grants privileges to a service account', 'category': 'application'}, {'entity': 'kubectl', 'description': 'The command-line tool used to interact with the Kubernetes API server', 'category': 'command'}, {'entity': 'cluster-admin', 'description': 'A role that grants full access to a cluster', 'category': 'application'}, {'entity': 'system:serviceaccounts', 'description': 'A group used to grant privileges to service accounts', 'category': 'network'}]","[{'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""Downward API""'}, {'source_entity': '""kubectl""', 'description': 'accesses', 'destination_entity': '""PodList""'}, {'source_entity': '""kubectl""', 'description': 'manipulates', 'destination_entity': '""secret volume""'}, {'source_entity': '""Downward API""', 'description': 'provides', 'destination_entity': '""TOKEN""'}, {'source_entity': '""Authorization HTTP header""', 'description': 'contains', 'destination_entity': '""TOKEN""'}, {'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""RBAC""'}, {'source_entity': '""clusterrolebinding""', 'description': 'defines', 'destination_entity': '""cluster-admin""'}, {'source_entity': '""service account""', 'description': 'grants', 'destination_entity': '""system:serviceaccounts""'}, {'source_entity': '""NS environment variable""', 'description': 'sets', 'destination_entity': '""PUT or PATCH requests""'}, {'source_entity': '""curl pod""', 'description': 'sends', 'destination_entity': '""API server""'}]","['[{""source"": ""kubectl"", ""destination"": ""pod"", ""relation_description"": ""uses"", ""summary_er"": ""Kubectl uses a pod to execute commands.""}, {""source"": ""Downward API"", ""destination"": ""pod"", ""relation_description"": ""provides"", ""summary_er"": ""The Downward API provides information about the pod to kubectl.""}]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""accesses"",\n    ""summary_er"": ""Kubectl commands interact with running pods to execute various operations such as listing, creating, or deleting them.""\n  },\n  {\n    ""source"": ""PodList"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""list of"",\n    ""summary_er"": ""A PodList object contains a list of all running pods in the cluster, providing information about each pod\'s status and configuration.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manipulates"",\n    ""summary_er"": ""\\""Kubectl\\"" is a command-line tool that manipulates Kubernetes resources, including pods.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""secret volume"",\n    ""relation_description"": ""manipulates"",\n    ""summary_er"": ""\\""Kubectl\\"" can also manipulate secret volumes, which store sensitive data for applications.""\n  }\n]', '[\n  {\n    ""source"": ""Downward API"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The Downward API provides a way to expose information from the pod\'s environment to the container.""\n  }\n]', '[\n  {\n    ""source"": ""Authorization HTTP header"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""The Authorization HTTP header in Kubernetes contains a token that authenticates requests to the API server.""\n  }\n]', '[{""source"": ""kubectl"", ""destination"": ""pod"", ""relation_description"": ""uses"", ""summary_er"": ""Kubectl is a command-line tool that uses pods to manage containerized applications.""}, {""source"": ""RBAC"", ""destination"": ""access control"", ""relation_description"": ""defines"", ""summary_er"": ""RBAC defines access control policies for users and groups in Kubernetes.""}]', '[\n  {\n    ""source"": ""clusterrolebinding"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A cluster role binding grants a cluster role to a user or group, allowing them to access and manage pods within the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""service account"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""grants"",\n    ""summary_er"": ""A service account grants access to a pod, allowing it to authenticate and interact with cluster resources.""\n  }\n]', '[\n  {\n    ""source"": ""NS environment variable"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets"",\n    ""summary_er"": ""The NS environment variable sets the environment for a pod, configuring it with necessary variables.""\n  },\n  {\n    ""source"": ""PUT or PATCH requests"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""updates"",\n    ""summary_er"": ""PUT and PATCH requests update an existing pod\'s configuration, making changes to its state.""\n  }\n]', '[\n  {\n    ""source"": ""curl pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sends"",\n    ""summary_er"": ""The curl command sends a request to the API server, which is running as a pod in Kubernetes.""\n  },\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs as"",\n    ""summary_er"": ""The API server runs as a pod in Kubernetes, providing an interface for interacting with the cluster.""\n  }\n]']","You can access pod metadata and other resources from applications by passing a token inside the Authorization HTTP header. You can also retrieve the namespace of your pod by reading the contents of the /var/run/secrets/kubernetes.io/serviceaccount/namespace file into the NS environment variable. With this information, you can list all pods running in the same namespace as your pod using a GET request to https://kubernetes/api/v1/namespaces/$NS/pods. Additionally, you can disable role-based access control (RBAC) by creating a clusterrolebinding with cluster-admin privileges for service accounts.",[{'highlight': 'You can pass the token inside the Authorization HTTP header in the request to access pod metadata and other resources from applications.'}]
+186,275,0,[],"243
+Talking to the Kubernetes API server
+RECAPPING HOW PODS TALK TO KUBERNETES
+Let’s recap how an app running inside a pod can access the Kubernetes API properly:
+The app should verify whether the API server’s certificate is signed by the certif-
+icate authority, whose certificate is in the ca.crt file. 
+The app should authenticate itself by sending the Authorization header with
+the bearer token from the token file. 
+The namespace file should be used to pass the namespace to the API server when
+performing CRUD operations on API objects inside the pod’s namespace.
+DEFINITION
+CRUD stands for Create, Read, Update, and Delete. The corre-
+sponding HTTP methods are POST, GET, PATCH/PUT, and DELETE, respectively.
+All three aspects of pod to API server communication are displayed in figure 8.5.
+8.2.3
+Simplifying API server communication with ambassador 
+containers
+Dealing with HTTPS, certificates, and authentication tokens sometimes seems too
+complicated to developers. I’ve seen developers disable validation of server certifi-
+cates on way too many occasions (and I’ll admit to doing it myself a few times). Luck-
+ily, you can make the communication much simpler while keeping it secure. 
+API server
+GET /api/v1/namespaces/<namespace>/pods
+Authorization: Bearer <token>
+Pod
+Container
+Filesystem
+App
+/
+var/
+run/
+secrets/
+kubernetes.io/
+serviceaccount/
+Default token secret volume
+ca.crt
+token
+namespace
+Server
+certiﬁcate
+Validate
+certiﬁcate
+Figure 8.5
+Using the files from the default-token Secret to talk to the API server
+ 
+",[],"[{'entity': 'Kubernetes API server', 'description': 'The central component that manages and controls the cluster resources.', 'category': 'software'}, {'entity': 'Pods', 'description': 'The basic execution unit in a Kubernetes cluster, containing one or more containers.', 'category': 'container'}, {'entity': ""API server's certificate"", 'description': 'A digital certificate used to authenticate the API server.', 'category': 'certificate'}, {'entity': 'Certificate Authority (CA)', 'description': 'An entity responsible for issuing and managing digital certificates.', 'category': 'software'}, {'entity': 'ca.crt file', 'description': ""A file containing the CA's public key, used to verify the API server's certificate."", 'category': 'file'}, {'entity': 'Bearer token', 'description': 'An authentication token sent in the Authorization header to authenticate with the API server.', 'category': 'token'}, {'entity': 'Authorization header', 'description': 'A HTTP header used to send authentication information to the API server.', 'category': 'header'}, {'entity': 'Namespace file', 'description': 'A file containing the namespace, used to pass it to the API server when performing CRUD operations.', 'category': 'file'}, {'entity': 'CRUD (Create, Read, Update, Delete)', 'description': 'A set of HTTP methods used to perform operations on API objects.', 'category': 'protocol'}, {'entity': 'POST method', 'description': 'An HTTP method used to create a new resource.', 'category': 'http-method'}, {'entity': 'GET method', 'description': 'An HTTP method used to read an existing resource.', 'category': 'http-method'}, {'entity': 'PATCH/PUT method', 'description': 'An HTTP method used to update or replace a resource.', 'category': 'http-method'}, {'entity': 'DELETE method', 'description': 'An HTTP method used to delete a resource.', 'category': 'http-method'}, {'entity': 'Ambassador containers', 'description': 'Containers that simplify API server communication by handling HTTPS, certificates, and authentication tokens.', 'category': 'container'}, {'entity': 'Server certificate', 'description': 'A digital certificate used to authenticate the API server.', 'category': 'certificate'}, {'entity': 'Default token secret volume', 'description': 'A file containing the default token, used to authenticate with the API server.', 'category': 'file'}]","[{'source_entity': '""PATCH/PUT method""', 'description': 'updates', 'destination_entity': '""Namespace file""'}, {'source_entity': '""Bearer token""', 'description': 'authenticates', 'destination_entity': '""Kubernetes API server""'}, {'source_entity': '""Server certificate""', 'description': 'verifies', 'destination_entity': '""Certificate Authority (CA)""'}, {'source_entity': '""Certificate Authority (CA)""', 'description': 'issues', 'destination_entity': '""API server\'s certificate""'}, {'source_entity': '""Authorization header""', 'description': 'provides', 'destination_entity': '""Kubernetes API server""'}, {'source_entity': '""POST method""', 'description': 'creates', 'destination_entity': '""Namespace file""'}, {'source_entity': '""API server\'s certificate""', 'description': 'secures', 'destination_entity': '""Kubernetes API server""'}, {'source_entity': '""ca.crt file""', 'description': 'provides', 'destination_entity': '""Ambassador containers""'}, {'source_entity': '""Pods""', 'description': 'manages', 'destination_entity': '""Kubernetes API server""'}, {'source_entity': '""DELETE method""', 'description': 'deletes', 'destination_entity': '""Namespace file""'}, {'source_entity': '""Default token secret volume""', 'description': 'provides', 'destination_entity': '""Kubernetes API server""'}, {'source_entity': '""GET method""', 'description': 'reads', 'destination_entity': '""Namespace file""'}, {'source_entity': '""Ambassador containers""', 'description': 'uses', 'destination_entity': '""ca.crt file""'}, {'source_entity': '""CRUD (Create, Read, Update, Delete)""', 'description': 'performs', 'destination_entity': '""Namespace file""'}]","['[\n  {\n    ""source"": ""PATCH/PUT method"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""updates"",\n    ""summary_er"": ""The PATCH/PUT method updates a pod, which is a containerized application running on a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""Namespace file"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""A Namespace file specifies the namespace for a pod, isolating it from other pods in the same cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Bearer token"",\n    ""destination"": ""Kubernetes API server"",\n    ""relation_description"": ""authenticates"",\n    ""summary_er"": ""The Bearer token authenticates with the Kubernetes API server to verify identity and access permissions.""\n  }\n]', '[\n  {\n    ""source"": ""Server certificate"",\n    ""destination"": ""Certificate Authority (CA)"",\n    ""relation_description"": ""verifies"",\n    ""summary_er"": ""The Server certificate is verified by a trusted Certificate Authority (CA), ensuring its authenticity and integrity.""\n  }\n]', '[\n  {\n    ""source"": ""Certificate Authority (CA)"",\n    ""destination"": ""API server\'s certificate"",\n    ""relation_description"": ""issues"",\n    ""summary_er"": ""The Certificate Authority issues a digital certificate to the API server, verifying its identity and trustworthiness.""\n  }\n]', '[\n  {\n    ""source"": ""Authorization header"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The Authorization header in Kubernetes provides authentication and authorization for pods, ensuring secure access to cluster resources.""\n  }\n]', '[\n  {\n    ""source"": ""POST method"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates"",\n    ""summary_er"": ""The POST method in Kubernetes creates a new pod, which is an isolated container running an application.""\n  },\n  {\n    ""source"": ""Namespace file"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""A Namespace file specifies the namespace for a pod, isolating it from other pods and resources in the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""API server\'s certificate"",\n    ""destination"": ""Kubernetes API server"",\n    ""relation_description"": ""secures"",\n    ""summary_er"": ""The API server\'s certificate secures the Kubernetes API server, ensuring secure communication between them.""\n  }\n]', '[\n  {\n    ""source"": ""ca.crt file"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The ca.crt file provides a certificate to authenticate and authorize access to the pod.""\n  }\n]', '[\n  {\n    ""source"": ""Pods"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The Kubernetes API server manages a pod, overseeing its lifecycle and ensuring it runs smoothly.""\n  }\n]', '[\n  {\n    ""source"": ""DELETE method"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deletes"",\n    ""summary_er"": ""The DELETE method is used to delete a pod, removing it from the Kubernetes cluster.""\n  },\n  {\n    ""source"": ""Namespace file"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""A Namespace file defines the namespace for a pod, which determines its network identity and access permissions.""\n  }\n]', '[\n  {\n    ""source"": ""Default token secret volume"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The Default token secret volume provides a secure way to store and manage API server tokens for Kubernetes pods.""\n  }\n]', '[\n  {\n    ""source"": ""GET method"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""reads"",\n    ""summary_er"": ""The GET method in Kubernetes allows a pod to read data from a namespace file, enabling it to access and utilize external resources.""\n  }\n]', '[\n  {\n    ""source"": ""Ambassador containers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Ambassador containers utilize a pod to execute their functionality.""\n  }\n]', '[{""source"": ""CRUD"", ""destination"": ""pod"", ""relation_description"": ""performs"", ""summary_er"": ""CRUD operations are performed on a pod, allowing for creation, reading, updating, and deletion of containerized applications.""}]']","An app running in a pod can access the Kubernetes API by verifying the API server's certificate, authenticating with a bearer token, and using a namespace file to pass the namespace for CRUD operations. This process can be simplified using an ambassador container, which makes communication with the API server more straightforward while keeping it secure.","[{'highlight': 'The app should verify whether the API server’s certificate is signed by the certificate authority, whose certificate is in the ca.crt file.'}, {'highlight': 'The app should authenticate itself by sending the Authorization header with the bearer token from the token file.'}, {'highlight': 'The namespace file should be used to pass the namespace to the API server when performing CRUD operations on API objects inside the pod’s namespace.'}, {'highlight': 'CRUD stands for Create, Read, Update, and Delete. The corresponding HTTP methods are POST, GET, PATCH/PUT, and DELETE, respectively.'}, {'highlight': 'API server communication can be simplified using ambassador containers while keeping it secure.'}]"
+187,276,0,[],"244
+CHAPTER 8
+Accessing pod metadata and other resources from applications
+ Remember the kubectl proxy command we mentioned in section 8.2.1? You ran
+the command on your local machine to make it easier to access the API server. Instead
+of sending requests to the API server directly, you sent them to the proxy and let it
+take care of authentication, encryption, and server verification. The same method can
+be used inside your pods, as well.
+INTRODUCING THE AMBASSADOR CONTAINER PATTERN
+Imagine having an application that (among other things) needs to query the API
+server. Instead of it talking to the API server directly, as you did in the previous sec-
+tion, you can run kubectl proxy in an ambassador container alongside the main con-
+tainer and communicate with the API server through it. 
+ Instead of talking to the API server directly, the app in the main container can con-
+nect to the ambassador through HTTP (instead of HTTPS) and let the ambassador
+proxy handle the HTTPS connection to the API server, taking care of security trans-
+parently (see figure 8.6). It does this by using the files from the default token’s secret
+volume.
+Because all containers in a pod share the same loopback network interface, your app
+can access the proxy through a port on localhost.
+RUNNING THE CURL POD WITH AN ADDITIONAL AMBASSADOR CONTAINER
+To see the ambassador container pattern in action, you’ll create a new pod like the
+curl pod you created earlier, but this time, instead of running a single container in
+the pod, you’ll run an additional ambassador container based on a general-purpose
+kubectl-proxy container image I’ve created and pushed to Docker Hub. You’ll find
+the Dockerfile for the image in the code archive (in /Chapter08/kubectl-proxy/) if
+you want to build it yourself.
+ The pod’s manifest is shown in the following listing.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl-with-ambassador
+spec:
+  containers:
+  - name: main
+Listing 8.15
+A pod with an ambassador container: curl-with-ambassador.yaml
+Container:
+main
+Container:
+ambassador
+HTTP
+HTTPS
+API server
+Pod
+Figure 8.6
+Using an ambassador to connect to the API server
+ 
+",[],"[{'entity': 'kubectl proxy command', 'description': 'a command used to access the API server through a proxy', 'category': 'command'}, {'entity': 'API server', 'description': 'the server that manages and provides access to Kubernetes resources', 'category': 'application'}, {'entity': 'ambassador container pattern', 'description': 'a design pattern that uses an ambassador container to proxy requests to the API server', 'category': 'pattern'}, {'entity': 'kubectl-proxy container image', 'description': 'a general-purpose container image used as an ambassador container', 'category': 'image'}, {'entity': 'Dockerfile', 'description': 'a file that contains instructions for building a Docker image', 'category': 'file'}, {'entity': 'curl pod', 'description': 'a pod used as an example to demonstrate the ambassador container pattern', 'category': 'pod'}, {'entity': 'main container', 'description': 'the main container in a pod that runs the application', 'category': 'container'}, {'entity': 'ambassador container', 'description': 'a container used as an ambassador to proxy requests to the API server', 'category': 'container'}, {'entity': 'HTTP', 'description': 'the protocol used for communication between containers in a pod', 'category': 'protocol'}, {'entity': 'HTTPS', 'description': 'the secure version of the HTTP protocol', 'category': 'protocol'}, {'entity': 'localhost', 'description': 'a special hostname that refers to the local machine', 'category': 'hostname'}, {'entity': 'port', 'description': 'an endpoint used for communication between containers in a pod', 'category': 'endpoint'}]","[{'source_entity': '""kubectl-proxy container image""', 'description': 'is used to create a proxy for', 'destination_entity': '""ambassador container""'}, {'source_entity': '""kubectl proxy command""', 'description': 'can be used to access the API server via', 'destination_entity': '""HTTPS""'}, {'source_entity': '""kubectl proxy command""', 'description': 'uses the image of', 'destination_entity': '""kubectl-proxy container image""'}, {'source_entity': '""ambassador container pattern""', 'description': 'is used to create a template for', 'destination_entity': '""ambassador container""'}, {'source_entity': '""Dockerfile""', 'description': 'contains the instructions for building the', 'destination_entity': '""main container""'}, {'source_entity': '""kubectl proxy command""', 'description': 'can be used to access the API server via port', 'destination_entity': '""port""'}, {'source_entity': '""curl pod""', 'description': 'is used to send a request to the', 'destination_entity': '""API server""'}]","['[\n  {\n    ""source"": ""kubectl-proxy container image"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to create a proxy for"",\n    ""summary_er"": ""The kubectl-proxy container image is used to create a proxy for pods, allowing external access to services running within the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""access the API server via"",\n    ""summary_er"": ""The kubectl proxy command allows accessing the Kubernetes API server from a pod, enabling communication between the client and server.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""proxy command"",\n    ""relation_description"": ""uses the image of"",\n    ""summary_er"": ""The kubectl proxy command utilizes an image to create a pod.""\n  },\n  {\n    ""source"": ""kubectl-proxy"",\n    ""destination"": ""container image"",\n    ""relation_description"": ""image"",\n    ""summary_er"": ""A kubectl-proxy container image is used as the basis for creating a pod.""\n  }\n]', '[\n  {\n    ""source"": ""Ambassador Container Pattern"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is used to create a template for"",\n    ""summary_er"": ""The Ambassador Container pattern is used to create a template for pods, allowing for efficient and consistent deployment of applications.""\n  }\n]', '[\n  {\n    ""source"": ""Dockerfile"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains the instructions for building the"",\n    ""summary_er"": ""A Dockerfile contains build instructions for a pod, which is a containerized application.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl proxy command"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be used to access the API server via port"",\n    ""summary_er"": ""The kubectl proxy command allows accessing the API server through a pod\'s port, enabling communication between the client and server.""\n  }\n]', '[\n  {\n    ""source"": ""curl pod"",\n    ""destination"": ""API server"",\n    ""relation_description"": ""is used to send a request to the"",\n    ""summary_er"": ""The curl command is used to interact with the API server, sending requests and retrieving responses.""\n  }\n]']","The chapter discusses how to access pod metadata and resources from applications using the kubectl proxy command, which can be run inside pods as an ambassador container pattern. This allows applications to query the API server securely through the ambassador without direct communication with the API server.","[{'highlight': 'You can use kubectl proxy inside your pods to access pod metadata and other resources from applications.'}, {'highlight': 'The ambassador container pattern allows you to run kubectl proxy in a separate container alongside the main container, communicating with the API server through it.'}, {'highlight': ""The ambassador container uses the files from the default token's secret volume to handle HTTPS connections to the API server securely.""}, {'highlight': 'You can access the proxy through a port on localhost because all containers in a pod share the same loopback network interface.'}, {'highlight': 'To see the ambassador container pattern in action, you can create a new pod with an additional ambassador container based on a general-purpose kubectl-proxy container image.'}]"
+188,277,0,[],"245
+Talking to the Kubernetes API server
+    image: tutum/curl
+    command: [""sleep"", ""9999999""]
+  - name: ambassador                         
+    image: luksa/kubectl-proxy:1.6.2         
+The pod spec is almost the same as before, but with a different pod name and an addi-
+tional container. Run the pod and then enter the main container with
+$ kubectl exec -it curl-with-ambassador -c main bash
+root@curl-with-ambassador:/#
+Your pod now has two containers, and you want to run bash in the main container,
+hence the -c main option. You don’t need to specify the container explicitly if you
+want to run the command in the pod’s first container. But if you want to run a com-
+mand inside any other container, you do need to specify the container’s name using
+the -c option.
+TALKING TO THE API SERVER THROUGH THE AMBASSADOR
+Next you’ll try connecting to the API server through the ambassador container. By
+default, kubectl proxy binds to port 8001, and because both containers in the pod
+share the same network interfaces, including loopback, you can point curl to local-
+host:8001, as shown in the following listing.
+root@curl-with-ambassador:/# curl localhost:8001
+{
+  ""paths"": [
+    ""/api"",
+    ...
+  ]
+}
+Success! The output printed by curl is the same response you saw earlier, but this time
+you didn’t need to deal with authentication tokens and server certificates. 
+ To get a clear picture of what exactly happened, refer to figure 8.7. curl sent the
+plain HTTP request (without any authentication headers) to the proxy running inside
+the ambassador container, and then the proxy sent an HTTPS request to the API
+server, handling the client authentication by sending the token and checking the
+server’s identity by validating its certificate.
+ This is a great example of how an ambassador container can be used to hide the
+complexities of connecting to an external service and simplify the app running in
+the main container. The ambassador container is reusable across many different apps,
+regardless of what language the main app is written in. The downside is that an addi-
+tional process is running and consuming additional resources.
+Listing 8.16
+Accessing the API server through the ambassador container
+The ambassador container, 
+running the kubectl-proxy image
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'API server', 'description': 'Component of Kubernetes that provides a RESTful API for managing cluster resources', 'category': 'software'}, {'entity': 'kubectl', 'description': 'Command-line tool for interacting with Kubernetes clusters', 'category': 'software'}, {'entity': 'curl', 'description': 'Command-line tool for transferring data to and from a web server', 'category': 'software'}, {'entity': 'pod', 'description': 'Basic execution unit in Kubernetes, consisting of one or more containers', 'category': 'software'}, {'entity': 'container', 'description': 'Lightweight and standalone execution environment for an application', 'category': 'software'}, {'entity': 'kubectl proxy', 'description': 'Command used to start a proxy server that exposes the Kubernetes API on localhost', 'category': 'software'}, {'entity': 'ambassador container', 'description': 'Container that acts as an intermediary between the main application and the external service', 'category': 'software'}, {'entity': 'API server proxy', 'description': 'Component of Kubernetes that provides a proxy to the API server', 'category': 'software'}, {'entity': 'localhost', 'description': ""Reference to the local machine's IP address"", 'category': 'hardware'}, {'entity': 'port 8001', 'description': 'Default port used by kubectl proxy', 'category': 'software'}]","[{'source_entity': '""container""', 'description': 'is running on', 'destination_entity': '""localhost""'}, {'source_entity': '""kubectl""', 'description': 'is used to manage', 'destination_entity': '""Kubernetes""'}, {'source_entity': '""ambassador container""', 'description': 'is a type of', 'destination_entity': '""container""'}, {'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""API server proxy""'}, {'source_entity': '""kubectl proxy""', 'description': 'provides a proxy to', 'destination_entity': '""API server""'}, {'source_entity': '""curl""', 'description': 'is used to send requests to', 'destination_entity': '""port 8001""'}, {'source_entity': '""pod""', 'description': 'is a unit of deployment in', 'destination_entity': '""Kubernetes""'}, {'source_entity': '""API server proxy""', 'description': 'acts as an intermediary for requests to', 'destination_entity': '""API server""'}]","['[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is running on"",\n    ""summary_er"": ""A container is a lightweight and portable software package that runs on top of an operating system, in this case, it is running on a pod which provides shared resources such as networking and storage.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to manage"",\n    ""summary_er"": ""kubectl is a command-line tool used to manage and interact with Kubernetes resources, including pods.""\n  }\n]', '[\n  {\n    ""source"": ""ambassador container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a type of"",\n    ""summary_er"": ""An ambassador container is a type of pod that serves as an entry point for external communication.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The Kubernetes command-line tool (kubectl) uses a pod to execute commands and interact with the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides a proxy to"",\n    ""summary_er"": ""The kubectl command provides a proxy to interact with the API server, allowing users to access and manage pods.""\n  },\n  {\n    ""source"": ""API server"",\n    ""destination"": ""kubectl"",\n    ""relation_description"": ""interacts with"",\n    ""summary_er"": ""The API server interacts with kubectl to provide a interface for users to manage and access pods.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to send requests to"",\n    ""summary_er"": ""Curl is a command-line tool that sends HTTP requests to a pod, allowing for communication between the client and server.""\n  },\n  {\n    ""source"": ""port 8001"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is associated with"",\n    ""summary_er"": ""Port 8001 is a specific port number assigned to a pod, enabling communication on that particular port.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is a unit of deployment in Kubernetes"",\n    ""summary_er"": ""In Kubernetes, a Pod is a basic execution unit that contains one or more application containers.""\n  }\n]', '[\n  {\n    ""source"": ""API server proxy"",\n    ""destination"": ""API server"",\n    ""relation_description"": ""acts as an intermediary for requests to"",\n    ""summary_er"": ""The API server proxy acts as a middleman, forwarding requests from clients to the actual API server.""\n  }\n]']","This page discusses connecting to a Kubernetes API server using an ambassador container. The ambassador container runs `kubectl proxy` and handles authentication with the API server, allowing the main container to send plain HTTP requests to localhost:8001. This simplifies communication between containers and can be reused across different apps, but adds an additional process consuming resources.","[{'highlight': 'You can run bash in the main container of a pod by using the -c option with kubectl exec.'}, {'highlight': 'To connect to the Kubernetes API server through an ambassador container, you can use curl to send a plain HTTP request to localhost:8001.'}, {'highlight': 'The ambassador container can handle client authentication and validate server identity, simplifying connections to external services.'}, {'highlight': ""An ambassador container is reusable across different apps, regardless of the main app's language, but consumes additional resources.""}, {'highlight': 'You can access the API server through an ambassador container by running kubectl proxy in a separate container within the pod.'}]"
+189,278,0,[],"246
+CHAPTER 8
+Accessing pod metadata and other resources from applications
+8.2.4
+Using client libraries to talk to the API server
+If your app only needs to perform a few simple operations on the API server, you can
+often use a regular HTTP client library and perform simple HTTP requests, especially
+if you take advantage of the kubectl-proxy ambassador container the way you did in
+the previous example. But if you plan on doing more than simple API requests, it’s
+better to use one of the existing Kubernetes API client libraries.
+USING EXISTING CLIENT LIBRARIES
+Currently, two Kubernetes API client libraries exist that are supported by the API
+Machinery special interest group (SIG):
+Golang client—https:/
+/github.com/kubernetes/client-go
+Python—https:/
+/github.com/kubernetes-incubator/client-python
+NOTE
+The Kubernetes community has a number of Special Interest Groups
+(SIGs) and Working Groups that focus on specific parts of the Kubernetes
+ecosystem. You’ll find a list of them at https:/
+/github.com/kubernetes/com-
+munity/blob/master/sig-list.md.
+In addition to the two officially supported libraries, here’s a list of user-contributed cli-
+ent libraries for many other languages:
+Java client by Fabric8—https:/
+/github.com/fabric8io/kubernetes-client
+Java client by Amdatu—https:/
+/bitbucket.org/amdatulabs/amdatu-kubernetes
+Node.js client by tenxcloud—https:/
+/github.com/tenxcloud/node-kubernetes-client
+Node.js client by GoDaddy—https:/
+/github.com/godaddy/kubernetes-client
+PHP—https:/
+/github.com/devstub/kubernetes-api-php-client
+Another PHP client—https:/
+/github.com/maclof/kubernetes-client
+Container: main
+API server
+sleep
+curl
+Container: ambassador
+kubectl proxy
+Port 8001
+GET http://localhost:8001
+GET https://kubernetes:443
+Authorization: Bearer <token>
+Pod
+Figure 8.7
+Offloading encryption, authentication, and server verification to kubectl proxy in an 
+ambassador container 
+ 
+",[],"[{'entity': 'Kubernetes API client libraries', 'description': 'Existing Kubernetes API client libraries supported by the API Machinery special interest group (SIG)', 'category': 'software'}, {'entity': 'Golang client', 'description': 'Kubernetes API client library for Golang', 'category': 'software'}, {'entity': 'Python client', 'description': 'Kubernetes API client library for Python', 'category': 'software'}, {'entity': 'Java client by Fabric8', 'description': 'User-contributed Kubernetes API client library for Java by Fabric8', 'category': 'software'}, {'entity': 'Java client by Amdatu', 'description': 'User-contributed Kubernetes API client library for Java by Amdatu', 'category': 'software'}, {'entity': 'Node.js client by tenxcloud', 'description': 'User-contributed Kubernetes API client library for Node.js by tenxcloud', 'category': 'software'}, {'entity': 'Node.js client by GoDaddy', 'description': 'User-contributed Kubernetes API client library for Node.js by GoDaddy', 'category': 'software'}, {'entity': 'PHP client', 'description': 'User-contributed Kubernetes API client library for PHP', 'category': 'software'}, {'entity': 'Another PHP client', 'description': 'User-contributed Kubernetes API client library for PHP', 'category': 'software'}, {'entity': 'kubectl proxy', 'description': 'Ambassador container that offloads encryption, authentication, and server verification to kubectl proxy', 'category': 'container'}, {'entity': 'curl', 'description': 'Command-line tool for transferring data with URL syntax', 'category': 'command'}, {'entity': 'sleep', 'description': 'Command that pauses execution of a script or process', 'category': 'process'}, {'entity': 'Pod', 'description': 'Basic execution unit in Kubernetes', 'category': 'application'}]","[{'source_entity': '""curl""', 'description': 'uses to interact with Kubernetes API', 'destination_entity': '""Kubernetes API client libraries""'}, {'source_entity': '""Node.js client by tenxcloud""', 'description': 'provides a Node.js interface to interact with Kubernetes API', 'destination_entity': '""Kubernetes API client libraries""'}, {'source_entity': '""Golang client""', 'description': 'offers a Golang interface to interact with Kubernetes API', 'destination_entity': '""Kubernetes API client libraries""'}, {'source_entity': '""PHP client""', 'description': 'provides a PHP interface to interact with Kubernetes API', 'destination_entity': '""Kubernetes API client libraries""'}, {'source_entity': '""Pod""', 'description': 'is a component of the Kubernetes cluster that can be managed by client libraries', 'destination_entity': '""Kubernetes API client libraries""'}, {'source_entity': '""Python client""', 'description': 'offers a Python interface to interact with Kubernetes API', 'destination_entity': '""Kubernetes API client libraries""'}, {'source_entity': '""Another PHP client""', 'description': 'provides an alternative PHP interface to interact with Kubernetes API', 'destination_entity': '""Kubernetes API client libraries""'}, {'source_entity': '""Java client by Amdatu""', 'description': 'offers a Java interface to interact with Kubernetes API, provided by Amdatu', 'destination_entity': '""Kubernetes API client libraries""'}, {'source_entity': '""Java client by Fabric8""', 'description': 'provides another Java interface to interact with Kubernetes API, provided by Fabric8', 'destination_entity': '""Kubernetes API client libraries""'}, {'source_entity': '""sleep""', 'description': 'is a command used in conjunction with Kubernetes API client libraries', 'destination_entity': '""kubectl proxy""'}]","['[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to interact with Kubernetes API"",\n    ""summary_er"": ""The curl command uses Kubernetes API client libraries to interact with pods, enabling communication between the client and the pod.""\n  }\n]', '[\n  {\n    ""source"": ""tenxcloud"",\n    ""destination"": ""Node.js client by tenxcloud"",\n    ""relation_description"": ""provides a Node.js interface to interact with Kubernetes API"",\n    ""summary_er"": ""Tenxcloud provides a Node.js client for interacting with the Kubernetes API, enabling seamless integration between Node.js applications and Kubernetes resources.""\n  },\n  {\n    ""source"": ""Kubernetes API client libraries"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""Kubernetes API client libraries are related to pods, which are the basic execution unit in a containerized system, providing a lightweight and portable way to deploy applications.""\n  }\n]', '[\n  {\n    ""source"": ""Golang client"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""offers a Golang interface to interact with Kubernetes API"",\n    ""summary_er"": ""The Golang client provides an interface for interacting with the Kubernetes API, allowing users to manage pods and other resources.""\n  },\n  {\n    ""source"": ""Kubernetes API client libraries"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes API client libraries are used to manage pods, providing a way to interact with the Kubernetes API and perform various operations on pods.""\n  }\n]', '[\n  {\n    ""source"": ""PHP client"",\n    ""destination"": ""Kubernetes API client libraries"",\n    ""relation_description"": ""provides a PHP interface to interact with Kubernetes API"",\n    ""summary_er"": ""The PHP client library provides a PHP interface for interacting with the Kubernetes API, enabling seamless communication between PHP applications and the Kubernetes cluster.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""Kubernetes API client libraries"",\n    ""relation_description"": ""interacts with pod"",\n    ""summary_er"": ""The Kubernetes API client library interacts with pods within the cluster, allowing for management and control of containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Kubernetes cluster"",\n    ""relation_description"": ""is a component of"",\n    ""summary_er"": ""A Pod is a fundamental building block of a Kubernetes cluster, providing a managed environment for containers.""\n  },\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""client libraries"",\n    ""relation_description"": ""can be managed by"",\n    ""summary_er"": ""Client libraries can manage and interact with Pods in a Kubernetes cluster, enabling programmatic control.""\n  }\n]', '[\n  {\n    ""source"": ""Python client"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""offers a Python interface to interact with Kubernetes API"",\n    ""summary_er"": ""The Python client library provides a Python interface for interacting with the Kubernetes API, allowing users to manage pods and other resources.""\n  },\n  {\n    ""source"": ""Kubernetes API client libraries"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes API client libraries are used to manage pods and other resources in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Another PHP client"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides an alternative PHP interface to interact with Kubernetes API"",\n    ""summary_er"": ""An alternative PHP interface for interacting with Kubernetes API, providing a pod-based solution.""\n  },\n  {\n    ""source"": ""Kubernetes API client libraries"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""client libraries"",\n    ""summary_er"": ""Client libraries for interacting with Kubernetes API, utilizing pods as the primary entity.""\n  }\n]', '[\n  {\n    ""source"": ""Amdatu"",\n    ""destination"": ""Java client"",\n    ""relation_description"": ""offers a Java interface to interact with Kubernetes API"",\n    ""summary_er"": ""Amdatu provides a Java client for interacting with Kubernetes API.""\n  },\n  {\n    ""source"": ""Kubernetes API client libraries"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""client libraries"",\n    ""summary_er"": ""Kubernetes API client libraries interact with pods.""\n  }\n]', '[\n  {\n    ""source"": ""Java client by Fabric8"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides another Java interface to interact with Kubernetes API, provided by Fabric8"",\n    ""summary_er"": ""Fabric8 provides a Java client that interacts with the Kubernetes API, enabling interaction between Java applications and Kubernetes pods.""\n  }\n]', '[\n  {\n    ""source"": ""sleep"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a command used in conjunction with Kubernetes API client libraries"",\n    ""summary_er"": ""The sleep command is used to pause execution of a pod, allowing for concurrent processing and efficient resource utilization.""\n  },\n  {\n    ""source"": ""kubectl proxy"",\n    ""destination"": ""Kubernetes API client libraries"",\n    ""relation_description"": ""used in conjunction with"",\n    ""summary_er"": ""Kubectl proxy enables direct access to the Kubernetes API from a local machine, streamlining interactions with cluster resources and configurations.""\n  }\n]']","Kubernetes API client libraries are available for various programming languages, including Golang, Python, Java, Node.js, and PHP, allowing applications to access pod metadata and other resources from the API server.","[{'highlight': 'You can use a regular HTTP client library for simple API requests.'}, {'highlight': 'Two Kubernetes API client libraries exist: Golang client and Python client.'}, {'highlight': 'The Kubernetes community has Special Interest Groups (SIGs) that focus on specific parts of the ecosystem.'}, {'highlight': 'There are user-contributed client libraries available for Java, Node.js, PHP, and other languages.'}, {'highlight': 'You can use kubectl proxy in an ambassador container to offload encryption, authentication, and server verification.'}]"

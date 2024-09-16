@@ -1,0 +1,466 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+340,429,0,[],"397
+Restricting the use of security-related features in pods
+As you can see in the PRIV column, the default policy doesn’t allow running privi-
+leged containers, whereas the privileged policy does. Because you’re currently
+logged in as a cluster-admin, you can see all the policies. When creating pods, if any
+policy allows you to deploy a pod with certain features, the API server will accept
+your pod.
+ Now imagine two additional users are using your cluster: Alice and Bob. You want
+Alice to only deploy restricted (non-privileged) pods, but you want to allow Bob to
+also deploy privileged pods. You do this by making sure Alice can only use the default
+PodSecurityPolicy, while allowing Bob to use both.
+USING RBAC TO ASSIGN DIFFERENT PODSECURITYPOLICIES TO DIFFERENT USERS
+In the previous chapter, you used RBAC to grant users access to only certain resource
+types, but I mentioned that access can be granted to specific resource instances by ref-
+erencing them by name. That’s what you’ll use to make users use different Pod-
+SecurityPolicy resources.
+ First, you’ll create two ClusterRoles, each allowing the use of one of the policies.
+You’ll call the first one psp-default and in it allow the use of the default Pod-
+SecurityPolicy resource. You can use kubectl create clusterrole to do that:
+$ kubectl create clusterrole psp-default --verb=use 
+➥  --resource=podsecuritypolicies --resource-name=default
+clusterrole ""psp-default"" created
+NOTE
+You’re using the special verb use instead of get, list, watch, or similar.
+As you can see, you’re referring to a specific instance of a PodSecurityPolicy resource by
+using the --resource-name option. Now, create another ClusterRole called psp-
+privileged, pointing to the privileged policy:
+$ kubectl create clusterrole psp-privileged --verb=use
+➥  --resource=podsecuritypolicies --resource-name=privileged
+clusterrole ""psp-privileged"" created
+Now, you need to bind these two policies to users. As you may remember from the pre-
+vious chapter, if you’re binding a ClusterRole that grants access to cluster-level
+resources (which is what PodSecurityPolicy resources are), you need to use a Cluster-
+RoleBinding instead of a (namespaced) RoleBinding. 
+ You’re going to bind the psp-default ClusterRole to all authenticated users, not
+only to Alice. This is necessary because otherwise no one could create any pods,
+because the Admission Control plugin would complain that no policy is in place.
+Authenticated users all belong to the system:authenticated group, so you’ll bind
+the ClusterRole to the group:
+$ kubectl create clusterrolebinding psp-all-users 
+➥ --clusterrole=psp-default --group=system:authenticated
+clusterrolebinding ""psp-all-users"" created
+ 
+",[],"[{'entity': 'PodSecurityPolicy', 'description': 'A PodSecurityPolicy resource defines a set of privileges that can be used by pods.', 'category': 'resource'}, {'entity': 'cluster-admin', 'description': 'A cluster-admin user has full access to the cluster and its resources.', 'category': 'role'}, {'entity': 'default policy', 'description': 'The default PodSecurityPolicy resource that allows running non-privileged containers.', 'category': 'resource'}, {'entity': 'privileged policy', 'description': 'A privileged PodSecurityPolicy resource that allows running privileged containers.', 'category': 'resource'}, {'entity': 'Alice', 'description': 'A user who can only deploy restricted (non-privileged) pods.', 'category': 'user'}, {'entity': 'Bob', 'description': 'A user who can deploy both non-privileged and privileged pods.', 'category': 'user'}, {'entity': 'PodSecurityPolicy resource', 'description': 'A PodSecurityPolicy resource defines a set of privileges that can be used by pods.', 'category': 'resource'}, {'entity': 'ClusterRole', 'description': 'A ClusterRole is a cluster-level role that grants access to cluster resources.', 'category': 'role'}, {'entity': 'psp-default', 'description': 'A ClusterRole that allows the use of the default PodSecurityPolicy resource.', 'category': 'role'}, {'entity': 'psp-privileged', 'description': 'A ClusterRole that allows the use of the privileged PodSecurityPolicy resource.', 'category': 'role'}, {'entity': 'ClusterRoleBinding', 'description': 'A ClusterRoleBinding is a cluster-level role binding that grants access to cluster resources.', 'category': 'binding'}, {'entity': 'psp-all-users', 'description': 'A ClusterRoleBinding that binds the psp-default ClusterRole to all authenticated users.', 'category': 'binding'}]","[{'source_entity': '""PodSecurityPolicy""', 'description': 'defines', 'destination_entity': '""psp-all-users""'}, {'source_entity': '""ClusterRole""', 'description': 'grants', 'destination_entity': '""cluster-admin""'}, {'source_entity': '""psp-default""', 'description': 'applies to', 'destination_entity': '""PodSecurityPolicy resource""'}, {'source_entity': '""privileged policy""', 'description': 'enforces', 'destination_entity': '""psp-privileged""'}, {'source_entity': '""Bob""', 'description': 'uses', 'destination_entity': '""psp-default""'}, {'source_entity': '""ClusterRoleBinding""', 'description': 'binds', 'destination_entity': '""cluster-admin""'}, {'source_entity': '""Alice""', 'description': 'has access to', 'destination_entity': '""psp-privileged""'}]","['[\n  {\n    ""source"": ""PodSecurityPolicy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""\\""PodSecurityPolicy\\"" defines a set of security policies for pods, ensuring they adhere to specific standards and constraints.""\n  }\n]', '[\n  {\n    ""source"": ""ClusterRole"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""grants"",\n    ""summary_er"": ""A ClusterRole grants permissions to a pod, allowing it to access cluster resources.""\n  }\n]', '[\n  {\n    ""source"": ""psp-default"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies to"",\n    ""summary_er"": ""The PSP default applies to a specific Pod, ensuring it adheres to security policies.""\n  },\n  {\n    ""source"": ""PodSecurityPolicy resource"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines for"",\n    ""summary_er"": ""A PodSecurityPolicy resource defines the security parameters for a Pod, governing its behavior and access.""\n  }\n]', '[\n  {\n    ""source"": ""privileged policy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""A privileged policy enforces access control for a pod, ensuring only authorized actions can be performed.""\n  }\n]', '[\n  {\n    ""source"": ""Bob"",\n    ""destination"": ""psp-default"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Bob utilizes the \'psp-default\' pod for his application, leveraging its resources and functionality.""\n  }\n]', '[\n  {\n    ""source"": ""ClusterRoleBinding"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""binds"",\n    ""summary_er"": ""A ClusterRoleBinding grants a cluster role to a user, service account, or group, allowing them to access resources within the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Alice"",\n    ""destination"": ""psp-privileged"",\n    ""relation_description"": ""has access to"",\n    ""summary_er"": ""Alice has access to a privileged pod, likely for administrative purposes.""\n  }\n]']","To restrict security-related features in pods, you can use PodSecurityPolicies. You can create two ClusterRoles (psp-default and psp-privileged) to allow different users to use specific policies. Bind these roles to users using a ClusterRoleBinding, referencing the policies by name (e.g., default or privileged). This way, Alice can only deploy non-privileged pods while Bob can deploy both. Authenticated users will have access to the default policy.","[{'highlight': 'To restrict the use of security-related features in pods, you can create multiple PodSecurityPolicies (PSPs) and assign them to different users using Role-Based Access Control (RBAC).'}, {'highlight': ""You can create a ClusterRole for each PSP, allowing specific users or groups to use that policy. For example, you can create a 'psp-default' role for the default PSP and a 'psp-privileged' role for the privileged PSP.""}, {'highlight': 'To bind a ClusterRole to a user or group, you need to use a ClusterRoleBinding instead of a RoleBinding. This is because ClusterRoles grant access to cluster-level resources like PodSecurityPolicies.'}, {'highlight': ""You can bind the 'psp-default' role to all authenticated users by creating a ClusterRoleBinding with the 'system:authenticated' group, ensuring that no one can create pods without a policy in place.""}, {'highlight': 'By using RBAC and PSPs, you can enforce different security policies for different users or groups within your Kubernetes cluster, improving overall security and compliance.'}]"
+341,430,0,[],"398
+CHAPTER 13
+Securing cluster nodes and the network
+You’ll bind the psp-privileged ClusterRole only to Bob:
+$ kubectl create clusterrolebinding psp-bob 
+➥ --clusterrole=psp-privileged --user=bob
+clusterrolebinding ""psp-bob"" created
+As an authenticated user, Alice should now have access to the default PodSecurity-
+Policy, whereas Bob should have access to both the default and the privileged Pod-
+SecurityPolicies. Alice shouldn’t be able to create privileged pods, whereas Bob
+should. Let’s see if that’s true.
+CREATING ADDITIONAL USERS FOR KUBECTL
+But how do you authenticate as Alice or Bob instead of whatever you’re authenticated
+as currently? The book’s appendix A explains how kubectl can be used with multiple
+clusters, but also with multiple contexts. A context includes the user credentials used
+for talking to a cluster. Turn to appendix A to find out more. Here we’ll show the bare
+commands enabling you to use kubectl as Alice or Bob. 
+ First, you’ll create two new users in kubectl’s config with the following two
+commands:
+$ kubectl config set-credentials alice --username=alice --password=password
+User ""alice"" set.
+$ kubectl config set-credentials bob --username=bob --password=password
+User ""bob"" set.
+It should be obvious what the commands do. Because you’re setting username and
+password credentials, kubectl will use basic HTTP authentication for these two users
+(other authentication methods include tokens, client certificates, and so on).
+CREATING PODS AS A DIFFERENT USER
+You can now try creating a privileged pod while authenticating as Alice. You can tell
+kubectl which user credentials to use by using the --user option:
+$ kubectl --user alice create -f pod-privileged.yaml
+Error from server (Forbidden): error when creating ""pod-privileged.yaml"": 
+pods ""pod-privileged"" is forbidden: unable to validate against any pod 
+security policy: [spec.containers[0].securityContext.privileged: Invalid 
+value: true: Privileged containers are not allowed]
+As expected, the API server doesn’t allow Alice to create privileged pods. Now, let’s see
+if it allows Bob to do that:
+$ kubectl --user bob create -f pod-privileged.yaml
+pod ""pod-privileged"" created
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command-line tool for interacting with Kubernetes clusters', 'category': 'software'}, {'entity': 'clusterrolebinding', 'description': 'resource that binds a cluster role to a user or group', 'category': 'database'}, {'entity': 'psp-privileged', 'description': 'ClusterRole that grants access to privileged PodSecurityPolicies', 'category': 'software'}, {'entity': 'bob', 'description': 'user account in Kubernetes', 'category': 'application'}, {'entity': 'alice', 'description': 'user account in Kubernetes', 'category': 'application'}, {'entity': 'pod-privileged.yaml', 'description': 'configuration file for creating a privileged pod', 'category': 'software'}, {'entity': '--user', 'description': 'option for specifying user credentials in kubectl commands', 'category': 'command'}, {'entity': 'podSecurityPolicy', 'description': 'resource that defines a set of permissions for pods', 'category': 'database'}, {'entity': 'context', 'description': 'configuration object that specifies user credentials and cluster information', 'category': 'software'}, {'entity': 'appendix A', 'description': 'section in the book that explains how to use kubectl with multiple clusters and contexts', 'category': 'hardware'}]","[{'source_entity': '""clusterrolebinding""', 'description': 'binds to', 'destination_entity': '""alice""'}, {'source_entity': '""clusterrolebinding""', 'description': 'binds to', 'destination_entity': '""bob""'}, {'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""pod-privileged.yaml""'}, {'source_entity': '""kubectl""', 'description': 'applies', 'destination_entity': '""podSecurityPolicy""'}, {'source_entity': '""context""', 'description': 'sets for', 'destination_entity': '""alice""'}, {'source_entity': '""context""', 'description': 'sets for', 'destination_entity': '""bob""'}, {'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""--user""'}, {'source_entity': '""kubectl""', 'description': 'applies', 'destination_entity': '""pod-privileged.yaml""'}, {'source_entity': '""appendix A""', 'description': 'contains information about', 'destination_entity': '""podSecurityPolicy""'}]","['[\n  {\n    ""source"": ""clusterrole"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""binds to"",\n    ""summary_er"": ""A cluster role binding grants permissions to a pod, allowing it to access cluster resources.""\n  },\n  {\n    ""source"": ""alice"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is"",\n    ""summary_er"": ""Alice is a pod that exists in the Kubernetes system.""\n  }\n]', '[\n  {\n    ""source"": ""clusterrole"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""binds to"",\n    ""summary_er"": ""A cluster role binds to a pod, granting it permissions to access resources within the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubectl uses a pod to execute commands, leveraging its resources and configuration.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies"",\n    ""summary_er"": ""Kubectl applies configuration to a running pod, ensuring it meets security and operational requirements.""\n  },\n  {\n    ""source"": ""podSecurityPolicy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""Pod Security Policy defines the set of privileges and constraints for a pod, governing its behavior and interactions within the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""context"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets for"",\n    ""summary_er"": ""The context sets up a pod, which is a containerized application.""\n  },\n  {\n    ""source"": ""alice"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs on"",\n    ""summary_er"": ""Alice runs her application on a pod, utilizing the Kubernetes environment.""\n  }\n]', '[{\n    ""source"": ""Context"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""Sets for"",\n    ""summary_er"": ""\\""The context sets up or configures a pod, which is a container running an application.\\""""\n}]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubectl uses a pod to execute commands, leveraging its resources for efficient execution.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies"",\n    ""summary_er"": ""\\""kubectl\\"" is a command-line tool that applies configuration to a \\""pod\\"", which is a containerized application in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""Appendix A"",\n    ""destination"": ""Pod Security Policy"",\n    ""relation_description"": ""contains information about"",\n    ""summary_er"": ""Appendix A provides details on Pod Security Policy, a feature that ensures pods run with appropriate security settings.""\n  }\n]']","You'll bind the psp-privileged ClusterRole only to Bob by creating a clusterrolebinding. Alice will have access to the default PodSecurity-Policy, while Bob has access to both. To authenticate as Alice or Bob, create new users in kubectl's config with set-credentials commands. You can then use the --user option to create pods with different user credentials, demonstrating that Bob can create privileged pods while Alice cannot.",[{'highlight': 'You’ll bind the psp-privileged ClusterRole only to Bob: $ kubectl create clusterrolebinding psp-bob --clusterrole=psp-privileged --user=bob'}]
+342,431,0,[],"399
+Isolating the pod network
+And there you go. You’ve successfully used RBAC to make the Admission Control
+plugin use different PodSecurityPolicy resources for different users.
+13.4
+Isolating the pod network
+Up to now in this chapter, we’ve explored many security-related configuration options
+that apply to individual pods and their containers. In the remainder of this chapter,
+we’ll look at how the network between pods can be secured by limiting which pods can
+talk to which pods.
+ Whether this is configurable or not depends on which container networking
+plugin is used in the cluster. If the networking plugin supports it, you can configure
+network isolation by creating NetworkPolicy resources. 
+ A NetworkPolicy applies to pods that match its label selector and specifies either
+which sources can access the matched pods or which destinations can be accessed
+from the matched pods. This is configured through ingress and egress rules, respec-
+tively. Both types of rules can match only the pods that match a pod selector, all
+pods in a namespace whose labels match a namespace selector, or a network IP
+block specified using Classless Inter-Domain Routing (CIDR) notation (for example,
+192.168.1.0/24). 
+ We’ll look at both ingress and egress rules and all three matching options.
+NOTE
+Ingress rules in a NetworkPolicy have nothing to do with the Ingress
+resource discussed in chapter 5.
+13.4.1 Enabling network isolation in a namespace
+By default, pods in a given namespace can be accessed by anyone. First, you’ll need
+to change that. You’ll create a default-deny NetworkPolicy, which will prevent all
+clients from connecting to any pod in your namespace. The NetworkPolicy defini-
+tion is shown in the following listing.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+spec:
+  podSelector:        
+When you create this NetworkPolicy in a certain namespace, no one can connect to
+any pod in that namespace. 
+ 
+ 
+ 
+Listing 13.21
+A default-deny NetworkPolicy: network-policy-default-deny.yaml
+Empty pod selector 
+matches all pods in the 
+same namespace
+ 
+",[],"[{'entity': 'RBAC', 'description': 'Role-Based Access Control plugin', 'category': 'software'}, {'entity': 'Admission Control', 'description': 'plugin for validating pod configurations', 'category': 'software'}, {'entity': 'PodSecurityPolicy', 'description': 'resource for defining security policies for pods', 'category': 'database'}, {'entity': 'NetworkPolicy', 'description': 'resource for configuring network isolation between pods', 'category': 'database'}, {'entity': 'ingress rules', 'description': 'rules for specifying which sources can access matched pods', 'category': 'software'}, {'entity': 'egress rules', 'description': 'rules for specifying which destinations can be accessed from matched pods', 'category': 'software'}, {'entity': 'pod selector', 'description': 'selector for matching pods based on labels', 'category': 'software'}, {'entity': 'namespace selector', 'description': 'selector for matching namespaces based on labels', 'category': 'software'}, {'entity': 'CIDR notation', 'description': 'notation for specifying network IP blocks', 'category': 'hardware/network'}, {'entity': 'Ingress resource', 'description': 'resource for configuring ingress traffic in chapter 5', 'category': 'software'}, {'entity': 'default-deny NetworkPolicy', 'description': 'NetworkPolicy that prevents all clients from connecting to any pod in a namespace', 'category': 'database'}]","[{'source_entity': 'PodSecurityPolicy', 'description': 'defines egress rules for pods', 'destination_entity': 'egress rules'}, {'source_entity': 'Admission Control', 'description': 'enforces NetworkPolicy on incoming traffic', 'destination_entity': 'NetworkPolicy'}, {'source_entity': 'NetworkPolicy', 'description': 'defines ingress and egress rules for pods', 'destination_entity': 'ingress rules'}, {'source_entity': 'NetworkPolicy', 'description': 'defines ingress and egress rules for pods', 'destination_entity': 'egress rules'}, {'source_entity': 'pod selector', 'description': 'selects specific pods to apply NetworkPolicy to', 'destination_entity': 'NetworkPolicy'}, {'source_entity': 'CIDR notation', 'description': 'defines allowed IP ranges for ingress and egress rules', 'destination_entity': 'ingress rules'}, {'source_entity': 'default-deny NetworkPolicy', 'description': 'denies all incoming traffic by default', 'destination_entity': 'NetworkPolicy'}, {'source_entity': 'namespace selector', 'description': 'selects specific namespaces to apply NetworkPolicy to', 'destination_entity': 'NetworkPolicy'}, {'source_entity': 'RBAC', 'description': 'defines access control for users and groups', 'destination_entity': 'Admission Control'}, {'source_entity': 'Ingress resource', 'description': 'defines ingress rules for pods', 'destination_entity': 'ingress rules'}]","['[\n  {\n    ""source"": ""PodSecurityPolicy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines egress rules for"",\n    ""summary_er"": ""PodSecurityPolicy defines egress rules for pods, allowing them to communicate with external services.""\n  }\n]', '[\n  {\n    ""source"": ""Admission Control"",\n    ""destination"": ""NetworkPolicy"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""Admission Control enforces Network Policy on incoming traffic, ensuring only authorized pods can access resources.""\n  }\n]', '[\n  {\n    ""source"": ""NetworkPolicy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines ingress and egress rules for pods"",\n    ""summary_er"": ""NetworkPolicy governs incoming/outgoing traffic for pods, enforcing security policies.""\n  },\n  {\n    ""source"": ""ingress rules"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""ingress rules"",\n    ""summary_er"": ""Ingress rules in NetworkPolicy specify allowed incoming traffic for a pod.""\n  }\n]', '[\n  {\n    ""source"": ""NetworkPolicy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines ingress and egress rules for pods"",\n    ""summary_er"": ""NetworkPolicy defines ingress and egress rules for pods, controlling incoming and outgoing traffic.""\n  },\n  {\n    ""source"": ""NetworkPolicy"",\n    ""destination"": ""egress rules"",\n    ""relation_description"": ""controls outgoing traffic from pods"",\n    ""summary_er"": ""NetworkPolicy controls outgoing traffic from pods through egress rules, ensuring secure data transmission.""\n  }\n]', '[\n  {\n    ""source"": ""pod selector"",\n    ""destination"": ""NetworkPolicy"",\n    ""relation_description"": ""selects specific pods to apply NetworkPolicy to"",\n    ""summary_er"": ""Pod selector filters pods based on labels and annotations, allowing for targeted Network Policy application.""\n  }\n]', '[\n  {\n    ""source"": ""CIDR notation"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines allowed IP ranges for ingress and egress rules"",\n    ""summary_er"": ""CIDR notation defines allowed IP ranges for pod ingress and egress rules, controlling incoming and outgoing network traffic.""\n  },\n  {\n    ""source"": ""ingress rules"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines allowed incoming network traffic"",\n    ""summary_er"": ""Ingress rules define allowed incoming network traffic to a pod, specifying which IP addresses can access the pod\'s services.""\n  }\n]', '[\n  {\n    ""source"": ""default-deny NetworkPolicy"",\n    ""destination"": ""NetworkPolicy"",\n    ""relation_description"": ""denies all incoming traffic by default"",\n    ""summary_er"": ""Default deny network policy denies all incoming traffic to pods, blocking unauthorized access.""\n  }\n]', '[\n  {\n    ""source"": ""namespace selector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""selects specific namespaces to apply NetworkPolicy to"",\n    ""summary_er"": ""Namespace selectors are used to specify which pods within a namespace should be targeted by a NetworkPolicy, allowing for fine-grained network access control.""\n  }\n]', '[\n  {\n    ""source"": ""RBAC"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines access control for users and groups"",\n    ""summary_er"": ""RBAC ensures secure access to pods by controlling user and group permissions.""\n  }\n]', '[\n  {\n    ""source"": ""Ingress resource"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines ingress rules for"",\n    ""summary_er"": ""The Ingress resource defines ingress rules for pods, allowing incoming traffic to be routed to specific pods.""\n  }\n]']","Isolating the pod network by configuring NetworkPolicy resources, which apply to pods matching a label selector and specify sources or destinations that can access the matched pods. This is configurable if the container networking plugin supports it. A default-deny NetworkPolicy prevents all clients from connecting to any pod in a namespace, and can be enabled by creating a NetworkPolicy with an empty pod selector.","[{'highlight': 'Network isolation can be secured by limiting which pods can talk to which pods using NetworkPolicy resources.'}, {'highlight': 'A default-deny NetworkPolicy prevents all clients from connecting to any pod in a given namespace.'}, {'highlight': 'Ingress rules in a NetworkPolicy have nothing to do with the Ingress resource discussed in chapter 5.'}, {'highlight': 'NetworkPolicies can match pods based on label selector, namespace selector, or network IP block using CIDR notation.'}, {'highlight': 'Creating a default-deny NetworkPolicy will prevent all clients from connecting to any pod in the same namespace.'}]"
+343,432,0,[],"400
+CHAPTER 13
+Securing cluster nodes and the network
+NOTE
+The CNI plugin or other type of networking solution used in the clus-
+ter must support NetworkPolicy, or else there will be no effect on inter-pod
+connectivity.
+13.4.2 Allowing only some pods in the namespace to connect to 
+a server pod
+To let clients connect to the pods in the namespace, you must now explicitly say who
+can connect to the pods. By who I mean which pods. Let’s explore how to do this
+through an example. 
+ Imagine having a PostgreSQL database pod running in namespace foo and a web-
+server pod that uses the database. Other pods are also in the namespace, and you
+don’t want to allow them to connect to the database. To secure the network, you need
+to create the NetworkPolicy resource shown in the following listing in the same name-
+space as the database pod.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgres-netpolicy
+spec:
+  podSelector:                     
+    matchLabels:                   
+      app: database                
+  ingress:                           
+  - from:                            
+    - podSelector:                   
+        matchLabels:                 
+          app: webserver             
+    ports:                     
+    - port: 5432               
+The example NetworkPolicy allows pods with the app=webserver label to connect to
+pods with the app=database label, and only on port 5432. Other pods can’t connect to
+the database pods, and no one (not even the webserver pods) can connect to anything
+other than port 5432 of the database pods. This is shown in figure 13.4.
+ Client pods usually connect to server pods through a Service instead of directly to
+the pod, but that doesn’t change anything. The NetworkPolicy is enforced when con-
+necting through a Service, as well.
+ 
+ 
+ 
+ 
+Listing 13.22
+A NetworkPolicy for the Postgres pod: network-policy-postgres.yaml
+This policy secures 
+access to pods with 
+app=database label.
+It allows incoming connections 
+only from pods with the 
+app=webserver label.
+Connections to this 
+port are allowed.
+ 
+",[],"[{'entity': 'CNI plugin', 'description': 'Container Network Interface plugin for Kubernetes', 'category': 'software'}, {'entity': 'NetworkPolicy', 'description': 'Resource for defining network policies in Kubernetes', 'category': 'application'}, {'entity': 'podSelector', 'description': 'Selector for matching pods based on labels', 'category': 'process'}, {'entity': 'matchLabels', 'description': 'Labels used to match pods', 'category': 'process'}, {'entity': 'app', 'description': 'Label key for application name', 'category': 'label'}, {'entity': 'database', 'description': 'Application label value', 'category': 'label'}, {'entity': 'webserver', 'description': 'Application label value', 'category': 'label'}, {'entity': 'ingress', 'description': 'Network traffic incoming to the pod', 'category': 'process'}, {'entity': 'ports', 'description': 'List of ports for network communication', 'category': 'process'}, {'entity': 'port', 'description': 'Single port number', 'category': 'process'}, {'entity': '5432', 'description': 'PostgreSQL database port number', 'category': 'process'}, {'entity': 'Service', 'description': 'Resource for defining a network service in Kubernetes', 'category': 'application'}]","[{'source_entity': '""Service""', 'description': 'provides', 'destination_entity': '""webserver""'}, {'source_entity': '""ports""', 'description': 'includes', 'destination_entity': '""port""'}, {'source_entity': '""CNI plugin""', 'description': 'manages', 'destination_entity': '""NetworkPolicy""'}, {'source_entity': '""podSelector""', 'description': 'selects', 'destination_entity': '""app""'}, {'source_entity': '""ingress""', 'description': 'allows', 'destination_entity': '""Service""'}, {'source_entity': '""matchLabels""', 'description': 'labels', 'destination_entity': '""webserver""'}, {'source_entity': '""5432""', 'description': 'assigns', 'destination_entity': '""database""'}]","['[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""A Service in Kubernetes provides a network interface to access a group of pods, ensuring high availability and load balancing.""\n  }\n]', '[\n  {\n    ""source"": ""ports"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""includes"",\n    ""summary_er"": ""The ports entity includes a port attribute that is part of a pod, which is a containerized application.""\n  }\n]', '[\n  {\n    ""source"": ""CNI plugin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The CNI plugin is responsible for managing network settings for a pod, ensuring secure and efficient communication within the containerized environment.""\n  },\n  {\n    ""source"": ""NetworkPolicy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies to"",\n    ""summary_er"": ""A NetworkPolicy defines a set of rules that apply to a pod, controlling incoming and outgoing network traffic based on source and destination IP addresses, ports, and protocols.""\n  }\n]', '[\n  {\n    ""source"": ""Pod Selector"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""selects"",\n    ""summary_er"": ""The Pod Selector selects a specific pod based on its labels and annotations.""\n  }\n]', '[\n  {\n    ""source"": ""Ingress"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""allows"",\n    ""summary_er"": ""The Ingress resource allows incoming traffic to reach a Pod, enabling external access to services running within the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""matchLabels"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""labels"",\n    ""summary_er"": ""The matchLabels field in a Kubernetes Pod specification defines key-value pairs that are used to identify and select the pod.""\n  },\n  {\n    ""source"": ""webserver"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deployment"",\n    ""summary_er"": ""A webserver is a type of pod in Kubernetes that serves HTTP requests, typically running a web application or service.""\n  }\n]', '[\n  {\n    ""source"": ""5432"",\n    ""destination"": ""database"",\n    ""relation_description"": ""assigns"",\n    ""summary_er"": ""The port number 5432 assigns a database connection to the \'database\' pod.""\n  }\n]']","To secure cluster nodes and network, a CNI plugin or networking solution must support NetworkPolicy. A NetworkPolicy resource can be created in the same namespace as a database pod to allow only specific pods (e.g. webserver) to connect on port 5432, while blocking other pods from connecting to the database.","[{'highlight': 'The CNI plugin or other type of networking solution used in the cluster must support NetworkPolicy, or else there will be no effect on inter-pod connectivity.'}, {'highlight': 'To let clients connect to the pods in the namespace, you must now explicitly say who can connect to the pods. By who I mean which pods.'}, {'highlight': 'The example NetworkPolicy allows pods with the app=webserver label to connect to pods with the app=database label, and only on port 5432.'}, {'highlight': 'Client pods usually connect to server pods through a Service instead of directly to the pod, but that doesn’t change anything.'}, {'highlight': 'The NetworkPolicy is enforced when connecting through a Service, as well.'}]"
+344,433,0,[],"401
+Isolating the pod network
+13.4.3 Isolating the network between Kubernetes namespaces
+Now let’s look at another example, where multiple tenants are using the same Kuber-
+netes cluster. Each tenant can use multiple namespaces, and each namespace has a
+label specifying the tenant it belongs to. For example, one of those tenants is Man-
+ning. All their namespaces have been labeled with tenant: manning. In one of their
+namespaces, they run a Shopping Cart microservice that needs to be available to all
+pods running in any of their namespaces. Obviously, they don’t want any other tenants
+to access their microservice.
+ To secure their microservice, they create the NetworkPolicy resource shown in the
+following listing.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: shoppingcart-netpolicy
+spec:
+  podSelector:                       
+    matchLabels:                     
+      app: shopping-cart             
+  ingress:
+  - from:
+    - namespaceSelector:            
+        matchLabels:                
+          tenant: manning           
+    ports:
+    - port: 80
+Listing 13.23
+NetworkPolicy for the shopping cart pod(s): network-policy-cart.yaml
+app: database
+Pod:
+database
+Port
+5432
+Port
+9876
+app: webserver
+Pod:
+webserver
+Pod selector:
+app=webserver
+Pod selector:
+app=database
+app: webserver
+Pod:
+webserver
+Other pods
+NetworkPolicy: postgres-netpolicy
+Figure 13.4
+A NetworkPolicy allowing only some pods to access other pods and only on a specific 
+port
+This policy applies to pods 
+labeled as microservice= 
+shopping-cart.
+Only pods running in namespaces 
+labeled as tenant=manning are 
+allowed to access the microservice.
+ 
+",[],"[{'entity': 'pod network', 'description': 'a network for isolating pods', 'category': 'network'}, {'entity': 'Kubernetes namespaces', 'description': 'a way to group resources in a Kubernetes cluster', 'category': 'application'}, {'entity': 'NetworkPolicy', 'description': 'a resource for defining network policies in Kubernetes', 'category': 'software'}, {'entity': 'podSelector', 'description': 'a selector for matching pods based on labels', 'category': 'process'}, {'entity': 'ingress', 'description': 'a rule for allowing incoming traffic to a pod or service', 'category': 'network'}, {'entity': 'ports', 'description': 'a list of ports that can be accessed by a pod or service', 'category': 'hardware'}, {'entity': 'namespaceSelector', 'description': 'a selector for matching namespaces based on labels', 'category': 'process'}, {'entity': 'tenant', 'description': 'a label for identifying a tenant in a Kubernetes cluster', 'category': 'application'}, {'entity': 'manning', 'description': 'the name of a tenant', 'category': 'application'}, {'entity': 'shopping-cart', 'description': 'the name of a microservice', 'category': 'application'}, {'entity': 'postgres-netpolicy', 'description': 'a NetworkPolicy resource for allowing access to a PostgreSQL database', 'category': 'software'}, {'entity': 'microservice', 'description': 'a label for identifying a microservice in a Kubernetes cluster', 'category': 'application'}, {'entity': 'shopping-cart-netpolicy', 'description': 'a NetworkPolicy resource for allowing access to the shopping cart microservice', 'category': 'software'}, {'entity': 'database', 'description': 'the name of a database service', 'category': 'application'}, {'entity': 'webserver', 'description': 'the name of a web server service', 'category': 'application'}, {'entity': 'postgres-netpolicy', 'description': 'a NetworkPolicy resource for allowing access to a PostgreSQL database', 'category': 'software'}]","[{'source_entity': '""shopping-cart-netpolicy""', 'description': 'enforces', 'destination_entity': '""pod network""'}, {'source_entity': '""microservice""', 'description': 'uses', 'destination_entity': '""Kubernetes namespaces""'}, {'source_entity': '""postgres-netpolicy""', 'description': 'protects', 'destination_entity': '""database""'}, {'source_entity': '""tenant""', 'description': 'manages', 'destination_entity': '""shopping-cart-netpolicy""'}, {'source_entity': '""NetworkPolicy""', 'description': 'applies to', 'destination_entity': '""podSelector""'}, {'source_entity': '""ingress""', 'description': 'allows incoming traffic from', 'destination_entity': '""webserver""'}, {'source_entity': '""webserver""', 'description': 'serves', 'destination_entity': '""shopping-cart-netpolicy""'}, {'source_entity': '""ports""', 'description': 'exposes', 'destination_entity': '""webserver""'}, {'source_entity': '""namespaceSelector""', 'description': 'selects', 'destination_entity': '""Kubernetes namespaces""'}, {'source_entity': '""manning""', 'description': 'uses', 'destination_entity': '""postgres-netpolicy""'}]","['[\n  {\n    ""source"": ""shopping-cart-netpolicy"",\n    ""destination"": ""pod network"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""The shopping cart net policy enforces network rules for pod communication.""\n  }\n]', '[\n  {\n    ""source"": ""microservice"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A microservice utilizes a pod to execute its functionality, leveraging the pod\'s resources and environment.""\n  },\n  {\n    ""source"": ""Kubernetes namespaces"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A Kubernetes namespace holds one or more pods, providing isolation and organization for the contained resources.""\n  }\n]', '[\n  {\n    ""source"": ""postgres-netpolicy"",\n    ""destination"": ""database"",\n    ""relation_description"": ""protects"",\n    ""summary_er"": ""The Postgres network policy ensures the database\'s security by protecting it from unauthorized access.""\n  }\n]', '[\n  {\n    ""source"": ""tenant"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Tenant entity manages a Pod, which is a containerized application in Kubernetes.""\n  },\n  {\n    ""source"": ""shopping-cart-netpolicy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Shopping Cart Network Policy manages a Pod, ensuring secure network access and communication within the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""NetworkPolicy"",\n    ""destination"": ""podSelector"",\n    ""relation_description"": ""applies to"",\n    ""summary_er"": ""A Network Policy selects pods based on labels and annotations, allowing or denying traffic to/from them.""\n  },\n  {\n    ""source"": ""NetworkPolicy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies to"",\n    ""summary_er"": ""A Network Policy is applied to a pod based on its selector, defining allowed/denied network traffic.""\n  }\n]', '[\n  {\n    ""source"": ""ingress"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allows incoming traffic from"",\n    ""summary_er"": ""Ingress allows incoming HTTP requests to be routed to a webserver pod, enabling external access.""\n  }\n]', '[\n  {\n    ""source"": ""webserver"",\n    ""destination"": ""shopping-cart-netpolicy"",\n    ""relation_description"": ""serves"",\n    ""summary_er"": ""The webserver serves the shopping cart net policy, providing a secure connection for users to interact with the application.""\n  }\n]', '[\n  {\n    ""source"": ""ports"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""The ports entity exposes a web server, which is a type of pod in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""namespaceSelector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""selects"",\n    ""summary_er"": ""The namespace selector selects a pod based on its namespace.""\n  }\n]', '[\n  {\n    ""source"": ""Manning"",\n    ""destination"": ""Postgres-NetPolicy"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The Manning entity uses the Postgres-NetPolicy pod for database operations.""\n  }\n]']","To secure a microservice for a specific tenant, create a NetworkPolicy that allows only pods from the same tenant's namespaces to access the microservice on a specific port. The policy applies to pods labeled with 'microservice=shopping-cart' and allows access from namespaces labeled as 'tenant=manning'. This example demonstrates how to isolate network traffic between Kubernetes namespaces for multiple tenants using the same cluster.","[{'highlight': 'To secure their microservice, they create the NetworkPolicy resource shown in the following listing.'}, {'highlight': 'This policy applies to pods labeled as microservice= shopping-cart.'}, {'highlight': 'Only pods running in namespaces labeled as tenant=manning are allowed to access the microservice.'}, {'highlight': 'apiVersion: networking.k8s.io/v1 kind: NetworkPolicy metadata: name: shoppingcart-netpolicy spec:'}, {'highlight': 'The NetworkPolicy resource is used to isolate the network between Kubernetes namespaces and secure a microservice for a specific tenant.'}]"
+345,434,0,[],"402
+CHAPTER 13
+Securing cluster nodes and the network
+This NetworkPolicy ensures only pods running in namespaces labeled as tenant:
+manning can access their Shopping Cart microservice, as shown in figure 13.5.
+If the shopping cart provider also wants to give access to other tenants (perhaps to
+one of their partner companies), they can either create an additional NetworkPolicy
+resource or add an additional ingress rule to their existing NetworkPolicy.
+NOTE
+In a multi-tenant Kubernetes cluster, tenants usually can’t add labels
+(or annotations) to their namespaces themselves. If they could, they’d be able
+to circumvent the namespaceSelector-based ingress rules.
+13.4.4 Isolating using CIDR notation
+Instead of specifying a pod- or namespace selector to define who can access the pods
+targeted in the NetworkPolicy, you can also specify an IP block in CIDR notation. For
+example, to allow the shopping-cart pods from the previous section to only be acces-
+sible from IPs in the 192.168.1.1 to .255 range, you’d specify the ingress rule in the
+next listing.
+  ingress:
+  - from:
+    - ipBlock:                    
+        cidr: 192.168.1.0/24      
+Listing 13.24
+Specifying an IP block in an ingress rule: network-policy-cidr.yaml
+app: shopping-cart
+Pod:
+shopping-cart
+Port
+80
+Namespace selector:
+tenant=manning
+Pod selector:
+app=shopping-cart
+Other pods
+Pods
+NetworkPolicy:
+shoppingcart-netpolicy
+Namespace: manningA
+Namespace: ecommerce-ltd
+Other namespaces
+tenant: manning
+Pods
+Namespace: manningB
+tenant: manning
+Figure 13.5
+A NetworkPolicy only allowing pods in namespaces matching a namespaceSelector to access a 
+specific pod.
+This ingress rule only allows traffic from 
+clients in the 192.168.1.0/24 IP block. 
+ 
+",[],"[{'entity': 'NetworkPolicy', 'description': 'A Kubernetes resource that defines network policies for pods.', 'category': 'software'}, {'entity': 'pods', 'description': 'Lightweight and portable containers running on a Node.', 'category': 'container'}, {'entity': 'namespaces', 'description': 'A way to group resources in a Kubernetes cluster.', 'category': 'software'}, {'entity': 'labels', 'description': 'Key-value pairs that can be attached to objects in Kubernetes.', 'category': 'software'}, {'entity': 'annotations', 'description': 'Key-value pairs that can be attached to objects in Kubernetes, but are not used for selection.', 'category': 'software'}, {'entity': 'ingress rule', 'description': 'A NetworkPolicy rule that allows traffic from a specific IP block or pod selector.', 'category': 'software'}, {'entity': 'CIDR notation', 'description': 'A way to specify an IP block in a NetworkPolicy ingress rule.', 'category': 'network'}, {'entity': 'pod selector', 'description': 'A way to select pods based on labels or annotations.', 'category': 'software'}, {'entity': 'namespaceSelector', 'description': 'A way to select namespaces based on labels.', 'category': 'software'}, {'entity': 'shopping-cart microservice', 'description': 'A Kubernetes application that provides a shopping cart service.', 'category': 'application'}, {'entity': 'Kubernetes cluster', 'description': 'A group of machines (nodes) that run containerized applications.', 'category': 'software'}, {'entity': 'Node', 'description': 'A machine in a Kubernetes cluster that runs containers.', 'category': 'hardware'}]","[{'source_entity': 'ingress rule', 'description': 'specifies a set of rules that govern incoming network traffic to a cluster', 'destination_entity': 'Kubernetes cluster'}, {'source_entity': 'annotations', 'description': 'provides additional metadata about an object, such as a pod or service', 'destination_entity': 'pods'}, {'source_entity': 'labels', 'description': 'assigns key-value pairs to identify and select objects within a namespace', 'destination_entity': 'namespaces'}, {'source_entity': 'namespaceSelector', 'description': 'selects a set of namespaces based on label matching criteria', 'destination_entity': 'namespaces'}, {'source_entity': 'pod selector', 'description': 'specifies a set of pods to select based on label matching criteria', 'destination_entity': 'pods'}, {'source_entity': 'NetworkPolicy', 'description': 'defines network traffic rules for a pod or group of pods within a namespace', 'destination_entity': 'pods'}, {'source_entity': 'CIDR notation', 'description': 'specifies a set of IP addresses and their corresponding subnet masks', 'destination_entity': 'NetworkPolicy'}, {'source_entity': 'shopping-cart microservice', 'description': 'a specific service within a Kubernetes cluster that handles shopping cart functionality', 'destination_entity': 'Kubernetes cluster'}]","['[\n  {\n    ""source"": ""ingress rule"",\n    ""destination"": ""Kubernetes cluster"",\n    ""relation_description"": ""specifies a set of rules that govern incoming network traffic to a cluster"",\n    ""summary_er"": ""Ingress rule configures incoming network traffic for a Kubernetes cluster, defining access rules and protocols.""\n  }\n]', '[\n  {\n    ""source"": ""annotations"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides additional metadata"",\n    ""summary_er"": ""Annotations provide extra details about a pod, such as labels or configuration settings.""\n  }\n]', '[\n  {\n    ""source"": ""labels"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assigns key-value pairs to identify and select objects within a namespace"",\n    ""summary_er"": ""Labels are used to assign metadata to pods, allowing for filtering and selection based on specific criteria.""\n  }\n]', '[\n  {\n    ""source"": ""namespaceSelector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""selects a set of namespaces based on label matching criteria"",\n    ""summary_er"": ""This selector matches namespaces that meet specific label criteria, allowing for targeted pod selection.""\n  }\n]', '[\n  {\n    ""source"": ""pod selector"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""specifies a set of pods to select based on label matching criteria"",\n    ""summary_er"": ""The pod selector selects a group of pods that match specific label criteria, allowing for targeted resource allocation and management.""\n  }\n]', '[\n  {\n    ""source"": ""NetworkPolicy"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""defines network traffic rules"",\n    ""summary_er"": ""NetworkPolicy defines network traffic rules for a pod or group of pods within a namespace, controlling incoming and outgoing traffic.""\n  }\n]', '[\n  {\n    ""source"": ""CIDR notation"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies a set of IP addresses and their corresponding subnet masks"",\n    ""summary_er"": ""CIDR notation defines a range of IP addresses and subnet masks for network policies, used to filter traffic between pods.""\n  }\n]', '[\n  {\n    ""source"": ""shopping-cart microservice"",\n    ""destination"": ""Kubernetes cluster"",\n    ""relation_description"": ""a specific service within a Kubernetes cluster that handles shopping cart functionality"",\n    ""summary_er"": ""The shopping-cart microservice is a service within a Kubernetes cluster, responsible for handling shopping cart functionality.""\n  }\n]']","In a multi-tenant Kubernetes cluster, tenants can't add labels to their namespaces themselves. NetworkPolicies ensure only pods running in specific namespaces or IP blocks can access targeted pods. An example ingress rule allows traffic from the 192.168.1.0/24 IP block to access shopping-cart pods.","[{'highlight': 'NetworkPolicy ensures only pods running in namespaces labeled as tenant: manning can access their Shopping Cart microservice.'}, {'highlight': 'Tenants usually can’t add labels (or annotations) to their namespaces themselves, which prevents them from circumventing namespaceSelector-based ingress rules.'}, {'highlight': 'You can specify an IP block in CIDR notation instead of a pod- or namespace selector to define who can access the pods targeted in the NetworkPolicy.'}, {'highlight': 'The ingress rule only allows traffic from clients in the 192.168.1.0/24 IP block.'}, {'highlight': 'A NetworkPolicy only allows pods in namespaces matching a namespaceSelector to access a specific pod.'}]"
+346,435,0,[],"403
+Summary
+13.4.5 Limiting the outbound traffic of a set of pods
+In all previous examples, you’ve been limiting the inbound traffic to the pods that
+match the NetworkPolicy’s pod selector using ingress rules, but you can also limit
+their outbound traffic through egress rules. An example is shown in the next listing.
+spec:
+  podSelector:               
+    matchLabels:             
+      app: webserver         
+  egress:               
+  - to:                       
+    - podSelector:            
+        matchLabels:          
+          app: database       
+The NetworkPolicy in the previous listing allows pods that have the app=webserver
+label to only access pods that have the app=database label and nothing else (neither
+other pods, nor any other IP, regardless of whether it’s internal or external to the
+cluster).
+13.5
+Summary
+In this chapter, you learned about securing cluster nodes from pods and pods from
+other pods. You learned that
+Pods can use the node’s Linux namespaces instead of using their own.
+Containers can be configured to run as a different user and/or group than the
+one defined in the container image.
+Containers can also run in privileged mode, allowing them to access the node’s
+devices that are otherwise not exposed to pods.
+Containers can be run as read-only, preventing processes from writing to the
+container’s filesystem (and only allowing them to write to mounted volumes).
+Cluster-level PodSecurityPolicy resources can be created to prevent users from
+creating pods that could compromise a node.
+PodSecurityPolicy resources can be associated with specific users using RBAC’s
+ClusterRoles and ClusterRoleBindings.
+NetworkPolicy resources are used to limit a pod’s inbound and/or outbound
+traffic.
+In the next chapter, you’ll learn how computational resources available to pods can be
+constrained and how a pod’s quality of service is configured.
+Listing 13.25
+Using egress rules in a NetworkPolicy: network-policy-egress.yaml
+This policy applies to pods with 
+the app=webserver label.
+It limits
+the pods’
+outbound
+traffic.
+Webserver pods may only 
+connect to pods with the 
+app=database label.
+ 
+",[],"[{'entity': 'NetworkPolicy', 'description': 'A Kubernetes resource that defines a set of rules for network traffic', 'category': 'software'}, {'entity': 'podSelector', 'description': 'A selector used to match pods in a NetworkPolicy', 'category': 'software'}, {'entity': 'egress', 'description': 'An egress rule in a NetworkPolicy that limits outbound traffic', 'category': 'software'}, {'entity': 'to', 'description': 'A keyword indicating the destination of an egress rule', 'category': 'software'}, {'entity': 'podSelector', 'description': 'A selector used to match pods in an egress rule', 'category': 'software'}, {'entity': 'matchLabels', 'description': 'A label selector used to match pods in a NetworkPolicy or egress rule', 'category': 'software'}, {'entity': 'app', 'description': 'A label key used to identify applications in a NetworkPolicy or egress rule', 'category': 'software'}, {'entity': 'webserver', 'description': 'An application label used in a NetworkPolicy', 'category': 'software'}, {'entity': 'database', 'description': 'An application label used in an egress rule', 'category': 'software'}, {'entity': 'Linux namespaces', 'description': 'A feature of the Linux kernel that allows processes to run in isolated namespaces', 'category': 'hardware'}, {'entity': 'containers', 'description': 'Lightweight and standalone execution environments for applications', 'category': 'software'}, {'entity': 'node', 'description': 'A machine or virtual machine running a Kubernetes cluster', 'category': 'hardware'}, {'entity': 'devices', 'description': 'Hardware components that can be accessed by containers in privileged mode', 'category': 'hardware'}, {'entity': 'filesystem', 'description': 'A hierarchical organization of files and directories on a storage device', 'category': 'software'}, {'entity': 'volumes', 'description': 'Persistent storage devices that can be mounted to containers', 'category': 'software'}, {'entity': 'PodSecurityPolicy', 'description': 'A Kubernetes resource that defines security policies for pods', 'category': 'software'}, {'entity': 'ClusterRoles', 'description': 'Kubernetes resources that define roles and permissions for users in a cluster', 'category': 'software'}, {'entity': 'ClusterRoleBindings', 'description': 'Kubernetes resources that bind ClusterRoles to users or groups in a cluster', 'category': 'software'}, {'entity': 'NetworkPolicy', 'description': 'A Kubernetes resource that defines a set of rules for network traffic', 'category': 'software'}]","[{'source_entity': '""PodSecurityPolicy""', 'description': 'defines', 'destination_entity': '""database""'}, {'source_entity': '""app""', 'description': 'uses', 'destination_entity': '""database""'}, {'source_entity': '""NetworkPolicy""', 'description': 'regulates', 'destination_entity': '""egress""'}, {'source_entity': '""podSelector""', 'description': 'selects', 'destination_entity': '""containers""'}, {'source_entity': '""node""', 'description': 'hosts', 'destination_entity': '""containers""'}, {'source_entity': '""containers""', 'description': 'accesses', 'destination_entity': '""devices""'}, {'source_entity': '""matchLabels""', 'description': 'labels', 'destination_entity': '""webserver""'}, {'source_entity': '""Linux namespaces""', 'description': 'isolates', 'destination_entity': '""filesystem""'}, {'source_entity': '""volumes""', 'description': 'mounts', 'destination_entity': '""filesystem""'}, {'source_entity': '""ClusterRoles""', 'description': 'assigns', 'destination_entity': '""ClusterRoleBindings""'}, {'source_entity': '""to""', 'description': 'binds', 'destination_entity': '""ClusterRoleBindings""'}]","['[\n  {\n    ""source"": ""PodSecurityPolicy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A PodSecurityPolicy defines the security parameters for a pod, including user IDs, supplemental groups, and capabilities.""\n  }\n]', '[\n  {\n    ""source"": ""app"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The \'app\' entity utilizes a \'pod\' to execute its functionality.""\n  },\n  {\n    ""source"": ""app"",\n    ""destination"": ""database"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The \'app\' entity leverages the \'database\' for data storage and retrieval purposes.""\n  }\n]', '[\n  {\n    ""source"": ""NetworkPolicy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""regulates"",\n    ""summary_er"": ""A Network Policy regulates traffic to and from a pod, controlling egress and ingress rules.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""podSelector"",\n    ""relation_description"": ""selects"",\n    ""summary_er"": ""A PodSelector is used to select a set of Pods based on labels and other criteria, allowing for efficient resource allocation.""\n  },\n  {\n    ""source"": ""Container"",\n    ""destination"": ""containers"",\n    ""relation_description"": ""list of"",\n    ""summary_er"": ""In Kubernetes, containers are the smallest deployable units that can be executed in a Pod, and are listed under the \'Containers\' section.""\n  }\n]', '[\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""A node in a Kubernetes cluster can host one or more pods, providing them with resources and infrastructure.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""container"",\n    ""relation_description"": ""containers"",\n    ""summary_er"": ""A pod in a Kubernetes cluster can contain one or more containers, which are the actual running applications.""\n  }\n]', '[\n  {\n    ""source"": ""containers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""accesses"",\n    ""summary_er"": ""A container has access to a pod\'s resources and can communicate with it.""\n  },\n  {\n    ""source"": ""devices"",\n    ""destination"": ""container"",\n    ""relation_description"": ""is attached to"",\n    ""summary_er"": ""A device is attached to a container, providing it with input/output capabilities.""\n  }\n]', '[\n  {\n    ""source"": ""matchLabels"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""labels"",\n    ""summary_er"": ""The matchLabels field in a Kubernetes pod specification defines key-value pairs that are used to select and identify the pod.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""webserver"",\n    ""relation_description"": ""deployment"",\n    ""summary_er"": ""A webserver is a type of pod in Kubernetes that serves HTTP requests, typically running a web application or service.""\n  }\n]', '[\n  {\n    ""source"": ""Linux namespaces"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""isolates"",\n    ""summary_er"": ""Linux namespaces isolate a pod\'s filesystem, creating a separate namespace for each process to run in.""\n  },\n  {\n    ""source"": ""filesystem"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""A pod\'s filesystem is isolated from other pods and the host machine, ensuring each process runs independently.""\n  }\n]', '[\n  {\n    ""source"": ""volumes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""mounts"",\n    ""summary_er"": ""A volume is mounted to a pod, providing it with access to a filesystem.""\n  }\n]', '[\n  {\n    ""source"": ""ClusterRoles"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assigns"",\n    ""summary_er"": ""ClusterRoles assign permissions to pods, defining what actions a pod can perform within a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""to"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""binds"",\n    ""summary_er"": ""A ClusterRoleBinding binds a ClusterRole to a user, service account, or group. This allows the bound entity to perform actions defined in the ClusterRole.""\n  }\n]']","In this chapter, Network Policies are used to limit a pod's inbound and outbound traffic. Egress rules allow limiting outbound traffic of a set of pods by specifying which pods they can connect to. PodSecurityPolicy resources can be created to prevent users from creating pods that could compromise a node. Cluster-level policies can be associated with specific users using RBAC's ClusterRoles and ClusterRoleBindings.","[{'highlight': 'NetworkPolicy can limit outbound traffic of a set of pods through egress rules.'}, {'highlight': 'Egress rules allow pods to access specific pods or IP addresses, but not others.'}, {'highlight': 'Pods can be configured to run as different user and/or group than the one defined in the container image.'}, {'highlight': 'Cluster-level PodSecurityPolicy resources can be created to prevent users from creating pods that could compromise a node.'}, {'highlight': ""NetworkPolicy resources are used to limit a pod's inbound and/or outbound traffic.""}]"
+347,436,0,[],"404
+Managing pods’
+ computational resources
+Up to now you’ve created pods without caring about how much CPU and memory
+they’re allowed to consume. But as you’ll see in this chapter, setting both how
+much a pod is expected to consume and the maximum amount it’s allowed to con-
+sume is a vital part of any pod definition. Setting these two sets of parameters
+makes sure that a pod takes only its fair share of the resources provided by the
+Kubernetes cluster and also affects how pods are scheduled across the cluster.
+This chapter covers
+Requesting CPU, memory, and other 
+computational resources for containers
+Setting a hard limit for CPU and memory
+Understanding Quality of Service guarantees for 
+pods
+Setting default, min, and max resources for pods 
+in a namespace
+Limiting the total amount of resources available 
+in a namespace
+ 
+",[],"[{'entity': 'Pods', 'description': 'A pod is a logical host in Kubernetes that can contain one or more containers.', 'category': 'Container'}]","[{'source_entity': '""Pods""', 'description': '""represents a single instance of a running process in your cluster""', 'destination_entity': '""cluster""'}, {'source_entity': '""Pods""', 'description': '""can be created or deleted as needed by the application""', 'destination_entity': '""application""'}]","['[\n  {\n    ""source"": ""Pods"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""represents a single instance of a running process in your cluster"",\n    ""summary_er"": ""A pod represents a single instance of a running process, such as an application or service, within a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""Pods"",\n    ""destination"": ""cluster"",\n    ""relation_description"": ""represents a single instance of a running process in your cluster"",\n    ""summary_er"": ""A pod is a part of a larger Kubernetes cluster, which manages and orchestrates multiple pods to run applications and services.""\n  }\n]', '[\n  {\n    ""source"": ""Pods"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be created or deleted as needed by the application"",\n    ""summary_er"": ""Pods can dynamically create or delete pods to match application needs.""\n  }\n]']","This chapter covers requesting CPU and memory computational resources for containers, setting hard limits, understanding Quality of Service guarantees for pods, and limiting total resources in a namespace.","[{'highlight': ""Managing pods' computational resources is a vital part of any pod definition.""}, {'highlight': 'Setting parameters makes sure that a pod takes only its fair share of the resources provided by the Kubernetes cluster.'}, {'highlight': 'Requesting CPU, memory, and other computational resources for containers is covered in this chapter.'}, {'highlight': 'Understanding Quality of Service guarantees for pods is an important aspect of resource management.'}, {'highlight': 'Limiting the total amount of resources available in a namespace is crucial for efficient cluster usage.'}]"
+348,437,0,[],"405
+Requesting resources for a pod’s containers
+14.1
+Requesting resources for a pod’s containers
+When creating a pod, you can specify the amount of CPU and memory that a con-
+tainer needs (these are called requests) and a hard limit on what it may consume
+(known as limits). They’re specified for each container individually, not for the pod as
+a whole. The pod’s resource requests and limits are the sum of the requests and lim-
+its of all its containers. 
+14.1.1 Creating pods with resource requests
+Let’s look at an example pod manifest, which has the CPU and memory requests spec-
+ified for its single container, as shown in the following listing.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: requests-pod
+spec:
+  containers:
+  - image: busybox
+    command: [""dd"", ""if=/dev/zero"", ""of=/dev/null""]
+    name: main              
+    resources:              
+      requests:             
+        cpu: 200m          
+        memory: 10Mi    
+In the pod manifest, your single container requires one-fifth of a CPU core (200 mil-
+licores) to run properly. Five such pods/containers can run sufficiently fast on a single
+CPU core. 
+ When you don’t specify a request for CPU, you’re saying you don’t care how much
+CPU time the process running in your container is allotted. In the worst case, it may
+not get any CPU time at all (this happens when a heavy demand by other processes
+exists on the CPU). Although this may be fine for low-priority batch jobs, which aren’t
+time-critical, it obviously isn’t appropriate for containers handling user requests.
+ In the pod spec, you’re also requesting 10 mebibytes of memory for the container.
+By doing that, you’re saying that you expect the processes running inside the con-
+tainer to use at most 10 mebibytes of RAM. They might use less, but you’re not expect-
+ing them to use more than that in normal circumstances. Later in this chapter you’ll
+see what happens if they do.
+ Now you’ll run the pod. When the pod starts, you can take a quick look at the pro-
+cess’ CPU consumption by running the top command inside the container, as shown
+in the following listing.
+Listing 14.1
+A pod with resource requests: requests-pod.yaml
+You’re specifying resource 
+requests for the main container.
+The container requests 200 
+millicores (that is, 1/5 of a 
+single CPU core’s time).
+The container also
+requests 10 mebibytes
+of memory.
+ 
+",[],"[{'entity': 'CPU', 'description': 'Central Processing Unit', 'category': 'hardware'}, {'entity': 'memory', 'description': 'Random Access Memory', 'category': 'hardware'}, {'entity': 'pod', 'description': 'A group of one or more containers running on a single host', 'category': 'container'}, {'entity': 'container', 'description': 'A lightweight and standalone executable package of software', 'category': 'container'}, {'entity': 'requests-pod', 'description': 'A pod manifest with resource requests specified for its single container', 'category': 'application'}, {'entity': 'busybox', 'description': 'A minimal Linux distribution used as a base image for containers', 'category': 'image'}, {'entity': 'dd', 'description': 'A command-line utility for copying data', 'category': 'command'}, {'entity': 'if=/dev/zero', 'description': 'A file descriptor pointing to the /dev/zero device, which generates zeros on demand', 'category': 'filedescriptor'}, {'entity': 'of=/dev/null', 'description': 'A file descriptor pointing to /dev/null, which discards any data written to it', 'category': 'filedescriptor'}, {'entity': 'apiVersion', 'description': 'The version of the API being used', 'category': 'key'}, {'entity': 'kind', 'description': 'The type of resource being created', 'category': 'key'}, {'entity': 'metadata', 'description': 'Metadata about the pod, such as its name and labels', 'category': 'object'}, {'entity': 'spec', 'description': 'The specification for the pod, including its containers and resources', 'category': 'object'}, {'entity': 'containers', 'description': 'A list of containers in the pod', 'category': 'key'}, {'entity': 'image', 'description': 'The base image used to create a container', 'category': 'key'}, {'entity': 'command', 'description': 'The command to run inside the container', 'category': 'key'}, {'entity': 'resources', 'description': 'The resources requested by the container, such as CPU and memory', 'category': 'object'}, {'entity': 'requests', 'description': 'The amount of resources requested by the container', 'category': 'key'}]","[{'source_entity': '""requests-pod""', 'description': 'allocates', 'destination_entity': '""resources""'}, {'source_entity': '""requests-pod""', 'description': 'specifies', 'destination_entity': '""memory""'}, {'source_entity': '""requests-pod""', 'description': 'specifies', 'destination_entity': '""CPU""'}, {'source_entity': '""kind""', 'description': 'defines', 'destination_entity': '""container""'}, {'source_entity': '""container""', 'description': 'uses', 'destination_entity': '""image""'}, {'source_entity': '""spec""', 'description': 'contains', 'destination_entity': '""containers""'}, {'source_entity': '""containers""', 'description': 'includes', 'destination_entity': '""command""'}, {'source_entity': '""pod""', 'description': 'has', 'destination_entity': '""metadata""'}, {'source_entity': '""busybox""', 'description': 'is used as', 'destination_entity': '""image""'}]","['[\n  {\n    ""source"": ""requests-pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allocates"",\n    ""summary_er"": ""The requests-pod entity allocates resources to a pod, indicating a relationship between resource allocation and container deployment.""\n  }\n]', '[\n  {\n    ""source"": ""requests-pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The requests-pod entity specifies a pod in Kubernetes, which is a containerized application.""\n  },\n  {\n    ""source"": ""memory"",\n    ""destination"": ""requests-pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""Memory resource allocated to the requests-pod entity in Docker.""\n  }\n]', '[\n  {\n    ""source"": ""requests-pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The requests-pod entity specifies a pod in Kubernetes, which is a containerized application.""\n  },\n  {\n    ""source"": ""CPU"",\n    ""destination"": ""resource"",\n    ""relation_description"": ""allocates"",\n    ""summary_er"": ""The CPU resource allocates processing power to the system, ensuring efficient execution of tasks.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""In Kubernetes, a Pod is defined as a logical host for one or more application containers.""\n  },\n  {\n    ""source"": ""Docker"",\n    ""destination"": ""Container"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A Docker container is defined as a lightweight and portable package of an application and its dependencies.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A container utilizes a pod as its execution environment, leveraging the pod\'s resources and isolation features.""\n  },\n  {\n    ""source"": ""image"",\n    ""destination"": ""container"",\n    ""relation_description"": ""for"",\n    ""summary_er"": ""An image serves as the foundation for creating a container, providing the necessary code and dependencies.""\n  }\n]', '[\n  {\n    ""source"": ""spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""The Pod specification defines a container that runs within it, encapsulating its own resources and lifecycle.""\n  },\n  {\n    ""source"": ""containers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs within"",\n    ""summary_er"": ""A container is a lightweight and portable executable that runs within the pod\'s resource constraints.""\n  }\n]', '[\n  {\n    ""source"": ""containers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""includes"",\n    ""summary_er"": ""A container is included in a pod, which is a logical host for multiple containers.""\n  },\n  {\n    ""source"": ""command"",\n    ""destination"": """",\n    ""relation_description"": """",\n    ""summary_er"": """"\n  }\n]', '[{""source"": ""pod"", ""destination"": ""pod"", ""relation_description"": ""has"", ""summary_er"": ""A Kubernetes Pod is a logical host for one or more containers that share resources, such as memory and CPU.""}, {""source"": ""metadata"", ""destination"": ""pod"", ""relation_description"": ""of"", ""summary_er"": ""Metadata provides information about the pod, including its name, namespace, and labels.""}]', '[\n  {\n    ""source"": ""busybox"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used as"",\n    ""summary_er"": ""Busybox is a minimal Linux distribution used as an image for a pod.""\n  }\n]']","When creating a pod, you can specify resource requests and limits for each container individually. The pod's total resources are the sum of all containers' requests and limits. Requests define the minimum amount of CPU and memory a container needs, while limits set a hard limit on what it may consume.","[{'highlight': 'When creating a pod, you can specify the amount of CPU and memory that a container needs (these are called requests) and a hard limit on what it may consume (known as limits).'}, {'highlight': ""The pod's resource requests and limits are the sum of the requests and limits of all its containers.""}, {'highlight': 'In the pod manifest, your single container requires one-fifth of a CPU core (200 millicores) to run properly.'}, {'highlight': ""By doing that, you're saying that you expect the processes running inside the container to use at most 10 mebibytes of RAM.""}, {'highlight': ""The container requests 200 millicores (that is, 1/5 of a single CPU core's time) and also requests 10 mebibytes of memory.""}]"
+349,438,0,[],"406
+CHAPTER 14
+Managing pods’ computational resources
+$ kubectl exec -it requests-pod top
+Mem: 1288116K used, 760368K free, 9196K shrd, 25748K buff, 814840K cached
+CPU:  9.1% usr 42.1% sys  0.0% nic 48.4% idle  0.0% io  0.0% irq  0.2% sirq
+Load average: 0.79 0.52 0.29 2/481 10
+  PID  PPID USER     STAT   VSZ %VSZ CPU %CPU COMMAND
+    1     0 root     R     1192  0.0   1 50.2 dd if /dev/zero of /dev/null
+    7     0 root     R     1200  0.0   0  0.0 top
+The dd command you’re running in the container consumes as much CPU as it can,
+but it only runs a single thread so it can only use a single core. The Minikube VM,
+which is where this example is running, has two CPU cores allotted to it. That’s why
+the process is shown consuming 50% of the whole CPU. 
+ Fifty percent of two cores is obviously one whole core, which means the container
+is using more than the 200 millicores you requested in the pod specification. This is
+expected, because requests don’t limit the amount of CPU a container can use. You’d
+need to specify a CPU limit to do that. You’ll try that later, but first, let’s see how spec-
+ifying resource requests in a pod affects the scheduling of the pod.
+14.1.2 Understanding how resource requests affect scheduling
+By specifying resource requests, you’re specifying the minimum amount of resources
+your pod needs. This information is what the Scheduler uses when scheduling the pod
+to a node. Each node has a certain amount of CPU and memory it can allocate to
+pods. When scheduling a pod, the Scheduler will only consider nodes with enough
+unallocated resources to meet the pod’s resource requirements. If the amount of
+unallocated CPU or memory is less than what the pod requests, Kubernetes will not
+schedule the pod to that node, because the node can’t provide the minimum amount
+required by the pod.
+UNDERSTANDING HOW THE SCHEDULER DETERMINES IF A POD CAN FIT ON A NODE
+What’s important and somewhat surprising here is that the Scheduler doesn’t look at
+how much of each individual resource is being used at the exact time of scheduling
+but at the sum of resources requested by the existing pods deployed on the node.
+Even though existing pods may be using less than what they’ve requested, scheduling
+another pod based on actual resource consumption would break the guarantee given
+to the already deployed pods.
+ This is visualized in figure 14.1. Three pods are deployed on the node. Together,
+they’ve requested 80% of the node’s CPU and 60% of the node’s memory. Pod D,
+shown at the bottom right of the figure, cannot be scheduled onto the node because it
+requests 25% of the CPU, which is more than the 20% of unallocated CPU. The fact
+that the three pods are currently using only 70% of the CPU makes no difference.
+Listing 14.2
+Examining CPU and memory usage from within a container
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command to execute a command inside a pod', 'category': 'software'}, {'entity': 'exec', 'description': 'option to execute a command inside a pod', 'category': 'software'}, {'entity': 'requests-pod', 'description': 'pod name', 'category': 'container'}, {'entity': 'Mem', 'description': 'memory usage metric', 'category': 'process'}, {'entity': 'CPU', 'description': 'cpu usage metric', 'category': 'process'}, {'entity': 'dd', 'description': 'command to consume CPU resources', 'category': 'software'}, {'entity': 'top', 'description': 'command to display system information', 'category': 'software'}, {'entity': 'Minikube VM', 'description': 'virtual machine used for testing', 'category': 'hardware'}, {'entity': 'Scheduler', 'description': 'component responsible for scheduling pods', 'category': 'process'}, {'entity': 'node', 'description': 'physical or virtual machine running Kubernetes', 'category': 'hardware'}, {'entity': 'pod D', 'description': 'pod name', 'category': 'container'}, {'entity': 'CPU cores', 'description': 'resource metric', 'category': 'process'}, {'entity': 'millicores', 'description': 'unit of CPU resource measurement', 'category': 'software'}]","[{'source_entity': '""requests-pod""', 'description': 'is scheduled by', 'destination_entity': '""Scheduler""'}, {'source_entity': '""Scheduler""', 'description': 'allocates resources to', 'destination_entity': '""pod D""'}, {'source_entity': '""exec""', 'description': 'executes on', 'destination_entity': '""node""'}, {'source_entity': '""kubectl""', 'description': 'queries resource usage of', 'destination_entity': '""requests-pod""'}, {'source_entity': '""top""', 'description': 'displays resource usage of', 'destination_entity': '""requests-pod""'}, {'source_entity': '""Minikube VM""', 'description': 'hosts', 'destination_entity': '""node""'}, {'source_entity': '""dd""', 'description': 'transfers data to', 'destination_entity': '""requests-pod""'}]","['[\n  {\n    ""source"": ""requests-pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is scheduled by"",\n    ""summary_er"": ""The requests-pod is scheduled by the Scheduler, which manages pod creation and allocation.""\n  }\n]', '[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""pod D"",\n    ""relation_description"": ""allocates resources to"",\n    ""summary_er"": ""The Scheduler allocates resources to pod D, ensuring efficient resource utilization and optimal performance.""\n  }\n]', '[\n  {\n    ""source"": ""exec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes on"",\n    ""summary_er"": ""The exec command runs a process within a container, executing on a pod in Kubernetes.""\n  },\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs on"",\n    ""summary_er"": ""A node in the cluster runs a pod, providing resources and execution environment for the pod\'s processes.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""queries resource usage of"",\n    ""summary_er"": ""Kubectl uses Kubernetes API to query resource usage of a pod, allowing for monitoring and management of containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""top"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays resource usage of"",\n    ""summary_er"": ""The top command displays system resource usage, including CPU and memory consumption, for a specified pod.""\n  },\n  {\n    ""source"": ""requests-pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""resource usage"",\n    ""summary_er"": ""Requests to the pod result in increased resource usage, such as CPU and memory allocation.""\n  }\n]', '[\n  {\n    ""source"": ""Minikube VM"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""The Minikube VM serves as a host for running Kubernetes pods, providing a lightweight and portable environment for containerized applications.""\n  }\n]', '[{\n    ""source"": ""dd"",\n    ""destination"": ""requests-pod"",\n    ""relation_description"": ""transfers data to"",\n    ""summary_er"": ""\\""DD\\"" is transferring data to \\""requests-pod\\"", which implies that \\""DD\\"" is providing input or resources to the \\""requests-pod\\"" for processing.""\n}]']","The Kubernetes Scheduler determines if a pod can fit on a node based on the sum of resources requested by existing pods, not actual resource consumption. A pod's resource requests specify its minimum requirements, and scheduling is denied if unallocated resources are insufficient to meet these requirements. Requests don't limit CPU usage, but specifying a CPU limit does.","[{'highlight': 'The dd command you’re running in the container consumes as much CPU as it can, but it only runs a single thread so it can only use a single core.'}, {'highlight': 'Specifying resource requests in a pod specifies the minimum amount of resources your pod needs, which is what the Scheduler uses when scheduling the pod to a node.'}, {'highlight': 'The Scheduler doesn’t look at how much of each individual resource is being used at the exact time of scheduling but at the sum of resources requested by the existing pods deployed on the node.'}, {'highlight': 'Pods are scheduled based on their resource requests, not actual consumption, to maintain guarantees given to already deployed pods.'}, {'highlight': 'To limit a container’s CPU usage, you need to specify a CPU limit in the pod specification, which is different from specifying a resource request.'}]"

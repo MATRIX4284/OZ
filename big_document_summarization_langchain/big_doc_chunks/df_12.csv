@@ -1,0 +1,527 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+120,209,0,[],"177
+Decoupling pods from the underlying storage technology
+Instead of the developer adding a technology-specific volume to their pod, it’s the
+cluster administrator who sets up the underlying storage and then registers it in
+Kubernetes by creating a PersistentVolume resource through the Kubernetes API
+server. When creating the PersistentVolume, the admin specifies its size and the access
+modes it supports. 
+ When a cluster user needs to use persistent storage in one of their pods, they first
+create a PersistentVolumeClaim manifest, specifying the minimum size and the access
+mode they require. The user then submits the PersistentVolumeClaim manifest to the
+Kubernetes API server, and Kubernetes finds the appropriate PersistentVolume and
+binds the volume to the claim. 
+ The PersistentVolumeClaim can then be used as one of the volumes inside a pod.
+Other users cannot use the same PersistentVolume until it has been released by delet-
+ing the bound PersistentVolumeClaim.
+6.5.2
+Creating a PersistentVolume
+Let’s revisit the MongoDB example, but unlike before, you won’t reference the GCE
+Persistent Disk in the pod directly. Instead, you’ll first assume the role of a cluster
+administrator and create a PersistentVolume backed by the GCE Persistent Disk. Then
+you’ll assume the role of the application developer and first claim the PersistentVol-
+ume and then use it inside your pod.
+ In section 6.4.1 you set up the physical storage by provisioning the GCE Persistent
+Disk, so you don’t need to do that again. All you need to do is create the Persistent-
+Volume resource in Kubernetes by preparing the manifest shown in the following list-
+ing and posting it to the API server.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongodb-pv
+spec:
+  capacity:                  
+    storage: 1Gi             
+  accessModes:                              
+  - ReadWriteOnce                           
+  - ReadOnlyMany                            
+  persistentVolumeReclaimPolicy: Retain    
+  gcePersistentDisk:                      
+    pdName: mongodb                       
+    fsType: ext4                          
+Listing 6.9
+A gcePersistentDisk PersistentVolume: mongodb-pv-gcepd.yaml
+Defining the 
+PersistentVolume’s size
+It can either be mounted by a single 
+client for reading and writing or by 
+multiple clients for reading only.
+After the claim is released, 
+the PersistentVolume 
+should be retained (not 
+erased or deleted).
+The PersistentVolume is 
+backed by the GCE Persistent 
+Disk you created earlier.
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'PersistentVolume', 'description': 'Resource representing a storage resource', 'category': 'software'}, {'entity': 'PersistentVolumeClaim', 'description': 'Request for a PersistentVolume', 'category': 'software'}, {'entity': 'Pod', 'description': 'Lightweight and portable container', 'category': 'software'}, {'entity': 'Cluster administrator', 'description': 'User responsible for setting up storage resources', 'category': 'role'}, {'entity': 'Application developer', 'description': 'User responsible for using persistent storage', 'category': 'role'}, {'entity': 'GCE Persistent Disk', 'description': 'Google Cloud Storage resource', 'category': 'hardware'}, {'entity': 'MongoDB', 'description': 'NoSQL database system', 'category': 'software'}, {'entity': 'PersistentVolumeReclaimPolicy', 'description': 'Policy for reclaiming a PersistentVolume', 'category': 'software'}, {'entity': 'ReadWriteOnce', 'description': 'Access mode for a PersistentVolume', 'category': 'access mode'}, {'entity': 'ReadOnlyMany', 'description': 'Access mode for a PersistentVolume', 'category': 'access mode'}]","[{'source_entity': 'Cluster administrator', 'description': 'provisions', 'destination_entity': 'GCE Persistent Disk'}, {'source_entity': 'Cluster administrator', 'description': 'configures', 'destination_entity': 'ReadOnlyMany'}, {'source_entity': 'Application developer', 'description': 'deploys', 'destination_entity': 'Pod'}, {'source_entity': 'Application developer', 'description': 'integrates with', 'destination_entity': 'MongoDB'}, {'source_entity': 'Cluster administrator', 'description': 'manages', 'destination_entity': 'PersistentVolumeClaim'}, {'source_entity': 'Cluster administrator', 'description': 'allocates', 'destination_entity': 'ReadWriteOnce'}, {'source_entity': 'Kubernetes', 'description': 'utilizes', 'destination_entity': 'PersistentVolume'}, {'source_entity': 'Kubernetes', 'description': 'implements', 'destination_entity': 'PersistentVolumeReclaimPolicy'}]","['[\n  {\n    ""source"": ""Cluster administrator"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provisions"",\n    ""summary_er"": ""The cluster administrator configures and manages pods, ensuring they have necessary resources to run.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""GCE Persistent Disk"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Pods utilize GCE Persistent Disks for persistent storage, allowing data to be retained even after pod termination.""\n  }\n]', '[\n  {\n    ""source"": ""Cluster administrator"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures"",\n    ""summary_er"": ""The cluster administrator sets up configurations for a pod, ensuring it runs smoothly and efficiently.""\n  }\n]', '[\n  {\n    ""source"": ""Application Developer"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""An application developer creates a pod by deploying their application code within it, ensuring efficient execution and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""Application developer"",\n    ""destination"": ""MongoDB"",\n    ""relation_description"": ""integrates with"",\n    ""summary_er"": ""The application developer uses MongoDB as a database to store and manage data, integrating it into their application for seamless functionality.""\n  }\n]', '[\n  {\n    ""source"": ""Cluster administrator"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The cluster administrator oversees and controls the lifecycle of a pod, ensuring it runs smoothly and efficiently.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""PersistentVolumeClaim"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A pod utilizes a Persistent Volume Claim to store and retrieve data persistently across restarts and terminations.""\n  }\n]', '[\n  {\n    ""source"": ""Cluster administrator"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allocates"",\n    ""summary_er"": ""The cluster administrator assigns storage permissions to a pod, allowing it to read and write data once.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""utilizes"",\n    ""summary_er"": ""Kubernetes manages and orchestrates containers, utilizing pods to run applications.""\n  },\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""PersistentVolume"",\n    ""relation_description"": ""utilizes"",\n    ""summary_er"": ""Kubernetes utilizes Persistent Volumes to provide persistent storage for applications.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""implements"",\n    ""summary_er"": ""Kubernetes manages pods, which are the basic execution units in a containerized application. Pods can be scaled and managed by Kubernetes.""\n  },\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""PersistentVolumeReclaimPolicy"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""Kubernetes Persistent Volume Reclaim Policy determines how persistent volumes are reclaimed when a pod is deleted or terminated.""\n  }\n]']","A cluster administrator creates a PersistentVolume resource through the Kubernetes API server, specifying its size and access modes. A user then creates a PersistentVolumeClaim manifest, specifying their required size and access mode, which is bound to an existing PersistentVolume. The volume can be used in a pod, but other users cannot use it until the claim is released.","[{'highlight': 'Decoupling pods from underlying storage technology allows cluster administrators to set up and register storage in Kubernetes, while users create PersistentVolumeClaims for their needs.'}, {'highlight': 'PersistentVolumes are created through the Kubernetes API server with specified size and access modes, and can be bound to PersistentVolumeClaims by users.'}, {'highlight': 'Users cannot reuse a PersistentVolume until its associated PersistentVolumeClaim is deleted.'}, {'highlight': ""A PersistentVolume's capacity can be set to 1Gi storage with accessModes of ReadWriteOnce or ReadOnlyMany.""}, {'highlight': 'The PersistentVolumeReclaimPolicy can be set to Retain, ensuring the volume is not erased or deleted after a claim is released.'}]"
+121,210,0,[],"178
+CHAPTER 6
+Volumes: attaching disk storage to containers
+NOTE
+If you’re using Minikube, create the PV using the mongodb-pv-host-
+path.yaml file.
+When creating a PersistentVolume, the administrator needs to tell Kubernetes what its
+capacity is and whether it can be read from and/or written to by a single node or by
+multiple nodes at the same time. They also need to tell Kubernetes what to do with the
+PersistentVolume when it’s released (when the PersistentVolumeClaim it’s bound to is
+deleted). And last, but certainly not least, they need to specify the type, location, and
+other properties of the actual storage this PersistentVolume is backed by. If you look
+closely, this last part is exactly the same as earlier, when you referenced the GCE Per-
+sistent Disk in the pod volume directly (shown again in the following listing).
+spec:
+  volumes:                       
+  - name: mongodb-data           
+    gcePersistentDisk:           
+      pdName: mongodb            
+      fsType: ext4               
+  ...
+After you create the PersistentVolume with the kubectl create command, it should
+be ready to be claimed. See if it is by listing all PersistentVolumes:
+$ kubectl get pv
+NAME         CAPACITY   RECLAIMPOLICY   ACCESSMODES   STATUS      CLAIM
+mongodb-pv   1Gi        Retain          RWO,ROX       Available   
+NOTE
+Several columns are omitted. Also, pv is used as a shorthand for
+persistentvolume.
+As expected, the PersistentVolume is shown as Available, because you haven’t yet cre-
+ated the PersistentVolumeClaim. 
+NOTE
+PersistentVolumes don’t belong to any namespace (see figure 6.7).
+They’re cluster-level resources like nodes.
+Listing 6.10
+Referencing a GCE PD in a pod’s volume
+ 
+",[],"[{'entity': 'Minikube', 'description': 'A tool for running Kubernetes locally on a single machine.', 'category': 'software'}, {'entity': 'PersistentVolume', 'description': 'A cluster-level resource that provides storage to containers.', 'category': 'database'}, {'entity': 'kubectl', 'description': 'A command-line tool for interacting with Kubernetes clusters.', 'category': 'software'}, {'entity': 'PersistentVolumeClaim', 'description': 'A request for storage resources from a PersistentVolume.', 'category': 'database'}, {'entity': 'GCE Persistent Disk', 'description': 'A cloud-based disk storage service provided by Google Cloud Platform.', 'category': 'cloud storage'}, {'entity': 'pdName', 'description': 'The name of a GCE Persistent Disk.', 'category': 'parameter'}, {'entity': 'fsType', 'description': 'The file system type used by a PersistentVolume.', 'category': 'parameter'}, {'entity': 'ext4', 'description': 'A journaling file system for Linux.', 'category': 'file system'}, {'entity': 'RWO,ROX', 'description': 'Access modes for a PersistentVolume.', 'category': 'parameter'}, {'entity': 'Retain', 'description': 'A reclaim policy for a PersistentVolume.', 'category': 'parameter'}, {'entity': 'RWO,ROX', 'description': 'Access modes for a PersistentVolume.', 'category': 'parameter'}]","[{'source_entity': '""GCE Persistent Disk""', 'description': 'provides', 'destination_entity': '""fsType""'}, {'source_entity': '""fsType""', 'description': 'supports', 'destination_entity': '""RWO,ROX""'}, {'source_entity': '""kubectl""', 'description': 'manages', 'destination_entity': '""PersistentVolumeClaim""'}, {'source_entity': '""PersistentVolumeClaim""', 'description': 'requests', 'destination_entity': '""GCE Persistent Disk""'}, {'source_entity': '""pdName""', 'description': 'identifies', 'destination_entity': '""GCE Persistent Disk""'}, {'source_entity': '""ext4""', 'description': 'uses as', 'destination_entity': '""fsType""'}, {'source_entity': '""Retain""', 'description': 'specifies the', 'destination_entity': '""PersistentVolume""'}, {'source_entity': '""Minikube""', 'description': 'runs on', 'destination_entity': '""PersistentVolume""'}]","['[\n  {\n    ""source"": ""GCE Persistent Disk"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""A GCE Persistent Disk provides storage for a Kubernetes pod.""\n  }\n]', '[\n  {\n    ""source"": ""fsType"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""supports"",\n    ""summary_er"": ""The fsType field in a Kubernetes Pod supports read-write-once (RWO) and read-only-execute (ROX) file systems.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) manages and controls pods in a cluster.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""PersistentVolumeClaim"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) manages Persistent Volume Claims, which provide storage resources to pods.""\n  }\n]', '[\n  {\n    ""source"": ""PersistentVolumeClaim"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""A Persistent Volume Claim (PVC) requests storage resources from a pod, ensuring it has sufficient disk space for its needs.""\n  },\n  {\n    ""source"": ""GCE Persistent Disk"",\n    ""destination"": ""PersistentVolumeClaim"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""A GCE Persistent Disk provides persistent storage to a Persistent Volume Claim (PVC), allowing it to store data even after the pod is deleted.""\n  }\n]', '[\n  {\n    ""source"": ""pdName"",\n    ""destination"": ""GCE Persistent Disk"",\n    ""relation_description"": ""identifies"",\n    ""summary_er"": ""The pdName identifies a GCE Persistent Disk, which is a cloud-based storage solution for Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""ext4"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses as"",\n    ""summary_er"": ""The ext4 file system uses a pod to manage its storage and data.""\n  },\n  {\n    ""source"": ""fsType"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses as"",\n    ""summary_er"": ""The fsType parameter specifies the type of file system used by a pod, which can be ext4 among others.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""PersistentVolume"",\n    ""relation_description"": ""retain"",\n    ""summary_er"": ""A Pod retains a Persistent Volume, ensuring data persistence across restarts and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""Minikube"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs on"",\n    ""summary_er"": ""Minikube, a Kubernetes cluster manager, runs its control plane and worker nodes as pods.""\n  },\n  {\n    ""source"": ""Minikube"",\n    ""destination"": ""PersistentVolume"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Minikube utilizes Persistent Volumes to store data persistently across pod restarts or deletion.""\n  }\n]']","A PersistentVolume is created by specifying its capacity, access modes, and storage type. The administrator can then claim the PV with a PersistentVolumeClaim, which allows a container to read from or write to it. A PV is cluster-level resource like nodes and doesn't belong to any namespace. It's created with kubectl create command and shown as Available until claimed.","[{'highlight': 'When creating a PersistentVolume, the administrator needs to tell Kubernetes what its capacity is and whether it can be read from and/or written to by a single node or by multiple nodes at the same time.'}]"
+122,211,0,[],"179
+Decoupling pods from the underlying storage technology
+6.5.3
+Claiming a PersistentVolume by creating a 
+PersistentVolumeClaim
+Now let’s lay down our admin hats and put our developer hats back on. Say you need
+to deploy a pod that requires persistent storage. You’ll use the PersistentVolume you
+created earlier. But you can’t use it directly in the pod. You need to claim it first.
+ Claiming a PersistentVolume is a completely separate process from creating a pod,
+because you want the same PersistentVolumeClaim to stay available even if the pod is
+rescheduled (remember, rescheduling means the previous pod is deleted and a new
+one is created). 
+CREATING A PERSISTENTVOLUMECLAIM
+You’ll create the claim now. You need to prepare a PersistentVolumeClaim manifest
+like the one shown in the following listing and post it to the Kubernetes API through
+kubectl create.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc          
+Listing 6.11
+A PersistentVolumeClaim: mongodb-pvc.yaml
+Pod(s)
+Pod(s)
+Persistent
+Volume
+Persistent
+Volume
+Persistent
+Volume
+Persistent
+Volume
+...
+User A
+Persistent
+Volume
+Claim(s)
+Persistent
+Volume
+Claim(s)
+Namespace A
+User B
+Namespace B
+Node
+Node
+Node
+Node
+Node
+Node
+Persistent
+Volume
+Figure 6.7
+PersistentVolumes, like cluster Nodes, don’t belong to any namespace, unlike pods and 
+PersistentVolumeClaims.
+The name of your claim—you’ll 
+need this later when using the 
+claim as the pod’s volume.
+ 
+","[Empty DataFrame
+Columns: [Col0, Persistent
+Volume
+Claim(s)]
+Index: []]","[{'entity': 'Pods', 'description': 'Deployable units in Kubernetes', 'category': 'application'}, {'entity': 'PersistentVolume', 'description': 'A storage resource in Kubernetes', 'category': 'database'}, {'entity': 'PersistentVolumeClaim', 'description': 'A request for a PersistentVolume', 'category': 'database'}, {'entity': 'kubectl', 'description': 'The command-line tool for interacting with Kubernetes', 'category': 'software'}, {'entity': 'API', 'description': 'Application Programming Interface in Kubernetes', 'category': 'network'}, {'entity': 'PersistentVolumeClaim manifest', 'description': 'A YAML file defining a PersistentVolumeClaim', 'category': 'configuration'}, {'entity': 'metadata', 'description': 'The metadata section of a Kubernetes resource', 'category': 'database'}, {'entity': 'apiVersion', 'description': 'The version of the API being used in a Kubernetes resource', 'category': 'software'}, {'entity': 'kind', 'description': 'The type of resource being defined in a Kubernetes YAML file', 'category': 'database'}, {'entity': 'PersistentVolumes', 'description': ""A storage resource in Kubernetes that doesn't belong to any namespace"", 'category': 'database'}, {'entity': 'cluster Nodes', 'description': 'The nodes of a Kubernetes cluster', 'category': 'hardware'}, {'entity': 'Namespace A', 'description': 'A namespace in a Kubernetes cluster', 'category': 'application'}, {'entity': 'User A', 'description': 'A user in a Kubernetes cluster', 'category': 'user'}, {'entity': 'Node', 'description': 'A node in a Kubernetes cluster', 'category': 'hardware'}]","[{'source_entity': '""kubectl""', 'description': 'creates', 'destination_entity': '""PersistentVolumeClaim manifest""'}, {'source_entity': '""kubectl""', 'description': 'applies', 'destination_entity': '""PersistentVolumeClaim manifest""'}, {'source_entity': '""Node""', 'description': 'hosts', 'destination_entity': '""Pods""'}, {'source_entity': '""cluster Nodes""', 'description': 'manage', 'destination_entity': '""Pods""'}, {'source_entity': '""User A""', 'description': 'requests', 'destination_entity': '""PersistentVolumeClaim manifest""'}, {'source_entity': '""kubectl""', 'description': 'requests', 'destination_entity': '""PersistentVolume""'}, {'source_entity': '""Namespace A""', 'description': 'provides', 'destination_entity': '""PersistentVolumeClaim manifest""'}, {'source_entity': '""API""', 'description': 'exposes', 'destination_entity': '""PersistentVolumeClaim manifest""'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates"",\n    ""summary_er"": ""Kubectl command creates a new pod in the Kubernetes cluster.""\n  },\n  {\n    ""source"": ""PersistentVolumeClaim manifest"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""Persistent Volume Claim manifest specifies storage requirements for a pod in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies"",\n    ""summary_er"": ""Kubectl applies a configuration to a running pod, ensuring it meets the specified requirements.""\n  },\n  {\n    ""source"": ""PersistentVolumeClaim manifest"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""A PersistentVolumeClaim manifest requests storage resources for a pod, enabling data persistence and retrieval.""\n  }\n]', '[\n  {\n    ""source"": ""Node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""A node in a Kubernetes cluster hosts one or more pods, providing them with resources and services.""\n  }\n]', '[\n  {\n    ""source"": ""Cluster Nodes"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""manage"",\n    ""summary_er"": ""Cluster nodes are responsible for managing pods, ensuring they have sufficient resources and running them efficiently.""\n  }\n]', '[\n  {\n    ""source"": ""User A"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""User A sends requests to a running pod for Persistent Volume Claim manifest.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""Kubernetes CLI tool sends requests to a running pod for resource management.""\n  },\n  {\n    ""source"": ""PersistentVolume"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""mounts"",\n    ""summary_er"": ""A Persistent Volume is mounted to a pod for persistent storage and data access.""\n  }\n]', '[\n  {\n    ""source"": ""Namespace A"",\n    ""destination"": ""Pod PersistentVolumeClaim manifest"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""Namespace A provides a Persistent Volume Claim manifest to the Pod, ensuring access to persistent storage.""\n  }\n]', '[\n  {\n    ""source"": ""API"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""The API exposes a pod, making its functionality available to clients.""\n  },\n  {\n    ""source"": ""PersistentVolumeClaim manifest"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A PersistentVolumeClaim manifest is used by a pod to request storage resources.""\n  }\n]']","To use a PersistentVolume in a Kubernetes pod that requires persistent storage, you need to create a PersistentVolumeClaim (PVC) first. This is done by preparing a PVC manifest and posting it to the Kubernetes API through kubectl create. The PVC claims the PersistentVolume for exclusive use within a namespace, allowing the same PVC to stay available even if the pod is rescheduled.","[{'highlight': 'Decoupling pods from the underlying storage technology is necessary for deploying a pod that requires persistent storage.'}, {'highlight': 'A PersistentVolumeClaim must be created to claim a PersistentVolume, which is a separate process from creating a pod.'}, {'highlight': 'The PersistentVolumeClaim manifest should be prepared and posted to the Kubernetes API through kubectl create.'}, {'highlight': 'PersistentVolumes do not belong to any namespace, unlike pods and PersistentVolumeClaims.'}, {'highlight': ""The name of the PersistentVolumeClaim is needed later when using it as the pod's volume.""}]"
+123,212,0,[],"180
+CHAPTER 6
+Volumes: attaching disk storage to containers
+spec:
+  resources:
+    requests:                
+      storage: 1Gi           
+  accessModes:              
+  - ReadWriteOnce           
+  storageClassName: """"     
+As soon as you create the claim, Kubernetes finds the appropriate PersistentVolume
+and binds it to the claim. The PersistentVolume’s capacity must be large enough to
+accommodate what the claim requests. Additionally, the volume’s access modes must
+include the access modes requested by the claim. In your case, the claim requests 1 GiB
+of storage and a ReadWriteOnce access mode. The PersistentVolume you created ear-
+lier matches those two requirements so it is bound to your claim. You can see this by
+inspecting the claim.
+LISTING PERSISTENTVOLUMECLAIMS
+List all PersistentVolumeClaims to see the state of your PVC:
+$ kubectl get pvc
+NAME          STATUS    VOLUME       CAPACITY   ACCESSMODES   AGE
+mongodb-pvc   Bound     mongodb-pv   1Gi        RWO,ROX       3s
+NOTE
+We’re using pvc as a shorthand for persistentvolumeclaim.
+The claim is shown as Bound to PersistentVolume mongodb-pv. Note the abbreviations
+used for the access modes:
+
+RWO—ReadWriteOnce—Only a single node can mount the volume for reading
+and writing.
+
+ROX—ReadOnlyMany—Multiple nodes can mount the volume for reading.
+
+RWX—ReadWriteMany—Multiple nodes can mount the volume for both reading
+and writing.
+NOTE
+RWO, ROX, and RWX pertain to the number of worker nodes that can use
+the volume at the same time, not to the number of pods!
+LISTING PERSISTENTVOLUMES
+You can also see that the PersistentVolume is now Bound and no longer Available by
+inspecting it with kubectl get:
+$ kubectl get pv
+NAME         CAPACITY   ACCESSMODES   STATUS   CLAIM                 AGE
+mongodb-pv   1Gi        RWO,ROX       Bound    default/mongodb-pvc   1m
+The PersistentVolume shows it’s bound to claim default/mongodb-pvc. The default
+part is the namespace the claim resides in (you created the claim in the default
+Requesting 1 GiB of storage
+You want the storage to support a single 
+client (performing both reads and writes).
+You’ll learn about this in the section 
+about dynamic provisioning.
+ 
+",[],"[{'entity': 'PersistentVolumeClaim', 'description': 'A request for storage resources', 'category': 'software'}, {'entity': 'Kubernetes', 'description': 'An open-source container orchestration system', 'category': 'software'}, {'entity': 'PersistentVolume', 'description': 'A storage resource that can be attached to a pod', 'category': 'software'}, {'entity': 'resources', 'description': 'The requested storage resources for the claim', 'category': 'software'}, {'entity': 'requests', 'description': 'The specific requests made by the claim', 'category': 'software'}, {'entity': 'storage', 'description': 'The amount of storage requested (1 GiB)', 'category': 'hardware'}, {'entity': 'accessModes', 'description': 'The access modes requested by the claim (ReadWriteOnce)', 'category': 'software'}, {'entity': 'storageClassName', 'description': 'The class of storage requested', 'category': 'hardware'}, {'entity': 'claim', 'description': 'A request for storage resources', 'category': 'software'}, {'entity': 'PersistentVolumeClaim', 'description': 'A request for storage resources', 'category': 'software'}, {'entity': 'pvc', 'description': 'A shorthand for persistentvolumeclaim', 'category': 'software'}, {'entity': 'RWO', 'description': 'ReadWriteOnce access mode (only one node can read and write)', 'category': 'hardware'}, {'entity': 'ROX', 'description': 'ReadOnlyMany access mode (multiple nodes can read)', 'category': 'hardware'}, {'entity': 'RWX', 'description': 'ReadWriteMany access mode (multiple nodes can read and write)', 'category': 'hardware'}, {'entity': 'kubectl', 'description': 'A command-line tool for interacting with Kubernetes', 'category': 'software'}, {'entity': 'get', 'description': 'A command to retrieve information about a resource', 'category': 'software'}, {'entity': 'pvc', 'description': 'A shorthand for persistentvolumeclaim', 'category': 'software'}, {'entity': 'pv', 'description': 'A PersistentVolume resource', 'category': 'software'}]","[{'source_entity': 'kubectl', 'description': 'requests storage from', 'destination_entity': 'PersistentVolumeClaim'}, {'source_entity': 'kubectl', 'description': 'gets information about', 'destination_entity': 'claim'}, {'source_entity': 'kubectl', 'description': 'accesses resources of', 'destination_entity': 'resources'}, {'source_entity': 'Kubernetes', 'description': 'manages PersistentVolumeClaim', 'destination_entity': 'pvc'}, {'source_entity': 'Kubernetes', 'description': 'provides storage for', 'destination_entity': 'PersistentVolume'}, {'source_entity': 'kubectl', 'description': 'requests RWX access mode for', 'destination_entity': 'pv'}, {'source_entity': 'kubectl', 'description': 'requests RWO access mode for', 'destination_entity': 'ROX'}, {'source_entity': 'kubectl', 'description': 'requests ROX access mode for', 'destination_entity': 'storage'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests storage from"",\n    ""summary_er"": ""Kubectl requests persistent storage from a pod, which is managed by a Persistent Volume Claim.""\n  },\n  {\n    ""source"": ""PersistentVolumeClaim"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests storage from"",\n    ""summary_er"": ""A Persistent Volume Claim requests storage from a pod, providing a shared resource for the application.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""gets information about"",\n    ""summary_er"": ""Kubectl retrieves pod details, providing insights into its status, configuration, and execution history.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""claim"",\n    ""relation_description"": ""gets information about"",\n    ""summary_er"": ""Kubectl fetches claim data, offering visibility into storage allocation, usage, and management.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""accesses resources of"",\n    ""summary_er"": ""Kubectl, a command-line tool, accesses resources from pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages PersistentVolumeClaim"",\n    ""summary_er"": ""Kubernetes manages persistent volume claims for pods, ensuring data persistence and availability.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides storage for"",\n    ""summary_er"": ""Kubernetes provides persistent storage for pods, enabling them to access and utilize shared resources.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests RWX access mode for"",\n    ""summary_er"": ""Kubectl requests read-write-execute (RWX) access mode for a pod, allowing it to mount persistent volumes.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests RWO access mode for"",\n    ""summary_er"": ""Kubectl requests read-write-once (RWO) access mode for a pod, allowing it to be accessed and modified by the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests ROX access mode for"",\n    ""summary_er"": ""Kubectl requests read-only access to a pod\'s storage.""\n  }\n]']","A Kubernetes PersistentVolumeClaim is created with a requested 1Gi of storage and ReadWriteOnce access mode. The claim is bound to a matching PersistentVolume, which is shown as Bound in kubectl get pvc and pv commands. The PersistentVolume's capacity and access modes match the claim's requirements.","[{'highlight': ""The PersistentVolume's capacity must be large enough to accommodate what the claim requests.""}, {'highlight': 'The claim is shown as Bound to PersistentVolume mongodb-pv.'}, {'highlight': 'RWO—ReadWriteOnce—Only a single node can mount the volume for reading and writing.'}, {'highlight': 'You can see that the PersistentVolume is now Bound and no longer Available by inspecting it with kubectl get:'}, {'highlight': 'The PersistentVolume shows it’s bound to claim default/mongodb-pvc.'}]"
+124,213,0,[],"181
+Decoupling pods from the underlying storage technology
+namespace). We’ve already said that PersistentVolume resources are cluster-scoped
+and thus cannot be created in a specific namespace, but PersistentVolumeClaims can
+only be created in a specific namespace. They can then only be used by pods in the
+same namespace.
+6.5.4
+Using a PersistentVolumeClaim in a pod
+The PersistentVolume is now yours to use. Nobody else can claim the same volume
+until you release it. To use it inside a pod, you need to reference the Persistent-
+VolumeClaim by name inside the pod’s volume (yes, the PersistentVolumeClaim, not
+the PersistentVolume directly!), as shown in the following listing.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mongodb 
+spec:
+  containers:
+  - image: mongo
+    name: mongodb
+    volumeMounts:
+    - name: mongodb-data
+      mountPath: /data/db
+    ports:
+    - containerPort: 27017
+      protocol: TCP
+  volumes:
+  - name: mongodb-data
+    persistentVolumeClaim:       
+      claimName: mongodb-pvc     
+Go ahead and create the pod. Now, check to see if the pod is indeed using the same
+PersistentVolume and its underlying GCE PD. You should see the data you stored ear-
+lier by running the MongoDB shell again, as shown in the following listing.
+$ kubectl exec -it mongodb mongo
+MongoDB shell version: 3.2.8
+connecting to: mongodb://127.0.0.1:27017
+Welcome to the MongoDB shell.
+...
+> use mystore
+switched to db mystore
+> db.foo.find()
+{ ""_id"" : ObjectId(""57a61eb9de0cfd512374cc75""), ""name"" : ""foo"" }
+And there it is. You‘re able to retrieve the document you stored into MongoDB
+previously.
+Listing 6.12
+A pod using a PersistentVolumeClaim volume: mongodb-pod-pvc.yaml
+Listing 6.13
+Retrieving MongoDB’s persisted data in the pod using the PVC and PV
+Referencing the PersistentVolumeClaim 
+by name in the pod volume
+ 
+",[],"[{'entity': 'PersistentVolume', 'description': 'A cluster-scoped resource that represents a storage technology', 'category': 'database'}, {'entity': 'PersistentVolumeClaim', 'description': 'A namespace-scoped resource that requests storage resources', 'category': 'database'}, {'entity': 'Pod', 'description': 'A logical host object in a Kubernetes cluster', 'category': 'application'}, {'entity': 'PersistentVolumeClaim', 'description': ""A reference to the PersistentVolumeClaim by name inside the pod's volume"", 'category': 'database'}, {'entity': 'apiVersion', 'description': 'The API version of the Kubernetes resource', 'category': 'software'}, {'entity': 'kind', 'description': 'The type of the Kubernetes resource (e.g. Pod, Service)', 'category': 'software'}, {'entity': 'metadata', 'description': 'The metadata of the Kubernetes resource (e.g. name, labels)', 'category': 'software'}, {'entity': 'spec', 'description': 'The specification of the Kubernetes resource (e.g. containers, volumes)', 'category': 'software'}, {'entity': 'containers', 'description': 'A list of container specifications in a Pod', 'category': 'application'}, {'entity': 'image', 'description': 'The Docker image used by the container', 'category': 'container'}, {'entity': 'volumeMounts', 'description': 'A list of volume mount specifications in a Pod', 'category': 'application'}, {'entity': 'name', 'description': 'The name of the PersistentVolumeClaim or container', 'category': 'software'}, {'entity': 'claimName', 'description': 'The name of the PersistentVolumeClaim', 'category': 'database'}, {'entity': 'kubectl', 'description': 'A command-line tool for interacting with a Kubernetes cluster', 'category': 'software'}, {'entity': 'exec', 'description': 'A command used to execute a command inside a Pod', 'category': 'software'}, {'entity': 'mongo', 'description': 'The MongoDB shell command', 'category': 'database'}]","[{'source_entity': 'kubectl', 'description': 'uses to execute commands', 'destination_entity': 'exec'}, {'source_entity': 'kubectl', 'description': 'manages PersistentVolumeClaim resources', 'destination_entity': 'PersistentVolumeClaim'}, {'source_entity': 'kubectl', 'description': 'specifies the name of a resource', 'destination_entity': 'name'}, {'source_entity': 'kubectl', 'description': 'runs commands on a Pod', 'destination_entity': 'Pod'}, {'source_entity': 'kubectl', 'description': 'manages containers in a Pod', 'destination_entity': 'containers'}, {'source_entity': 'kubectl', 'description': 'deploys an application using the mongo image', 'destination_entity': 'mongo'}, {'source_entity': 'kubectl', 'description': 'specifies the spec of a resource', 'destination_entity': 'spec'}, {'source_entity': 'kubectl', 'description': 'manages PersistentVolume resources', 'destination_entity': 'PersistentVolume'}, {'source_entity': 'kubectl', 'description': 'mounts volumes to containers', 'destination_entity': 'volumeMounts'}, {'source_entity': 'kubectl', 'description': 'specifies the kind of a resource', 'destination_entity': 'kind'}, {'source_entity': 'kubectl', 'description': 'specifies the name of a claim', 'destination_entity': 'claimName'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exec"",\n    ""summary_er"": ""Executes a command in a running container within a pod, allowing for direct interaction with the application.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""PersistentVolumeClaim"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubectl manages Persistent Volume Claims, ensuring efficient resource allocation for pods.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the name of a resource"",\n    ""summary_er"": ""The kubectl command specifies the name of a pod, which is a containerized application.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""runs commands on a Pod"",\n    ""summary_er"": ""Kubectl executes commands directly on a running Pod, bypassing the need for containerization.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages containers"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) manages containers within a Pod, ensuring efficient resource utilization and container orchestration.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys an application using the mongo image"",\n    ""summary_er"": ""Kubectl deploys a MongoDB application instance as a pod.""\n  }\n]', '[{\n  ""source"": ""kubectl"",\n  ""destination"": ""pod"",\n  ""relation_description"": ""specifies the spec of a resource"",\n  ""summary_er"": ""The Kubernetes command-line tool (kubectl) uses the \'spec\' field to define the configuration of a pod, specifying its resources and behavior.""\n}]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""PersistentVolume"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubectl manages Persistent Volumes, ensuring their creation, deletion, and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""mounts volumes to containers"",\n    ""summary_er"": ""Kubectl mounts volumes to containers within a pod, enabling persistent storage and data sharing between containers.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the kind of a resource"",\n    ""summary_er"": ""Kubectl uses pods to specify the type of Kubernetes resource.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the name of a claim"",\n    ""summary_er"": ""The kubectl command specifies the name of a claim for a pod, linking it to the desired resource.""\n  }\n]']","To use a PersistentVolume in a pod, reference the PersistentVolumeClaim by name inside the pod's volume. A Pod can claim and use the same PersistentVolume until it is released, allowing decoupling from underlying storage technology.","[{'highlight': 'Decoupling pods from the underlying storage technology is achieved by creating PersistentVolumeClaims in a specific namespace, which can then be used by pods in the same namespace.'}, {'highlight': ""To use a PersistentVolume inside a pod, reference the PersistentVolumeClaim by name inside the pod's volume.""}, {'highlight': ""A pod can use a PersistentVolumeClaim volume by referencing it by name in the pod's volume.""}, {'highlight': 'The PersistentVolume is now yours to use and cannot be claimed by anyone else until you release it.'}, {'highlight': 'You can retrieve data from MongoDB using the PVC and PV by running the MongoDB shell inside the pod.'}]"
+125,214,0,[],"182
+CHAPTER 6
+Volumes: attaching disk storage to containers
+6.5.5
+Understanding the benefits of using PersistentVolumes and claims
+Examine figure 6.8, which shows both ways a pod can use a GCE Persistent Disk—
+directly or through a PersistentVolume and claim.
+Consider how using this indirect method of obtaining storage from the infrastructure
+is much simpler for the application developer (or cluster user). Yes, it does require
+the additional steps of creating the PersistentVolume and the PersistentVolumeClaim,
+but the developer doesn’t have to know anything about the actual storage technology
+used underneath. 
+ Additionally, the same pod and claim manifests can now be used on many different
+Kubernetes clusters, because they don’t refer to anything infrastructure-specific. The
+claim states, “I need x amount of storage and I need to be able to read and write to it
+by a single client at once,” and then the pod references the claim by name in one of
+its volumes.
+Pod: mongodb
+Container: mongodb
+volumeMounts:
+name: mongodb-data
+mountPath: /data/db
+gcePersistentDisk:
+pdName: mongodb
+GCE
+Persistent Disk:
+mongodb
+Volume:
+mongodb
+Pod: mongodb
+Container: mongodb
+volumeMounts:
+name: mongodb-data
+mountPath: /data/db
+persistentVolumeClaim:
+claimName: mongodb-pvc
+gcePersistentDisk:
+pdName: mongodb
+GCE
+Persistent Disk:
+mongodb
+PersistentVolume:
+mongodb-pv
+(1 Gi, RWO, RWX)
+Volume:
+mongodb
+Claim lists
+1Gi and
+ReadWriteOnce
+access
+PersistentVolumeClaim:
+mongodb-pvc
+Figure 6.8
+Using the GCE Persistent Disk directly or through a PVC and PV
+ 
+",[],"[{'entity': 'PersistentVolumes', 'description': 'a way to use disk storage in containers', 'category': 'software'}, {'entity': 'claims', 'description': 'requests for persistent storage', 'category': 'software'}, {'entity': 'GCE Persistent Disk', 'description': 'a type of persistent storage', 'category': 'hardware'}, {'entity': 'PersistentVolumeClaim', 'description': 'a request for a specific amount of persistent storage', 'category': 'software'}, {'entity': 'pod', 'description': 'an instance of a container running on a Kubernetes cluster', 'category': 'application'}, {'entity': 'container', 'description': 'a lightweight and standalone executable package', 'category': 'software'}, {'entity': 'volumeMounts', 'description': 'the process of attaching a persistent volume to a pod', 'category': 'process'}, {'entity': 'gcePersistentDisk', 'description': 'a type of persistent storage provided by Google Cloud Engine', 'category': 'hardware'}, {'entity': 'pdName', 'description': 'the name of a persistent disk', 'category': 'software'}, {'entity': 'mountPath', 'description': 'the path where a volume is mounted in a pod', 'category': 'process'}, {'entity': 'persistentVolumeClaim', 'description': 'a request for a specific amount of persistent storage', 'category': 'software'}, {'entity': 'claimName', 'description': 'the name of a claim', 'category': 'software'}, {'entity': 'mongodb-data', 'description': 'a volume used by the mongodb container', 'category': 'application'}, {'entity': 'mongodb-pvc', 'description': 'a persistent volume claim used by the mongodb pod', 'category': 'software'}, {'entity': 'mongodb-pv', 'description': 'a persistent volume used by the mongodb pod', 'category': 'hardware'}]","[{'source_entity': 'claims', 'description': 'requests a PersistentVolumeClaim', 'destination_entity': 'PersistentVolumeClaim'}, {'source_entity': 'container', 'description': 'uses a GCE Persistent Disk', 'destination_entity': 'GCE Persistent Disk'}, {'source_entity': 'claims', 'description': 'requests a persistent volume', 'destination_entity': 'PersistentVolumes'}, {'source_entity': 'container', 'description': 'mounts a persistent volume', 'destination_entity': 'persistentVolumeClaim'}, {'source_entity': 'mongodb-pvc', 'description': 'is a PersistentVolumeClaim for mongodb-data', 'destination_entity': 'mongodb-data'}, {'source_entity': 'mongodb-pv', 'description': 'is a persistent volume for mongodb-data', 'destination_entity': 'mongodb-data'}, {'source_entity': 'volumeMounts', 'description': 'mounts the persistent volume at mountPath', 'destination_entity': 'mountPath'}, {'source_entity': 'pod', 'description': 'uses a PersistentVolumeClaim', 'destination_entity': 'PersistentVolumeClaim'}, {'source_entity': 'claims', 'description': 'requests a persistent volume claim with name pdName', 'destination_entity': 'pdName'}, {'source_entity': 'persistentVolumeClaim', 'description': 'is requested by claims', 'destination_entity': 'claims'}, {'source_entity': 'gcePersistentDisk', 'description': 'is used as a persistent disk for mongodb-data', 'destination_entity': 'mongodb-data'}, {'source_entity': 'claimName', 'description': 'is the name of the PersistentVolumeClaim requested by claims', 'destination_entity': 'claims'}]","['[\n  {\n    ""source"": ""claims"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests a PersistentVolumeClaim"",\n    ""summary_er"": ""A claim requests a persistent volume from a pod, ensuring data persistence across restarts and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses a GCE Persistent Disk"",\n    ""summary_er"": ""A container utilizes a Google Cloud Engine (GCE) persistent disk for storage, ensuring data persistence and efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""claims"",\n    ""destination"": ""PersistentVolumes"",\n    ""relation_description"": ""requests a persistent volume"",\n    ""summary_er"": ""Claims in Kubernetes request a persistent volume from Persistent Volumes, ensuring data persistence across pod restarts or terminations.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""mounts a persistent volume"",\n    ""summary_er"": ""A container mounts a persistent volume to access shared data across pods.""\n  }\n]', '[\n  {\n    ""source"": ""mongodb-pvc"",\n    ""destination"": ""mongodb-data"",\n    ""relation_description"": ""is a PersistentVolumeClaim for mongodb-data"",\n    ""summary_er"": ""The MongoDB PVC is a claim for persistent storage of MongoDB data.""\n  }\n]', '[\n  {\n    ""source"": ""mongodb-pv"",\n    ""destination"": ""mongodb-data"",\n    ""relation_description"": ""is a persistent volume for mongodb-data"",\n    ""summary_er"": ""The MongoDB PV provides persistent storage for the MongoDB data pod, ensuring data durability and availability.""\n  }\n]', '[\n  {\n    ""source"": ""volumeMounts"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""mounts the persistent volume at mountPath"",\n    ""summary_er"": ""A Kubernetes pod mounts a persistent volume at a specified path, providing storage persistence.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""PersistentVolumeClaim"",\n    ""relation_description"": ""uses a"",\n    ""summary_er"": ""A Kubernetes Pod utilizes a Persistent Volume Claim for persistent storage, ensuring data durability and availability.""\n  }\n]', '[\n  {\n    ""source"": ""claims"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests a persistent volume claim with name pdName"",\n    ""summary_er"": ""A claims entity requests a persistent volume from a pod, specifying the name of the claim as pdName.""\n  }\n]', '[\n  {\n    ""source"": ""persistentVolumeClaim"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is requested by claims"",\n    ""summary_er"": ""A persistent volume claim requests storage resources from a pod, which is then allocated to the claim.""\n  }\n]', '[\n  {\n    ""source"": ""gcePersistentDisk"",\n    ""destination"": ""mongodb-data"",\n    ""relation_description"": ""is used as a persistent disk for mongodb-data"",\n    ""summary_er"": ""A Google Compute Engine Persistent Disk is utilized to store MongoDB data persistently.""\n  }\n]', '[\n  {\n    ""source"": ""claimName"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is the name of the PersistentVolumeClaim requested by claims"",\n    ""summary_er"": ""A claimName is a string that identifies a Persistent Volume Claim, which is a resource requested by a pod to access storage.""\n  }\n]']","The chapter discusses the benefits of using PersistentVolumes (PVs) and claims to attach disk storage to containers, making it simpler for application developers by abstracting away infrastructure-specific details. A pod can use a GCE Persistent Disk either directly or through a PV and claim, allowing for greater flexibility and portability across different Kubernetes clusters.",[{'highlight': 'Understanding the benefits of using PersistentVolumes and claims'}]
+126,215,0,[],"183
+Decoupling pods from the underlying storage technology
+6.5.6
+Recycling PersistentVolumes
+Before you wrap up this section on PersistentVolumes, let’s do one last quick experi-
+ment. Delete the pod and the PersistentVolumeClaim:
+$ kubectl delete pod mongodb
+pod ""mongodb"" deleted
+$ kubectl delete pvc mongodb-pvc
+persistentvolumeclaim ""mongodb-pvc"" deleted
+What if you create the PersistentVolumeClaim again? Will it be bound to the Persistent-
+Volume or not? After you create the claim, what does kubectl get pvc show?
+$ kubectl get pvc
+NAME           STATUS    VOLUME       CAPACITY   ACCESSMODES   AGE
+mongodb-pvc    Pending                                         13s
+The claim’s status is shown as Pending. Interesting. When you created the claim ear-
+lier, it was immediately bound to the PersistentVolume, so why wasn’t it bound now?
+Maybe listing the PersistentVolumes can shed more light on this:
+$ kubectl get pv
+NAME        CAPACITY  ACCESSMODES  STATUS    CLAIM               REASON AGE
+mongodb-pv  1Gi       RWO,ROX      Released  default/mongodb-pvc        5m
+The STATUS column shows the PersistentVolume as Released, not Available like
+before. Because you’ve already used the volume, it may contain data and shouldn’t be
+bound to a completely new claim without giving the cluster admin a chance to clean it
+up. Without this, a new pod using the same PersistentVolume could read the data
+stored there by the previous pod, even if the claim and pod were created in a different
+namespace (and thus likely belong to a different cluster tenant).
+RECLAIMING PERSISTENTVOLUMES MANUALLY
+You told Kubernetes you wanted your PersistentVolume to behave like this when you
+created it—by setting its persistentVolumeReclaimPolicy to Retain. You wanted
+Kubernetes to retain the volume and its contents after it’s released from its claim. As
+far as I’m aware, the only way to manually recycle the PersistentVolume to make it
+available again is to delete and recreate the PersistentVolume resource. As you do
+that, it’s your decision what to do with the files on the underlying storage: you can
+either delete them or leave them alone so they can be reused by the next  pod.
+RECLAIMING PERSISTENTVOLUMES AUTOMATICALLY
+Two other possible reclaim policies exist: Recycle and Delete. The first one deletes
+the volume’s contents and makes the volume available to be claimed again. This way,
+the PersistentVolume can be reused multiple times by different PersistentVolume-
+Claims and different pods, as you can see in figure 6.9.
+ The Delete policy, on the other hand, deletes the underlying storage. Note that
+the Recycle option is currently not available for GCE Persistent Disks. This type of
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command-line tool to interact with Kubernetes', 'category': 'software'}, {'entity': 'pod', 'description': 'lightweight and portable container running an application', 'category': 'container'}, {'entity': 'PersistentVolumeClaim', 'description': 'request for storage resources from a Persistent Volume', 'category': 'database'}, {'entity': 'PersistentVolume', 'description': 'storage resource provisioned by administrator', 'category': 'database'}, {'entity': 'mongodb-pvc', 'description': 'name of the PersistentVolumeClaim', 'category': 'database'}, {'entity': 'mongodb-pv', 'description': 'name of the Persistent Volume', 'category': 'database'}, {'entity': 'kubernetes', 'description': 'container orchestration system', 'category': 'software'}, {'entity': 'GCE Persistent Disks', 'description': 'type of storage resource provided by Google Cloud Platform', 'category': 'hardware'}, {'entity': 'Retain', 'description': 'persistentVolumeReclaimPolicy to retain the volume and its contents', 'category': 'software'}, {'entity': 'Recycle', 'description': ""persistentVolumeReclaimPolicy to delete the volume's contents and make it available again"", 'category': 'software'}, {'entity': 'Delete', 'description': 'persistentVolumeReclaimPolicy to delete the underlying storage', 'category': 'software'}]","[{'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""mongodb-pvc""'}, {'source_entity': '""kubectl""', 'description': 'deletes', 'destination_entity': '""mongodb-pv""'}, {'source_entity': '""kubectl""', 'description': 'retains', 'destination_entity': '""PersistentVolume""'}, {'source_entity': '""pod""', 'description': 'uses', 'destination_entity': '""GCE Persistent Disks""'}, {'source_entity': '""kubernetes""', 'description': 'manages', 'destination_entity': '""pod""'}, {'source_entity': '""kubectl""', 'description': 'manipulates', 'destination_entity': '""PersistentVolumeClaim""'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) uses a pod to execute commands and manage containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deletes"",\n    ""summary_er"": ""Kubernetes command deletes a running pod named mongodb-pv.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""retains"",\n    ""summary_er"": ""\\""kubectl\\"" is a command-line tool that retains control over a \\""pod\\"", ensuring it continues to run even after its initial creation.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""PersistentVolume"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""\\""pod\\"" uses a \\""PersistentVolume\\"" for persistent storage, allowing data to be retained across pod restarts or recreation.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A Pod in Kubernetes utilizes another Pod for a specific purpose, such as resource sharing or dependency resolution.""\n  },\n  {\n    ""source"": ""GCE Persistent Disks"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""mounted on"",\n    ""summary_er"": ""Google Cloud Engine (GCE) Persistent Disks are attached to a Pod in Kubernetes for persistent storage and data management.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages pods, providing a scalable and flexible way to deploy and manage containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manipulates"",\n    ""summary_er"": ""Kubernetes command-line tool that manages and manipulates pods, including creating, scaling, and deleting them.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""PersistentVolumeClaim"",\n    ""relation_description"": ""manipulates"",\n    ""summary_er"": ""Kubernetes command-line tool that manages and manipulates Persistent Volume Claims, including creating, updating, and deleting them.""\n  }\n]']","When a PersistentVolumeClaim is deleted, its status becomes Pending and it's no longer bound to a PersistentVolume, which can be reused by other pods after being manually recycled or reclaimed automatically using Retain, Recycle, or Delete policies, allowing the reuse of volumes across different namespaces.","[{'highlight': ""When a PersistentVolumeClaim is deleted, its status becomes Pending, and it's not immediately bound to a new PersistentVolume.""}, {'highlight': 'PersistentVolumes can be reclaimed manually by deleting and recreating the PersistentVolume resource, allowing for reuse of the underlying storage.'}, {'highlight': ""There are three reclaim policies for PersistentVolumes: Retain, Recycle, and Delete. Retain retains the volume's contents after it's released from its claim.""}, {'highlight': ""The Recycle policy deletes a PersistentVolume's contents and makes the volume available to be claimed again, allowing for reuse by different pods.""}, {'highlight': 'PersistentVolumes can be reused multiple times by different PersistentVolume-Claims and different pods when using the Recycle reclaim policy.'}]"
+127,216,0,[],"184
+CHAPTER 6
+Volumes: attaching disk storage to containers
+A PersistentVolume only supports the Retain or Delete policies. Other Persistent-
+Volume types may or may not support each of these options, so before creating your
+own PersistentVolume, be sure to check what reclaim policies are supported for the
+specific underlying storage you’ll use in the volume.
+TIP
+You can change the PersistentVolume reclaim policy on an existing
+PersistentVolume. For example, if it’s initially set to Delete, you can easily
+change it to Retain to prevent losing valuable data.
+6.6
+Dynamic provisioning of PersistentVolumes
+You’ve seen how using PersistentVolumes and PersistentVolumeClaims makes it easy
+to obtain persistent storage without the developer having to deal with the actual stor-
+age technology used underneath. But this still requires a cluster administrator to pro-
+vision the actual storage up front. Luckily, Kubernetes can also perform this job
+automatically through dynamic provisioning of PersistentVolumes.
+ The cluster admin, instead of creating PersistentVolumes, can deploy a Persistent-
+Volume provisioner and define one or more StorageClass objects to let users choose
+what type of PersistentVolume they want. The users can refer to the StorageClass in
+their PersistentVolumeClaims and the provisioner will take that into account when
+provisioning the persistent storage. 
+NOTE
+Similar to PersistentVolumes, StorageClass resources aren’t namespaced.
+Kubernetes includes provisioners for the most popular cloud providers, so the admin-
+istrator doesn’t always need to deploy a provisioner. But if Kubernetes is deployed
+on-premises, a custom provisioner needs to be deployed.
+PersistentVolume
+PersistentVolumeClaim 1
+Pod 1
+Pod 2
+PersistentVolumeClaim 2
+Pod 3
+PVC is deleted;
+PV is automatically
+recycled and ready
+to be claimed and
+re-used again
+User creates
+PersistentVolumeClaim
+Pod 2
+unmounts
+PVC
+Pod 2
+mounts
+PVC
+Pod 1
+mounts
+PVC
+Pod 1
+unmounts
+PVC
+Admin deletes
+PersistentVolume
+Admin creates
+PersistentVolume
+Time
+Figure 6.9
+The lifespan of a PersistentVolume, PersistentVolumeClaims, and pods using them
+ 
+","[   Col0                                   PersistentVolume
+0  None  PersistentVolumeClaim 1 PersistentVolumeClaim ...]","[{'entity': 'PersistentVolume', 'description': 'a Kubernetes resource that represents a storage asset', 'category': 'software'}, {'entity': 'Retain policy', 'description': 'a reclaim policy for PersistentVolumes that retains the data on deletion', 'category': 'software'}, {'entity': 'Delete policy', 'description': 'a reclaim policy for PersistentVolumes that deletes the data on deletion', 'category': 'software'}, {'entity': 'PersistentVolumeClaim', 'description': 'a Kubernetes resource that represents a request for storage resources', 'category': 'software'}, {'entity': 'Pod', 'description': 'a Kubernetes resource that represents a running application', 'category': 'software'}, {'entity': 'StorageClass', 'description': 'a Kubernetes resource that defines a type of storage', 'category': 'software'}, {'entity': 'PersistentVolume provisioner', 'description': 'a component that provisions PersistentVolumes dynamically', 'category': 'software'}, {'entity': 'Kubernetes', 'description': 'an open-source container orchestration system', 'category': 'software'}, {'entity': 'Cloud provider', 'description': 'a company that provides cloud infrastructure services', 'category': 'hardware/network'}, {'entity': 'PersistentVolumeClaim 1', 'description': 'a specific PersistentVolumeClaim resource', 'category': 'software'}, {'entity': 'Pod 1', 'description': 'a specific Pod resource', 'category': 'software'}, {'entity': 'Pod 2', 'description': 'a specific Pod resource', 'category': 'software'}, {'entity': 'PersistentVolumeClaim 2', 'description': 'a specific PersistentVolumeClaim resource', 'category': 'software'}, {'entity': 'Pod 3', 'description': 'a specific Pod resource', 'category': 'software'}]","[{'source_entity': '""PersistentVolumeClaim 2""', 'description': 'is created', 'destination_entity': '""PersistentVolumeClaim""'}, {'source_entity': '""PersistentVolumeClaim 2""', 'description': 'has a retain policy', 'destination_entity': '""Retain policy""'}, {'source_entity': '""Pod 1""', 'description': 'requests storage from', 'destination_entity': '""StorageClass""'}, {'source_entity': '""Pod 1""', 'description': 'is deleted by', 'destination_entity': '""Delete policy""'}, {'source_entity': '""Cloud provider""', 'description': 'provides storage for', 'destination_entity': '""PersistentVolume""'}, {'source_entity': '""Kubernetes""', 'description': 'manages', 'destination_entity': '""Pod 3""'}, {'source_entity': '""Pod 3""', 'description': 'requests storage from', 'destination_entity': '""StorageClass""'}, {'source_entity': '""PersistentVolumeClaim 1""', 'description': 'is created for', 'destination_entity': '""Pod 2""'}, {'source_entity': '""PersistentVolume provisioner""', 'description': 'provides storage for', 'destination_entity': '""PersistentVolume""'}]","['[\n    {\n        ""source"": ""PersistentVolumeClaim 2"",\n        ""destination"": ""pod"",\n        ""relation_description"": ""is created"",\n        ""summary_er"": ""A Persistent Volume Claim is created for a pod to access storage resources.""\n    }\n]', '[\n    {\n        ""source"": ""PersistentVolumeClaim 2"",\n        ""destination"": ""pod"",\n        ""relation_description"": ""has a retain policy"",\n        ""summary_er"": ""A Persistent Volume Claim has a retain policy associated with it, which determines how long data is retained after deletion.""\n    }\n]', '[\n    {\n        ""source"": ""Pod 1"",\n        ""destination"": ""StorageClass"",\n        ""relation_description"": ""requests storage from"",\n        ""summary_er"": ""Pod 1 requests storage resources from StorageClass.""\n    }\n]', '[\n    {\n        ""source"": ""Pod 1"",\n        ""destination"": ""Delete policy"",\n        ""relation_description"": ""is deleted by"",\n        ""summary_er"": ""Pod 1 is deleted by a delete policy, which ensures proper cleanup of resources when no longer needed.""\n    },\n    {\n        ""source"": ""Pod 1"",\n        ""destination"": ""Pod 2"",\n        ""relation_description"": ""is related to"",\n        ""summary_er"": ""Pod 1 has a relationship with Pod 2, indicating they are connected or dependent on each other in some way.""\n    }\n]', '[\n  {\n    ""source"": ""Cloud provider"",\n    ""destination"": ""PersistentVolume"",\n    ""relation_description"": ""provides storage for"",\n    ""summary_er"": ""A cloud provider offers persistent storage to a volume, enabling data persistence and retrieval.""\n  }\n]', '[\n    {\n        ""source"": ""Kubernetes"",\n        ""destination"": ""pod"",\n        ""relation_description"": ""manages"",\n        ""summary_er"": ""Kubernetes manages a pod, which is a containerized application in a cluster.""\n    }\n]', '[\n    {\n        ""source"": ""Pod 3"",\n        ""destination"": ""StorageClass"",\n        ""relation_description"": ""requests storage from"",\n        ""summary_er"": ""Pod 3 requests storage resources from StorageClass.""\n    }\n]', '[\n    {\n        ""source"": ""PersistentVolumeClaim 1"",\n        ""destination"": ""Pod 2"",\n        ""relation_description"": ""is created for"",\n        ""summary_er"": ""A Persistent Volume Claim is created to provide storage resources for a Pod, ensuring data persistence and availability.""\n    }\n]', '[\n  {\n    ""source"": ""PersistentVolume provisioner"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides storage for"",\n    ""summary_er"": ""The PersistentVolume provisioner provides storage resources to pods, enabling them to access and utilize persistent data.""\n  }\n]']","A PersistentVolume only supports Retain or Delete policies. The reclaim policy can be changed on an existing PersistentVolume. Kubernetes also performs dynamic provisioning of PersistentVolumes through persistent-volume provisioners and StorageClass objects, allowing users to choose the type of PersistentVolume they want.","[{'highlight': 'A PersistentVolume only supports the Retain or Delete policies.'}, {'highlight': 'You can change the PersistentVolume reclaim policy on an existing PersistentVolume.'}, {'highlight': 'Kubernetes can also perform dynamic provisioning of PersistentVolumes automatically through a provisioner and StorageClass objects.'}, {'highlight': 'StorageClass resources aren’t namespaced, similar to PersistentVolumes.'}, {'highlight': 'When a PVC is deleted, the PV is automatically recycled and ready to be claimed and re-used again.'}]"
+128,217,0,[],"185
+Dynamic provisioning of PersistentVolumes
+ Instead of the administrator pre-provisioning a bunch of PersistentVolumes, they
+need to define one or two (or more) StorageClasses and let the system create a new
+PersistentVolume each time one is requested through a PersistentVolumeClaim. The
+great thing about this is that it’s impossible to run out of PersistentVolumes (obviously,
+you can run out of storage space). 
+6.6.1
+Defining the available storage types through StorageClass 
+resources
+Before a user can create a PersistentVolumeClaim, which will result in a new Persistent-
+Volume being provisioned, an admin needs to create one or more StorageClass
+resources. Let’s look at an example of one in the following listing.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast
+provisioner: kubernetes.io/gce-pd       
+parameters:
+  type: pd-ssd                     
+  zone: europe-west1-b             
+NOTE
+If using Minikube, deploy the file storageclass-fast-hostpath.yaml.
+The StorageClass resource specifies which provisioner should be used for provision-
+ing the PersistentVolume when a PersistentVolumeClaim requests this StorageClass.
+The parameters defined in the StorageClass definition are passed to the provisioner
+and are specific to each provisioner plugin. 
+ The StorageClass uses the Google Compute Engine (GCE) Persistent Disk (PD)
+provisioner, which means it can be used when Kubernetes is running in GCE. For
+other cloud providers, other provisioners need to be used.
+6.6.2
+Requesting the storage class in a PersistentVolumeClaim
+After the StorageClass resource is created, users can refer to the storage class by name
+in their PersistentVolumeClaims. 
+CREATING A PVC DEFINITION REQUESTING A SPECIFIC STORAGE CLASS
+You can modify your mongodb-pvc to use dynamic provisioning. The following listing
+shows the updated YAML definition of the PVC.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc 
+Listing 6.14
+A StorageClass definition: storageclass-fast-gcepd.yaml
+Listing 6.15
+A PVC with dynamic provisioning: mongodb-pvc-dp.yaml
+The volume plugin to 
+use for provisioning 
+the PersistentVolume
+The parameters passed 
+to the provisioner
+ 
+",[],"[{'entity': 'Dynamic Provisioning', 'description': 'Provisioning of PersistentVolumes on demand', 'category': 'process'}, {'entity': 'PersistentVolumes', 'description': 'Storage resources that can be requested by users', 'category': 'database'}, {'entity': 'StorageClasses', 'description': 'Resources that define available storage types', 'category': 'application'}, {'entity': 'PersistentVolumeClaim', 'description': 'Request for a PersistentVolume with specific characteristics', 'category': 'database'}, {'entity': 'apiVersion', 'description': 'API version of the Kubernetes resource', 'category': 'command'}, {'entity': 'kind', 'description': 'Type of Kubernetes resource (e.g. StorageClass, PVC)', 'category': 'command'}, {'entity': 'metadata', 'description': 'Metadata associated with the Kubernetes resource', 'category': 'process'}, {'entity': 'name', 'description': 'Name of the Kubernetes resource', 'category': 'attribute'}, {'entity': 'provisioner', 'description': 'Provider used for provisioning PersistentVolumes', 'category': 'application'}, {'entity': 'parameters', 'description': 'Parameters passed to the provisioner', 'category': 'process'}, {'entity': 'type', 'description': 'Type of storage (e.g. pd-ssd)', 'category': 'attribute'}, {'entity': 'zone', 'description': 'Zone where the PersistentVolume will be created', 'category': 'attribute'}, {'entity': 'Minikube', 'description': 'Tool for running Kubernetes locally', 'category': 'application'}, {'entity': 'storageclass-fast-hostpath.yaml', 'description': 'File containing the StorageClass definition', 'category': 'file'}, {'entity': 'PersistentDisk (PD)', 'description': 'Storage type provided by Google Compute Engine', 'category': 'database'}, {'entity': 'GCE', 'description': 'Google Cloud Platform service', 'category': 'application'}, {'entity': 'PVC definition', 'description': 'Definition of a PersistentVolumeClaim', 'category': 'process'}, {'entity': 'mongodb-pvc', 'description': 'Example PVC definition', 'category': 'database'}, {'entity': 'storageclass-fast-gcepd.yaml', 'description': 'File containing the StorageClass definition', 'category': 'file'}, {'entity': 'mongodb-pvc-dp.yaml', 'description': 'Updated PVC definition with dynamic provisioning', 'category': 'database'}]","[{'source_entity': 'StorageClasses', 'description': 'are defined by', 'destination_entity': 'storageclass-fast-gcepd.yaml'}, {'source_entity': 'kind', 'description': 'is a field in', 'destination_entity': 'storageclass-fast-gcepd.yaml'}, {'source_entity': 'name', 'description': 'is a field in', 'destination_entity': 'storageclass-fast-hostpath.yaml'}, {'source_entity': 'type', 'description': 'is a field in', 'destination_entity': 'storageclass-fast-hostpath.yaml'}, {'source_entity': 'provisioner', 'description': 'is set to', 'destination_entity': 'PersistentVolumes'}, {'source_entity': 'parameters', 'description': 'are used for', 'destination_entity': 'Dynamic Provisioning'}, {'source_entity': 'apiVersion', 'description': 'specifies the version of', 'destination_entity': 'storageclass-fast-gcepd.yaml'}, {'source_entity': 'metadata', 'description': 'contains information about', 'destination_entity': 'PersistentDisk (PD)'}, {'source_entity': 'PersistentVolumeClaim', 'description': 'is a resource that requests access to', 'destination_entity': 'PVC definition'}, {'source_entity': 'Minikube', 'description': 'is used for running', 'destination_entity': 'mongodb-pvc-dp.yaml'}, {'source_entity': 'mongodb-pvc', 'description': 'is a PVC that uses', 'destination_entity': 'Dynamic Provisioning'}, {'source_entity': 'GCE', 'description': 'provides the storage backend for', 'destination_entity': 'storageclass-fast-gcepd.yaml'}, {'source_entity': 'zone', 'description': 'specifies the zone where the storage is located in', 'destination_entity': 'storageclass-fast-gcepd.yaml'}]","['[\n  {\n    ""source"": ""StorageClasses"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are defined by"",\n    ""summary_er"": ""StorageClasses are defined by a YAML file that specifies storage parameters for pods.""\n  }\n]', '[\n  {\n    ""source"": ""kind"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a field in"",\n    ""summary_er"": ""Kind is a field that specifies the type of pod, such as Deployment or StatefulSet.""\n  },\n  {\n    ""source"": ""kind"",\n    ""destination"": ""storageclass-fast-gcepd.yaml"",\n    ""relation_description"": ""is a field in"",\n    ""summary_er"": ""StorageClass is a field that defines a storage class for the pod, using a YAML file named fast-gcepd.""\n  }\n]', '[\n  {\n    ""source"": ""name"",\n    ""destination"": ""field"",\n    ""relation_description"": ""is a"",\n    ""summary_er"": ""The \'name\' field is a characteristic that exists within a specific entity.""\n  },\n  {\n    ""source"": ""field"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""in"",\n    ""summary_er"": ""A field exists within a pod, which is a containerized application in Kubernetes.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""storageclass-fast-hostpath.yaml"",\n    ""relation_description"": ""is"",\n    ""summary_er"": ""A pod utilizes the storage class \'fast-hostpath\' defined in the YAML file.""\n  }\n]', '[\n  {\n    ""source"": ""type"",\n    ""destination"": ""field"",\n    ""relation_description"": ""is a"",\n    ""summary_er"": ""Type is a field that defines the type of data stored in a Kubernetes resource.""\n  },\n  {\n    ""source"": ""field"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""in"",\n    ""summary_er"": ""Field is used to specify a pod in a Kubernetes configuration file.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""storageclass-fast-hostpath.yaml"",\n    ""relation_description"": ""and"",\n    ""summary_er"": ""Pods can be associated with storage classes, such as fast-hostpath.yaml, for persistent storage needs.""\n  }\n]', '[\n  {\n    ""source"": ""provisioner"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is set to"",\n    ""summary_er"": ""The provisioner sets the persistent volume for a pod, ensuring consistent storage allocation.""\n  },\n  {\n    ""source"": ""PersistentVolumes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used by"",\n    ""summary_er"": ""Persistent volumes are utilized by pods to provide stable and shared storage resources.""\n  }\n]', '[{""source"": ""parameters"", ""destination"": ""pod"", ""relation_description"": ""are used for"", ""summary_er"": ""Pod creation parameters are used to dynamically provision a new pod.""}, {""source"": ""Dynamic Provisioning"", ""destination"": ""pod"", ""relation_description"": ""is enabled"", ""summary_er"": ""Dynamic provisioning is enabled to create a new pod on demand.""}]', '[\n  {\n    ""source"": ""apiVersion"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the version of"",\n    ""summary_er"": ""API version specifies the version of a pod\'s configuration.""\n  },\n  {\n    ""source"": ""storageclass-fast-gcepd.yaml"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""and the destination"",\n    ""summary_er"": ""Storage class YAML file is used for the destination pod.""\n  }\n]', '[\n  {\n    ""source"": ""metadata"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains information about"",\n    ""summary_er"": ""Metadata provides details about a pod, including its name, labels, and annotations.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""PersistentDisk (PD)"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A pod uses Persistent Disk (PD) for persistent storage needs, ensuring data is retained even after the pod\'s termination.""\n  }\n]', '[\n  {\n    ""source"": ""PersistentVolumeClaim"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a resource that requests access to"",\n    ""summary_er"": ""A Persistent Volume Claim is a resource request for pod, allowing it to access storage resources.""\n  }\n]', '[\n  {\n    ""source"": ""Minikube"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used for running"",\n    ""summary_er"": ""Minikube is a tool for running Kubernetes locally, and it creates a pod to run applications.""\n  }\n]', '[\n  {\n    ""source"": ""mongodb-pvc"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a PVC that uses"",\n    ""summary_er"": ""A Persistent Volume Claim (PVC) named mongodb-pvc is used by a pod for dynamic provisioning.""\n  }\n]', '[\n  {\n    ""source"": ""GCE"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides the storage backend for"",\n    ""summary_er"": ""Google Cloud Engine provides a storage backend for pods, enabling efficient data management and access.""\n  }\n]', '[\n  {\n    ""source"": ""zone"",\n    ""destination"": ""storageclass-fast-gcepd.yaml"",\n    ""relation_description"": ""specifies the zone where the storage is located in"",\n    ""summary_er"": ""The storage class specifies the zone for GCE PD storage, ensuring data locality and performance.""\n  }\n]']","Dynamic provisioning of PersistentVolumes allows administrators to define one or two StorageClasses, enabling the system to create new PersistentVolumes each time a PersistentVolumeClaim is requested. This eliminates the possibility of running out of PersistentVolumes. The StorageClass resource specifies the provisioner and parameters for provisioning, which can be specific to cloud providers like GCE. Users can refer to the storage class by name in their PersistentVolumeClaims, enabling dynamic provisioning of PersistentVolumes.","[{'highlight': 'Dynamic provisioning of PersistentVolumes allows administrators to define one or two StorageClasses and let the system create a new PersistentVolume each time one is requested through a PersistentVolumeClaim.'}, {'highlight': 'StorageClass resources specify which provisioner should be used for provisioning the PersistentVolume when a PersistentVolumeClaim requests this StorageClass.'}, {'highlight': 'The parameters defined in the StorageClass definition are passed to the provisioner and are specific to each provisioner plugin.'}, {'highlight': 'Users can refer to the storage class by name in their PersistentVolumeClaims after the StorageClass resource is created.'}, {'highlight': 'Dynamic provisioning allows users to request a specific storage class in a PersistentVolumeClaim, such as using MongoDB with dynamic provisioning.'}]"
+129,218,0,[],"186
+CHAPTER 6
+Volumes: attaching disk storage to containers
+spec:
+  storageClassName: fast     
+  resources:
+    requests:
+      storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+Apart from specifying the size and access modes, your PersistentVolumeClaim now
+also specifies the class of storage you want to use. When you create the claim, the
+PersistentVolume is created by the provisioner referenced in the fast StorageClass
+resource. The provisioner is used even if an existing manually provisioned Persistent-
+Volume matches the PersistentVolumeClaim. 
+NOTE
+If you reference a non-existing storage class in a PVC, the provisioning
+of the PV will fail (you’ll see a ProvisioningFailed event when you use
+kubectl describe on the PVC).
+EXAMINING THE CREATED PVC AND THE DYNAMICALLY PROVISIONED PV
+Next you’ll create the PVC and then use kubectl get to see it:
+$ kubectl get pvc mongodb-pvc
+NAME          STATUS   VOLUME         CAPACITY   ACCESSMODES   STORAGECLASS
+mongodb-pvc   Bound    pvc-1e6bc048   1Gi        RWO           fast 
+The VOLUME column shows the PersistentVolume that’s bound to this claim (the actual
+name is longer than what’s shown above). You can try listing PersistentVolumes now to
+see that a new PV has indeed been created automatically:
+$ kubectl get pv
+NAME           CAPACITY  ACCESSMODES  RECLAIMPOLICY  STATUS    STORAGECLASS   
+mongodb-pv     1Gi       RWO,ROX      Retain         Released 
+pvc-1e6bc048   1Gi       RWO          Delete         Bound     fast
+NOTE
+Only pertinent columns are shown.
+You can see the dynamically provisioned PersistentVolume. Its capacity and access
+modes are what you requested in the PVC. Its reclaim policy is Delete, which means
+the PersistentVolume will be deleted when the PVC is deleted. Beside the PV, the pro-
+visioner also provisioned the actual storage. Your fast StorageClass is configured to
+use the kubernetes.io/gce-pd provisioner, which provisions GCE Persistent Disks.
+You can see the disk with the following command:
+$ gcloud compute disks list
+NAME                          ZONE            SIZE_GB  TYPE         STATUS
+gke-kubia-dyn-pvc-1e6bc048    europe-west1-d  1        pd-ssd       READY
+gke-kubia-default-pool-71df   europe-west1-d  100      pd-standard  READY
+gke-kubia-default-pool-79cd   europe-west1-d  100      pd-standard  READY
+gke-kubia-default-pool-blc4   europe-west1-d  100      pd-standard  READY
+mongodb                       europe-west1-d  1        pd-standard  READY
+This PVC requests the 
+custom storage class.
+ 
+",[],"[{'entity': 'PersistentVolumeClaim', 'description': 'A request for a Persistent Volume', 'category': 'database'}, {'entity': 'storageClassName', 'description': 'The class of storage to use', 'category': 'database'}, {'entity': 'resources', 'description': 'The resources requested by the PVC', 'category': 'process'}, {'entity': 'requests', 'description': 'The specific requests made by the PVC', 'category': 'process'}, {'entity': 'storage', 'description': 'The storage capacity requested', 'category': 'database'}, {'entity': 'accessModes', 'description': 'The access modes for the Persistent Volume', 'category': 'database'}, {'entity': 'ReadWriteOnce', 'description': 'A mode where a single node can read and write to the volume', 'category': 'database'}, {'entity': 'PersistentVolume', 'description': 'A resource that provides persistent storage', 'category': 'database'}, {'entity': 'provisioner', 'description': 'The provisioner used to create the Persistent Volume', 'category': 'process'}, {'entity': 'StorageClass', 'description': 'A resource that defines a storage class', 'category': 'database'}, {'entity': 'fast StorageClass', 'description': 'A custom storage class used in the example', 'category': 'database'}, {'entity': 'kubectl get pvc', 'description': 'A command to list Persistent Volume Claims', 'category': 'command'}, {'entity': 'kubectl describe', 'description': 'A command to display detailed information about a resource', 'category': 'command'}, {'entity': 'PersistentVolumeClaim', 'description': 'The PVC created in the example', 'category': 'database'}, {'entity': 'pvc-1e6bc048', 'description': 'The name of the Persistent Volume Claim', 'category': 'database'}, {'entity': 'PersistentVolume', 'description': 'The dynamically provisioned Persistent Volume', 'category': 'database'}, {'entity': 'pvc-1e6bc048', 'description': 'The name of the Persistent Volume', 'category': 'database'}, {'entity': 'gcloud compute disks list', 'description': 'A command to list Compute Engine disks', 'category': 'command'}, {'entity': 'kubernetes.io/gce-pd provisioner', 'description': 'The provisioner used by the fast StorageClass', 'category': 'process'}]","[{'source_entity': '""kubectl describe""', 'description': 'describe the properties of', 'destination_entity': '""storageClassName""'}, {'source_entity': '""gcloud compute disks list""', 'description': 'list all available', 'destination_entity': '""disks""'}, {'source_entity': '""kubectl describe""', 'description': 'describe the properties of', 'destination_entity': '""PersistentVolumeClaim""'}, {'source_entity': '""kubernetes.io/gce-pd provisioner""', 'description': 'provision a new', 'destination_entity': '""StorageClass""'}, {'source_entity': '""StorageClass""', 'description': 'define the characteristics of', 'destination_entity': '""ReadWriteOnce""'}, {'source_entity': '""kubectl get pvc""', 'description': 'retrieve information about', 'destination_entity': '""pvc-1e6bc048""'}, {'source_entity': '""kubectl get pvc""', 'description': 'specify the access mode for', 'destination_entity': '""accessModes""'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""describe the properties of"",\n    ""summary_er"": ""Kubectl command describes the properties of a running pod, including its configuration and status.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""storageClassName"",\n    ""relation_description"": ""properties of"",\n    ""summary_er"": ""A pod\'s properties include its storage class name, which determines the type of storage it uses.""\n  }\n]', '[\n  {\n    ""source"": ""gcloud"",\n    ""destination"": ""disks"",\n    ""relation_description"": ""list all available"",\n    ""summary_er"": ""The gcloud command lists all available disks, providing a comprehensive view of disk resources.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""describe the properties of"",\n    ""summary_er"": ""Kubectl describes the properties of a pod, including its configuration and status.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""PersistentVolumeClaim"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""A pod is related to a Persistent Volume Claim, which requests storage resources from a cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubernetes.io/gce-pd provisioner"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provision a new"",\n    ""summary_er"": ""The Kubernetes GCE PD provisioner dynamically provisions persistent storage for pods using Google Cloud Platform\'s Persistent Disks.""\n  }\n]', '[\n  {\n    ""source"": ""StorageClass"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""define the characteristics of"",\n    ""summary_er"": ""A StorageClass defines the characteristics of a storage resource, which can be used by pods to request persistent storage.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""retrieve information about"",\n    ""summary_er"": ""Using kubectl to fetch details of a pod, specifically \'pvc-1e6bc048\'.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specify the access mode for"",\n    ""summary_er"": ""Kubectl command to get PVCs and specify access modes for pods.""\n  },\n  {\n    ""source"": ""PVCs"",\n    ""destination"": ""accessModes"",\n    ""relation_description"": ""specify the access mode for"",\n    ""summary_er"": ""PVCs are used to specify access modes for pods, ensuring proper storage allocation.""\n  }\n]']","A PersistentVolumeClaim (PVC) can specify a custom storage class, such as 'fast', which is referenced by a provisioner to create a PersistentVolume. The provisioner is used even if an existing manually provisioned PV matches the PVC. If the storage class does not exist, provisioning will fail. The dynamically created PV has the requested capacity and access modes, with a reclaim policy of Delete, meaning it will be deleted when the PVC is deleted.","[{'highlight': 'specifying the size and access modes, your PersistentVolumeClaim now also specifies the class of storage you want to use.'}, {'highlight': 'If you reference a non-existing storage class in a PVC, the provisioning of the PV will fail (you’ll see a ProvisioningFailed event when you use kubectl describe on the PVC).'}, {'highlight': 'The VOLUME column shows the PersistentVolume that’s bound to this claim (the actual name is longer than what’s shown above).'}, {'highlight': 'Its capacity and access modes are what you requested in the PVC. Its reclaim policy is Delete, which means the PersistentVolume will be deleted when the PVC is deleted.'}, {'highlight': 'You can see the disk with the following command: $ gcloud compute disks list'}]"

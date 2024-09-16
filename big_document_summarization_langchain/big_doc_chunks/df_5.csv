@@ -1,0 +1,492 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+50,139,0,[],"107
+Using ReplicaSets instead of ReplicationControllers
+  Containers:   ...
+  Volumes:      <none>
+Events:         <none>
+As you can see, the ReplicaSet isn’t any different from a ReplicationController. It’s
+showing it has three replicas matching the selector. If you list all the pods, you’ll see
+they’re still the same three pods you had before. The ReplicaSet didn’t create any new
+ones. 
+4.3.4
+Using the ReplicaSet’s more expressive label selectors
+The main improvements of ReplicaSets over ReplicationControllers are their more
+expressive label selectors. You intentionally used the simpler matchLabels selector in
+the first ReplicaSet example to see that ReplicaSets are no different from Replication-
+Controllers. Now, you’ll rewrite the selector to use the more powerful matchExpressions
+property, as shown in the following listing.
+ selector:
+   matchExpressions:                 
+     - key: app           
+       operator: In                  
+       values:                       
+         - kubia                     
+NOTE
+Only the selector is shown. You’ll find the whole ReplicaSet definition
+in the book’s code archive.
+You can add additional expressions to the selector. As in the example, each expression
+must contain a key, an operator, and possibly (depending on the operator) a list of
+values. You’ll see four valid operators:
+
+In—Label’s value must match one of the specified values.
+
+NotIn—Label’s value must not match any of the specified values.
+
+Exists—Pod must include a label with the specified key (the value isn’t import-
+ant). When using this operator, you shouldn’t specify the values field.
+
+DoesNotExist—Pod must not include a label with the specified key. The values
+property must not be specified.
+If you specify multiple expressions, all those expressions must evaluate to true for the
+selector to match a pod. If you specify both matchLabels and matchExpressions, all
+the labels must match and all the expressions must evaluate to true for the pod to
+match the selector.
+Listing 4.9
+A matchExpressions selector: kubia-replicaset-matchexpressions.yaml
+This selector requires the pod to 
+contain a label with the “app” key.
+The label’s value 
+must be “kubia”.
+ 
+",[],"[{'entity': 'ReplicaSet', 'description': 'A Kubernetes resource that ensures a specified number of replicas (identical Pod templates) are running at any given time.', 'category': 'software'}, {'entity': 'ReplicationController', 'description': 'A legacy Kubernetes resource that ensures a specified number of replicas (identical Pod templates) are running at any given time.', 'category': 'software'}, {'entity': 'selector', 'description': 'A way to select pods based on labels and expressions.', 'category': 'software'}, {'entity': 'matchLabels', 'description': 'A selector that matches pods with specific label values.', 'category': 'software'}, {'entity': 'matchExpressions', 'description': 'A more expressive selector that allows for complex label matching.', 'category': 'software'}, {'entity': 'key', 'description': 'The key of a label or expression.', 'category': 'software'}, {'entity': 'operator', 'description': 'An operator used in matchExpressions to specify the type of label value matching.', 'category': 'software'}, {'entity': 'In', 'description': ""An operator that matches if the label's value is one of the specified values."", 'category': 'software'}, {'entity': 'NotIn', 'description': ""An operator that matches if the label's value is not any of the specified values."", 'category': 'software'}, {'entity': 'Exists', 'description': 'An operator that matches if a pod has a label with the specified key, regardless of its value.', 'category': 'software'}, {'entity': 'DoesNotExist', 'description': 'An operator that matches if a pod does not have a label with the specified key.', 'category': 'software'}, {'entity': 'values', 'description': 'A list of values to match against in a selector or expression.', 'category': 'software'}]",,[],"ReplicaSets are similar to ReplicationControllers, but with more expressive label selectors. The matchExpressions property allows for complex matching rules, such as requiring a pod to have a specific label or not having a certain label. This provides flexibility in selecting pods, making ReplicaSets more powerful than ReplicationControllers.","[{'highlight': 'ReplicaSets are no different from Replication-Controllers in terms of creating new pods, they only show the same three pods as before.'}, {'highlight': 'The main improvements of ReplicaSets over ReplicationControllers are their more expressive label selectors using matchExpressions property.'}, {'highlight': ""There are four valid operators for matchExpressions: In, NotIn, Exists, and DoesNotExist, which can be used to specify the selector's behavior.""}, {'highlight': 'When using matchExpressions, each expression must contain a key, an operator, and possibly a list of values depending on the operator.'}, {'highlight': 'If multiple expressions are specified in the selector, all those expressions must evaluate to true for the pod to match the selector.'}]"
+51,140,0,[],"108
+CHAPTER 4
+Replication and other controllers: deploying managed pods
+4.3.5
+Wrapping up ReplicaSets
+This was a quick introduction to ReplicaSets as an alternative to ReplicationControllers.
+Remember, always use them instead of ReplicationControllers, but you may still find
+ReplicationControllers in other people’s deployments.
+ Now, delete the ReplicaSet to clean up your cluster a little. You can delete the
+ReplicaSet the same way you’d delete a ReplicationController:
+$ kubectl delete rs kubia
+replicaset ""kubia"" deleted
+Deleting the ReplicaSet should delete all the pods. List the pods to confirm that’s
+the case. 
+4.4
+Running exactly one pod on each node with 
+DaemonSets
+Both ReplicationControllers and ReplicaSets are used for running a specific number
+of pods deployed anywhere in the Kubernetes cluster. But certain cases exist when you
+want a pod to run on each and every node in the cluster (and each node needs to run
+exactly one instance of the pod, as shown in figure 4.8).
+ Those cases include infrastructure-related pods that perform system-level opera-
+tions. For example, you’ll want to run a log collector and a resource monitor on every
+node. Another good example is Kubernetes’ own kube-proxy process, which needs to
+run on all nodes to make services work.
+Node 1
+Pod
+Pod
+Pod
+ReplicaSet
+Replicas: 5
+Node 2
+Pod
+Pod
+Node 3
+Pod
+DaemonSet
+Exactly one replica
+on each node
+Node 4
+Pod
+Pod
+Pod
+Figure 4.8
+DaemonSets run only a single pod replica on each node, whereas ReplicaSets 
+scatter them around the whole cluster randomly. 
+ 
+","[   Col0    Node 2
+0  None  Pod\nPod
+1            None
+2                
+3  None          ]","[{'entity': 'ReplicaSet', 'description': 'A Kubernetes resource that ensures a specified number of replicas (identical Pods) are running at any given time.', 'category': 'software'}, {'entity': 'ReplicationController', 'description': 'An older Kubernetes resource used to manage the number of replicas (identical Pods) running in a cluster.', 'category': 'software'}, {'entity': 'kubectl', 'description': 'The command-line tool for interacting with a Kubernetes cluster.', 'category': 'command'}, {'entity': 'ReplicaSet', 'description': 'A Kubernetes resource that ensures a specified number of replicas (identical Pods) are running at any given time.', 'category': 'software'}, {'entity': 'DaemonSet', 'description': 'A Kubernetes resource that runs a single pod replica on each node in the cluster.', 'category': 'software'}, {'entity': 'Pod', 'description': 'The basic execution unit of a Kubernetes application, comprising one or more containers.', 'category': 'container'}, {'entity': 'ReplicaSet', 'description': 'A Kubernetes resource that ensures a specified number of replicas (identical Pods) are running at any given time.', 'category': 'software'}]",,[],"ReplicaSets and ReplicationControllers are used for running a specific number of pods in a Kubernetes cluster, but DaemonSets are used to run one pod on each node, with exactly one instance per node, suitable for infrastructure-related pods like log collectors and resource monitors.","[{'highlight': 'ReplicaSets are an alternative to ReplicationControllers and should be used instead.'}, {'highlight': 'Deleting a ReplicaSet deletes all associated pods.'}, {'highlight': 'DaemonSets run exactly one pod replica on each node in the Kubernetes cluster.'}, {'highlight': 'Infrastructure-related pods, such as log collectors and resource monitors, can benefit from DaemonSets.'}, {'highlight': 'ReplicaSets scatter pods randomly across the whole cluster, unlike DaemonSets which run a single pod per node.'}]"
+52,141,0,[],"109
+Running exactly one pod on each node with DaemonSets
+Outside of Kubernetes, such processes would usually be started through system init
+scripts or the systemd daemon during node boot up. On Kubernetes nodes, you can
+still use systemd to run your system processes, but then you can’t take advantage of all
+the features Kubernetes provides. 
+4.4.1
+Using a DaemonSet to run a pod on every node
+To run a pod on all cluster nodes, you create a DaemonSet object, which is much
+like a ReplicationController or a ReplicaSet, except that pods created by a Daemon-
+Set already have a target node specified and skip the Kubernetes Scheduler. They
+aren’t scattered around the cluster randomly. 
+ A DaemonSet makes sure it creates as many pods as there are nodes and deploys
+each one on its own node, as shown in figure 4.8.
+ Whereas a ReplicaSet (or ReplicationController) makes sure that a desired num-
+ber of pod replicas exist in the cluster, a DaemonSet doesn’t have any notion of a
+desired replica count. It doesn’t need it because its job is to ensure that a pod match-
+ing its pod selector is running on each node. 
+ If a node goes down, the DaemonSet doesn’t cause the pod to be created else-
+where. But when a new node is added to the cluster, the DaemonSet immediately
+deploys a new pod instance to it. It also does the same if someone inadvertently
+deletes one of the pods, leaving the node without the DaemonSet’s pod. Like a Replica-
+Set, a DaemonSet creates the pod from the pod template configured in it.
+4.4.2
+Using a DaemonSet to run pods only on certain nodes
+A DaemonSet deploys pods to all nodes in the cluster, unless you specify that the pods
+should only run on a subset of all the nodes. This is done by specifying the node-
+Selector property in the pod template, which is part of the DaemonSet definition
+(similar to the pod template in a ReplicaSet or ReplicationController). 
+ You’ve already used node selectors to deploy a pod onto specific nodes in chapter 3.
+A node selector in a DaemonSet is similar—it defines the nodes the DaemonSet must
+deploy its pods to. 
+NOTE
+Later in the book, you’ll learn that nodes can be made unschedulable,
+preventing pods from being deployed to them. A DaemonSet will deploy pods
+even to such nodes, because the unschedulable attribute is only used by the
+Scheduler, whereas pods managed by a DaemonSet bypass the Scheduler
+completely. This is usually desirable, because DaemonSets are meant to run
+system services, which usually need to run even on unschedulable nodes.
+EXPLAINING DAEMONSETS WITH AN EXAMPLE
+Let’s imagine having a daemon called ssd-monitor that needs to run on all nodes
+that contain a solid-state drive (SSD). You’ll create a DaemonSet that runs this dae-
+mon on all nodes that are marked as having an SSD. The cluster administrators have
+added the disk=ssd label to all such nodes, so you’ll create the DaemonSet with a
+node selector that only selects nodes with that label, as shown in figure 4.9.
+ 
+",[],[],,[],"A DaemonSet is used to run a pod on every node in a Kubernetes cluster, or on a subset of nodes specified by a node selector. It ensures a desired number of pods exist and creates a new pod instance if a new node is added or an existing node is deleted. Unlike ReplicaSets, DaemonSets do not need a replica count and will deploy pods even to unschedulable nodes.","[{'highlight': 'A DaemonSet makes sure it creates as many pods as there are nodes and deploys each one on its own node.'}, {'highlight': 'If a node goes down, the DaemonSet doesn’t cause the pod to be created elsewhere. But when a new node is added to the cluster, the DaemonSet immediately deploys a new pod instance to it.'}, {'highlight': 'A DaemonSet deploys pods to all nodes in the cluster, unless you specify that the pods should only run on a subset of all the nodes.'}, {'highlight': 'You can use node selectors to deploy a pod onto specific nodes in a DaemonSet, which defines the nodes the DaemonSet must deploy its pods to.'}, {'highlight': 'DaemonSets are meant to run system services, which usually need to run even on unschedulable nodes.'}]"
+53,142,0,[],"110
+CHAPTER 4
+Replication and other controllers: deploying managed pods
+CREATING A DAEMONSET YAML DEFINITION
+You’ll create a DaemonSet that runs a mock ssd-monitor process, which prints
+“SSD OK” to the standard output every five seconds. I’ve already prepared the mock
+container image and pushed it to Docker Hub, so you can use it instead of building
+your own. Create the YAML for the DaemonSet, as shown in the following listing.
+apiVersion: apps/v1beta2      
+kind: DaemonSet                     
+metadata:
+  name: ssd-monitor
+spec:                            
+  selector:
+    matchLabels:
+      app: ssd-monitor
+  template:
+    metadata:
+      labels:
+        app: ssd-monitor
+    spec:
+      nodeSelector:                
+        disk: ssd                  
+      containers:
+      - name: main
+        image: luksa/ssd-monitor
+You’re defining a DaemonSet that will run a pod with a single container based on the
+luksa/ssd-monitor container image. An instance of this pod will be created for each
+node that has the disk=ssd label.
+Listing 4.10
+A YAML for a DaemonSet: ssd-monitor-daemonset.yaml
+Node 1
+Pod:
+ssd-monitor
+Node 2
+Node 3
+DaemonSet:
+sssd-monitor
+Node selector:
+disk=ssd
+Node 4
+disk: ssd
+disk: ssd
+disk: ssd
+Unschedulable
+Pod:
+ssd-monitor
+Pod:
+ssd-monitor
+Figure 4.9
+Using a DaemonSet with a node selector to deploy system pods only on certain 
+nodes
+DaemonSets are in the 
+apps API group, 
+version v1beta2.
+The pod template includes a 
+node selector, which selects 
+nodes with the disk=ssd label.
+ 
+",[],"[{'entity': 'DaemonSet', 'description': 'A Kubernetes resource that ensures a specified number of replicas (pods) are running at any given time.', 'category': 'application'}, {'entity': 'apiVersion', 'description': 'The version of the API used to define the DaemonSet.', 'category': 'software'}, {'entity': 'kind', 'description': 'The type of resource being defined (in this case, a DaemonSet).', 'category': 'software'}, {'entity': 'metadata', 'description': 'A field that provides metadata about the DaemonSet.', 'category': 'application'}, {'entity': 'name', 'description': 'The name of the DaemonSet.', 'category': 'application'}, {'entity': 'spec', 'description': 'A field that defines the desired state of the DaemonSet.', 'category': 'application'}, {'entity': 'selector', 'description': 'A field that selects nodes based on labels.', 'category': 'software'}, {'entity': 'matchLabels', 'description': 'A field that specifies the labels to match.', 'category': 'software'}, {'entity': 'app', 'description': 'The label key for the application.', 'category': 'software'}, {'entity': 'ssd-monitor', 'description': 'The name of the DaemonSet and pod.', 'category': 'application'}, {'entity': 'nodeSelector', 'description': 'A field that selects nodes based on labels.', 'category': 'software'}, {'entity': 'disk', 'description': 'The label key for the disk type.', 'category': 'hardware'}, {'entity': 'ssd', 'description': 'The value of the disk label.', 'category': 'hardware'}, {'entity': 'containers', 'description': 'A field that defines the containers in the pod.', 'category': 'application'}, {'entity': 'main', 'description': 'The name of the container.', 'category': 'application'}, {'entity': 'image', 'description': 'The Docker image used for the container.', 'category': 'software'}, {'entity': 'luksa/ssd-monitor', 'description': 'The name of the Docker image.', 'category': 'software'}]",,[],A DaemonSet is created for deploying managed pods. A YAML definition is written for the DaemonSet to run a mock ssd-monitor process on nodes with the 'disk=ssd' label. The DaemonSet will create an instance of the pod on each node that meets this condition.,"[{'highlight': 'You’ll create a DaemonSet that runs a mock ssd-monitor process, which prints “SSD OK” to the standard output every five seconds.'}, {'highlight': 'An instance of this pod will be created for each node that has the disk=ssd label.'}, {'highlight': 'DaemonSets are in the apps API group, version v1beta2.'}, {'highlight': 'The pod template includes a node selector, which selects nodes with the disk=ssd label.'}, {'highlight': 'You’re defining a DaemonSet that will run a pod with a single container based on the luksa/ssd-monitor container image.'}]"
+54,143,0,[],"111
+Running exactly one pod on each node with DaemonSets
+CREATING THE DAEMONSET
+You’ll create the DaemonSet like you always create resources from a YAML file:
+$ kubectl create -f ssd-monitor-daemonset.yaml
+daemonset ""ssd-monitor"" created
+Let’s see the created DaemonSet:
+$ kubectl get ds
+NAME          DESIRED  CURRENT  READY  UP-TO-DATE  AVAILABLE  NODE-SELECTOR  
+ssd-monitor   0        0        0      0           0          disk=ssd
+Those zeroes look strange. Didn’t the DaemonSet deploy any pods? List the pods:
+$ kubectl get po
+No resources found.
+Where are the pods? Do you know what’s going on? Yes, you forgot to label your nodes
+with the disk=ssd label. No problem—you can do that now. The DaemonSet should
+detect that the nodes’ labels have changed and deploy the pod to all nodes with a
+matching label. Let’s see if that’s true. 
+ADDING THE REQUIRED LABEL TO YOUR NODE(S)
+Regardless if you’re using Minikube, GKE, or another multi-node cluster, you’ll need
+to list the nodes first, because you’ll need to know the node’s name when labeling it:
+$ kubectl get node
+NAME       STATUS    AGE       VERSION
+minikube   Ready     4d        v1.6.0
+Now, add the disk=ssd label to one of your nodes like this:
+$ kubectl label node minikube disk=ssd
+node ""minikube"" labeled
+NOTE
+Replace minikube with the name of one of your nodes if you’re not
+using Minikube.
+The DaemonSet should have created one pod now. Let’s see:
+$ kubectl get po
+NAME                READY     STATUS    RESTARTS   AGE
+ssd-monitor-hgxwq   1/1       Running   0          35s
+Okay; so far so good. If you have multiple nodes and you add the same label to further
+nodes, you’ll see the DaemonSet spin up pods for each of them. 
+REMOVING THE REQUIRED LABEL FROM THE NODE
+Now, imagine you’ve made a mistake and have mislabeled one of the nodes. It has a
+spinning disk drive, not an SSD. What happens if you change the node’s label?
+$ kubectl label node minikube disk=hdd --overwrite
+node ""minikube"" labeled
+ 
+",[],"[{'entity': 'DaemonSet', 'description': 'A Kubernetes resource that ensures a specified number of replicas (pods) are running at any given time.', 'category': 'software'}, {'entity': 'kubectl', 'description': 'The command-line tool for interacting with a Kubernetes cluster.', 'category': 'software'}, {'entity': 'ssd-monitor-daemonset.yaml', 'description': 'A YAML file containing the configuration for the DaemonSet.', 'category': 'software'}, {'entity': 'pod', 'description': 'The basic execution unit in a Kubernetes cluster.', 'category': 'container'}, {'entity': 'node', 'description': 'A machine in a Kubernetes cluster, which can run pods.', 'category': 'hardware'}, {'entity': 'disk=ssd', 'description': 'A label that identifies nodes with solid-state drives (SSDs).', 'category': 'label'}, {'entity': 'disk=hdd', 'description': 'A label that identifies nodes with hard disk drives (HDDs).', 'category': 'label'}, {'entity': 'minikube', 'description': 'A local Kubernetes cluster running on a single machine.', 'category': 'software'}, {'entity': 'GKE', 'description': 'Google Kubernetes Engine, a managed container orchestration service.', 'category': 'cloud platform'}]",,[],"Creating a DaemonSet to run one pod on each node requires labeling nodes with the required label. Initially, the DaemonSet appears not to deploy pods due to missing labels. Adding the label to one or more nodes triggers the DaemonSet to create pods for matching nodes.","[{'highlight': ""You'll create the DaemonSet like you always create resources from a YAML file: $ kubectl create -f ssd-monitor-daemonset.yaml""}, {'highlight': ""The DaemonSet should detect that the nodes' labels have changed and deploy the pod to all nodes with a matching label.""}, {'highlight': '$ kubectl get po NAME                READY     STATUS    RESTARTS   AGE ssd-monitor-hgxwq   1/1       Running   0          35s'}, {'highlight': ""If you have multiple nodes and you add the same label to further nodes, you'll see the DaemonSet spin up pods for each of them.""}, {'highlight': '$ kubectl label node minikube disk=ssd; $ kubectl get po NAME                READY     STATUS    RESTARTS   AGE ssd-monitor-hgxwq   1/1       Running   0          35s'}]"
+55,144,0,[],"112
+CHAPTER 4
+Replication and other controllers: deploying managed pods
+Let’s see if the change has any effect on the pod that was running on that node:
+$ kubectl get po
+NAME                READY     STATUS        RESTARTS   AGE
+ssd-monitor-hgxwq   1/1       Terminating   0          4m
+The pod is being terminated. But you knew that was going to happen, right? This
+wraps up your exploration of DaemonSets, so you may want to delete your ssd-monitor
+DaemonSet. If you still have any other daemon pods running, you’ll see that deleting
+the DaemonSet deletes those pods as well. 
+4.5
+Running pods that perform a single completable task 
+Up to now, we’ve only talked about pods than need to run continuously. You’ll have
+cases where you only want to run a task that terminates after completing its work.
+ReplicationControllers, ReplicaSets, and DaemonSets run continuous tasks that are
+never considered completed. Processes in such pods are restarted when they exit. But
+in a completable task, after its process terminates, it should not be restarted again. 
+4.5.1
+Introducing the Job resource
+Kubernetes includes support for this through the Job resource, which is similar to the
+other resources we’ve discussed in this chapter, but it allows you to run a pod whose
+container isn’t restarted when the process running inside finishes successfully. Once it
+does, the pod is considered complete. 
+ In the event of a node failure, the pods on that node that are managed by a Job will
+be rescheduled to other nodes the way ReplicaSet pods are. In the event of a failure of
+the process itself (when the process returns an error exit code), the Job can be config-
+ured to either restart the container or not.
+ Figure 4.10 shows how a pod created by a Job is rescheduled to a new node if the
+node it was initially scheduled to fails. The figure also shows both a managed pod,
+which isn’t rescheduled, and a pod backed by a ReplicaSet, which is.
+ For example, Jobs are useful for ad hoc tasks, where it’s crucial that the task fin-
+ishes properly. You could run the task in an unmanaged pod and wait for it to finish,
+but in the event of a node failing or the pod being evicted from the node while it is
+performing its task, you’d need to manually recreate it. Doing this manually doesn’t
+make sense—especially if the job takes hours to complete. 
+ An example of such a job would be if you had data stored somewhere and you
+needed to transform and export it somewhere. You’re going to emulate this by run-
+ning a container image built on top of the busybox image, which invokes the sleep
+command for two minutes. I’ve already built the image and pushed it to Docker Hub,
+but you can peek into its Dockerfile in the book’s code archive.
+ 
+",[],"[{'entity': 'kubectl', 'description': 'Command-line tool for interacting with Kubernetes clusters', 'category': 'software'}, {'entity': 'po', 'description': 'Pod object in Kubernetes', 'category': 'software'}, {'entity': 'ReplicationControllers', 'description': 'Kubernetes resource for managing multiple replicas of a pod', 'category': 'software'}, {'entity': 'ReplicaSets', 'description': 'Kubernetes resource for managing multiple replicas of a pod', 'category': 'software'}, {'entity': 'DaemonSets', 'description': 'Kubernetes resource for deploying pods to every node in a cluster', 'category': 'software'}, {'entity': 'Job', 'description': 'Kubernetes resource for running a single task that terminates after completing its work', 'category': 'software'}, {'entity': 'pod', 'description': 'Lightweight and portable containerization system', 'category': 'container'}, {'entity': 'container', 'description': 'Lightweight and portable containerization system', 'category': 'container'}, {'entity': 'busybox', 'description': 'Small Linux distribution used as a base for building custom images', 'category': 'software'}, {'entity': 'sleep', 'description': 'Command in Unix-like systems that suspends execution of a program for a specified time', 'category': 'software'}, {'entity': 'Docker Hub', 'description': 'Registry service for Docker containers', 'category': 'cloud'}, {'entity': 'node', 'description': 'Physical or virtual machine running Kubernetes', 'category': 'hardware'}]",,[],"A chapter about deploying managed pods using Replication and other controllers. It discusses running pods that perform a single completable task, which is different from continuous tasks like DaemonSets. The Job resource is introduced as a solution for this type of task, allowing pods to be rescheduled in case of node failure. An example is given of running a container image built on top of the busybox image, invoking the sleep command for two minutes.","[{'highlight': 'The pod is being terminated due to a change in the node, and deleting the DaemonSet will also delete any other daemon pods running.'}, {'highlight': ""ReplicationControllers, ReplicaSets, and DaemonSets run continuous tasks that are never considered completed, but Jobs allow you to run a pod whose container isn't restarted when the process finishes successfully.""}, {'highlight': ""Jobs can be configured to either restart the container or not in the event of a failure of the process itself, and they're useful for ad hoc tasks where it's crucial that the task finishes properly.""}, {'highlight': ""A Job can reschedule a pod to a new node if the initial node fails, but unlike ReplicaSet pods, managed pods aren't rescheduled.""}, {'highlight': 'An example of a job would be transforming and exporting data stored somewhere by running a container image built on top of the busybox image that invokes the sleep command for two minutes.'}]"
+56,145,0,[],"113
+Running pods that perform a single completable task
+4.5.2
+Defining a Job resource
+Create the Job manifest as in the following listing.
+apiVersion: batch/v1        
+kind: Job                   
+metadata:
+  name: batch-job
+spec:                                
+  template: 
+    metadata:
+      labels:                        
+        app: batch-job               
+    spec:
+      restartPolicy: OnFailure         
+      containers:
+      - name: main
+        image: luksa/batch-job
+Jobs are part of the batch API group and v1 API version. The YAML defines a
+resource of type Job that will run the luksa/batch-job image, which invokes a pro-
+cess that runs for exactly 120 seconds and then exits. 
+ In a pod’s specification, you can specify what Kubernetes should do when the
+processes running in the container finish. This is done through the restartPolicy
+Listing 4.11
+A YAML definition of a Job: exporter.yaml
+Node 1
+Pod A (unmanaged)
+Pod B (managed by a ReplicaSet)
+Pod C (managed by a Job)
+Node 2
+Node 1 fails
+Job C2 ﬁnishes
+Time
+Pod B2 (managed by a ReplicaSet)
+Pod C2 (managed by a Job)
+Pod A isn’t rescheduled,
+because there is nothing
+managing it.
+Figure 4.10
+Pods managed by Jobs are rescheduled until they finish successfully.
+Jobs are in the batch 
+API group, version v1.
+You’re not specifying a pod 
+selector (it will be created 
+based on the labels in the 
+pod template).
+Jobs can’t use the 
+default restart policy, 
+which is Always.
+ 
+","[   Col0                           Col1  Col2
+0  None  Pod B2 (managed by a ReplicaS   et)
+1  None      Pod C2 (managed by a Job)      
+2  None                                 None
+3  None                                 None]","[{'entity': 'Job', 'description': 'A resource that runs a single completable task', 'category': 'application'}, {'entity': 'Pod', 'description': 'A container that can run one or more processes', 'category': 'container'}, {'entity': 'ReplicaSet', 'description': 'A controller that ensures a specified number of replicas are running at any given time', 'category': 'controller'}, {'entity': 'batch API group', 'description': 'A group of APIs related to batch processing', 'category': 'application'}, {'entity': 'v1 API version', 'description': 'The version of the Kubernetes API used for batch processing', 'category': 'software'}, {'entity': 'YAML', 'description': 'A human-readable serialization format for data', 'category': 'format'}, {'entity': 'apiVersion', 'description': 'A field in a Kubernetes resource definition that specifies the API version', 'category': 'field'}, {'entity': 'kind', 'description': 'A field in a Kubernetes resource definition that specifies the type of resource', 'category': 'field'}, {'entity': 'metadata', 'description': 'A field in a Kubernetes resource definition that provides metadata about the resource', 'category': 'field'}, {'entity': 'spec', 'description': 'A field in a Kubernetes resource definition that specifies the desired state of the resource', 'category': 'field'}, {'entity': 'template', 'description': 'A field in a Kubernetes resource definition that specifies a template for creating a pod', 'category': 'field'}, {'entity': 'metadata', 'description': 'A field in a Kubernetes resource definition that provides metadata about the pod', 'category': 'field'}, {'entity': 'labels', 'description': 'A field in a Kubernetes resource definition that specifies labels for the pod', 'category': 'field'}, {'entity': 'app', 'description': 'A label key used to identify an application', 'category': 'label'}, {'entity': 'restartPolicy', 'description': 'A field in a Kubernetes resource definition that specifies the restart policy for a pod', 'category': 'field'}, {'entity': 'OnFailure', 'description': 'A value of the restart policy field that indicates a pod should be restarted only if it fails', 'category': 'value'}, {'entity': 'containers', 'description': 'A field in a Kubernetes resource definition that specifies containers for a pod', 'category': 'field'}, {'entity': 'name', 'description': 'A field in a Kubernetes resource definition that specifies the name of a container', 'category': 'field'}, {'entity': 'image', 'description': 'A field in a Kubernetes resource definition that specifies the image used to create a container', 'category': 'field'}, {'entity': 'luksa/batch-job', 'description': 'The name of an image used to create a container', 'category': 'image'}]",,[],"A Job resource in Kubernetes runs a single completable task. A YAML definition of a Job resource is provided, which defines a pod that will run an image invoking a process for 120 seconds and then exit. The restartPolicy specifies what to do when the processes finish. Jobs are part of the batch API group, version v1, and cannot use the default restart policy. Pods managed by Jobs are rescheduled until they finish successfully.",[{'highlight': 'Running pods that perform a single completable task'}]
+57,146,0,[],"114
+CHAPTER 4
+Replication and other controllers: deploying managed pods
+pod spec property, which defaults to Always. Job pods can’t use the default policy,
+because they’re not meant to run indefinitely. Therefore, you need to explicitly set
+the restart policy to either OnFailure or Never. This setting is what prevents the con-
+tainer from being restarted when it finishes (not the fact that the pod is being man-
+aged by a Job resource).
+4.5.3
+Seeing a Job run a pod
+After you create this Job with the kubectl create command, you should see it start up
+a pod immediately:
+$ kubectl get jobs
+NAME        DESIRED   SUCCESSFUL   AGE
+batch-job   1         0            2s
+$ kubectl get po
+NAME              READY     STATUS    RESTARTS   AGE
+batch-job-28qf4   1/1       Running   0          4s
+After the two minutes have passed, the pod will no longer show up in the pod list and
+the Job will be marked as completed. By default, completed pods aren’t shown when
+you list pods, unless you use the --show-all (or -a) switch:
+$ kubectl get po -a
+NAME              READY     STATUS      RESTARTS   AGE
+batch-job-28qf4   0/1       Completed   0          2m
+The reason the pod isn’t deleted when it completes is to allow you to examine its logs;
+for example:
+$ kubectl logs batch-job-28qf4
+Fri Apr 29 09:58:22 UTC 2016 Batch job starting
+Fri Apr 29 10:00:22 UTC 2016 Finished succesfully
+The pod will be deleted when you delete it or the Job that created it. Before you do
+that, let’s look at the Job resource again:
+$ kubectl get job
+NAME        DESIRED   SUCCESSFUL   AGE
+batch-job   1         1            9m
+The Job is shown as having completed successfully. But why is that piece of informa-
+tion shown as a number instead of as yes or true? And what does the DESIRED column
+indicate? 
+4.5.4
+Running multiple pod instances in a Job
+Jobs may be configured to create more than one pod instance and run them in paral-
+lel or sequentially. This is done by setting the completions and the parallelism prop-
+erties in the Job spec.
+ 
+",[],"[{'entity': 'pod spec property', 'description': 'A property that defaults to Always', 'category': 'software'}, {'entity': 'Job pods', 'description': 'Pods managed by a Job resource', 'category': 'software'}, {'entity': 'restart policy', 'description': 'Setting that prevents the container from being restarted when it finishes', 'category': 'software'}, {'entity': 'kubectl create command', 'description': 'Command used to create a Job resource', 'category': 'command'}, {'entity': 'Job resource', 'description': 'A resource that manages pods', 'category': 'software'}, {'entity': 'pod list', 'description': 'List of running pods', 'category': 'output'}, {'entity': '--show-all switch', 'description': 'Switch used to show completed pods in the pod list', 'category': 'command'}, {'entity': 'kubectl logs command', 'description': 'Command used to view the logs of a pod', 'category': 'command'}, {'entity': 'Job resource', 'description': 'A resource that manages pods', 'category': 'software'}, {'entity': 'completions property', 'description': 'Property used to set the number of pod instances in a Job', 'category': 'software'}, {'entity': 'parallelism property', 'description': 'Property used to set the number of pod instances running in parallel', 'category': 'software'}]",,[],"A Job resource in Kubernetes can be used to deploy a single, managed pod with a restart policy of OnFailure or Never. Once created, the Job will run the pod until completion, at which point it will be marked as successful and the pod deleted. Jobs can also be configured to create multiple pods that run in parallel or sequentially by setting the completions and parallelism properties.","[{'highlight': 'Job pods can’t use the default policy, because they’re not meant to run indefinitely.'}, {'highlight': 'You need to explicitly set the restart policy to either OnFailure or Never for a Job pod.'}, {'highlight': 'Jobs may be configured to create more than one pod instance and run them in parallel or sequentially by setting the completions and the parallelism properties in the Job spec.'}, {'highlight': 'The Job is shown as having completed successfully, with the SUCCESSFUL column indicating whether the Job has completed successfully.'}, {'highlight': 'You can delete a pod created by a Job using kubectl delete command or by deleting the Job resource that created it.'}]"
+58,147,0,[],"115
+Running pods that perform a single completable task
+RUNNING JOB PODS SEQUENTIALLY
+If you need a Job to run more than once, you set completions to how many times you
+want the Job’s pod to run. The following listing shows an example.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: multi-completion-batch-job
+spec:
+  completions: 5                  
+  template:
+    <template is the same as in listing 4.11>
+This Job will run five pods one after the other. It initially creates one pod, and when
+the pod’s container finishes, it creates the second pod, and so on, until five pods com-
+plete successfully. If one of the pods fails, the Job creates a new pod, so the Job may
+create more than five pods overall.
+RUNNING JOB PODS IN PARALLEL
+Instead of running single Job pods one after the other, you can also make the Job run
+multiple pods in parallel. You specify how many pods are allowed to run in parallel
+with the parallelism  Job spec property, as shown in the following listing.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: multi-completion-batch-job
+spec:
+  completions: 5                    
+  parallelism: 2                    
+  template:
+    <same as in listing 4.11>
+By setting parallelism to 2, the Job creates two pods and runs them in parallel:
+$ kubectl get po
+NAME                               READY   STATUS     RESTARTS   AGE
+multi-completion-batch-job-lmmnk   1/1     Running    0          21s
+multi-completion-batch-job-qx4nq   1/1     Running    0          21s
+As soon as one of them finishes, the Job will run the next pod, until five pods finish
+successfully.
+Listing 4.12
+A Job requiring multiple completions: multi-completion-batch-job.yaml
+Listing 4.13
+Running Job pods in parallel: multi-completion-parallel-batch-job.yaml
+Setting completions to 
+5 makes this Job run 
+five pods sequentially.
+This job must ensure 
+five pods complete 
+successfully.
+Up to two pods 
+can run in parallel.
+ 
+",[],"[{'entity': 'Job', 'description': 'A Kubernetes resource that represents a single, completable task.', 'category': 'application'}, {'entity': 'Pod', 'description': 'The basic execution unit in Kubernetes, representing a running container.', 'category': 'container'}, {'entity': 'completions', 'description': ""A Job property that specifies how many times the Job's pod should run."", 'category': 'property'}, {'entity': 'parallelism', 'description': 'A Job property that specifies how many pods are allowed to run in parallel.', 'category': 'property'}, {'entity': 'template', 'description': 'A Job specification that defines the pod template for a Job.', 'category': 'application'}, {'entity': '$ kubectl get po', 'description': 'A command used to display information about running pods.', 'category': 'command'}, {'entity': 'metadata', 'description': 'A Kubernetes resource that provides metadata for a Job or other resources.', 'category': 'application'}, {'entity': 'spec', 'description': 'A Job specification that defines the behavior of a Job.', 'category': 'property'}, {'entity': 'kind', 'description': 'A Kubernetes resource type, in this case, a Job.', 'category': 'application'}, {'entity': 'apiVersion', 'description': 'A Kubernetes API version used to specify the format of a resource.', 'category': 'property'}]",,[],"A Job can be configured to run multiple pods sequentially or in parallel. To run pods sequentially, set completions to the number of times you want the Job's pod to run. For example, setting completions to 5 will create one pod at a time until five pods complete successfully. To run pods in parallel, specify how many pods are allowed to run with the parallelism Job spec property. This allows up to that many pods to be created and running at the same time.","[{'highlight': 'You can set the ""completions"" property of a Job to specify how many times you want the Job\'s pod to run.'}, {'highlight': 'Setting completions to 5 makes this Job run five pods sequentially.'}, {'highlight': 'To make the Job run multiple pods in parallel, you can use the ""parallelism"" Job spec property.'}, {'highlight': 'By setting parallelism to 2, the Job creates two pods and runs them in parallel until five pods finish successfully.'}, {'highlight': 'Up to two pods can run in parallel when using the ""parallelism"" Job spec property.'}]"
+59,148,0,[],"116
+CHAPTER 4
+Replication and other controllers: deploying managed pods
+SCALING A JOB
+You can even change a Job’s parallelism property while the Job is running. This is
+similar to scaling a ReplicaSet or ReplicationController, and can be done with the
+kubectl scale command:
+$ kubectl scale job multi-completion-batch-job --replicas 3
+job ""multi-completion-batch-job"" scaled
+Because you’ve increased parallelism from 2 to 3, another pod is immediately spun
+up, so three pods are now running.
+4.5.5
+Limiting the time allowed for a Job pod to complete
+We need to discuss one final thing about Jobs. How long should the Job wait for a pod
+to finish? What if the pod gets stuck and can’t finish at all (or it can’t finish fast
+enough)?
+ A pod’s time can be limited by setting the activeDeadlineSeconds property in the
+pod spec. If the pod runs longer than that, the system will try to terminate it and will
+mark the Job as failed. 
+NOTE
+You can configure how many times a Job can be retried before it is
+marked as failed by specifying the spec.backoffLimit field in the Job mani-
+fest. If you don't explicitly specify it, it defaults to 6.
+4.6
+Scheduling Jobs to run periodically or once 
+in the future
+Job resources run their pods immediately when you create the Job resource. But many
+batch jobs need to be run at a specific time in the future or repeatedly in the specified
+interval. In Linux- and UNIX-like operating systems, these jobs are better known as
+cron jobs. Kubernetes supports them, too.
+ A cron job in Kubernetes is configured by creating a CronJob resource. The
+schedule for running the job is specified in the well-known cron format, so if you’re
+familiar with regular cron jobs, you’ll understand Kubernetes’ CronJobs in a matter
+of seconds.
+ At the configured time, Kubernetes will create a Job resource according to the Job
+template configured in the CronJob object. When the Job resource is created, one or
+more pod replicas will be created and started according to the Job’s pod template, as
+you learned in the previous section. There’s nothing more to it.
+ Let’s look at how to create CronJobs. 
+4.6.1
+Creating a CronJob
+Imagine you need to run the batch job from your previous example every 15 minutes.
+To do that, create a CronJob resource with the following specification.
+ 
+ 
+",[],"[{'entity': 'ReplicaSet', 'description': 'A ReplicaSet is an object that ensures a specified number of replicas (identical copies) of a pod are running at any given time.', 'category': 'software'}, {'entity': 'kubectl scale command', 'description': 'A command used to scale a Job or ReplicationController by changing its parallelism property.', 'category': 'command'}, {'entity': 'Job', 'description': 'A Job is an object that creates one or more pods and ensures they run to completion.', 'category': 'software'}, {'entity': 'activeDeadlineSeconds', 'description': 'A property in the pod spec that limits the time allowed for a Job pod to complete.', 'category': 'property'}, {'entity': 'spec.backoffLimit field', 'description': 'A field in the Job manifest that configures how many times a Job can be retried before it is marked as failed.', 'category': 'field'}, {'entity': 'CronJob resource', 'description': 'A resource used to schedule Jobs to run periodically or once in the future.', 'category': 'software'}, {'entity': 'cron format', 'description': 'A well-known format for specifying a schedule for running a job.', 'category': 'format'}, {'entity': 'Job template', 'description': 'A template used to create a Job resource according to the CronJob object.', 'category': 'template'}, {'entity': 'pod replicas', 'description': ""One or more pod replicas created and started according to the Job's pod template."", 'category': 'process'}]",,[],"You can scale a Job's parallelism property while it's running using kubectl scale command. Additionally, you can limit a pod's time to complete by setting activeDeadlineSeconds in the pod spec. A Job can also be configured to retry failed pods up to 6 times before being marked as failed. Furthermore, Kubernetes supports scheduling Jobs periodically or once in the future through CronJobs, which create a Job resource at the specified time and run it according to the Job template.","[{'highlight': 'You can even change a Job’s parallelism property while the Job is running.'}, {'highlight': 'A pod’s time can be limited by setting the activeDeadlineSeconds property in the pod spec.'}, {'highlight': 'You can configure how many times a Job can be retried before it is marked as failed by specifying the spec.backoffLimit field in the Job manifest.'}, {'highlight': 'Kubernetes supports cron jobs, configured by creating a CronJob resource with a schedule in the well-known cron format.'}, {'highlight': 'When the Job resource is created, one or more pod replicas will be created and started according to the Job’s pod template.'}]"

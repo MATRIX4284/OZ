@@ -1,0 +1,524 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+150,239,0,[],"207
+Decoupling configuration with a ConfigMap
+The following listing shows what the YAML of this ConfigMap looks like.
+$ kubectl get configmap fortune-config -o yaml
+apiVersion: v1
+data:
+  my-nginx-config.conf: |                            
+    server {                                         
+      listen              80;                        
+      server_name         www.kubia-example.com;     
+      gzip on;                                       
+      gzip_types text/plain application/xml;         
+      location / {                                   
+        root   /usr/share/nginx/html;                
+        index  index.html index.htm;                 
+      }                                              
+    }                                                
+  sleep-interval: |         
+    25                      
+kind: ConfigMap
+...
+NOTE
+The pipeline character after the colon in the first line of both entries
+signals that a literal multi-line value follows.
+The ConfigMap contains two entries, with keys corresponding to the actual names
+of the files they were created from. You’ll now use the ConfigMap in both of your
+pod’s containers.
+USING THE CONFIGMAP'S ENTRIES IN A VOLUME
+Creating a volume populated with the contents of a ConfigMap is as easy as creating
+a volume that references the ConfigMap by name and mounting the volume in a
+container. You already learned how to create volumes and mount them, so the only
+thing left to learn is how to initialize the volume with files created from a Config-
+Map’s entries.
+ Nginx reads its config file from /etc/nginx/nginx.conf. The Nginx image
+already contains this file with default configuration options, which you don’t want
+to override, so you don’t want to replace this file as a whole. Luckily, the default
+config file automatically includes all .conf files in the /etc/nginx/conf.d/ subdirec-
+tory as well, so you should add your config file in there. Figure 7.9 shows what you
+want to achieve.
+ The pod descriptor is shown in listing 7.14 (the irrelevant parts are omitted, but
+you’ll find the complete file in the code archive).
+ 
+ 
+Listing 7.13
+YAML definition of a config map created from a file
+The entry holding the 
+Nginx config file’s 
+contents
+The sleep-interval entry
+ 
+",[],"[{'entity': 'ConfigMap', 'description': 'A Kubernetes resource that stores configuration data as key-value pairs.', 'category': 'software'}, {'entity': 'kubectl', 'description': 'The command-line tool for interacting with a Kubernetes cluster.', 'category': 'command'}, {'entity': 'apiVersion', 'description': 'A field in the YAML definition of a ConfigMap that specifies the API version.', 'category': 'field'}, {'entity': 'data', 'description': 'A field in the YAML definition of a ConfigMap that stores key-value pairs.', 'category': 'field'}, {'entity': 'my-nginx-config.conf', 'description': ""The name of an entry in the ConfigMap that holds the Nginx configuration file's contents."", 'category': 'file'}, {'entity': 'sleep-interval', 'description': 'The name of an entry in the ConfigMap that holds a value for a sleep interval.', 'category': 'field'}, {'entity': ""ConfigMap's entries"", 'description': 'The key-value pairs stored in a ConfigMap.', 'category': 'software'}, {'entity': 'volume', 'description': 'A Kubernetes resource that provides storage for a pod.', 'category': 'hardware'}, {'entity': '/etc/nginx/nginx.conf', 'description': 'The default Nginx configuration file.', 'category': 'file'}, {'entity': '/etc/nginx/conf.d/', 'description': 'A directory where Nginx automatically includes .conf files.', 'category': 'directory'}, {'entity': 'Nginx', 'description': 'A web server software that can be used in a Kubernetes pod.', 'category': 'software'}, {'entity': 'pod descriptor', 'description': ""The YAML definition of a pod that uses a ConfigMap's entries."", 'category': 'software'}]","[{'source_entity': 'kubectl', 'description': 'applies configuration to', 'destination_entity': '/etc/nginx/conf.d/'}, {'source_entity': 'kubectl', 'description': 'specifies configuration file', 'destination_entity': 'my-nginx-config.conf'}, {'source_entity': 'sleep-interval', 'description': 'sets interval for', 'destination_entity': ""ConfigMap's entries""}, {'source_entity': 'kubectl', 'description': 'specifies configuration file location', 'destination_entity': '/etc/nginx/nginx.conf'}, {'source_entity': 'Nginx', 'description': 'uses configuration from', 'destination_entity': '/etc/nginx/conf.d/'}, {'source_entity': 'volume', 'description': 'provides data to', 'destination_entity': 'pod descriptor'}, {'source_entity': 'ConfigMap', 'description': 'stores entries for', 'destination_entity': 'Nginx'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies configuration to"",\n    ""summary_er"": ""Kubectl applies configuration to a running Pod, updating its settings and ensuring it runs smoothly.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies configuration file"",\n    ""summary_er"": ""Kubectl uses a config file to specify settings for a pod, ensuring efficient resource allocation and management.""\n  }\n]', '[\n  {\n    ""source"": ""sleep-interval"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets interval for"",\n    ""summary_er"": ""The sleep-interval sets a time interval for a pod to run or wait.""\n  },\n  {\n    ""source"": ""ConfigMap\'s entries"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""ConfigMap\'s entries"",\n    ""summary_er"": ""A ConfigMap\'s entries are used to configure a pod\'s environment variables and settings.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""/etc/nginx/nginx.conf"",\n    ""relation_description"": ""specifies configuration file location"",\n    ""summary_er"": ""kubectl uses /etc/nginx/nginx.conf as a configuration file, specifying its location for pod management.""\n  }\n]', '[\n  {\n    ""source"": ""Nginx"",\n    ""destination"": ""/etc/nginx/conf.d/"",\n    ""relation_description"": ""uses configuration from"",\n    ""summary_er"": ""Nginx uses a configuration file located at /etc/nginx/conf.d/ to configure its behavior.""\n  }\n]', '[\n  {\n    ""source"": ""volume"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides data to"",\n    ""summary_er"": ""A volume provides persistent storage for a pod, allowing it to store and retrieve data.""\n  }\n]', '[\n  {\n    ""source"": ""ConfigMap"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores entries for"",\n    ""summary_er"": ""A ConfigMap stores configuration data as key-value pairs, which can be used to configure a pod.""\n  },\n  {\n    ""source"": ""ConfigMap"",\n    ""destination"": ""Nginx"",\n    ""relation_description"": ""stores entries for"",\n    ""summary_er"": ""The Nginx web server uses the configuration data stored in a ConfigMap to serve HTTP requests.""\n  }\n]']","A ConfigMap is used to decouple configuration with Kubernetes, allowing for easy management and updates of configurations. It can contain multiple entries, each with its own key-value pair, and can be referenced in a pod's container using a volume populated with the ConfigMap's contents. This allows for the use of default configuration files while still adding custom configurations, as shown in Listing 7.14.","[{'highlight': 'The ConfigMap contains two entries, with keys corresponding to the actual names of the files they were created from.'}, {'highlight': 'You can create a volume populated with the contents of a ConfigMap by referencing the ConfigMap by name and mounting the volume in a container.'}, {'highlight': 'Nginx reads its config file from /etc/nginx/nginx.conf, but you should add your custom config file to the /etc/nginx/conf.d/ subdirectory instead of overriding the default config file.'}, {'highlight': ""The ConfigMap's entries can be used in a volume by initializing the volume with files created from the ConfigMap's entries.""}, {'highlight': 'You should use the pipeline character after the colon to signal that a literal multi-line value follows, as shown in the YAML definition of the ConfigMap.'}]"
+151,240,0,[],"208
+CHAPTER 7
+ConfigMaps and Secrets: configuring applications
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fortune-configmap-volume
+spec:
+  containers:
+  - image: nginx:alpine
+    name: web-server
+    volumeMounts:
+    ...
+    - name: config
+      mountPath: /etc/nginx/conf.d      
+      readOnly: true
+    ...
+  volumes:
+  ...
+  - name: config              
+    configMap:                 
+      name: fortune-config     
+  ...
+This pod definition includes a volume, which references your fortune-config
+ConfigMap. You mount the volume into the /etc/nginx/conf.d directory to make
+Nginx use it. 
+VERIFYING NGINX IS USING THE MOUNTED CONFIG FILE
+The web server should now be configured to compress the responses it sends. You can
+verify this by enabling port-forwarding from localhost:8080 to the pod’s port 80 and
+checking the server’s response with curl, as shown in the following listing.
+ 
+Listing 7.14
+A pod with ConfigMap entries mounted as files: fortune-pod-configmap-
+volume.yaml
+Pod
+Container: html-generator
+Container: web-server
+Filesystem
+/
+etc/
+nginx/
+conf.d/
+ConﬁgMap: fortune-conﬁg
+my-nginx-conﬁg.conf
+server {
+…
+}
+Volume:
+conﬁg
+Figure 7.9
+Passing ConfigMap entries to a pod as files in a volume
+You’re mounting the 
+configMap volume at 
+this location.
+The volume refers to your 
+fortune-config ConfigMap.
+ 
+","[Empty DataFrame
+Columns: [my-nginx-config.conf, server {
+…
+}]
+Index: []]","[{'entity': 'ConfigMaps', 'description': 'a feature in Kubernetes that allows you to store and manage configuration data as a separate entity from the application code', 'category': 'software'}, {'entity': 'Secrets', 'description': 'a feature in Kubernetes that allows you to store sensitive information such as passwords or API keys securely', 'category': 'software'}, {'entity': 'Pod', 'description': 'the basic execution unit in Kubernetes, a pod is a logical host for one or more containers', 'category': 'container'}, {'entity': 'containers', 'description': 'a lightweight and standalone executable package of software that includes everything needed to run an application', 'category': 'container'}, {'entity': 'image', 'description': 'a read-only template used to create a container, in this case, the nginx:alpine image is used', 'category': 'software'}, {'entity': 'volumeMounts', 'description': 'the process of mounting a volume into a container', 'category': 'process'}, {'entity': 'volumes', 'description': 'a directory or file system that can be shared among containers in the same pod', 'category': 'container'}, {'entity': 'configMap', 'description': 'a feature in Kubernetes that allows you to store and manage configuration data as a separate entity from the application code', 'category': 'software'}, {'entity': 'fortune-config', 'description': 'a ConfigMap used to configure the web server', 'category': 'software'}, {'entity': 'nginx', 'description': 'a popular open-source web server software', 'category': 'software'}, {'entity': 'curl', 'description': 'a command-line tool for transferring data with URLs', 'category': 'command'}, {'entity': 'port-forwarding', 'description': 'the process of forwarding traffic from a local port to a remote port in the pod', 'category': 'process'}]","[{'source_entity': 'configMap', 'description': 'is used to store and retrieve configuration data', 'destination_entity': 'volumes'}, {'source_entity': 'volumes', 'description': 'are used to persist data across container restarts', 'destination_entity': 'Pod'}, {'source_entity': 'port-forwarding', 'description': 'allows access to a service from outside the cluster', 'destination_entity': 'nginx'}, {'source_entity': 'fortune-config', 'description': 'is used to configure the fortune service', 'destination_entity': 'ConfigMaps'}, {'source_entity': 'image', 'description': 'is used to create a container from a Docker image', 'destination_entity': 'containers'}, {'source_entity': 'volumeMounts', 'description': 'are used to mount volumes inside containers', 'destination_entity': 'containers'}, {'source_entity': 'Secrets', 'description': 'are used to store sensitive information', 'destination_entity': 'ConfigMaps'}, {'source_entity': 'curl', 'description': 'is used to make HTTP requests to a service', 'destination_entity': 'nginx'}]","['[\n  {\n    ""source"": ""configMap"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""volumes"",\n    ""summary_er"": ""ConfigMaps are used to store and retrieve configuration data, which can be mounted as volumes in pods for use by containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""volumes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to persist data across container restarts"",\n    ""summary_er"": ""Persistent storage for containers in a pod, ensuring data remains intact after restarts.""\n  }\n]', '[\n  {\n    ""source"": ""port-forwarding"",\n    ""destination"": ""nginx"",\n    ""relation_description"": ""allows access to a service from outside the cluster"",\n    ""summary_er"": ""Port-forwarding enables external access to an NGINX pod within a Kubernetes cluster, bypassing network restrictions.""\n  }\n]', '[\n  {\n    ""source"": ""fortune-config"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""ConfigMaps"",\n    ""summary_er"": ""The fortune-config is used to configure the Fortune service and a Pod, utilizing ConfigMaps for data management.""\n  }\n]', '[\n  {\n    ""source"": ""image"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to create a container from a Docker image"",\n    ""summary_er"": ""A Docker image is used to create a pod, which is a group of containers that can be managed as a single unit.""\n  }\n]', '[\n  {\n    ""source"": ""volumeMounts"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to mount volumes inside containers"",\n    ""summary_er"": ""Volume mounts are used by pods to access and utilize containerized data.""\n  }\n]', '[\n  {\n    ""source"": ""Secrets"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""are used to store sensitive information"",\n    ""summary_er"": ""Secrets are used to securely store sensitive data, such as API keys and passwords, which can then be accessed by pods.""\n  },\n  {\n    ""source"": ""ConfigMaps"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""can be mounted as a volume"",\n    ""summary_er"": ""ConfigMaps provide a way to store configuration data that can be shared across multiple pods and services, making it easier to manage and update application settings.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod/nginx"",\n    ""relation_description"": ""is used to make HTTP requests to a service"",\n    ""summary_er"": ""Curl is used to send HTTP requests to the nginx pod, which serves as a web server.""\n  }\n]']","This chapter discusses ConfigMaps and Secrets for configuring applications in Kubernetes. A Pod is defined with a volume referencing a fortune-config ConfigMap, which is mounted into the /etc/nginx/conf.d directory to make Nginx use it. The configuration can be verified by port-forwarding and checking the server's response with curl, demonstrating that the mounted ConfigMap entries are being used by the web server.",[{'highlight': 'apiVersion: v1\nkind: Pod\nmetadata:\n  name: fortune-configmap-volume\nspec:\n  containers:\n  - image: nginx:alpine\n    name: web-server\n    volumeMounts:\n    ...\n    - name: config\n      mountPath: /etc/nginx/conf.d\n      readOnly: true\n    ...\n  volumes:\n  ...\n  - name: config\n    configMap:\n      name: fortune-config'}]
+152,241,0,[],"209
+Decoupling configuration with a ConfigMap
+$ kubectl port-forward fortune-configmap-volume 8080:80 &
+Forwarding from 127.0.0.1:8080 -> 80
+Forwarding from [::1]:8080 -> 80
+$ curl -H ""Accept-Encoding: gzip"" -I localhost:8080
+HTTP/1.1 200 OK
+Server: nginx/1.11.1
+Date: Thu, 18 Aug 2016 11:52:57 GMT
+Content-Type: text/html
+Last-Modified: Thu, 18 Aug 2016 11:52:55 GMT
+Connection: keep-alive
+ETag: W/""57b5a197-37""
+Content-Encoding: gzip           
+EXAMINING THE MOUNTED CONFIGMAP VOLUME’S CONTENTS
+The response shows you achieved what you wanted, but let’s look at what’s in the
+/etc/nginx/conf.d directory now:
+$ kubectl exec fortune-configmap-volume -c web-server ls /etc/nginx/conf.d
+my-nginx-config.conf
+sleep-interval
+Both entries from the ConfigMap have been added as files to the directory. The
+sleep-interval entry is also included, although it has no business being there,
+because it’s only meant to be used by the fortuneloop container. You could create
+two different ConfigMaps and use one to configure the fortuneloop container and
+the other one to configure the web-server container. But somehow it feels wrong to
+use multiple ConfigMaps to configure containers of the same pod. After all, having
+containers in the same pod implies that the containers are closely related and should
+probably also be configured as a unit. 
+EXPOSING CERTAIN CONFIGMAP ENTRIES IN THE VOLUME
+Luckily, you can populate a configMap volume with only part of the ConfigMap’s
+entries—in your case, only the my-nginx-config.conf entry. This won’t affect the
+fortuneloop container, because you’re passing the sleep-interval entry to it through
+an environment variable and not through the volume. 
+ To define which entries should be exposed as files in a configMap volume, use the
+volume’s items attribute as shown in the following listing.
+  volumes:
+  - name: config              
+    configMap:                                  
+      name: fortune-config                      
+      items:                       
+      - key: my-nginx-config.conf        
+        path: gzip.conf                  
+Listing 7.15
+Seeing if nginx responses have compression enabled
+Listing 7.16
+A pod with a specific ConfigMap entry mounted into a file directory: 
+fortune-pod-configmap-volume-with-items.yaml
+This shows the response 
+is compressed.
+Selecting which entries to include 
+in the volume by listing them
+You want the entry 
+under this key included.
+The entry’s value should 
+be stored in this file.
+ 
+",[],"[{'entity': 'ConfigMap', 'description': 'a Kubernetes resource that stores configuration data as a key-value pair', 'category': 'software'}, {'entity': 'kubectl', 'description': 'the command-line tool for interacting with a Kubernetes cluster', 'category': 'software'}, {'entity': 'port-forward', 'description': 'a kubectl command to forward traffic from the local machine to a pod', 'category': 'software'}, {'entity': 'ConfigMap volume', 'description': 'a type of persistent volume that stores configuration data as files', 'category': 'software'}, {'entity': 'nginx', 'description': 'a web server software', 'category': 'software'}, {'entity': 'fortune-configmap-volume', 'description': 'a pod with a ConfigMap volume mounted to it', 'category': 'application'}, {'entity': 'ConfigMap entries', 'description': 'individual key-value pairs within a ConfigMap', 'category': 'software'}, {'entity': 'items attribute', 'description': 'a configuration option for specifying which ConfigMap entries should be exposed as files in a volume', 'category': 'software'}, {'entity': 'volume', 'description': 'a persistent storage resource that can be mounted to a pod', 'category': 'hardware'}, {'entity': 'configMap', 'description': 'a Kubernetes resource that stores configuration data as a key-value pair', 'category': 'software'}, {'entity': 'fortune-config', 'description': 'a ConfigMap resource with specific entries', 'category': 'software'}, {'entity': 'gzip.conf', 'description': 'a file containing compressed configuration data', 'category': 'file'}, {'entity': 'my-nginx-config.conf', 'description': 'a file containing nginx configuration data', 'category': 'file'}, {'entity': 'sleep-interval', 'description': 'an environment variable that stores a sleep interval value', 'category': 'environment variable'}]","[{'source_entity': 'kubectl', 'description': 'creates', 'destination_entity': 'configMap'}, {'source_entity': 'kubectl', 'description': 'applies', 'destination_entity': 'fortune-configmap-volume'}, {'source_entity': 'ConfigMap entries', 'description': 'contains', 'destination_entity': 'fortune-config'}, {'source_entity': 'ConfigMap volume', 'description': 'provides', 'destination_entity': 'nginx'}, {'source_entity': 'kubectl', 'description': 'mounts', 'destination_entity': 'volume'}, {'source_entity': 'port-forward', 'description': 'establishes', 'destination_entity': 'volume'}, {'source_entity': 'items attribute', 'description': 'specifies', 'destination_entity': 'ConfigMap volume'}, {'source_entity': 'kubectl', 'description': 'applies', 'destination_entity': 'my-nginx-config.conf'}, {'source_entity': 'sleep-interval', 'description': 'configures', 'destination_entity': 'volume'}, {'source_entity': 'gzip.conf', 'description': 'includes', 'destination_entity': 'ConfigMap'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) creates a new pod instance, which is a container running an application or service.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""configMap"",\n    ""relation_description"": ""creates"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) creates a new configMap instance, which stores configuration data as key-value pairs.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies"",\n    ""summary_er"": ""Kubectl applies configuration to a running pod, ensuring it meets the specified requirements.""\n  }\n]', '[\n  {\n    ""source"": ""ConfigMap"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A ConfigMap entry is contained within a pod, providing configuration data to the container.""\n  }\n]', '[{\n  ""source"": ""ConfigMap"",\n  ""destination"": ""pod"",\n  ""relation_description"": ""provides"",\n  ""summary_er"": ""A ConfigMap volume provides configuration data to a pod, such as environment variables or files.""\n}]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""mounts"",\n    ""summary_er"": ""Kubernetes command mounts a volume to a pod, allowing it to access shared data.""\n  }\n]', '[\n  {\n    ""source"": ""port-forward"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""establishes"",\n    ""summary_er"": ""Port forwarding establishes a connection from a local port to a container\'s port, allowing external access to the pod.""\n  }\n]', '[\n  {\n    ""source"": ""items"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The items attribute in a Kubernetes configuration file specifies the contents of a Pod\'s ConfigMap volume.""\n  },\n  {\n    ""source"": ""ConfigMap"",\n    ""destination"": ""volume"",\n    ""relation_description"": ""in a pod"",\n    ""summary_er"": ""A ConfigMap is a type of volume that can be used in a Kubernetes pod to store and retrieve configuration data as key-value pairs.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies"",\n    ""summary_er"": ""Kubernetes command applies configuration to a running pod, ensuring it adheres to the specified settings.""\n  }\n]', '[\n  {\n    ""source"": ""sleep-interval"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures"",\n    ""summary_er"": ""The sleep interval configuration is applied to a pod, allowing it to manage its own scheduling and execution.""\n  }\n]', '[\n  {\n    ""source"": ""gzip.conf"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""includes"",\n    ""summary_er"": ""The gzip configuration file includes a reference to a pod, which is a containerized application in Kubernetes.""\n  },\n  {\n    ""source"": ""ConfigMap"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used by"",\n    ""summary_er"": ""A ConfigMap is used by a pod to provide configuration data to the application running inside it.""\n  }\n]']","A ConfigMap can be decoupled from a pod's configuration using a ConfigMap volume. This allows certain entries to be exposed as files in a directory, while others remain hidden. The `items` attribute of the volume can be used to specify which ConfigMap entries should be included as files, and the `key` and `path` fields define how the entry is stored. This approach enables fine-grained control over the configuration of containers within a pod.","[{'highlight': 'Decoupling configuration with a ConfigMap allows you to achieve what you wanted, as shown by the response to curl -H ""Accept-Encoding: gzip"" -I localhost:8080'}, {'highlight': ""You can populate a configMap volume with only part of the ConfigMap's entries, exposing certain configMap entries in the volume without affecting other containers""}, {'highlight': ""To define which entries should be exposed as files in a configMap volume, use the volume's items attribute, as shown in the following listing: volumes: - name: config ... items: - key: my-nginx-config.conf path: gzip.conf""}, {'highlight': 'The response shows that nginx responses have compression enabled, and you can see this by running curl -H ""Accept-Encoding: gzip"" -I localhost:8080'}, {'highlight': ""You can select which entries to include in the volume by listing them, and the entry's value should be stored in a specific file, as shown in fortune-pod-configmap-volume-with-items.yaml""}]"
+153,242,0,[],"210
+CHAPTER 7
+ConfigMaps and Secrets: configuring applications
+When specifying individual entries, you need to set the filename for each individual
+entry, along with the entry’s key. If you run the pod from the previous listing, the
+/etc/nginx/conf.d directory is kept nice and clean, because it only contains the
+gzip.conf file and nothing else. 
+UNDERSTANDING THAT MOUNTING A DIRECTORY HIDES EXISTING FILES IN THAT DIRECTORY
+There’s one important thing to discuss at this point. In both this and in your previous
+example, you mounted the volume as a directory, which means you’ve hidden any files
+that are stored in the /etc/nginx/conf.d directory in the container image itself. 
+ This is generally what happens in Linux when you mount a filesystem into a non-
+empty directory. The directory then only contains the files from the mounted filesys-
+tem, whereas the original files in that directory are inaccessible for as long as the
+filesystem is mounted. 
+ In your case, this has no terrible side effects, but imagine mounting a volume to
+the /etc directory, which usually contains many important files. This would most likely
+break the whole container, because all of the original files that should be in the /etc
+directory would no longer be there. If you need to add a file to a directory like /etc,
+you can’t use this method at all.
+MOUNTING INDIVIDUAL CONFIGMAP ENTRIES AS FILES WITHOUT HIDING OTHER FILES IN THE DIRECTORY
+Naturally, you’re now wondering how to add individual files from a ConfigMap into
+an existing directory without hiding existing files stored in it. An additional subPath
+property on the volumeMount allows you to mount either a single file or a single direc-
+tory from the volume instead of mounting the whole volume. Perhaps this is easier to
+explain visually (see figure 7.10).
+ Say you have a configMap volume containing a myconfig.conf file, which you want
+to add to the /etc directory as someconfig.conf. You can use the subPath property to
+mount it there without affecting any other files in that directory. The relevant part of
+the pod definition is shown in the following listing.
+Pod
+Container
+Filesystem
+/
+etc/
+someconﬁg.conf
+existingﬁle1
+existingﬁle2
+ConﬁgMap: app-conﬁg
+myconﬁg.conf
+Contents
+of the ﬁle
+another-ﬁle
+Contents
+of the ﬁle
+conﬁgMap
+volume
+myconﬁg.conf
+another-ﬁle
+existingﬁle1
+and existingﬁle2
+aren’t hidden.
+Only myconﬁg.conf is mounted
+into the container (yet under a
+different ﬁlename).
+another-ﬁle isn’t
+mounted into the
+container.
+Figure 7.10
+Mounting a single file from a volume
+ 
+","[Empty DataFrame
+Columns: [myconfig.conf, Contents
+of the file]
+Index: []]","[{'entity': 'ConfigMaps', 'description': 'a feature in Kubernetes that allows you to store and manage configuration data as key-value pairs', 'category': 'software'}, {'entity': 'Secrets', 'description': 'a feature in Kubernetes that allows you to store sensitive information such as passwords or API keys', 'category': 'software'}, {'entity': 'pod', 'description': 'the basic execution unit in Kubernetes, which can contain one or more containers', 'category': 'application'}, {'entity': 'container', 'description': 'a lightweight and standalone executable package that includes an application and its dependencies', 'category': 'software'}, {'entity': '/etc/nginx/conf.d directory', 'description': 'a directory in the container image that contains configuration files for Nginx', 'category': 'directory'}, {'entity': 'gzip.conf file', 'description': 'a configuration file for Nginx that enables gzip compression', 'category': 'file'}, {'entity': 'subPath property', 'description': 'an additional property on the volumeMount that allows you to mount a single file or directory from a ConfigMap', 'category': 'property'}, {'entity': '/etc directory', 'description': 'a system directory in Linux that contains important configuration files', 'category': 'directory'}, {'entity': 'ConfigMap volume', 'description': 'a type of persistent storage in Kubernetes that stores configuration data as key-value pairs', 'category': 'software'}, {'entity': 'myconfig.conf file', 'description': 'a configuration file stored in a ConfigMap volume', 'category': 'file'}, {'entity': '/etc/nginx/conf.d directory', 'description': 'a directory in the container image that contains configuration files for Nginx', 'category': 'directory'}]","[{'source_entity': '""container""', 'description': 'mounts', 'destination_entity': '""subPath property""'}, {'source_entity': '""container""', 'description': 'reads configuration from', 'destination_entity': '""/etc directory""'}, {'source_entity': '""container""', 'description': 'reads configuration from', 'destination_entity': '""/etc/nginx/conf.d directory""'}, {'source_entity': '""container""', 'description': 'loads configuration from', 'destination_entity': '""myconfig.conf file""'}, {'source_entity': '""container""', 'description': 'loads configuration from', 'destination_entity': '""gzip.conf file""'}, {'source_entity': '""pod""', 'description': 'contains', 'destination_entity': '""ConfigMap volume""'}, {'source_entity': '""pod""', 'description': 'contains', 'destination_entity': '""Secrets""'}, {'source_entity': '""pod""', 'description': 'contains', 'destination_entity': '""ConfigMaps""'}]","['[{""source"": ""container"", ""destination"": ""pod"", ""relation_description"": ""mounts"", ""summary_er"": ""A container mounts a volume to access files from another source, such as a host directory or an image.""}, {""source"": ""subPath property"", ""destination"": ""container"", ""relation_description"": ""property"", ""summary_er"": ""The subPath property specifies the path within a container where a mounted volume should be accessed.""}]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""reads configuration from"",\n    ""summary_er"": ""A container reads its configuration from a pod\'s /etc directory.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""reads configuration from"",\n    ""summary_er"": ""A container reads its configuration from a specific directory within a pod.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""loads configuration from"",\n    ""summary_er"": ""A container loads its configuration from a pod, utilizing the \'myconfig.conf\' file for settings.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""loads configuration from"",\n    ""summary_er"": ""A container loads its configuration from a pod, utilizing the pod\'s resources to execute its operations.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A Pod contains one or more containers, which are the basic execution units of a Kubernetes application.""\n  },\n  {\n    ""source"": ""ConfigMap"",\n    ""destination"": ""Volume"",\n    ""relation_description"": ""volume"",\n    ""summary_er"": ""A ConfigMap can be used as a volume in a Pod to provide configuration data to containers.""\n  }\n]', '[{\n    ""source"": ""Pod"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""Contains"",\n    ""summary_er"": ""A pod contains one or more containers, which are the primary units of execution in Kubernetes.""\n}]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A Pod contains one or more containers, which are the basic execution units of a Kubernetes application.""\n  },\n  {\n    ""source"": ""ConfigMaps"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""applied to"",\n    ""summary_er"": ""ConfigMaps provide configuration data for Pods, allowing them to access sensitive information without exposing it directly.""\n  }\n]']","When mounting a ConfigMap or Secret as a directory, it hides existing files in that directory. To add individual files without hiding others, use the `subPath` property on the volumeMount to mount either a single file or directory from the volume, preserving the original files.","[{'highlight': 'When specifying individual entries, you need to set the filename for each individual entry, along with the entry’s key.'}, {'highlight': 'Mounting a directory hides existing files in that directory, which can have serious consequences if done incorrectly.'}, {'highlight': 'The subPath property on the volumeMount allows you to mount either a single file or a single directory from the volume instead of mounting the whole volume.'}, {'highlight': 'You can use the subPath property to add individual files from a ConfigMap into an existing directory without hiding existing files stored in it.'}, {'highlight': 'The relevant part of the pod definition is shown in the following listing, where only myconfig.conf is mounted into the container under a different filename.'}]"
+154,243,0,[],"211
+Decoupling configuration with a ConfigMap
+spec:
+  containers:
+  - image: some/image
+    volumeMounts:
+    - name: myvolume
+      mountPath: /etc/someconfig.conf     
+      subPath: myconfig.conf            
+The subPath property can be used when mounting any kind of volume. Instead of
+mounting the whole volume, you can mount part of it. But this method of mounting
+individual files has a relatively big deficiency related to updating files. You’ll learn
+more about this in the following section, but first, let’s finish talking about the initial
+state of a configMap volume by saying a few words about file permissions.
+SETTING THE FILE PERMISSIONS FOR FILES IN A CONFIGMAP VOLUME
+By default, the permissions on all files in a configMap volume are set to 644 (-rw-r—r--).
+You can change this by setting the defaultMode property in the volume spec, as shown
+in the following listing.
+  volumes:
+  - name: config
+    configMap:
+      name: fortune-config
+      defaultMode: ""6600""       
+Although ConfigMaps should be used for non-sensitive configuration data, you may
+want to make the file readable and writable only to the user and group the file is
+owned by, as the example in the previous listing shows. 
+7.4.7
+Updating an app’s config without having to restart the app
+We’ve said that one of the drawbacks of using environment variables or command-line
+arguments as a configuration source is the inability to update them while the pro-
+cess is running. Using a ConfigMap and exposing it through a volume brings the
+ability to update the configuration without having to recreate the pod or even restart
+the container. 
+ When you update a ConfigMap, the files in all the volumes referencing it are
+updated. It’s then up to the process to detect that they’ve been changed and reload
+them. But Kubernetes will most likely eventually also support sending a signal to the
+container after updating the files.
+WARNING
+Be aware that as I’m writing this, it takes a surprisingly long time
+for the files to be updated after you update the ConfigMap (it can take up to
+one whole minute).
+Listing 7.17
+A pod with a specific config map entry mounted into a specific file
+Listing 7.18
+Setting file permissions: fortune-pod-configmap-volume-defaultMode.yaml 
+You’re mounting into 
+a file, not a directory.
+Instead of mounting the whole 
+volume, you’re only mounting 
+the myconfig.conf entry.
+This sets the permissions 
+for all files to -rw-rw------.
+ 
+",[],"[{'entity': 'ConfigMap', 'description': 'A Kubernetes resource that stores non-sensitive configuration data as key-value pairs.', 'category': 'software'}, {'entity': 'volume', 'description': 'A block of storage that can be mounted into a pod.', 'category': 'hardware'}, {'entity': 'subPath', 'description': 'A property used to mount part of a volume instead of the whole volume.', 'category': 'software'}, {'entity': 'file permissions', 'description': 'The default permissions set for files in a ConfigMap volume (644 or -rw-r—r--).', 'category': 'hardware'}, {'entity': 'defaultMode', 'description': 'A property used to set the default file mode for a ConfigMap volume.', 'category': 'software'}, {'entity': 'ConfigMaps', 'description': 'Used for non-sensitive configuration data.', 'category': 'software'}, {'entity': 'volumes', 'description': 'A list of block storage resources that can be mounted into a pod.', 'category': 'hardware'}, {'entity': 'configMap', 'description': 'A Kubernetes resource that stores non-sensitive configuration data as key-value pairs.', 'category': 'software'}, {'entity': 'fortune-config', 'description': 'The name of a ConfigMap used for demonstration purposes.', 'category': 'software'}, {'entity': 'process', 'description': 'A running instance of an application or service.', 'category': 'application'}, {'entity': 'container', 'description': 'A lightweight and standalone execution environment for an application or service.', 'category': 'software'}, {'entity': 'pod', 'description': 'The basic execution unit in Kubernetes, consisting of one or more containers.', 'category': 'application'}]","[{'source_entity': 'container', 'description': 'uses', 'destination_entity': 'configMap'}, {'source_entity': 'ConfigMaps', 'description': 'are used to store configuration data', 'destination_entity': 'containers'}, {'source_entity': 'volumes', 'description': 'can be mounted to provide persistent storage', 'destination_entity': 'pod'}, {'source_entity': 'defaultMode', 'description': 'is used to set the default permissions for a file', 'destination_entity': 'file permissions'}, {'source_entity': 'fortune-config', 'description': 'is an example of a ConfigMap that stores configuration data', 'destination_entity': 'configMap'}, {'source_entity': 'subPath', 'description': 'can be used to specify the path within a volume where a file should be mounted', 'destination_entity': 'volume'}, {'source_entity': 'pod', 'description': 'can have one or more volumes attached to it', 'destination_entity': 'volumes'}, {'source_entity': 'process', 'description': 'can be run within a container', 'destination_entity': 'container'}, {'source_entity': 'file permissions', 'description': 'are used to control access to files and directories', 'destination_entity': 'defaultMode'}, {'source_entity': 'ConfigMap', 'description': 'is a Kubernetes resource that stores configuration data', 'destination_entity': 'containers'}]","['[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A container utilizes a pod\'s resources, executing within its runtime environment.""\n  },\n  {\n    ""source"": ""container"",\n    ""destination"": ""configMap"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A container leverages a configMap to access configuration data, enhancing its functionality.""\n  }\n]', '[\n  {\n    ""source"": ""ConfigMaps"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to store configuration data"",\n    ""summary_er"": ""ConfigMaps are used to store configuration data for pods, providing a way to decouple configuration from container images.""\n  },\n  {\n    ""source"": ""ConfigMaps"",\n    ""destination"": ""containers"",\n    ""relation_description"": ""are used to store configuration data"",\n    ""summary_er"": ""ConfigMaps provide configuration data to containers, allowing them to access and use external configuration settings.""\n  }\n]', '[\n  {\n    ""source"": ""volumes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be mounted to provide persistent storage"",\n    ""summary_er"": ""Persistent storage can be provided by mounting volumes to pods, ensuring data durability and availability.""\n  }\n]', '[\n  {\n    ""source"": ""defaultMode"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to set the default permissions for a file"",\n    ""summary_er"": ""Sets default file permissions for a pod, controlling access and security.""\n  }\n]', '[\n  {\n    ""source"": ""fortune-config"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is an example of a ConfigMap that stores configuration data"",\n    ""summary_er"": ""Fortune-Config is a ConfigMap used to store configuration data for pods, ensuring consistent settings across deployments.""\n  }\n]', '[\n  {\n    ""source"": ""subPath"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""volume"",\n    ""summary_er"": ""The subPath can be used to specify the path within a volume where a file should be mounted in a pod.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can have one or more volumes attached to it"",\n    ""summary_er"": ""A pod can be associated with multiple volumes, allowing for shared storage and data persistence.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""volumes"",\n    ""relation_description"": ""can have one or more volumes attached to it"",\n    ""summary_er"": ""Pods can utilize one or more volumes, enabling shared storage and data persistence across containers within the pod.""\n  }\n]', '[\n  {\n    ""source"": ""process"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be run within a container"",\n    ""summary_er"": ""A process can be executed as a container, allowing for isolation and resource management.""\n  }\n]', '[\n  {\n    ""source"": ""file permissions"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to control access to files and directories"",\n    ""summary_er"": ""File permissions are utilized by pods to regulate access to files and directories, ensuring secure data management.""\n  }\n]', '[\n  {\n    ""source"": ""ConfigMap"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a Kubernetes resource that stores configuration data"",\n    ""summary_er"": ""A ConfigMap is used to store and share configuration data with pods in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""containers"",\n    ""relation_description"": ""stores configuration data for"",\n    ""summary_er"": ""Pods contain one or more containers, which are executed based on the configuration data stored in ConfigMaps.""\n  }\n]']","A ConfigMap can be used to decouple configuration from an application, allowing for easy updates without restarting the app. A subPath can be used to mount individual files from a volume instead of the whole volume, but this method has limitations with file updating. File permissions in a ConfigMap volume default to 644 and can be changed using the defaultMode property. Updating a ConfigMap updates all referencing volumes, allowing for configuration changes without app restarts.","[{'highlight': 'The subPath property can be used when mounting any kind of volume. Instead of mounting the whole volume, you can mount part of it.'}, {'highlight': 'By default, the permissions on all files in a configMap volume are set to 644 (-rw-r—r--).'}, {'highlight': 'Using a ConfigMap and exposing it through a volume brings the ability to update the configuration without having to recreate the pod or even restart the container.'}, {'highlight': 'When you update a ConfigMap, the files in all the volumes referencing it are updated. It’s then up to the process to detect that they’ve been changed and reload them.'}, {'highlight': 'Be aware that as I’m writing this, it takes a surprisingly long time for the files to be updated after you update the ConfigMap (it can take up to one whole minute).'}]"
+155,244,0,[],"212
+CHAPTER 7
+ConfigMaps and Secrets: configuring applications
+EDITING A CONFIGMAP
+Let’s see how you can change a ConfigMap and have the process running in the pod
+reload the files exposed in the configMap volume. You’ll modify the Nginx config file
+from your previous example and make Nginx use the new config without restarting
+the pod. Try switching gzip compression off by editing the fortune-config Config-
+Map with kubectl edit:
+$ kubectl edit configmap fortune-config
+Once your editor opens, change the gzip on line to gzip off, save the file, and then
+close the editor. The ConfigMap is then updated, and soon afterward, the actual file
+in the volume is updated as well. You can confirm this by printing the contents of the
+file with kubectl exec:
+$ kubectl exec fortune-configmap-volume -c web-server
+➥  cat /etc/nginx/conf.d/my-nginx-config.conf
+If you don’t see the update yet, wait a while and try again. It takes a while for the
+files to get updated. Eventually, you’ll see the change in the config file, but you’ll
+find this has no effect on Nginx, because it doesn’t watch the files and reload them
+automatically. 
+SIGNALING NGINX TO RELOAD THE CONFIG
+Nginx will continue to compress its responses until you tell it to reload its config files,
+which you can do with the following command:
+$ kubectl exec fortune-configmap-volume -c web-server -- nginx -s reload
+Now, if you try hitting the server again with curl, you should see the response is no
+longer compressed (it no longer contains the Content-Encoding: gzip header).
+You’ve effectively changed the app’s config without having to restart the container or
+recreate the pod. 
+UNDERSTANDING HOW THE FILES ARE UPDATED ATOMICALLY
+You may wonder what happens if an app can detect config file changes on its own and
+reloads them before Kubernetes has finished updating all the files in the configMap
+volume. Luckily, this can’t happen, because all the files are updated atomically, which
+means all updates occur at once. Kubernetes achieves this by using symbolic links. If
+you list all the files in the mounted configMap volume, you’ll see something like the
+following listing.
+$ kubectl exec -it fortune-configmap-volume -c web-server -- ls -lA 
+➥  /etc/nginx/conf.d
+total 4
+drwxr-xr-x  ... 12:15 ..4984_09_04_12_15_06.865837643
+Listing 7.19
+Files in a mounted configMap volume
+ 
+",[],"[{'entity': 'ConfigMaps', 'description': 'A ConfigMap is an object that stores configuration data as key-value pairs.', 'category': 'software'}, {'entity': 'kubectl edit', 'description': 'A command used to edit a ConfigMap and have the process running in the pod reload the files exposed in the configMap volume.', 'category': 'command'}, {'entity': 'fortune-config Config-Map', 'description': 'A specific ConfigMap used as an example in the chapter.', 'category': 'software'}, {'entity': 'gzip compression', 'description': 'A feature of Nginx that can be enabled or disabled by editing a ConfigMap.', 'category': 'process'}, {'entity': 'Nginx config file', 'description': 'A configuration file used by Nginx to determine how to handle requests.', 'category': 'file'}, {'entity': 'ConfigMap volume', 'description': 'A directory that contains the files exposed in a ConfigMap.', 'category': 'directory'}, {'entity': 'kubectl exec', 'description': 'A command used to execute a command inside a container running in a pod.', 'category': 'command'}, {'entity': 'nginx -s reload', 'description': 'A command used to signal Nginx to reload its configuration files.', 'category': 'command'}, {'entity': 'config file changes', 'description': 'The ability of an app to detect and respond to changes in its configuration files.', 'category': 'process'}, {'entity': 'symbolic links', 'description': 'A feature used by Kubernetes to update all files in a configMap volume atomically.', 'category': 'hardware'}, {'entity': 'Kubernetes', 'description': 'An open-source container orchestration system.', 'category': 'software'}]","[{'source_entity': '""config file changes""', 'description': 'modify', 'destination_entity': '""ConfigMap volume""'}, {'source_entity': '""kubectl exec""', 'description': 'execute', 'destination_entity': '""Nginx config file""'}, {'source_entity': '""symbolic links""', 'description': 'create', 'destination_entity': '""ConfigMaps""'}, {'source_entity': '""fortune-config Config-Map""', 'description': 'reference', 'destination_entity': '""ConfigMap volume""'}, {'source_entity': '""Kubernetes""', 'description': 'manage', 'destination_entity': '""ConfigMaps""'}, {'source_entity': '""nginx -s reload""', 'description': 'reload', 'destination_entity': '""Nginx config file""'}, {'source_entity': '""gzip compression""', 'description': 'compress', 'destination_entity': '""ConfigMap volume""'}, {'source_entity': '""kubectl edit""', 'description': 'edit', 'destination_entity': '""ConfigMaps""'}]","['[\n  {\n    ""source"": ""config file changes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""modify"",\n    ""summary_er"": ""Modifying a pod\'s configuration through config file changes allows for dynamic updates to its settings without requiring a restart.""\n  },\n  {\n    ""source"": ""ConfigMap volume"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""mounting"",\n    ""summary_er"": ""Mounting a ConfigMap volume in a pod enables the use of configuration data from the ConfigMap within the pod\'s container(s).""\n  }\n]', '[\n  {\n    ""source"": ""kubectl exec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""execute"",\n    ""summary_er"": ""Execute a command in a running container within a pod using kubectl exec.""\n  },\n  {\n    ""source"": ""Nginx config file"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configuration"",\n    ""summary_er"": ""Configure an Nginx server within a pod by editing the Nginx config file.""\n  }\n]', '[\n  {\n    ""source"": ""symbolic links"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""create"",\n    ""summary_er"": ""Symbolic links can be used to create a pod in Kubernetes, allowing for flexible and dynamic configuration.""\n  },\n  {\n    ""source"": ""ConfigMaps"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""inject"",\n    ""summary_er"": ""ConfigMaps can be injected into pods to provide configuration data, enabling environment-specific settings and customization.""\n  }\n]', '[\n  {\n    ""source"": ""fortune-config Config-Map"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""reference"",\n    ""summary_er"": ""The fortune-config Config-Map serves as a reference for the pod, providing configuration details.""\n  },\n  {\n    ""source"": ""ConfigMap volume"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""mounting"",\n    ""summary_er"": ""A ConfigMap volume is mounted to the pod, allowing it to access and utilize configuration data.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manage"",\n    ""summary_er"": ""Kubernetes manages pods by providing a runtime environment for containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""nginx"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""reload"",\n    ""summary_er"": ""The Nginx configuration file triggers a reload of the pod to apply changes.""\n  }\n]', '[\n  {\n    ""source"": ""gzip compression"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""compress"",\n    ""summary_er"": ""Gzip compression is used to reduce the size of data in a pod, making it more efficient for storage and transmission.""\n  },\n  {\n    ""source"": ""ConfigMap volume"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""mount"",\n    ""summary_er"": ""A ConfigMap volume is mounted within a pod to provide configuration data to the container(s) running inside it.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""edit"",\n    ""summary_er"": ""Edit a pod using kubectl command, modifying its configuration.""\n  },\n  {\n    ""source"": ""ConfigMaps"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""ConfigMaps are related to pods, providing configuration data for them.""\n  }\n]']","ConfigMaps and Secrets can be edited using kubectl edit, which updates the files exposed in the configMap volume atomically using symbolic links. Changes to the ConfigMap are reflected in the actual file, but Nginx doesn't reload its config automatically. To signal Nginx to reload its config, use 'nginx -s reload' command within a pod. This allows changing an app's config without restarting the container or recreating the pod.","[{'highlight': 'You can change a ConfigMap and have the process running in the pod reload the files exposed in the configMap volume by editing the ConfigMap with kubectl edit.'}, {'highlight': 'Nginx will continue to compress its responses until you tell it to reload its config files, which you can do with the command: $ kubectl exec fortune-configmap-volume -c web-server -- nginx -s reload'}, {'highlight': 'All the files in a mounted configMap volume are updated atomically, meaning all updates occur at once, thanks to Kubernetes using symbolic links.'}, {'highlight': 'You can confirm that the ConfigMap has been updated by printing the contents of the file with kubectl exec: $ kubectl exec fortune-configmap-volume -c web-server cat /etc/nginx/conf.d/my-nginx-config.conf'}, {'highlight': 'Editing a ConfigMap does not affect Nginx until you reload its config files, which can be done using the command: $ kubectl exec fortune-configmap-volume -c web-server -- nginx -s reload'}]"
+156,245,0,[],"213
+Using Secrets to pass sensitive data to containers
+lrwxrwxrwx  ... 12:15 ..data -> ..4984_09_04_12_15_06.865837643
+lrwxrwxrwx  ... 12:15 my-nginx-config.conf -> ..data/my-nginx-config.conf
+lrwxrwxrwx  ... 12:15 sleep-interval -> ..data/sleep-interval
+As you can see, the files in the mounted configMap volume are symbolic links point-
+ing to files in the ..data dir. The ..data dir is also a symbolic link pointing to a direc-
+tory called ..4984_09_04_something. When the ConfigMap is updated, Kubernetes
+creates a new directory like this, writes all the files to it, and then re-links the ..data
+symbolic link to the new directory, effectively changing all files at once.
+UNDERSTANDING THAT FILES MOUNTED INTO EXISTING DIRECTORIES DON’T GET UPDATED
+One big caveat relates to updating ConfigMap-backed volumes. If you’ve mounted a
+single file in the container instead of the whole volume, the file will not be updated!
+At least, this is true at the time of writing this chapter. 
+ For now, if you need to add an individual file and have it updated when you update
+its source ConfigMap, one workaround is to mount the whole volume into a different
+directory and then create a symbolic link pointing to the file in question. The sym-
+link can either be created in the container image itself, or you could create the
+symlink when the container starts.
+UNDERSTANDING THE CONSEQUENCES OF UPDATING A CONFIGMAP
+One of the most important features of containers is their immutability, which allows
+us to be certain that no differences exist between multiple running containers created
+from the same image, so is it wrong to bypass this immutability by modifying a Config-
+Map used by running containers? 
+ The main problem occurs when the app doesn’t support reloading its configura-
+tion. This results in different running instances being configured differently—those
+pods that are created after the ConfigMap is changed will use the new config, whereas
+the old pods will still use the old one. And this isn’t limited to new pods. If a pod’s con-
+tainer is restarted (for whatever reason), the new process will also see the new config.
+Therefore, if the app doesn’t reload its config automatically, modifying an existing
+ConfigMap (while pods are using it) may not be a good idea. 
+ If the app does support reloading, modifying the ConfigMap usually isn’t such a
+big deal, but you do need to be aware that because files in the ConfigMap volumes
+aren’t updated synchronously across all running instances, the files in individual pods
+may be out of sync for up to a whole minute.
+7.5
+Using Secrets to pass sensitive data to containers
+All the information you’ve passed to your containers so far is regular, non-sensitive
+configuration data that doesn’t need to be kept secure. But as we mentioned at the
+start of the chapter, the config usually also includes sensitive information, such as cre-
+dentials and private encryption keys, which need to be kept secure.
+ 
+",[],"[{'entity': 'Secrets', 'description': 'passing sensitive data to containers', 'category': 'software'}, {'entity': 'ConfigMap', 'description': 'a way to pass configuration data to containers', 'category': 'software'}, {'entity': 'Kubernetes', 'description': 'an orchestration system for containers', 'category': 'software'}, {'entity': 'containers', 'description': 'lightweight and standalone execution environment', 'category': 'software'}, {'entity': 'files', 'description': ""mounted into existing directories don't get updated"", 'category': 'hardware'}, {'entity': 'directories', 'description': 'symbolic links pointing to files in the ..data dir', 'category': 'hardware'}, {'entity': 'symlinks', 'description': 'pointing to files in the ..data dir', 'category': 'software'}, {'entity': 'ConfigMap-backed volumes', 'description': 'a way to pass configuration data to containers', 'category': 'software'}, {'entity': 'volumes', 'description': ""mounted into existing directories don't get updated"", 'category': 'hardware'}, {'entity': 'pods', 'description': 'running instances being configured differently', 'category': 'software'}, {'entity': 'containers', 'description': 'configured differently—those pods that are created after the ConfigMap is changed will use the new config', 'category': 'software'}, {'entity': 'processes', 'description': 'new process will also see the new config', 'category': 'hardware'}, {'entity': 'encryption keys', 'description': 'sensitive information that needs to be kept secure', 'category': 'software'}, {'entity': 'credentials', 'description': 'sensitive information that needs to be kept secure', 'category': 'software'}]","[{'source_entity': 'Kubernetes', 'description': 'manages', 'destination_entity': 'pods'}, {'source_entity': 'Kubernetes', 'description': 'orchestrates', 'destination_entity': 'containers'}, {'source_entity': 'Kubernetes', 'description': 'encrypts', 'destination_entity': 'encryption keys'}, {'source_entity': 'Kubernetes', 'description': 'stores', 'destination_entity': 'Secrets'}, {'source_entity': 'Kubernetes', 'description': 'configures', 'destination_entity': 'ConfigMap-backed volumes'}, {'source_entity': 'containers', 'description': 'accesses', 'destination_entity': 'volumes'}, {'source_entity': 'containers', 'description': 'reads', 'destination_entity': 'files'}, {'source_entity': 'containers', 'description': 'writes', 'destination_entity': 'files'}, {'source_entity': 'containers', 'description': 'executes', 'destination_entity': 'processes'}, {'source_entity': 'Kubernetes', 'description': 'generates', 'destination_entity': 'encryption keys'}, {'source_entity': 'Kubernetes', 'description': 'manages', 'destination_entity': 'credentials'}, {'source_entity': 'containers', 'description': 'uses', 'destination_entity': 'symlinks'}, {'source_entity': 'containers', 'description': 'accesses', 'destination_entity': 'directories'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages a collection of containers called pods, which are the basic execution unit in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""orchestrates"",\n    ""summary_er"": ""Kubernetes manages and coordinates the execution of pods, which are groups of one or more containers.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""encrypts"",\n    ""summary_er"": ""Kubernetes securely stores encryption keys for pods, ensuring data protection and integrity.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores"",\n    ""summary_er"": ""Kubernetes stores data in pods, which are the basic execution units of a containerized application.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures"",\n    ""summary_er"": ""Kubernetes configures pods using ConfigMap-backed volumes for dynamic configuration management.""\n  }\n]', '[\n  {\n    ""source"": ""containers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""accesses"",\n    ""summary_er"": ""Containers access resources from a pod, enabling them to share files and communicate with each other.""\n  },\n  {\n    ""source"": ""volumes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""mounts"",\n    ""summary_er"": ""Volumes are mounted within a pod, providing persistent storage for container data and configurations.""\n  }\n]', '[\n  {\n    ""source"": ""containers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""reads"",\n    ""summary_er"": ""A container in Kubernetes reads from a file within a pod, allowing for efficient data access and processing.""\n  }\n]', '[\n  {\n    ""source"": ""containers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""writes"",\n    ""summary_er"": ""A container writes data to a pod, which is a logical host in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""containers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""Containers execute code within a pod, utilizing shared resources such as networking and storage.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""generates"",\n    ""summary_er"": ""Kubernetes generates encryption keys for pods, ensuring secure communication and data protection.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages a pod, which is a container running an application.""\n  }\n]', '[\n  {\n    ""source"": ""containers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A container uses a pod\'s resources, such as CPU and memory.""\n  },\n  {\n    ""source"": ""containers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""symlinks"",\n    ""summary_er"": ""A container can create symlinks to files within the pod\'s filesystem.""\n  }\n]', '[\n  {\n    ""source"": ""containers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""accesses"",\n    ""summary_er"": ""Containers access files in a pod\'s directories, enabling communication between containerized applications.""\n  }\n]']","Kubernetes uses symbolic links to update ConfigMap volumes when a new directory is created. However, updating individual files in an existing directory does not trigger an update. Modifying an existing ConfigMap while pods are using it may not be ideal if the app doesn't reload its config automatically, as different running instances will have different configs.","[{'highlight': ""When updating a ConfigMap-backed volume, if you've mounted a single file in the container instead of the whole volume, the file will not be updated!""}, {'highlight': ""Modifying an existing ConfigMap while pods are using it may not be a good idea if the app doesn't support reloading its configuration.""}, {'highlight': ""Files in ConfigMap volumes aren't updated synchronously across all running instances, so files in individual pods may be out of sync for up to a whole minute.""}, {'highlight': 'To update an individual file and have it updated when you update its source ConfigMap, one workaround is to mount the whole volume into a different directory and then create a symbolic link pointing to the file in question.'}, {'highlight': ""Modifying sensitive data in a ConfigMap can be problematic if the app doesn't support reloading its configuration, as it may result in different running instances being configured differently.""}]"
+157,246,0,[],"214
+CHAPTER 7
+ConfigMaps and Secrets: configuring applications
+7.5.1
+Introducing Secrets
+To store and distribute such information, Kubernetes provides a separate object called
+a Secret. Secrets are much like ConfigMaps—they’re also maps that hold key-value
+pairs. They can be used the same way as a ConfigMap. You can
+Pass Secret entries to the container as environment variables
+Expose Secret entries as files in a volume
+Kubernetes helps keep your Secrets safe by making sure each Secret is only distributed
+to the nodes that run the pods that need access to the Secret. Also, on the nodes
+themselves, Secrets are always stored in memory and never written to physical storage,
+which would require wiping the disks after deleting the Secrets from them. 
+ On the master node itself (more specifically in etcd), Secrets used to be stored in
+unencrypted form, which meant the master node needs to be secured to keep the sensi-
+tive data stored in Secrets secure. This didn’t only include keeping the etcd storage
+secure, but also preventing unauthorized users from using the API server, because any-
+one who can create pods can mount the Secret into the pod and gain access to the sen-
+sitive data through it. From Kubernetes version 1.7, etcd stores Secrets in encrypted
+form, making the system much more secure. Because of this, it’s imperative you prop-
+erly choose when to use a Secret or a ConfigMap. Choosing between them is simple:
+Use a ConfigMap to store non-sensitive, plain configuration data.
+Use a Secret to store any data that is sensitive in nature and needs to be kept
+under key. If a config file includes both sensitive and not-sensitive data, you
+should store the file in a Secret.
+You already used Secrets in chapter 5, when you created a Secret to hold the TLS certifi-
+cate needed for the Ingress resource. Now you’ll explore Secrets in more detail.
+7.5.2
+Introducing the default token Secret
+You’ll start learning about Secrets by examining a Secret that’s mounted into every
+container you run. You may have noticed it when using kubectl describe on a pod.
+The command’s output has always contained something like this:
+Volumes:
+  default-token-cfee9:
+    Type:       Secret (a volume populated by a Secret)
+    SecretName: default-token-cfee9
+Every pod has a secret volume attached to it automatically. The volume in the previ-
+ous kubectl describe output refers to a Secret called default-token-cfee9. Because
+Secrets are resources, you can list them with kubectl get secrets and find the
+default-token Secret in that list. Let’s see:
+$ kubectl get secrets
+NAME                  TYPE                                  DATA      AGE
+default-token-cfee9   kubernetes.io/service-account-token   3         39d
+ 
+",[],"[{'entity': 'ConfigMaps', 'description': 'a separate object that holds key-value pairs for configuration data', 'category': 'software'}, {'entity': 'Secrets', 'description': 'a map that hold key-value pairs, used to store sensitive information', 'category': 'software'}, {'entity': 'environment variables', 'description': 'variables passed to the container for configuration', 'category': 'process'}, {'entity': 'files in a volume', 'description': 'exposing Secret entries as files in a volume', 'category': 'process'}, {'entity': 'Kubernetes', 'description': 'a container orchestration system', 'category': 'software'}, {'entity': 'etcd', 'description': 'a distributed key-value store used by Kubernetes', 'category': 'database'}, {'entity': 'API server', 'description': 'the interface for interacting with the Kubernetes cluster', 'category': 'software'}, {'entity': 'pods', 'description': 'the basic execution unit in a Kubernetes cluster', 'category': 'container'}, {'entity': 'ConfigMap', 'description': 'a resource used to store non-sensitive configuration data', 'category': 'software'}, {'entity': 'Secret', 'description': 'a resource used to store sensitive information', 'category': 'software'}, {'entity': 'default-token Secret', 'description': ""a Secret that's mounted into every container by default"", 'category': 'software'}, {'entity': 'kubectl', 'description': 'the command-line interface for interacting with a Kubernetes cluster', 'category': 'software'}]","[{'source_entity': 'Kubernetes', 'description': 'manages', 'destination_entity': 'pods'}, {'source_entity': 'kubectl', 'description': 'interacts with', 'destination_entity': 'API server'}, {'source_entity': 'etcd', 'description': 'stores', 'destination_entity': 'Kubernetes configuration data'}, {'source_entity': 'Kubernetes', 'description': 'uses', 'destination_entity': 'Secrets'}, {'source_entity': 'Kubernetes', 'description': 'uses', 'destination_entity': 'ConfigMaps'}, {'source_entity': '""default-token Secret""', 'description': 'is used by', 'destination_entity': 'pods'}, {'source_entity': 'kubectl', 'description': 'manages', 'destination_entity': 'environment variables'}, {'source_entity': 'Kubernetes', 'description': 'stores', 'destination_entity': 'files in a volume'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages a collection of containers called pods, providing resource allocation and orchestration.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""API server"",\n    ""relation_description"": ""interacts with"",\n    ""summary_er"": ""Kubectl, a command-line tool, interacts with the Kubernetes API server to manage and control cluster resources.""\n  }\n]', '[\n  {\n    ""source"": ""etcd"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores"",\n    ""summary_er"": ""Etcd stores Kubernetes configuration data for pods, ensuring consistency and reliability across the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubernetes manages and orchestrates containerized applications, utilizing pods as the basic execution unit.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubernetes utilizes pods to deploy and manage containerized applications.""\n  },\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""ConfigMaps"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubernetes leverages ConfigMaps to store and manage configuration data for applications.""\n  }\n]', '[\n  {\n    ""source"": ""default-token Secret"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""is used by"",\n    ""summary_er"": ""The default-token Secret is utilized by pods for authentication purposes.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) manages containerized applications and services, including pods, which are the basic execution unit in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores files"",\n    ""summary_er"": ""Kubernetes stores files for pods, ensuring data persistence and availability.""\n  },\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""in a volume"",\n    ""summary_er"": ""Kubernetes mounts volumes to store pod files, providing a shared storage space.""\n  }\n]']","Kubernetes provides Secrets to store and distribute sensitive information, which can be used like ConfigMaps. They are stored in memory on nodes and encrypted in etcd from v1.7. Choose between Secret and ConfigMap based on sensitivity: use ConfigMap for non-sensitive data and Secret for sensitive data. A default token Secret is automatically mounted into every container, accessible with kubectl get secrets.","[{'highlight': 'Kubernetes provides a separate object called a Secret to store and distribute sensitive information.'}, {'highlight': 'Secrets can be used like ConfigMaps, passing entries as environment variables or exposing them as files in a volume.'}, {'highlight': 'Kubernetes stores Secrets in memory on nodes and encrypts them in etcd from version 1.7, making the system more secure.'}, {'highlight': 'Choose between using a Secret or a ConfigMap by storing non-sensitive data in a ConfigMap and sensitive data in a Secret.'}, {'highlight': 'Every pod has an automatically attached secret volume called default-token-cfee9, which can be listed with kubectl get secrets.'}]"
+158,247,0,[],"215
+Using Secrets to pass sensitive data to containers
+You can also use kubectl describe to learn a bit more about it, as shown in the follow-
+ing listing.
+$ kubectl describe secrets
+Name:        default-token-cfee9
+Namespace:   default
+Labels:      <none>
+Annotations: kubernetes.io/service-account.name=default
+             kubernetes.io/service-account.uid=cc04bb39-b53f-42010af00237
+Type:        kubernetes.io/service-account-token
+Data
+====
+ca.crt:      1139 bytes                                   
+namespace:   7 bytes                                      
+token:       eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...      
+You can see that the Secret contains three entries—ca.crt, namespace, and token—
+which represent everything you need to securely talk to the Kubernetes API server
+from within your pods, should you need to do that. Although ideally you want your
+application to be completely Kubernetes-agnostic, when there’s no alternative other
+than to talk to Kubernetes directly, you’ll use the files provided through this secret
+volume. 
+ The kubectl describe pod command shows where the secret volume is mounted:
+Mounts:
+  /var/run/secrets/kubernetes.io/serviceaccount from default-token-cfee9
+NOTE
+By default, the default-token Secret is mounted into every container,
+but you can disable that in each pod by setting the automountService-
+AccountToken field in the pod spec to false or by setting it to false on the
+service account the pod is using. (You’ll learn about service accounts later in
+the book.)
+To help you visualize where and how the default token Secret is mounted, see fig-
+ure 7.11.
+ We’ve said Secrets are like ConfigMaps, so because this Secret contains three
+entries, you can expect to see three files in the directory the secret volume is mounted
+into. You can check this easily with kubectl exec:
+$ kubectl exec mypod ls /var/run/secrets/kubernetes.io/serviceaccount/
+ca.crt
+namespace
+token
+You’ll see how your app can use these files to access the API server in the next chapter.
+Listing 7.20
+Describing a Secret
+This secret 
+contains three 
+entries.
+ 
+",[],"[{'entity': 'kubectl describe', 'description': 'Command used to learn more about a Kubernetes object, such as a Secret.', 'category': 'command'}, {'entity': 'secrets', 'description': 'Kubernetes objects that store sensitive information, such as passwords or tokens.', 'category': 'application'}, {'entity': 'default-token-cfee9', 'description': 'Name of a Secret object in the default namespace.', 'category': 'object'}, {'entity': 'namespace', 'description': 'A Kubernetes concept that groups resources, such as pods and services.', 'category': 'application'}, {'entity': 'token', 'description': 'A Secret object that contains a token used to authenticate with the Kubernetes API server.', 'category': 'object'}, {'entity': 'ca.crt', 'description': 'A file containing a certificate used for authentication with the Kubernetes API server.', 'category': 'file'}, {'entity': '/var/run/secrets/kubernetes.io/serviceaccount', 'description': 'Directory where Secret volumes are mounted in pods.', 'category': 'directory'}, {'entity': 'default-token', 'description': 'Name of a Secret object that is mounted into every container by default.', 'category': 'object'}, {'entity': 'automountServiceAccountToken', 'description': 'Field in the pod spec that controls whether the default token Secret is mounted into containers.', 'category': 'field'}, {'entity': 'service account', 'description': 'A Kubernetes concept that provides an identity for pods to authenticate with the API server.', 'category': 'application'}, {'entity': 'kubectl exec', 'description': 'Command used to execute a command in a pod, such as listing files in a directory.', 'category': 'command'}, {'entity': '/var/run/secrets/kubernetes.io/serviceaccount/', 'description': 'Directory where Secret volumes are mounted in pods.', 'category': 'directory'}]","[{'source_entity': 'kubectl describe', 'description': 'queries information about', 'destination_entity': 'automountServiceAccountToken'}, {'source_entity': 'kubectl exec', 'description': 'executes a command on', 'destination_entity': '/var/run/secrets/kubernetes.io/serviceaccount/'}, {'source_entity': 'kubectl exec', 'description': 'reads data from', 'destination_entity': '/var/run/secrets/kubernetes.io/serviceaccount'}, {'source_entity': 'kubectl exec', 'description': 'accesses secrets', 'destination_entity': 'secrets'}, {'source_entity': 'kubectl exec', 'description': 'obtains token', 'destination_entity': 'token'}, {'source_entity': 'default-token-cfee9', 'description': 'is a part of', 'destination_entity': 'service account'}, {'source_entity': 'ca.crt', 'description': 'is used for', 'destination_entity': 'namespace'}, {'source_entity': 'default-token-cfee9', 'description': 'is related to', 'destination_entity': 'default-token'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""queries information about"",\n    ""summary_er"": ""Kubectl describes a pod\'s details, including its configuration and status.""\n  },\n  {\n    ""source"": ""automountServiceAccountToken"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures service account token"",\n    ""summary_er"": ""Automounts the service account token for a pod, enabling authentication and authorization.""\n  }\n]', '[\n  {\n    ""source"": ""/var/run/secrets/kubernetes.io/serviceaccount/"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""kubectl exec"",\n    ""summary_er"": ""Executes a command on a pod, accessing service account secrets from /var/run/secrets/kubernetes.io/serviceaccount/""\n  }\n]', '[\n  {\n    ""source"": ""/var/run/secrets/kubernetes.io/serviceaccount"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""reads data from"",\n    ""summary_er"": ""/var/run/secrets/kubernetes.io/serviceaccount is a file on the pod that contains service account credentials, which are read by kubectl exec to authenticate with the Kubernetes API.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl exec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""accesses secrets"",\n    ""summary_er"": ""Kubectl exec command accesses secrets from a running pod, allowing administrators to execute commands within the container and retrieve sensitive information.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl exec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""obtains token"",\n    ""summary_er"": ""Kubectl exec command retrieves a token from a running pod, allowing for secure execution of commands within the container.""\n  }\n]', '[\n  {\n    ""source"": ""default-token-cfee9"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a part of"",\n    ""summary_er"": ""A default service token is associated with each pod, providing it with access to cluster resources.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""service account"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Each pod uses a service account to authenticate and authorize its interactions with the Kubernetes API server.""\n  }\n]', '[\n  {\n    ""source"": ""ca.crt"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used for"",\n    ""summary_er"": ""The ca.crt certificate is utilized by pods to establish secure connections.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""namespace"",\n    ""relation_description"": ""in"",\n    ""summary_er"": ""Pods are created and managed within a specific namespace, which provides isolation and organization.""\n  }\n]', '[\n  {\n    ""source"": ""default-token-cfee9"",\n    ""destination"": ""default-token"",\n    ""relation_description"": ""is related to"",\n    ""summary_er"": ""The default token cfee9 is related to the default token, indicating a shared identity or purpose.""\n  }\n]']","Secrets are used to pass sensitive data to containers, and contain entries like ca.crt, namespace, and token which provide secure access to the Kubernetes API server from within pods. The default-token Secret is mounted into every container by default, but can be disabled in each pod or service account.","[{'highlight': 'Secrets are like ConfigMaps, so because this Secret contains three entries, you can expect to see three files in the directory the secret volume is mounted into.'}, {'highlight': 'The kubectl describe pod command shows where the secret volume is mounted: /var/run/secrets/kubernetes.io/serviceaccount from default-token-cfee9'}, {'highlight': 'You can use the files provided through this secret volume to securely talk to the Kubernetes API server from within your pods.'}, {'highlight': 'The default-token Secret is mounted into every container, but you can disable that in each pod by setting the automountService-AccountToken field in the pod spec to false'}, {'highlight': 'You can check the contents of the secret volume with kubectl exec: $ kubectl exec mypod ls /var/run/secrets/kubernetes.io/serviceaccount/'}]"
+159,248,0,[],"216
+CHAPTER 7
+ConfigMaps and Secrets: configuring applications
+7.5.3
+Creating a Secret
+Now, you’ll create your own little Secret. You’ll improve your fortune-serving Nginx
+container by configuring it to also serve HTTPS traffic. For this, you need to create a
+certificate and a private key. The private key needs to be kept secure, so you’ll put it
+and the certificate into a Secret.
+ First, generate the certificate and private key files (do this on your local machine).
+You can also use the files in the book’s code archive (the cert and key files are in the
+fortune-https directory):
+$ openssl genrsa -out https.key 2048
+$ openssl req -new -x509 -key https.key -out https.cert -days 3650 -subj 
+/CN=www.kubia-example.com
+Now, to help better demonstrate a few things about Secrets, create an additional
+dummy file called foo and make it contain the string bar. You’ll understand why you
+need to do this in a moment or two:
+$ echo bar > foo
+Now you can use kubectl create secret to create a Secret from the three files:
+$ kubectl create secret generic fortune-https --from-file=https.key
+➥  --from-file=https.cert --from-file=foo
+secret ""fortune-https"" created
+This isn’t very different from creating ConfigMaps. In this case, you’re creating a
+generic Secret called fortune-https and including two entries in it (https.key with
+the contents of the https.key file and likewise for the https.cert key/file). As you
+learned earlier, you could also include the whole directory with --from-file=fortune-
+https instead of specifying each file individually.
+Pod
+Container
+Filesystem
+/
+var/
+run/
+secrets/
+kubernetes.io/
+serviceaccount/
+Default token Secret
+Default token
+secret
+volume
+ca.crt
+...
+...
+...
+namespace
+token
+Figure 7.11
+The default-token Secret is created automatically and a corresponding 
+volume is mounted in each pod automatically.
+ 
+","[      ca.crt  ...
+0  namespace  ...
+1      token  ...]","[{'entity': 'ConfigMaps', 'description': 'a feature in Kubernetes that allows you to store and retrieve configuration data', 'category': 'software'}, {'entity': 'Secrets', 'description': 'a feature in Kubernetes that allows you to store sensitive information such as passwords or certificates', 'category': 'software'}, {'entity': 'Nginx', 'description': 'a web server software', 'category': 'software'}, {'entity': 'certificate', 'description': 'an electronic document that verifies the identity of a website or organization', 'category': 'software'}, {'entity': 'private key', 'description': 'a secret code used to decrypt encrypted data', 'category': 'software'}, {'entity': 'kubectl', 'description': 'the command-line tool for interacting with a Kubernetes cluster', 'category': 'software'}, {'entity': 'create secret', 'description': 'a command used to create a Secret in a Kubernetes cluster', 'category': 'command'}, {'entity': 'ConfigMaps and Secrets', 'description': 'a chapter title in the document', 'category': 'software'}, {'entity': 'Pod', 'description': 'the basic execution unit in a Kubernetes cluster', 'category': 'container'}, {'entity': 'Container', 'description': 'a lightweight and standalone executable package of software', 'category': 'container'}, {'entity': 'Filesystem', 'description': 'the hierarchical organization of files and directories on a computer system', 'category': 'hardware'}, {'entity': '/var/run/secrets/kubernetes.io/serviceaccount/', 'description': 'a directory path in the Filesystem', 'category': 'filesystem'}, {'entity': 'default-token Secret', 'description': 'a Secret created automatically by Kubernetes to store a default token', 'category': 'software'}, {'entity': 'volume', 'description': 'a directory in the Filesystem that is shared among multiple containers', 'category': 'hardware'}, {'entity': 'ca.crt', 'description': ""a file containing a certificate authority's public key"", 'category': 'file'}, {'entity': 'namespace', 'description': 'a way to group resources in a Kubernetes cluster', 'category': 'software'}, {'entity': 'token', 'description': 'a secret code used for authentication and authorization', 'category': 'software'}]","[{'source_entity': '""Nginx""', 'description': 'uses', 'destination_entity': '""Container""'}, {'source_entity': '""kubectl""', 'description': 'manages', 'destination_entity': '""Pod""'}, {'source_entity': '""create secret""', 'description': 'creates', 'destination_entity': '""default-token Secret""'}, {'source_entity': '""ConfigMaps and Secrets""', 'description': 'stores', 'destination_entity': '""volume""'}, {'source_entity': '""Filesystem""', 'description': 'mounts', 'destination_entity': '""/var/run/secrets/kubernetes.io/serviceaccount/""'}, {'source_entity': '""ca.crt""', 'description': 'uses', 'destination_entity': '""certificate""'}, {'source_entity': '""token""', 'description': 'uses', 'destination_entity': '""namespace""'}, {'source_entity': '""Secrets""', 'description': 'manages', 'destination_entity': '""default-token Secret""'}, {'source_entity': '""ConfigMaps and Secrets""', 'description': 'stores', 'destination_entity': '""ca.crt""'}]","['[\n  {\n    ""source"": ""Nginx"",\n    ""destination"": ""Container"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Nginx uses a container to run its web server.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubectl manages a pod, which is a container running an application.""\n  }\n]', '[\n  {\n    ""source"": ""create secret"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates"",\n    ""summary_er"": ""A Kubernetes secret named \'default-token\' is created to store sensitive information, which will be used by a pod in the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""ConfigMaps and Secrets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores"",\n    ""summary_er"": ""ConfigMaps and Secrets store data in a volume that can be mounted to a pod.""\n  }\n]', '[\n  {\n    ""source"": ""Filesystem"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""mounts"",\n    ""summary_er"": ""The Filesystem mounts a directory to provide secrets to the pod, enabling secure communication and access to sensitive data.""\n  }\n]', '[\n  {\n    ""source"": ""ca.crt"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The certificate file ca.crt is used by a Kubernetes pod to establish trust and secure communication.""\n  }\n]', '[\n  {\n    ""source"": ""token"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A token in Kubernetes represents a unique identifier for a resource, such as a pod, which uses it to authenticate and authorize access.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""namespace"",\n    ""relation_description"": ""in"",\n    ""summary_er"": ""A pod is a logical host in Kubernetes that runs one or more containers, and can be placed within a namespace for organizational purposes.""\n  }\n]', '[\n  {\n    ""source"": ""Secrets"",\n    ""destination"": ""pod default-token Secret"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The Secrets entity manages the default-token Secret pod, ensuring secure storage and access to sensitive data.""\n  }\n]', '[\n  {\n    ""source"": ""ConfigMaps and Secrets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores"",\n    ""summary_er"": ""ConfigMaps and Secrets store sensitive data, such as certificates (ca.crt), which are then used by pods.""\n  }\n]']","Creating a Secret involves generating certificate and private key files, then using kubectl to create a generic Secret called fortune-https from these files and an additional dummy file containing the string bar. This process is similar to creating ConfigMaps, but with the added security of keeping sensitive information like private keys secure within the Secret.","[{'highlight': 'You can create a Secret using kubectl create secret generic command, which includes files such as certificate and private key.'}]"

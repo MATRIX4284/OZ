@@ -1,0 +1,485 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+390,479,0,[],"447
+Horizontal pod autoscaling
+get 27%. If the autoscaler scales up to four pods, their average CPU utilization is
+expected to be somewhere in the neighborhood of 27%, which is close to the target
+value of 30% and almost exactly what the observed CPU utilization was.
+UNDERSTANDING THE MAXIMUM RATE OF SCALING
+In my case, the CPU usage shot up to 108%, but in general, the initial CPU usage
+could spike even higher. Even if the initial average CPU utilization was higher (say
+150%), requiring five replicas to achieve the 30% target, the autoscaler would still
+only scale up to four pods in the first step, because it has a limit on how many repli-
+cas can be added in a single scale-up operation. The autoscaler will at most double
+the number of replicas in a single operation, if more than two current replicas
+exist. If only one or two exist, it will scale up to a maximum of four replicas in a sin-
+gle step. 
+ Additionally, it has a limit on how soon a subsequent autoscale operation can
+occur after the previous one. Currently, a scale-up will occur only if no rescaling
+event occurred in the last three minutes. A scale-down event is performed even less
+frequently—every five minutes. Keep this in mind so you don’t wonder why the
+autoscaler refuses to perform a rescale operation even if the metrics clearly show
+that it should.
+MODIFYING THE TARGET METRIC VALUE ON AN EXISTING HPA OBJECT
+To wrap up this section, let’s do one last exercise. Maybe your initial CPU utilization
+target of 30% was a bit too low, so increase it to 60%. You do this by editing the HPA
+resource with the kubectl edit command. When the text editor opens, change the
+targetAverageUtilization field to 60, as shown in the following listing.
+...
+spec:
+  maxReplicas: 5
+  metrics:
+  - resource:
+      name: cpu
+      targetAverageUtilization: 60    
+    type: Resource
+...
+As with most other resources, after you modify the resource, your changes will be
+detected by the autoscaler controller and acted upon. You could also delete the
+resource and recreate it with different target values, because by deleting the HPA
+resource, you only disable autoscaling of the target resource (a Deployment in this
+case) and leave it at the scale it is at that time. The automatic scaling will resume after
+you create a new HPA resource for the Deployment.
+Listing 15.6
+Increasing the target CPU utilization by editing the HPA resource
+Change this 
+from 30 to 60.
+ 
+",[],"[{'entity': 'Horizontal pod autoscaling', 'description': '', 'category': 'application'}, {'entity': 'CPU utilization', 'description': 'average CPU usage of a pod', 'category': 'process'}, {'entity': 'HPA object', 'description': ' Horizontal Pod Autoscaler resource', 'category': 'resource'}, {'entity': 'kubectl edit command', 'description': 'command to modify HPA resource', 'category': 'command'}, {'entity': 'targetAverageUtilization field', 'description': 'field in HPA resource to set CPU utilization target', 'category': 'field'}, {'entity': 'maxReplicas parameter', 'description': 'parameter to set maximum number of replicas', 'category': 'parameter'}, {'entity': 'metrics section', 'description': 'section in HPA resource to specify metrics for scaling', 'category': 'section'}, {'entity': 'Resource type', 'description': 'type of resource being scaled (e.g. CPU)', 'category': 'resource type'}, {'entity': 'autoscaler controller', 'description': 'controller that detects changes to HPA resource and scales pods accordingly', 'category': 'process'}, {'entity': 'Deployment', 'description': 'resource being scaled by HPA', 'category': 'application'}]","[{'source_entity': '""Deployment""', 'description': 'is scaled based on', 'destination_entity': '""HPA object""'}, {'source_entity': '""kubectl edit command""', 'description': 'modifies the', 'destination_entity': '""maxReplicas parameter""'}, {'source_entity': '""Deployment""', 'description': 'is controlled by', 'destination_entity': '""autoscaler controller""'}, {'source_entity': '""HPA object""', 'description': 'uses the', 'destination_entity': '""metrics section""'}, {'source_entity': '""targetAverageUtilization field""', 'description': 'is used to calculate', 'destination_entity': '""CPU utilization""'}, {'source_entity': '""Deployment""', 'description': 'is scaled based on', 'destination_entity': '""Horizontal pod autoscaling""'}]","['[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is scaled based on"",\n    ""summary_er"": ""The deployment is dynamically scaled to match the demand for pods, ensuring efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl edit command"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""modifies the"",\n    ""summary_er"": ""The kubectl edit command modifies a pod\'s configuration by updating its YAML definition.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is controlled by"",\n    ""summary_er"": ""A Deployment controls a Pod, ensuring its lifecycle and scaling needs are met.""\n  },\n  {\n    ""source"": ""Autoscaler Controller"",\n    ""destination"": ""Deployment"",\n    ""relation_description"": ""controls"",\n    ""summary_er"": ""The Autoscaler Controller manages the scale of a Deployment, adjusting resource allocation as needed.""\n  }\n]', '[\n  {\n    ""source"": ""HPA object"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses the metrics section"",\n    ""summary_er"": ""HPA (Horizontal Pod Autoscaler) uses metrics from a pod to scale its replicas based on CPU or memory utilization.""\n  }\n]', '[\n  {\n    ""source"": ""targetAverageUtilization field"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to calculate CPU utilization"",\n    ""summary_er"": ""The target average utilization field is a metric used to monitor and manage pod CPU usage, ensuring optimal resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is scaled based on"",\n    ""summary_er"": ""A deployment scales a pod based on resource utilization, ensuring efficient use of resources.""\n  },\n  {\n    ""source"": ""Horizontal pod autoscaling"",\n    ""destination"": ""Deployment"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Horizontal pod autoscaling uses deployments to scale pods based on CPU and memory usage.""\n  }\n]']","The autoscaler in Kubernetes has a maximum rate of scaling, doubling the number of replicas in a single operation if more than two exist, or scaling up to four replicas. It also has a limit on how soon a subsequent scale-up operation can occur after the previous one, which is currently every three minutes for scale-up and five minutes for scale-down. The target metric value for CPU utilization can be modified by editing the HPA resource with kubectl edit command, increasing it from 30 to 60 in this case.","[{'highlight': 'The autoscaler scales up to four pods when the initial average CPU utilization is around 27%, which is close to the target value of 30%.'}, {'highlight': 'The autoscaler has a limit on how many replicas can be added in a single scale-up operation, at most doubling the number of replicas if more than two current replicas exist.'}, {'highlight': 'A scale-up event will occur only if no rescaling event occurred in the last three minutes, while a scale-down event is performed every five minutes.'}, {'highlight': 'To modify the target metric value on an existing HPA object, you can edit the resource with kubectl edit command and change the targetAverageUtilization field to the desired value.'}, {'highlight': 'Deleting the HPA resource disables autoscaling of the target resource but leaves it at its current scale, and automatic scaling will resume after creating a new HPA resource for the Deployment.'}]"
+391,480,0,[],"448
+CHAPTER 15
+Automatic scaling of pods and cluster nodes
+15.1.3 Scaling based on memory consumption
+You’ve seen how easily the horizontal Autoscaler can be configured to keep CPU uti-
+lization at the target level. But what about autoscaling based on the pods’ memory
+usage? 
+ Memory-based autoscaling is much more problematic than CPU-based autoscal-
+ing. The main reason is because after scaling up, the old pods would somehow need to
+be forced to release memory. This needs to be done by the app itself—it can’t be done
+by the system. All the system could do is kill and restart the app, hoping it would use
+less memory than before. But if the app then uses the same amount as before, the
+Autoscaler would scale it up again. And again, and again, until it reaches the maxi-
+mum number of pods configured on the HPA resource. Obviously, this isn’t what any-
+one wants. Memory-based autoscaling was introduced in Kubernetes version 1.8, and
+is configured exactly like CPU-based autoscaling. Exploring it is left up to the reader.
+15.1.4 Scaling based on other and custom metrics
+You’ve seen how easy it is to scale pods based on their CPU usage. Initially, this was the
+only autoscaling option that was usable in practice. To have the autoscaler use custom,
+app-defined metrics to drive its autoscaling decisions was fairly complicated. The ini-
+tial design of the autoscaler didn’t make it easy to move beyond simple CPU-based
+scaling. This prompted the Kubernetes Autoscaling Special Interest Group (SIG) to
+redesign the autoscaler completely. 
+ If you’re interested in learning how complicated it was to use the initial autoscaler
+with custom metrics, I invite you to read my blog post entitled “Kubernetes autoscal-
+ing based on custom metrics without using a host port,” which you’ll find online at
+http:/
+/medium.com/@marko.luksa. You’ll learn about all the other problems I
+encountered when trying to set up autoscaling based on custom metrics. Luckily,
+newer versions of Kubernetes don’t have those problems. I’ll cover the subject in a
+new blog post. 
+ Instead of going through a complete example here, let’s quickly go over how to
+configure the autoscaler to use different metrics sources. We’ll start by examining how
+we defined what metric to use in our previous example. The following listing shows
+how your previous HPA object was configured to use the CPU usage metric.
+...
+spec:
+  maxReplicas: 5
+  metrics:
+  - type: Resource      
+    resource:
+      name: cpu                      
+      targetAverageUtilization: 30    
+...
+Listing 15.7
+HorizontalPodAutoscaler definition for CPU-based autoscaling
+Defines the type 
+of metric
+The resource, whose 
+utilization will be monitored
+The target utilization 
+of this resource
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'Horizontal Autoscaler', 'description': 'Kubernetes component for scaling pods', 'category': 'software'}, {'entity': 'CPU utilization', 'description': 'Metric used to scale pods', 'category': 'metric'}, {'entity': 'memory consumption', 'description': 'Metric used to scale pods based on memory usage', 'category': 'metric'}, {'entity': 'pods', 'description': 'Units of execution in Kubernetes', 'category': 'software'}, {'entity': 'cluster nodes', 'description': 'Nodes in a Kubernetes cluster', 'category': 'hardware'}, {'entity': 'HPA (Horizontal Pod Autoscaler)', 'description': 'Kubernetes component for scaling pods based on CPU utilization', 'category': 'software'}, {'entity': 'Resource metric', 'description': 'Type of metric used to scale pods based on resource utilization', 'category': 'metric'}, {'entity': 'cpu', 'description': 'Resource type used in Resource metric', 'category': 'resource'}, {'entity': 'targetAverageUtilization', 'description': 'Target average CPU utilization for scaling pods', 'category': 'parameter'}, {'entity': 'maxReplicas', 'description': 'Maximum number of replicas for a pod', 'category': 'parameter'}]","[{'source_entity': 'Kubernetes', 'description': 'monitors', 'destination_entity': 'CPU utilization'}, {'source_entity': 'Kubernetes', 'description': 'adjusts', 'destination_entity': 'pods'}, {'source_entity': 'Horizontal Autoscaler (HPA)', 'description': 'scalers', 'destination_entity': 'memory consumption'}, {'source_entity': 'Resource metric', 'description': 'tracks', 'destination_entity': 'cpu'}, {'source_entity': 'Kubernetes', 'description': 'utilizes', 'destination_entity': 'cluster nodes'}, {'source_entity': 'Horizontal Autoscaler (HPA)', 'description': 'targets', 'destination_entity': 'targetAverageUtilization'}, {'source_entity': 'Kubernetes', 'description': 'limits', 'destination_entity': 'maxReplicas'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""monitors"",\n    ""summary_er"": ""Kubernetes continuously monitors pod CPU utilization to ensure efficient resource allocation and optimal performance.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""adjusts"",\n    ""summary_er"": ""Kubernetes manages and orchestrates multiple containerized applications (pods) to ensure efficient resource utilization and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""Horizontal Autoscaler (HPA)"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""scalers"",\n    ""summary_er"": ""HPA scales pods based on memory consumption to ensure efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""Resource metric"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""tracks"",\n    ""summary_er"": ""A resource metric monitors CPU usage of a pod, tracking its performance.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""utilizes"",\n    ""summary_er"": ""Kubernetes manages and orchestrates multiple pods, utilizing their resources to ensure efficient application deployment.""\n  },\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""cluster nodes"",\n    ""relation_description"": ""orchestrates"",\n    ""summary_er"": ""Kubernetes orchestrates cluster nodes to provide a scalable and fault-tolerant environment for applications.""\n  }\n]', '[\n  {\n    ""source"": ""Horizontal Pod Autoscaler (HPA)"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""targets"",\n    ""summary_er"": ""HPA targets a specific pod to scale based on its average utilization.""\n  },\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Horizontal Pod Autoscaler (HPA)"",\n    ""relation_description"": ""targetAverageUtilization"",\n    ""summary_er"": ""The target average utilization of the pod is used by HPA to determine scaling decisions.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits"",\n    ""summary_er"": ""Kubernetes sets a maximum number of replicas for a pod, ensuring efficient resource utilization.""\n  },\n  {\n    ""source"": ""Docker"",\n    ""destination"": ""container"",\n    ""relation_description"": ""image"",\n    ""summary_er"": ""Docker uses images to create containers, providing a consistent and portable environment for applications.""\n  },\n  {\n    ""source"": ""Machine Learning"",\n    ""destination"": ""model"",\n    ""relation_description"": ""training"",\n    ""summary_er"": ""Machine learning models are trained on large datasets to learn patterns and make predictions with high accuracy.""\n  },\n  {\n    ""source"": ""Generative AI"",\n    ""destination"": ""data"",\n    ""relation_description"": ""generation"",\n    ""summary_er"": ""Generative AI algorithms create new, synthetic data that mimics real-world distributions, enabling realistic simulations and scenarios.""\n  },\n  {\n    ""source"": ""Natural Language Understanding"",\n    ""destination"": ""text"",\n    ""relation_description"": ""analysis"",\n    ""summary_er"": ""NLU models analyze and understand human language, extracting meaning and intent from text-based inputs.""\n  },\n  {\n    ""source"": ""Computer Vision"",\n    ""destination"": ""image"",\n    ""relation_description"": ""processing"",\n    ""summary_er"": ""CV algorithms process and interpret visual data from images and videos, enabling applications like object detection and classification.""\n  }\n]']","Memory-based autoscaling in Kubernetes is more problematic than CPU-based due to the need to force old pods to release memory. This requires the app itself to manage, and can lead to infinite scaling if not implemented correctly. Custom metrics can also be used for autoscaling, but this was complicated in earlier versions of Kubernetes. Newer versions have simplified this process, allowing for more flexible scaling options.","[{'highlight': 'Memory-based autoscaling is much more problematic than CPU-based autoscaling due to the need for apps to release memory when scaled up.'}, {'highlight': 'Memory-based autoscaling was introduced in Kubernetes version 1.8 and is configured exactly like CPU-based autoscaling.'}, {'highlight': 'Scaling based on custom, app-defined metrics was initially complicated but has been redesigned in newer versions of Kubernetes.'}, {'highlight': 'The initial autoscaler design made it difficult to move beyond simple CPU-based scaling, prompting a complete redesign by the Kubernetes Autoscaling Special Interest Group (SIG).'}, {'highlight': 'Newer versions of Kubernetes allow for easy configuration of autoscalers to use different metrics sources without the complications of earlier versions.'}]"
+392,481,0,[],"449
+Horizontal pod autoscaling
+As you can see, the metrics field allows you to define more than one metric to use.
+In the listing, you’re using a single metric. Each entry defines the type of metric—
+in this case, a Resource metric. You have three types of metrics you can use in an
+HPA object:
+
+Resource
+
+Pods
+
+Object
+UNDERSTANDING THE RESOURCE METRIC TYPE
+The Resource type makes the autoscaler base its autoscaling decisions on a resource
+metric, like the ones specified in a container’s resource requests. We’ve already seen
+how to do that, so let’s focus on the other two types.
+UNDERSTANDING THE PODS METRIC TYPE
+The Pods type is used to refer to any other (including custom) metric related to the
+pod directly. An example of such a metric could be the already mentioned Queries-
+Per-Second (QPS) or the number of messages in a message broker’s queue (when the
+message broker is running as a pod). To configure the autoscaler to use the pod’s QPS
+metric, the HPA object would need to include the entry shown in the following listing
+under its metrics field.
+...
+spec:
+  metrics:
+  - type: Pods              
+    resource:
+      metricName: qps             
+      targetAverageValue: 100    
+...
+The example in the listing configures the autoscaler to keep the average QPS of all
+the pods managed by the ReplicaSet (or other) controller targeted by this HPA
+resource at 100. 
+UNDERSTANDING THE OBJECT METRIC TYPE
+The Object metric type is used when you want to make the autoscaler scale pods
+based on a metric that doesn’t pertain directly to those pods. For example, you may
+want to scale pods according to a metric of another cluster object, such as an Ingress
+object. The metric could be QPS as in listing 15.8, the average request latency, or
+something else completely. 
+ Unlike in the previous case, where the autoscaler needed to obtain the metric for
+all targeted pods and then use the average of those values, when you use an Object
+metric type, the autoscaler obtains a single metric from the single object. In the HPA
+Listing 15.8
+Referring to a custom pod metric in the HPA
+Defines a pod metric
+The name of 
+the metric
+The target average value 
+across all targeted pods
+ 
+",[],"[{'entity': 'Horizontal pod autoscaling', 'description': 'A feature that automatically scales the number of replicas based on CPU usage or other metrics.', 'category': 'application'}, {'entity': 'metrics field', 'description': 'A field in the HPA object that defines the metric to use for scaling.', 'category': 'software'}, {'entity': 'Resource metric', 'description': 'A type of metric that is based on a resource, like CPU or memory usage.', 'category': 'application'}, {'entity': 'Pods metric', 'description': 'A type of metric that is based on the pod itself, such as QPS or message queue size.', 'category': 'application'}, {'entity': 'Object metric', 'description': 'A type of metric that is not directly related to the pod, but rather to another cluster object, like an Ingress object.', 'category': 'application'}, {'entity': 'HPA object', 'description': 'An object in Kubernetes that defines a horizontal pod autoscaler.', 'category': 'software'}, {'entity': ""container's resource requests"", 'description': 'The resources requested by a container, such as CPU or memory.', 'category': 'application'}, {'entity': 'Queries-Per-Second (QPS)', 'description': 'A metric that measures the number of queries per second.', 'category': 'software'}, {'entity': ""message broker's queue"", 'description': 'A message queue used by a message broker, such as RabbitMQ or Apache Kafka.', 'category': 'application'}, {'entity': 'ReplicaSet controller', 'description': 'A Kubernetes controller that manages the number of replicas for a pod.', 'category': 'software'}, {'entity': 'Ingress object', 'description': 'A Kubernetes object that defines an ingress point for incoming HTTP requests.', 'category': 'software'}]","[{'source_entity': '""Object metric""', 'description': 'calculates', 'destination_entity': '""metrics field""'}, {'source_entity': '""Ingress object""', 'description': 'provides', 'destination_entity': '""Resource metric""'}, {'source_entity': '""ReplicaSet controller""', 'description': 'manages', 'destination_entity': '""Pods metric""'}, {'source_entity': '""HPA object""', 'description': 'autoscales', 'destination_entity': '""Horizontal pod autoscaling""'}, {'source_entity': '""container\'s resource requests""', 'description': 'limits', 'destination_entity': '""Object metric""'}, {'source_entity': '""Queries-Per-Second (QPS)""', 'description': 'monitors', 'destination_entity': '""message broker\'s queue""'}, {'source_entity': '""metrics field""', 'description': 'stores', 'destination_entity': '""Object metric""'}, {'source_entity': '""Resource metric""', 'description': 'displays', 'destination_entity': '""Ingress object""'}, {'source_entity': '""Pods metric""', 'description': 'tracks', 'destination_entity': '""ReplicaSet controller""'}]","['[\n  {\n    ""source"": ""Object metric"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""calculates"",\n    ""summary_er"": ""The Object metric calculates metrics for a pod, providing insights into its performance and resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""Ingress object"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The Ingress object provides access to a pod, allowing incoming traffic to be routed to it.""\n  },\n  {\n    ""source"": ""Resource metric"",\n    ""destination"": ""Kubernetes cluster"",\n    ""relation_description"": ""monitors"",\n    ""summary_er"": ""The Resource metric monitors the performance and resource utilization of a Kubernetes cluster, providing insights for optimization.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet controller"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The ReplicaSet controller manages a set of identical pods to ensure a specified number of replicas are running at any given time.""\n  },\n  {\n    ""source"": ""Pods metric"",\n    ""destination"": ""metric"",\n    ""relation_description"": ""monitors"",\n    ""summary_er"": ""The Pods metric monitors the performance and resource utilization of individual pods within a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""HPA object"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""autoscales"",\n    ""summary_er"": ""The HPA object dynamically scales the number of pods based on CPU utilization, ensuring efficient resource allocation.""\n  }\n]', '[{""source"": ""container\'s resource requests"", ""destination"": ""pod"", ""relation_description"": ""limits"", ""summary_er"": ""Container resource requests are set as limits for a pod to ensure efficient resource utilization.""}]', '[\n  {\n    ""source"": ""Queries-Per-Second (QPS)"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""monitors"",\n    ""summary_er"": ""The QPS monitors the message broker\'s queue, tracking incoming requests and responses.""\n  }\n]', '[\n  {\n    ""source"": ""metrics field"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores Object metric"",\n    ""summary_er"": ""The metrics field in a Kubernetes object stores an Object metric, which provides information about the object\'s performance and resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""Resource metric"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays"",\n    ""summary_er"": ""A resource metric displays information about a pod\'s performance, such as CPU usage or memory consumption.""\n  },\n  {\n    ""source"": ""Ingress object"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""An Ingress object is related to a pod in that it provides an entry point for incoming HTTP requests to the pod\'s service.""\n  }\n]', '[\n  {\n    ""source"": ""Pods metric"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""tracks"",\n    ""summary_er"": ""The Pods metric monitors and tracks the performance of individual pods in a Kubernetes cluster, providing insights into their resource utilization and health.""\n  },\n  {\n    ""source"": ""ReplicaSet controller"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The ReplicaSet controller ensures that a specified number of replicas (identical pod instances) are running in the cluster, managing their creation and deletion as needed.""\n  }\n]']","Kubernetes Horizontal Pod Autoscaling (HPA) allows defining multiple metrics for autoscaling decisions. There are three types of metrics: Resource, Pods, and Object. The Resource type uses a resource metric like CPU or memory requests. The Pods type refers to custom metrics related to the pod, such as Queries-Per-Second (QPS). The Object metric type scales pods based on a metric not directly pertaining to those pods, like an Ingress object's QPS.","[{'highlight': 'There are three types of metrics you can use in an HPA object: Resource, Pods, and Object.'}, {'highlight': ""Resource type makes the autoscaler base its autoscaling decisions on a resource metric, like container's resource requests.""}, {'highlight': 'Pods type is used to refer to any other (including custom) metric related to the pod directly, such as Queries-Per-Second (QPS).'}, {'highlight': 'Object metric type is used when you want to make the autoscaler scale pods based on a metric that doesn’t pertain directly to those pods.'}, {'highlight': 'The autoscaler obtains a single metric from the single object when using an Object metric type, unlike in the previous case where it needed to obtain the metric for all targeted pods.'}]"
+393,482,0,[],"450
+CHAPTER 15
+Automatic scaling of pods and cluster nodes
+definition, you need to specify the target object and the target value. The following
+listing shows an example.
+...
+spec:
+  metrics:
+  - type: Object                   
+    resource:
+      metricName: latencyMillis           
+      target: 
+        apiVersion: extensions/v1beta1     
+        kind: Ingress                      
+        name: frontend                     
+      targetValue: 20                   
+  scaleTargetRef:                          
+    apiVersion: extensions/v1beta1         
+    kind: Deployment                       
+    name: kubia                            
+...
+In this example, the HPA is configured to use the latencyMillis metric of the
+frontend Ingress object. The target value for the metric is 20. The horizontal pod
+autoscaler will monitor the Ingress’ metric and if it rises too far above the target value,
+the autoscaler will scale the kubia Deployment resource. 
+15.1.5 Determining which metrics are appropriate for autoscaling
+You need to understand that not all metrics are appropriate for use as the basis of
+autoscaling. As mentioned previously, the pods’ containers’ memory consumption isn’t
+a good metric for autoscaling. The autoscaler won’t function properly if increasing
+the number of replicas doesn’t result in a linear decrease of the average value of the
+observed metric (or at least close to linear). 
+ For example, if you have only a single pod instance and the value of the metric is X
+and the autoscaler scales up to two replicas, the metric needs to fall to somewhere
+close to X/2. An example of such a custom metric is Queries per Second (QPS),
+which in the case of web applications reports the number of requests the application
+is receiving per second. Increasing the number of replicas will always result in a pro-
+portionate decrease of QPS, because a greater number of pods will be handling the
+same total number of requests. 
+ Before you decide to base the autoscaler on your app’s own custom metric, be sure
+to think about how its value will behave when the number of pods increases or
+decreases.
+15.1.6 Scaling down to zero replicas
+The horizontal pod autoscaler currently doesn’t allow setting the minReplicas field
+to 0, so the autoscaler will never scale down to zero, even if the pods aren’t doing
+Listing 15.9
+Referring to a metric of a different object in the HPA
+Use metric of a 
+specific object
+The name of 
+the metric
+The specific object whose metric 
+the autoscaler should obtain
+The
+Autoscaler
+should
+scale so
+the value
+of the
+metric
+stays close
+to this.
+The scalable resource the 
+autoscaler will scale
+ 
+",[],"[{'entity': 'Object', 'description': 'A Kubernetes object, such as a pod or deployment', 'category': 'software'}, {'entity': 'metrics', 'description': 'A collection of metrics used by the horizontal pod autoscaler', 'category': 'software'}, {'entity': 'latencyMillis', 'description': 'A metric measuring latency in milliseconds', 'category': 'software'}, {'entity': 'targetValue', 'description': 'The target value for a metric, used by the horizontal pod autoscaler', 'category': 'software'}, {'entity': 'scaleTargetRef', 'description': 'A reference to the resource being scaled', 'category': 'software'}, {'entity': 'Deployment', 'description': 'A Kubernetes deployment, used as a target for scaling', 'category': 'software'}, {'entity': 'Ingress', 'description': 'A Kubernetes ingress object, used to monitor metrics', 'category': 'software'}, {'entity': 'frontend', 'description': 'The name of a Kubernetes ingress object', 'category': 'software'}, {'entity': 'kubia', 'description': 'The name of a Kubernetes deployment, used as a target for scaling', 'category': 'software'}, {'entity': 'HPA', 'description': 'Horizontal pod autoscaler, a Kubernetes component', 'category': 'software'}, {'entity': 'apiVersion', 'description': 'The API version of a Kubernetes object', 'category': 'software'}, {'entity': 'kind', 'description': 'The type of a Kubernetes object', 'category': 'software'}, {'entity': 'name', 'description': 'The name of a Kubernetes object', 'category': 'software'}, {'entity': 'replicas', 'description': 'The number of replicas in a Kubernetes deployment', 'category': 'software'}, {'entity': 'minReplicas', 'description': 'The minimum number of replicas in a Kubernetes deployment', 'category': 'software'}, {'entity': 'QPS', 'description': 'Queries per second, a custom metric for autoscaling', 'category': 'software'}]","[{'source_entity': '""Deployment""', 'description': 'scales', 'destination_entity': '""HPA""'}, {'source_entity': '""Deployment""', 'description': 'manages', 'destination_entity': '""replicas""'}, {'source_entity': '""Deployment""', 'description': 'deploys', 'destination_entity': '""kubia""'}, {'source_entity': '""HPA""', 'description': 'monitors', 'destination_entity': '""metrics""'}, {'source_entity': '""HPA""', 'description': 'adjusts', 'destination_entity': '""targetValue""'}, {'source_entity': '""HPA""', 'description': 'targets', 'destination_entity': '""scaleTargetRef""'}, {'source_entity': '""Ingress""', 'description': 'routes', 'destination_entity': '""frontend""'}, {'source_entity': '""Ingress""', 'description': 'manages', 'destination_entity': '""latencyMillis""'}, {'source_entity': '""Object""', 'description': 'contains', 'destination_entity': '""kind""'}, {'source_entity': '""QPS""', 'description': 'measures', 'destination_entity': '""metrics""'}]","['[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""scales"",\n    ""summary_er"": ""A Deployment scales by adjusting the number of replicas to match changing workload demands, ensuring efficient resource utilization and high availability.""\n  },\n  {\n    ""source"": ""HPA"",\n    ""destination"": ""Deployment"",\n    ""relation_description"": ""triggered"",\n    ""summary_er"": ""Horizontal Pod Autoscaler (HPA) is triggered by a Deployment to automatically adjust the number of replicas based on CPU usage, ensuring optimal resource utilization and performance.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A Deployment manages a set of identical replicas, ensuring consistent and scalable application availability.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""A Deployment manages a pool of identical Pods, ensuring that a specified number of replicas are running at any given time. It deploys the \'kubia\' pod.""\n  }\n]', '[\n  {\n    ""source"": ""HPA"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""monitors"",\n    ""summary_er"": ""HPA monitors pod performance by collecting metrics.""\n  }\n]', '[\n  {\n    ""source"": ""HPA"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""adjusts"",\n    ""summary_er"": ""Horizontal Pod Autoscaler (HPA) adjusts the number of replicas in a pod to match the target value, ensuring efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""HPA"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""targets"",\n    ""summary_er"": ""HPA targets a pod to scale its resources.""\n  }\n]', '[\n  {\n    ""source"": ""Ingress"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""routes"",\n    ""summary_er"": ""The Ingress resource defines HTTP routing rules for incoming traffic, directing it to a specific Pod (in this case, the frontend Pod).""\n  }\n]', '[\n  {\n    ""source"": ""Ingress"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The Ingress resource manages a pod, controlling its access and traffic flow.""\n  },\n  {\n    ""source"": ""latencyMillis"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""metric"",\n    ""summary_er"": ""LatencyMillis is a metric that measures the time taken by a pod to respond.""\n  }\n]', '[{\n    ""source"": ""Object"",\n    ""destination"": ""kind"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""The object is a container that holds or encompasses the kind, which represents the type of resource in Kubernetes.""\n}]', '[\n  {\n    ""source"": ""QPS"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""measures"",\n    ""summary_er"": ""QPS measures performance metrics for a Kubernetes pod, providing insights into system utilization and resource allocation.""\n  }\n]']","Horizontal pod autoscalers (HPAs) use metrics to monitor resources and scale pods accordingly. Appropriate metrics include those with a linear decrease in average value as replicas increase, such as Queries per Second (QPS). However, not all metrics are suitable, like memory consumption, which can lead to non-linear behavior. HPAs currently do not allow scaling down to zero replicas.","[{'highlight': 'To configure an HPA, you need to specify the target object and the target value.'}, {'highlight': ""Not all metrics are appropriate for use as the basis of autoscaling, such as pods' containers' memory consumption.""}, {'highlight': 'A good metric for autoscaling is Queries per Second (QPS), which reports the number of requests the application is receiving per second.'}, {'highlight': ""The horizontal pod autoscaler currently doesn't allow setting the minReplicas field to 0, so it will never scale down to zero replicas.""}, {'highlight': 'To use a metric of a different object in the HPA, you need to specify the name of the metric and the specific object whose metric the autoscaler should obtain.'}]"
+394,483,0,[],"451
+Vertical pod autoscaling
+anything. Allowing the number of pods to be scaled down to zero can dramatically
+increase the utilization of your hardware. When you run services that get requests only
+once every few hours or even days, it doesn’t make sense to have them running all the
+time, eating up resources that could be used by other pods. But you still want to have
+those services available immediately when a client request comes in. 
+ This is known as idling and un-idling. It allows pods that provide a certain service
+to be scaled down to zero. When a new request comes in, the request is blocked until
+the pod is brought up and then the request is finally forwarded to the pod. 
+ Kubernetes currently doesn’t provide this feature yet, but it will eventually. Check
+the documentation to see if idling has been implemented yet. 
+15.2
+Vertical pod autoscaling
+Horizontal scaling is great, but not every application can be scaled horizontally. For
+such applications, the only option is to scale them vertically—give them more CPU
+and/or memory. Because a node usually has more resources than a single pod
+requests, it should almost always be possible to scale a pod vertically, right? 
+ Because a pod’s resource requests are configured through fields in the pod
+manifest, vertically scaling a pod would be performed by changing those fields. I
+say “would” because it’s currently not possible to change either resource requests
+or limits of existing pods. Before I started writing the book (well over a year ago), I
+was sure that by the time I wrote this chapter, Kubernetes would already support
+proper vertical pod autoscaling, so I included it in my proposal for the table of con-
+tents. Sadly, what seems like a lifetime later, vertical pod autoscaling is still not
+available yet. 
+15.2.1 Automatically configuring resource requests
+An experimental feature sets the CPU and memory requests on newly created pods, if
+their containers don’t have them set explicitly. The feature is provided by an Admission
+Control plugin called InitialResources. When a new pod without resource requests is
+created, the plugin looks at historical resource usage data of the pod’s containers (per
+the underlying container image and tag) and sets the requests accordingly. 
+ You can deploy pods without specifying resource requests and rely on Kubernetes
+to eventually figure out what each container’s resource needs are. Effectively, Kuber-
+netes is vertically scaling the pod. For example, if a container keeps running out of
+memory, the next time a pod with that container image is created, its resource request
+for memory will be set higher automatically.
+15.2.2 Modifying resource requests while a pod is running
+Eventually, the same mechanism will be used to modify an existing pod’s resource
+requests, which means it will vertically scale the pod while it’s running. As I’m writing
+this, a new vertical pod autoscaling proposal is being finalized. Please refer to the
+ 
+",[],"[{'entity': 'Vertical pod autoscaling', 'description': 'A feature that allows pods to be scaled down to zero and brought up when a new request comes in.', 'category': 'application'}, {'entity': 'Kubernetes', 'description': 'An open-source container orchestration system.', 'category': 'software'}, {'entity': 'Pods', 'description': 'The smallest deployable units of computing resources in Kubernetes.', 'category': 'application'}, {'entity': 'CPU', 'description': ""A measure of a computer's processing power."", 'category': 'hardware'}, {'entity': 'Memory', 'description': 'A type of computer storage that temporarily holds data being used by the CPU.', 'category': 'hardware'}, {'entity': 'Resource requests', 'description': 'The amount of resources (CPU and memory) a pod requires to run.', 'category': 'application'}, {'entity': 'Admission Control plugin', 'description': 'A plugin that enforces admission control policies for Kubernetes pods.', 'category': 'software'}, {'entity': 'InitialResources', 'description': 'An experimental feature that sets CPU and memory requests on newly created pods.', 'category': 'application'}, {'entity': 'Container image', 'description': 'A pre-built package of software that includes everything needed to run a containerized application.', 'category': 'software'}, {'entity': 'Tag', 'description': 'A label used to identify a specific version or build of a container image.', 'category': 'hardware'}, {'entity': 'Historical resource usage data', 'description': ""Data about the past resource usage of a pod's containers."", 'category': 'application'}, {'entity': 'Vertical scaling', 'description': 'The process of increasing the resources (CPU and memory) available to a pod.', 'category': 'application'}, {'entity': 'Horizontal scaling', 'description': 'The process of adding more pods to handle increased load.', 'category': 'application'}]","[{'source_entity': 'Kubernetes', 'description': 'monitors', 'destination_entity': 'Historical resource usage data'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""monitors"",\n    ""summary_er"": ""Kubernetes continuously monitors historical resource usage data for pods to optimize performance and resource allocation.""\n  }\n]']","Kubernetes does not currently support idling and un-idling of pods or vertical pod autoscaling, but an experimental feature called InitialResources sets CPU and memory requests for newly created pods based on historical resource usage data, and a new proposal is being finalized to modify existing pod's resource requests vertically.","[{'highlight': 'Kubernetes currently doesn’t provide vertical pod autoscaling feature yet, but it will eventually.'}, {'highlight': 'Vertical pod autoscaling allows pods that provide a certain service to be scaled down to zero and brought up immediately when a new request comes in.'}, {'highlight': 'An experimental feature called InitialResources sets the CPU and memory requests on newly created pods based on historical resource usage data of their containers.'}, {'highlight': 'Kubernetes will eventually modify an existing pod’s resource requests using the same mechanism as InitialResources, allowing for vertical scaling while a pod is running.'}, {'highlight': 'Vertical pod autoscaling can dramatically increase hardware utilization by idling and un-idling pods that get infrequent client requests.'}]"
+395,484,0,[],"452
+CHAPTER 15
+Automatic scaling of pods and cluster nodes
+Kubernetes documentation to find out whether vertical pod autoscaling is already
+implemented or not.
+15.3
+Horizontal scaling of cluster nodes
+The Horizontal Pod Autoscaler creates additional pod instances when the need for
+them arises. But what about when all your nodes are at capacity and can’t run any
+more pods? Obviously, this problem isn’t limited only to when new pod instances are
+created by the Autoscaler. Even when creating pods manually, you may encounter the
+problem where none of the nodes can accept the new pods, because the node’s
+resources are used up by existing pods. 
+ In that case, you’d need to delete several of those existing pods, scale them down
+vertically, or add additional nodes to your cluster. If your Kubernetes cluster is run-
+ning on premises, you’d need to physically add a new machine and make it part of the
+Kubernetes cluster. But if your cluster is running on a cloud infrastructure, adding
+additional nodes is usually a matter of a few clicks or an API call to the cloud infra-
+structure. This can be done automatically, right?
+ Kubernetes includes the feature to automatically request additional nodes from
+the cloud provider as soon as it detects additional nodes are needed. This is per-
+formed by the Cluster Autoscaler.
+15.3.1 Introducing the Cluster Autoscaler
+The Cluster Autoscaler takes care of automatically provisioning additional nodes
+when it notices a pod that can’t be scheduled to existing nodes because of a lack of
+resources on those nodes. It also de-provisions nodes when they’re underutilized for
+longer periods of time. 
+REQUESTING ADDITIONAL NODES FROM THE CLOUD INFRASTRUCTURE
+A new node will be provisioned if, after a new pod is created, the Scheduler can’t
+schedule it to any of the existing nodes. The Cluster Autoscaler looks out for such
+pods and asks the cloud provider to start up an additional node. But before doing
+that, it checks whether the new node can even accommodate the pod. After all, if
+that’s not the case, it makes no sense to start up such a node.
+ Cloud providers usually group nodes into groups (or pools) of same-sized nodes
+(or nodes having the same features). The Cluster Autoscaler thus can’t simply say
+“Give me an additional node.” It needs to also specify the node type.
+ The Cluster Autoscaler does this by examining the available node groups to see if
+at least one node type would be able to fit the unscheduled pod. If exactly one such
+node group exists, the Autoscaler can increase the size of the node group to have the
+cloud provider add another node to the group. If more than one option is available,
+the Autoscaler must pick the best one. The exact meaning of “best” will obviously
+need to be configurable. In the worst case, it selects a random one. A simple overview
+of how the cluster Autoscaler reacts to an unschedulable pod is shown in figure 15.5.
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'Pod Autoscaler', 'description': 'Automatically scales pod instances', 'category': 'application'}, {'entity': 'Cluster Autoscaler', 'description': 'Automatically provisions additional nodes when needed', 'category': 'application'}, {'entity': 'Scheduler', 'description': 'Determines which node to schedule a new pod on', 'category': 'process'}, {'entity': 'Cloud provider', 'description': 'Provides infrastructure for running Kubernetes cluster', 'category': 'hardware'}, {'entity': 'Node group', 'description': 'Group of same-sized nodes or nodes with the same features', 'category': 'hardware'}, {'entity': 'Pod', 'description': 'Lightweight and portable container', 'category': 'container'}, {'entity': 'Cluster', 'description': 'Group of nodes running Kubernetes', 'category': 'application'}, {'entity': 'Node', 'description': 'Physical or virtual machine running a pod', 'category': 'hardware'}, {'entity': 'API call', 'description': 'Request to cloud provider to add additional node', 'category': 'process'}]","[{'source_entity': 'Kubernetes', 'description': 'manages', 'destination_entity': 'Cluster'}, {'source_entity': 'Scheduler', 'description': 'allocates resources to', 'destination_entity': 'Pod'}, {'source_entity': 'API call', 'description': 'makes to', 'destination_entity': 'Cloud provider'}, {'source_entity': 'Kubernetes', 'description': 'deploys and manages', 'destination_entity': 'Node group'}, {'source_entity': 'Cluster Autoscaler', 'description': 'adjusts the size of', 'destination_entity': 'Cluster'}, {'source_entity': 'Pod Autoscaler', 'description': 'dynamically scales the number of', 'destination_entity': 'Pod'}, {'source_entity': 'Kubernetes', 'description': 'orchestrates and schedules', 'destination_entity': 'Pod'}, {'source_entity': 'Scheduler', 'description': 'schedules', 'destination_entity': 'Node'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages a collection of containers called pods, providing a flexible and scalable way to deploy applications.""\n  }\n]', '[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""allocates resources to"",\n    ""summary_er"": ""The Scheduler allocates system resources, such as CPU and memory, to a Pod for execution.""\n  }\n]', '[\n  {\n    ""source"": ""API call"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""makes to"",\n    ""summary_er"": ""An API call is made to a Pod, which is a containerized application in Kubernetes.""\n  },\n  {\n    ""source"": ""Cloud provider"",\n    ""destination"": ""Kubernetes cluster"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A Cloud provider uses a Kubernetes cluster to manage and orchestrate containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys and manages"",\n    ""summary_er"": ""Kubernetes deploys and manages pods, ensuring efficient resource utilization and scalability.""\n  },\n  {\n    ""source"": ""Node group"",\n    ""destination"": ""Kubernetes"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""Node groups are managed by Kubernetes, providing a scalable and fault-tolerant infrastructure for containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""Cluster Autoscaler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""adjusts the size of"",\n    ""summary_er"": ""The Cluster Autoscaler dynamically adjusts the number of pods in a cluster based on resource utilization, ensuring efficient use of resources.""\n  }\n]', '[\n  {\n    ""source"": ""Pod Autoscaler"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""dynamically scales the number of"",\n    ""summary_er"": ""The Pod Autoscaler dynamically adjusts the number of Pods to match changing workload demands.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""orchestrates and schedules"",\n    ""summary_er"": ""Kubernetes manages and schedules pods to ensure efficient resource utilization and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""schedules"",\n    ""summary_er"": ""The Scheduler component is responsible for scheduling a Pod to run on a Node, ensuring efficient resource utilization and optimal performance.""\n  }\n]']","The Cluster Autoscaler in Kubernetes automatically requests additional nodes from the cloud provider when a new pod cannot be scheduled due to lack of resources on existing nodes. It also de-provisions underutilized nodes for longer periods. The Autoscaler examines available node groups, selects the best one that can fit the unscheduled pod, and increases its size or adds another node to it.","[{'highlight': 'Kubernetes includes the feature to automatically request additional nodes from the cloud provider as soon as it detects additional nodes are needed.'}, {'highlight': 'The Cluster Autoscaler takes care of automatically provisioning additional nodes when it notices a pod that can’t be scheduled to existing nodes because of a lack of resources on those nodes.'}, {'highlight': 'A new node will be provisioned if, after a new pod is created, the Scheduler can’t schedule it to any of the existing nodes.'}, {'highlight': 'The Cluster Autoscaler does this by examining the available node groups to see if at least one node type would be able to fit the unscheduled pod.'}, {'highlight': 'Kubernetes includes the feature to automatically request additional nodes from the cloud provider as soon as it detects additional nodes are needed, performed by the Cluster Autoscaler.'}]"
+396,485,0,[],"453
+Horizontal scaling of cluster nodes
+When the new node starts up, the Kubelet on that node contacts the API server and
+registers the node by creating a Node resource. From then on, the node is part of the
+Kubernetes cluster and pods can be scheduled to it.
+ Simple, right? What about scaling down?
+RELINQUISHING NODES
+The Cluster Autoscaler also needs to scale down the number of nodes when they
+aren’t being utilized enough. The Autoscaler does this by monitoring the requested
+CPU and memory on all the nodes. If the CPU and memory requests of all the pods
+running on a given node are below 50%, the node is considered unnecessary. 
+ That’s not the only determining factor in deciding whether to bring a node down.
+The Autoscaler also checks to see if any system pods are running (only) on that node
+(apart from those that are run on every node, because they’re deployed by a Daemon-
+Set, for example). If a system pod is running on a node, the node won’t be relinquished.
+The same is also true if an unmanaged pod or a pod with local storage is running on the
+node, because that would cause disruption to the service the pod is providing. In other
+words, a node will only be returned to the cloud provider if the Cluster Autoscaler
+knows the pods running on the node will be rescheduled to other nodes.
+ When a node is selected to be shut down, the node is first marked as unschedula-
+ble and then all the pods running on the node are evicted. Because all those pods
+belong to ReplicaSets or other controllers, their replacements are created and sched-
+uled to the remaining nodes (that’s why the node that’s being shut down is first
+marked as unschedulable).
+Node group X
+Node X1
+1. Autoscaler notices a
+Pod can’t be scheduled
+to existing nodes
+3. Autoscaler scales up the
+node group selected in
+previous step
+2. Autoscaler determines which node
+type (if any) would be able to ﬁt the
+pod. If multiple types could ﬁt the
+pod, it selects one of them.
+Cluster
+Autoscaler
+Pods
+Node X2
+Pods
+Node group Y
+Node Y1
+Pods
+Unschedulable
+pod
+Figure 15.5
+The Cluster Autoscaler scales up when it finds a pod that can’t be scheduled to 
+existing nodes.
+ 
+",[],"[{'entity': 'Kubelet', 'description': ""a component of Kubernetes that runs on each node and is responsible for managing the node's pods"", 'category': 'software'}, {'entity': 'API server', 'description': 'the central component of Kubernetes that manages all cluster resources', 'category': 'software'}, {'entity': 'Node resource', 'description': 'a Kubernetes object that represents a machine in the cluster', 'category': 'software'}, {'entity': 'pods', 'description': 'the basic execution unit in Kubernetes, which contains one or more containers', 'category': 'software'}, {'entity': 'Cluster Autoscaler', 'description': 'a component of Kubernetes that automatically scales the number of nodes in a cluster based on resource utilization', 'category': 'software'}, {'entity': 'CPU and memory requests', 'description': 'the amount of CPU and memory resources required by pods running on a node', 'category': 'hardware'}, {'entity': 'system pods', 'description': 'pods that run on every node in the cluster, such as those deployed by a DaemonSet', 'category': 'software'}, {'entity': 'unmanaged pod', 'description': 'a pod that is not managed by a controller or ReplicaSet', 'category': 'software'}, {'entity': 'pod with local storage', 'description': 'a pod that requires access to local storage on a node', 'category': 'software'}, {'entity': 'ReplicaSets', 'description': 'a Kubernetes object that ensures a specified number of replicas (identical pods) are running at any given time', 'category': 'software'}, {'entity': 'controllers', 'description': 'Kubernetes objects that manage the lifecycle of pods, such as ReplicaSets and DaemonSets', 'category': 'software'}, {'entity': 'node group', 'description': 'a collection of nodes in a Kubernetes cluster that can be scaled up or down together', 'category': 'software'}, {'entity': 'autoscaler', 'description': 'the component of Kubernetes that automatically scales the number of nodes in a cluster based on resource utilization', 'category': 'software'}]","[{'source_entity': 'API server', 'description': 'communicates with', 'destination_entity': 'pods'}, {'source_entity': 'Kubelet', 'description': 'manages', 'destination_entity': 'node group'}, {'source_entity': 'controllers', 'description': 'manage', 'destination_entity': 'ReplicaSets'}, {'source_entity': 'API server', 'description': 'communicates with', 'destination_entity': 'Node resource'}, {'source_entity': 'Cluster Autoscaler', 'description': 'scales', 'destination_entity': 'node group'}, {'source_entity': 'Kubelet', 'description': 'monitors', 'destination_entity': 'pods'}, {'source_entity': 'autoscaler', 'description': 'allocates', 'destination_entity': 'Node resource'}, {'source_entity': 'API server', 'description': 'communicates with', 'destination_entity': 'controllers'}, {'source_entity': 'Kubelet', 'description': 'manages', 'destination_entity': 'pods'}, {'source_entity': 'Cluster Autoscaler', 'description': 'scales', 'destination_entity': 'ReplicaSets'}, {'source_entity': 'controllers', 'description': 'manage', 'destination_entity': 'pod with local storage'}, {'source_entity': 'API server', 'description': 'communicates with', 'destination_entity': 'system pods'}]","['[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The API server interacts with multiple pods to manage incoming requests and provide services.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubelet, a critical component of Kubernetes, manages and schedules pods on worker nodes.""\n  }\n]', '[\n  {\n    ""source"": ""controllers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manage"",\n    ""summary_er"": ""Controllers manage pods by ensuring a specified number of replicas are running at any given time.""\n  },\n  {\n    ""source"": ""ReplicaSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manage"",\n    ""summary_er"": ""ReplicaSets manage pods by maintaining a desired number of replicas, ensuring high availability and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The API server interacts with pods to manage incoming requests.""\n  },\n  {\n    ""source"": ""Node resource"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""Node resources are managed by pods to ensure efficient utilization.""\n  }\n]', '[\n  {\n    ""source"": ""Cluster Autoscaler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""scales"",\n    ""summary_er"": ""The Cluster Autoscaler scales the number of pods in a node group based on CPU and memory utilization.""\n  }\n]', '[{\n  ""source"": ""Kubelet"",\n  ""destination"": ""pod"",\n  ""relation_description"": ""monitors"",\n  ""summary_er"": ""Kubelet continuously monitors the status of a pod, ensuring it\'s running as expected and taking corrective action if necessary.""\n}]', '[\n  {\n    ""source"": ""autoscaler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allocates"",\n    ""summary_er"": ""The autoscaler allocates resources to a pod, ensuring efficient use of node resources.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod controllers"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The API server sends requests to the pod controllers for resource management and orchestration.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The Kubelet is responsible for managing and running pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Cluster Autoscaler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""scales"",\n    ""summary_er"": ""The Cluster Autoscaler dynamically adjusts the number of replicas in a pod to match the current workload demand, ensuring efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""controllers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manage"",\n    ""summary_er"": ""Controllers manage pods, including those with local storage, to ensure efficient resource utilization and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""system pods"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The API server interacts with system pods to manage and coordinate their operations.""\n  }\n]']","When scaling a Kubernetes cluster, the Cluster Autoscaler monitors node utilization and CPU/Memory requests of running pods. If a node is underutilized (CPU/memory < 50%), it's considered unnecessary unless system or unmanaged pods are running on it. The Autoscaler marks the node as unschedulable and evicts its pods before shutting it down. Scaling up involves identifying an available node type, selecting one, and scaling that group to fit the pod.","[{'highlight': 'When the new node starts up, the Kubelet on that node contacts the API server and registers the node by creating a Node resource.'}, {'highlight': 'The Cluster Autoscaler also needs to scale down the number of nodes when they aren’t being utilized enough.'}, {'highlight': 'A node will only be returned to the cloud provider if the Cluster Autoscaler knows the pods running on the node will be rescheduled to other nodes.'}, {'highlight': 'When a node is selected to be shut down, the node is first marked as unschedulable and then all the pods running on the node are evicted.'}, {'highlight': 'The Cluster Autoscaler scales up when it finds a pod that can’t be scheduled to existing nodes.'}]"
+397,486,0,[],"454
+CHAPTER 15
+Automatic scaling of pods and cluster nodes
+15.3.2 Enabling the Cluster Autoscaler
+Cluster autoscaling is currently available on
+Google Kubernetes Engine (GKE)
+Google Compute Engine (GCE)
+Amazon Web Services (AWS)
+Microsoft Azure
+How you start the Autoscaler depends on where your Kubernetes cluster is running.
+For your kubia cluster running on GKE, you can enable the Cluster Autoscaler like
+this:
+$ gcloud container clusters update kubia --enable-autoscaling \
+  --min-nodes=3 --max-nodes=5
+If your cluster is running on GCE, you need to set three environment variables before
+running kube-up.sh: 
+
+KUBE_ENABLE_CLUSTER_AUTOSCALER=true
+
+KUBE_AUTOSCALER_MIN_NODES=3
+
+KUBE_AUTOSCALER_MAX_NODES=5
+Refer to the Cluster Autoscaler GitHub repo at https:/
+/github.com/kubernetes/auto-
+scaler/tree/master/cluster-autoscaler for information on how to enable it on other
+platforms. 
+NOTE
+The Cluster Autoscaler publishes its status to the cluster-autoscaler-
+status ConfigMap in the kube-system namespace.
+15.3.3 Limiting service disruption during cluster scale-down
+When a node fails unexpectedly, nothing you can do will prevent its pods from becom-
+ing unavailable. But when a node is shut down voluntarily, either by the Cluster Auto-
+scaler or by a human operator, you can make sure the operation doesn’t disrupt the
+service provided by the pods running on that node through an additional feature.
+Manually cordoning and draining nodes
+A node can also be marked as unschedulable and drained manually. Without going
+into specifics, this is done with the following kubectl commands:
+
+kubectl cordon <node> marks the node as unschedulable (but doesn’t do
+anything with pods running on that node).
+
+kubectl drain <node> marks the node as unschedulable and then evicts all
+the pods from the node.
+In both cases, no new pods are scheduled to the node until you uncordon it again
+with kubectl uncordon <node>.
+ 
+",[],"[{'entity': 'Cluster Autoscaler', 'description': 'a feature in Kubernetes that automatically scales cluster nodes based on resource utilization', 'category': 'software'}, {'entity': 'Google Kubernetes Engine (GKE)', 'description': 'a managed container environment provided by Google Cloud Platform', 'category': 'cloud platform'}, {'entity': 'Google Compute Engine (GCE)', 'description': 'a service for running virtual machines in the cloud, provided by Google Cloud Platform', 'category': 'cloud platform'}, {'entity': 'Amazon Web Services (AWS)', 'description': 'a comprehensive cloud computing platform provided by Amazon', 'category': 'cloud platform'}, {'entity': 'Microsoft Azure', 'description': 'a cloud computing platform provided by Microsoft', 'category': 'cloud platform'}, {'entity': 'kubectl', 'description': 'the command-line interface for interacting with Kubernetes clusters', 'category': 'command'}, {'entity': 'cordon', 'description': ""a kubectl command that marks a node as unschedulable but doesn't evict pods"", 'category': 'command'}, {'entity': 'drain', 'description': 'a kubectl command that marks a node as unschedulable and evicts all pods from the node', 'category': 'command'}, {'entity': 'uncordon', 'description': 'a kubectl command that unmarks a node as unschedulable, allowing new pods to be scheduled on it', 'category': 'command'}]","[{'source_entity': '""kubectl""', 'description': 'is used to', 'destination_entity': '""uncordon""'}, {'source_entity': '""kubectl""', 'description': 'performs the action of', 'destination_entity': '""cordon""'}, {'source_entity': '""Cluster Autoscaler""', 'description': 'is integrated with', 'destination_entity': '""Google Kubernetes Engine (GKE)""'}, {'source_entity': '""Cluster Autoscaler""', 'description': 'is also integrated with', 'destination_entity': '""Amazon Web Services (AWS)""'}, {'source_entity': '""Cluster Autoscaler""', 'description': 'supports scaling for', 'destination_entity': '""Microsoft Azure""'}, {'source_entity': '""kubectl""', 'description': 'is used to manage', 'destination_entity': '""Google Compute Engine (GCE)""'}, {'source_entity': '""kubectl""', 'description': 'performs the action of', 'destination_entity': '""drain""'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to"",\n    ""summary_er"": ""\\""kubectl\\"" is a command-line tool that interacts with Kubernetes clusters, and \\""unconditon\\"" is an action performed on a pod to make it available for scheduling again.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uncordon"",\n    ""summary_er"": ""\\""kubectl uncordon\\"" removes the restriction that prevents a pod from being scheduled, making it eligible for running on any node in the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""performs the action of"",\n    ""summary_er"": ""Kubectl cordon command marks a pod as unschedulable, preventing new pods from being scheduled on it.""\n  }\n]', '[\n  {\n    ""source"": ""Cluster Autoscaler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is integrated with"",\n    ""summary_er"": ""The Cluster Autoscaler is integrated with a pod to dynamically scale the cluster based on resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""Cluster Autoscaler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is also integrated with"",\n    ""summary_er"": ""The Cluster Autoscaler is integrated with a pod to manage scaling and resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""Cluster Autoscaler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""supports scaling for"",\n    ""summary_er"": ""The Cluster Autoscaler scales pods based on CPU or memory utilization, ensuring optimal resource usage.""\n  },\n  {\n    ""source"": ""Cluster Autoscaler"",\n    ""destination"": ""Microsoft Azure"",\n    ""relation_description"": ""runs on"",\n    ""summary_er"": ""The Cluster Autoscaler runs on Microsoft Azure, utilizing its scalable infrastructure to manage pod scaling.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to manage"",\n    ""summary_er"": ""Kubectl is a command-line tool used to manage and deploy applications running in containers on Google Compute Engine (GCE).""\n  },\n  {\n    ""source"": ""Google Compute Engine (GCE)"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs on"",\n    ""summary_er"": ""Google Compute Engine (GCE) is a cloud-based platform that runs and manages pods, which are the basic execution units in containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""performs the action of drain"",\n    ""summary_er"": ""Kubectl command drains a specified pod, removing it from the cluster and freeing resources.""\n  }\n]']","Automatic scaling of pods and cluster nodes can be enabled on GKE, GCE, AWS, and Azure through Cluster Autoscaler. On GKE, use gcloud command with --enable-autoscaling flag. On GCE, set environment variables KUBE_ENABLE_CLUSTER_AUTOSCALER=true, KUBE_AUTOSCALER_MIN_NODES=3, and KUBE_AUTOSCALER_MAX_NODES=5 before running kube-up.sh. The Cluster Autoscaler publishes its status to the cluster-autoscaler-status ConfigMap in the kube-system namespace. To limit service disruption during scale-down, manually cordon and drain nodes using kubectl commands.","[{'highlight': 'Cluster autoscaling is currently available on Google Kubernetes Engine (GKE), Google Compute Engine (GCE), Amazon Web Services (AWS), and Microsoft Azure.'}, {'highlight': 'To enable the Cluster Autoscaler on GKE, run $ gcloud container clusters update kubia --enable-autoscaling \\  --min-nodes=3 --max-nodes=5'}, {'highlight': 'On GCE, set three environment variables: KUBE_ENABLE_CLUSTER_AUTOSCALER=true, KUBE_AUTOSCALER_MIN_NODES=3, and KUBE_AUTOSCALER_MAX_NODES=5 before running kube-up.sh'}, {'highlight': 'The Cluster Autoscaler publishes its status to the cluster-autoscaler-status ConfigMap in the kube-system namespace.'}, {'highlight': 'To limit service disruption during cluster scale-down, manually cordoning and draining nodes with kubectl commands can be used.'}]"
+398,487,0,[],"455
+Horizontal scaling of cluster nodes
+ Certain services require that a minimum number of pods always keeps running;
+this is especially true for quorum-based clustered applications. For this reason, Kuber-
+netes provides a way of specifying the minimum number of pods that need to keep
+running while performing these types of operations. This is done by creating a Pod-
+DisruptionBudget resource.
+ Even though the name of the resource sounds complex, it’s one of the simplest
+Kubernetes resources available. It contains only a pod label selector and a number
+specifying the minimum number of pods that must always be available or, starting
+from Kubernetes version 1.7, the maximum number of pods that can be unavailable.
+We’ll look at what a PodDisruptionBudget (PDB) resource manifest looks like, but
+instead of creating it from a YAML file, you’ll create it with kubectl create pod-
+disruptionbudget and then obtain and examine the YAML later.
+ If you want to ensure three instances of your kubia pod are always running (they
+have the label app=kubia), create the PodDisruptionBudget resource like this:
+$ kubectl create pdb kubia-pdb --selector=app=kubia --min-available=3
+poddisruptionbudget ""kubia-pdb"" created
+Simple, right? Now, retrieve the PDB’s YAML. It’s shown in the next listing.
+$ kubectl get pdb kubia-pdb -o yaml
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: kubia-pdb
+spec:
+  minAvailable: 3         
+  selector:                
+    matchLabels:           
+      app: kubia           
+status:
+  ...
+You can also use a percentage instead of an absolute number in the minAvailable
+field. For example, you could state that 60% of all pods with the app=kubia label need
+to be running at all times.
+NOTE
+Starting with Kubernetes 1.7, the PodDisruptionBudget resource also
+supports the maxUnavailable field, which you can use instead of min-
+Available if you want to block evictions when more than that many pods are
+unavailable. 
+We don’t have much more to say about this resource. As long as it exists, both the
+Cluster Autoscaler and the kubectl drain command will adhere to it and will never
+evict a pod with the app=kubia label if that would bring the number of such pods
+below three. 
+Listing 15.10
+A PodDisruptionBudget definition
+How many pods should 
+always be available
+The label selector that 
+determines which pods 
+this budget applies to
+ 
+",[],"[{'entity': 'Horizontal scaling', 'description': 'the process of increasing or decreasing the number of cluster nodes', 'category': 'hardware'}, {'entity': 'Pod-DisruptionBudget', 'description': 'a Kubernetes resource that specifies the minimum number of pods that must always be available', 'category': 'software'}, {'entity': 'Kubernetes', 'description': 'an open-source container orchestration system', 'category': 'software'}, {'entity': 'Pods', 'description': 'the basic execution unit in Kubernetes, a lightweight and portable container', 'category': 'container'}, {'entity': 'Kubectl', 'description': 'a command-line tool for managing Kubernetes resources', 'category': 'software'}, {'entity': 'Cluster Autoscaler', 'description': 'a component that automatically scales the number of cluster nodes based on resource utilization', 'category': 'hardware'}, {'entity': 'Drain command', 'description': 'a kubectl command that evicts a node from the cluster, allowing it to be updated or replaced', 'category': 'software'}, {'entity': 'MinAvailable', 'description': 'a field in the Pod-DisruptionBudget resource that specifies the minimum number of pods that must always be available', 'category': 'process'}, {'entity': 'MaxUnavailable', 'description': 'a field in the Pod-DisruptionBudget resource that specifies the maximum number of pods that can be unavailable', 'category': 'process'}, {'entity': 'Selector', 'description': 'a label selector used to identify which pods a Pod-DisruptionBudget applies to', 'category': 'software'}, {'entity': 'Label', 'description': 'a key-value pair that is attached to a pod or other Kubernetes resource', 'category': 'container'}]","[{'source_entity': '""Kubectl""', 'description': 'executes', 'destination_entity': '""Drain command""'}, {'source_entity': '""Kubectl""', 'description': 'applies', 'destination_entity': '""Label""'}, {'source_entity': '""Kubectl""', 'description': 'sets', 'destination_entity': '""MinAvailable""'}, {'source_entity': '""Kubectl""', 'description': 'specifies', 'destination_entity': '""MaxUnavailable""'}, {'source_entity': '""Kubectl""', 'description': 'uses', 'destination_entity': '""Selector""'}, {'source_entity': '""Kubectl""', 'description': 'manages', 'destination_entity': '""Pods""'}, {'source_entity': '""Cluster Autoscaler""', 'description': ' scales', 'destination_entity': '""Horizontal scaling""'}, {'source_entity': '""Kubernetes""', 'description': 'employs', 'destination_entity': '""Pod-DisruptionBudget""'}]","['[\n  {\n    ""source"": ""Kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""Kubectl executes commands on a pod, allowing for management and control of containerized applications.""\n  },\n  {\n    ""source"": ""Drain command"",\n    ""destination"": ""node"",\n    ""relation_description"": ""removes"",\n    ""summary_er"": ""The drain command removes pods from a node, making it available for other workloads or maintenance tasks.""\n  }\n]', '[\n  {\n    ""source"": ""Kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies"",\n    ""summary_er"": ""Kubectl applies configurations to a running pod, ensuring it meets the desired state.""\n  }\n]', '[\n  {\n    ""source"": ""Kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets"",\n    ""summary_er"": ""Kubectl sets the desired state of a pod, ensuring it meets the specified requirements.""\n  },\n  {\n    ""source"": ""MinAvailable"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""MinAvailable is a parameter that specifies the minimum number of pods that must be available for a deployment to be considered healthy.""\n  }\n]', '[\n  {\n    ""source"": ""Kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""Kubectl uses to specify a pod\'s configuration, including its deployment strategy and resource requirements.""\n  },\n  {\n    ""source"": ""MaxUnavailable"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""MaxUnavailable is used by Kubectl to specify the maximum number of unavailable pods during a rolling update or rollout.""\n  }\n]', '[\n  {\n    ""source"": ""Kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubectl, a command-line tool for managing Kubernetes clusters, uses pods to execute commands and manage cluster resources.""\n  }\n]', '[\n  {\n    ""source"": ""Kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubectl manages pods, which are the basic execution units in a Kubernetes cluster.""\n  }\n]', '[\n    {\n        ""source"": ""Cluster Autoscaler"",\n        ""destination"": ""pod"",\n        ""relation_description"": ""scales"",\n        ""summary_er"": ""The Cluster Autoscaler dynamically scales the number of pods to match changing system loads, ensuring efficient resource utilization.""\n    }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""employs"",\n    ""summary_er"": ""Kubernetes manages and schedules pods, which are the basic execution units in a containerized application.""\n  }\n]']","Kubernetes provides a way to specify the minimum number of pods that must always be available through the PodDisruptionBudget resource, especially for quorum-based clustered applications. The PDB resource contains a pod label selector and a number specifying the minimum or maximum number of pods that can be unavailable. It can also use percentages instead of absolute numbers. The Cluster Autoscaler and kubectl drain command will adhere to this resource, ensuring that evictions do not bring the number of such pods below the specified threshold.","[{'highlight': 'Kubernetes provides a way to specify the minimum number of pods that need to keep running while performing operations, using a Pod-DisruptionBudget resource.'}, {'highlight': 'A PodDisruptionBudget (PDB) resource contains only a pod label selector and a number specifying the minimum or maximum number of pods that must always be available.'}, {'highlight': 'To ensure three instances of a kubia pod are always running, create a PodDisruptionBudget resource with kubectl create pdb and specify the min-available parameter as 3.'}, {'highlight': 'Starting with Kubernetes 1.7, the PodDisruptionBudget resource also supports the maxUnavailable field, which can be used instead of minAvailable to block evictions when more than that many pods are unavailable.'}, {'highlight': 'The Cluster Autoscaler and kubectl drain command will adhere to a PodDisruptionBudget resource and never evict a pod if it would bring the number of such pods below the specified minimum.'}]"
+399,488,0,[],"456
+CHAPTER 15
+Automatic scaling of pods and cluster nodes
+ For example, if there were four pods altogether and minAvailable was set to three
+as in the example, the pod eviction process would evict pods one by one, waiting for
+the evicted pod to be replaced with a new one by the ReplicaSet controller, before
+evicting another pod. 
+15.4
+Summary
+This chapter has shown you how Kubernetes can scale not only your pods, but also
+your nodes. You’ve learned that
+Configuring the automatic horizontal scaling of pods is as easy as creating a
+HorizontalPodAutoscaler object and pointing it to a Deployment, ReplicaSet,
+or ReplicationController and specifying the target CPU utilization for the pods.
+Besides having the Horizontal Pod Autoscaler perform scaling operations based
+on the pods’ CPU utilization, you can also configure it to scale based on your
+own application-provided custom metrics or metrics related to other objects
+deployed in the cluster.
+Vertical pod autoscaling isn’t possible yet.
+Even cluster nodes can be scaled automatically if your Kubernetes cluster runs
+on a supported cloud provider.
+You can run one-off processes in a pod and have the pod stopped and deleted
+automatically as soon you press CTRL+C by using kubectl run with the -it and
+--rm options.
+In the next chapter, you’ll explore advanced scheduling features, such as how to keep
+certain pods away from certain nodes and how to schedule pods either close together
+or apart.
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'pods', 'description': 'Lightweight and portable containers', 'category': 'container'}, {'entity': 'HorizontalPodAutoscaler', 'description': 'Object for automatic horizontal scaling of pods', 'category': 'software'}, {'entity': 'Deployment', 'description': 'Controller for managing sets of replicas', 'category': 'software'}, {'entity': 'ReplicaSet', 'description': 'Controller for managing a specified number of replicas', 'category': 'software'}, {'entity': 'ReplicationController', 'description': 'Legacy controller for managing a specified number of replicas', 'category': 'software'}, {'entity': 'minAvailable', 'description': 'Parameter for specifying the minimum available pods', 'category': 'parameter'}, {'entity': 'kubectl run', 'description': 'Command for running one-off processes in a pod', 'category': 'command'}, {'entity': 'CTRL+C', 'description': 'Key combination for stopping and deleting a pod', 'category': 'key combination'}]","[{'source_entity': '""Kubernetes""', 'description': 'manages', 'destination_entity': '""pods""'}, {'source_entity': '""Kubernetes""', 'description': 'ensures', 'destination_entity': '""ReplicaSet""'}, {'source_entity': '""Kubernetes""', 'description': 'provides', 'destination_entity': '""Deployment""'}, {'source_entity': '""Kubernetes""', 'description': 'supports', 'destination_entity': '""ReplicationController""'}, {'source_entity': '""CTRL+C""', 'description': 'terminates', 'destination_entity': '""pods""'}, {'source_entity': '""minAvailable""', 'description': 'limits', 'destination_entity': '""HorizontalPodAutoscaler""'}, {'source_entity': '""kubectl run""', 'description': 'creates', 'destination_entity': '""Deployment""'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages pods, ensuring efficient resource allocation and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""ensures"",\n    ""summary_er"": ""Kubernetes ensures that a specified number of replicas (in this case, pods) are running and available.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""Kubernetes manages and orchestrates containerized applications, providing a runtime environment for pods to run in.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""supports"",\n    ""summary_er"": ""Kubernetes manages and orchestrates containerized applications, including pods, which are the basic execution unit in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""CTRL+C"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""terminates"",\n    ""summary_er"": ""When a user presses CTRL+C, it terminates a running pod in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""minAvailable"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits"",\n    ""summary_er"": ""The minimum number of replicas a Horizontal Pod Autoscaler can scale down to.""\n  },\n  {\n    ""source"": ""HorizontalPodAutoscaler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""autoscaling"",\n    ""summary_er"": ""A Horizontal Pod Autoscaler scales the number of replicas of a pod based on CPU utilization.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl run"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates"",\n    ""summary_er"": ""The \'kubectl run\' command creates a new pod in the Kubernetes cluster.""\n  }\n]']","Kubernetes can scale not only pods but also cluster nodes automatically. HorizontalPodAutoscaler configures scaling based on CPU utilization or custom metrics. Vertical pod autoscaling is not possible yet. Cluster node auto-scaling is supported on cloud providers. Additionally, pods can be run one-off and deleted with kubectl run options.","[{'highlight': 'Configuring automatic horizontal scaling of pods is easy with HorizontalPodAutoscaler object.'}, {'highlight': 'Horizontal Pod Autoscaler can scale based on custom metrics or other objects deployed in the cluster.'}, {'highlight': 'Vertical pod autoscaling is not possible yet.'}, {'highlight': 'Cluster nodes can be scaled automatically with supported cloud providers.'}, {'highlight': 'Pods can be run and deleted automatically with kubectl run -it --rm options.'}]"

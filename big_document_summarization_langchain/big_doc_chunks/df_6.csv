@@ -1,0 +1,433 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+60,149,0,[],"117
+Scheduling Jobs to run periodically or once in the future
+apiVersion: batch/v1beta1               
+kind: CronJob
+metadata:
+  name: batch-job-every-fifteen-minutes
+spec:
+  schedule: ""0,15,30,45 * * * *""           
+  jobTemplate:
+    spec:
+      template:                            
+        metadata:                          
+          labels:                          
+            app: periodic-batch-job        
+        spec:                              
+          restartPolicy: OnFailure         
+          containers:                      
+          - name: main                     
+            image: luksa/batch-job         
+As you can see, it’s not too complicated. You’ve specified a schedule and a template
+from which the Job objects will be created. 
+CONFIGURING THE SCHEDULE
+If you’re unfamiliar with the cron schedule format, you’ll find great tutorials and
+explanations online, but as a quick introduction, from left to right, the schedule con-
+tains the following five entries:
+Minute
+Hour
+Day of month
+Month
+Day of week.
+In the example, you want to run the job every 15 minutes, so the schedule needs to be
+""0,15,30,45 * * * *"", which means at the 0, 15, 30 and 45 minutes mark of every hour
+(first asterisk), of every day of the month (second asterisk), of every month (third
+asterisk) and on every day of the week (fourth asterisk). 
+ If, instead, you wanted it to run every 30 minutes, but only on the first day of the
+month, you’d set the schedule to ""0,30 * 1 * *"", and if you want it to run at 3AM every
+Sunday, you’d set it to ""0 3 * * 0"" (the last zero stands for Sunday).
+CONFIGURING THE JOB TEMPLATE
+A CronJob creates Job resources from the jobTemplate property configured in the
+CronJob spec, so refer to section 4.5 for more information on how to configure it.
+4.6.2
+Understanding how scheduled jobs are run
+Job resources will be created from the CronJob resource at approximately the sched-
+uled time. The Job then creates the pods. 
+Listing 4.14
+YAML for a CronJob resource: cronjob.yaml
+API group is batch, 
+version is v1beta1
+This job should run at the 
+0, 15, 30 and 45 minutes of 
+every hour, every day.
+The template for the 
+Job resources that 
+will be created by 
+this CronJob
+ 
+",[],"[{'entity': 'CronJob', 'description': 'A Kubernetes resource that creates Job objects at a specified schedule.', 'category': 'application'}, {'entity': 'schedule', 'description': 'The cron schedule format for running the job periodically or once in the future.', 'category': 'process'}, {'entity': 'jobTemplate', 'description': 'A template from which Job objects will be created by the CronJob resource.', 'category': 'application'}, {'entity': 'metadata', 'description': 'The metadata of the CronJob resource, including its name and labels.', 'category': 'process'}, {'entity': 'spec', 'description': 'The specification of the CronJob resource, including its schedule and job template.', 'category': 'application'}, {'entity': 'restartPolicy', 'description': 'The restart policy for the Job resources created by the CronJob resource.', 'category': 'process'}, {'entity': 'containers', 'description': 'The containers that will be run in the Job pods created by the CronJob resource.', 'category': 'application'}, {'entity': 'image', 'description': 'The Docker image used to create the Job pods.', 'category': 'container'}, {'entity': 'minute', 'description': 'A unit of time in the cron schedule format, representing minutes.', 'category': 'process'}, {'entity': 'hour', 'description': 'A unit of time in the cron schedule format, representing hours.', 'category': 'process'}, {'entity': 'day of month', 'description': 'A unit of time in the cron schedule format, representing days of the month.', 'category': 'process'}, {'entity': 'month', 'description': 'A unit of time in the cron schedule format, representing months.', 'category': 'process'}, {'entity': 'day of week', 'description': 'A unit of time in the cron schedule format, representing days of the week.', 'category': 'process'}]",,[],"A CronJob resource creates Job objects based on a specified schedule. The schedule is set using the cron format (minute, hour, day of month, month, day of week), and can be configured to run jobs at specific intervals. The jobTemplate property defines the template for creating Job resources, which are created from the CronJob resource at approximately the scheduled time.","[{'highlight': 'A CronJob creates Job resources from the jobTemplate property configured in the CronJob spec, so refer to section 4.5 for more information on how to configure it.'}, {'highlight': 'The schedule con-tains the following five entries: Minute, Hour, Day of month, Month, and Day of week.'}, {'highlight': 'In the example, you want to run the job every 15 minutes, so the schedule needs to be ""0,15,30,45 * * * "", which means at the 0, 15, 30 and 45 minutes mark of every hour (first asterisk), of every day of the month (second asterisk), of every month (third asterisk) and on every day of the week (fourth asterisk).'}, {'highlight': 'Job resources will be created from the CronJob resource at approximately the scheduled time. The Job then creates the pods.'}, {'highlight': 'The template for the Job resources that will be created by this CronJob is specified in the jobTemplate property of the CronJob spec.'}]"
+61,150,0,[],"118
+CHAPTER 4
+Replication and other controllers: deploying managed pods
+ It may happen that the Job or pod is created and run relatively late. You may have
+a hard requirement for the job to not be started too far over the scheduled time. In
+that case, you can specify a deadline by specifying the startingDeadlineSeconds field
+in the CronJob specification as shown in the following listing.
+apiVersion: batch/v1beta1
+kind: CronJob
+spec:
+  schedule: ""0,15,30,45 * * * *""
+  startingDeadlineSeconds: 15    
+  ...
+In the example in listing 4.15, one of the times the job is supposed to run is 10:30:00.
+If it doesn’t start by 10:30:15 for whatever reason, the job will not run and will be
+shown as Failed. 
+ In normal circumstances, a CronJob always creates only a single Job for each exe-
+cution configured in the schedule, but it may happen that two Jobs are created at the
+same time, or none at all. To combat the first problem, your jobs should be idempo-
+tent (running them multiple times instead of once shouldn’t lead to unwanted
+results). For the second problem, make sure that the next job run performs any work
+that should have been done by the previous (missed) run.
+4.7
+Summary
+You’ve now learned how to keep pods running and have them rescheduled in the
+event of node failures. You should now know that
+You can specify a liveness probe to have Kubernetes restart your container as
+soon as it’s no longer healthy (where the app defines what’s considered
+healthy).
+Pods shouldn’t be created directly, because they will not be re-created if they’re
+deleted by mistake, if the node they’re running on fails, or if they’re evicted
+from the node.
+ReplicationControllers always keep the desired number of pod replicas
+running.
+Scaling pods horizontally is as easy as changing the desired replica count on a
+ReplicationController.
+Pods aren’t owned by the ReplicationControllers and can be moved between
+them if necessary.
+A ReplicationController creates new pods from a pod template. Changing the
+template has no effect on existing pods.
+Listing 4.15
+Specifying a startingDeadlineSeconds for a CronJob
+At the latest, the pod must 
+start running at 15 seconds 
+past the scheduled time.
+ 
+",[],"[{'entity': 'CronJob', 'description': 'A Kubernetes resource that creates a Job on a schedule.', 'category': 'application'}, {'entity': 'startingDeadlineSeconds', 'description': 'A field in the CronJob specification that specifies the deadline for starting a job.', 'category': 'process'}, {'entity': 'schedule', 'description': 'A field in the CronJob specification that defines the schedule for running a job.', 'category': 'process'}, {'entity': 'ReplicationController', 'description': 'A Kubernetes resource that ensures a specified number of replicas are running.', 'category': 'application'}, {'entity': 'pod', 'description': 'A basic execution unit in Kubernetes.', 'category': 'container'}, {'entity': 'Job', 'description': 'A Kubernetes resource that represents a one-off task.', 'category': 'application'}, {'entity': 'liveness probe', 'description': 'A mechanism for detecting whether a container is still running and healthy.', 'category': 'process'}, {'entity': 'ReplicaSet', 'description': 'A Kubernetes resource that ensures a specified number of replicas are running.', 'category': 'application'}, {'entity': 'pod template', 'description': 'A template used by a ReplicationController to create new pods.', 'category': 'container'}, {'entity': 'desired replica count', 'description': 'The desired number of replicas for a ReplicationController.', 'category': 'process'}]","[{'source_entity': '""startingDeadlineSeconds""', 'description': 'sets the deadline for starting a pod', 'destination_entity': '""pod""'}, {'source_entity': '""liveness probe""', 'description': 'checks the health of a pod', 'destination_entity': '""pod""'}, {'source_entity': '""desired replica count""', 'description': 'specifies the number of replicas for a ReplicaSet', 'destination_entity': '""ReplicaSet""'}, {'source_entity': '""CronJob""', 'description': 'schedules a job to run at regular intervals', 'destination_entity': '""Job""'}, {'source_entity': '""schedule""', 'description': 'specifies the schedule for a CronJob or Job', 'destination_entity': '""CronJob""'}, {'source_entity': '""pod template""', 'description': 'defines the template for creating a pod', 'destination_entity': '""pod""'}, {'source_entity': '""ReplicaSet""', 'description': 'manages the number of replicas for a deployment', 'destination_entity': '""pod""'}, {'source_entity': '""ReplicationController""', 'description': 'manages the number of replicas for a deployment', 'destination_entity': '""pod""'}]","['[\n  {\n    ""source"": ""startingDeadlineSeconds"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets the deadline for starting a pod"",\n    ""summary_er"": ""This field sets a deadline for the pod to start, ensuring it begins within a specified time frame.""\n  }\n]', '[\n  {\n    ""source"": ""Liveness Probe"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""checks the health of a pod"",\n    ""summary_er"": ""The Liveness Probe checks the health of a Pod by running a command and verifying its output, ensuring the Pod is functioning correctly.""\n  }\n]', '[\n  {\n    ""source"": ""desired replica count"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the number of replicas for a ReplicaSet"",\n    ""summary_er"": ""The desired replica count determines how many copies of a pod should exist in a ReplicaSet, ensuring high availability and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""CronJob"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""schedules a job to run at regular intervals"",\n    ""summary_er"": ""A CronJob schedules a Pod to run periodically, executing a Job at specified intervals.""\n  }\n]', '[\n  {\n    ""source"": ""CronJob"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the schedule for a CronJob or Job"",\n    ""summary_er"": ""A CronJob\'s schedule determines when its associated pod(s) are created and executed.""\n  }\n]', '[\n  {\n    ""source"": ""pod template"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the template for creating a pod"",\n    ""summary_er"": ""The pod template defines the configuration and settings for creating a new pod, which is a containerized application in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages the number of replicas for a deployment"",\n    ""summary_er"": ""A ReplicaSet ensures a specified number of identical Pod replicas are running at any given time, providing high availability and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages the number of replicas for a deployment"",\n    ""summary_er"": ""A ReplicationController ensures a specified number of Pod replicas are running at any given time, managing deployment scaling.""\n  }\n]']","A CronJob creates a single Job for each execution configured in the schedule, but can create two Jobs if run concurrently or none at all. To combat this, jobs should be idempotent and next job runs should perform work missed by previous runs. A startingDeadlineSeconds field can also be specified to ensure pods start running within a certain timeframe.","[{'highlight': 'You can specify a deadline by specifying the startingDeadlineSeconds field in the CronJob specification to ensure that a job starts within a certain timeframe.'}, {'highlight': 'A CronJob always creates only a single Job for each execution configured in the schedule, but it may create multiple Jobs if they are created at the same time or none at all.'}, {'highlight': 'ReplicationControllers keep the desired number of pod replicas running and can scale pods horizontally by changing the desired replica count.'}, {'highlight': ""Pods shouldn't be created directly, as they will not be re-created if deleted, node fails, or evicted from the node.""}, {'highlight': 'A ReplicationController creates new pods from a pod template and can move existing pods between controllers if necessary.'}]"
+62,151,0,[],"119
+Summary
+ReplicationControllers should be replaced with ReplicaSets and Deployments,
+which provide the same functionality, but with additional powerful features.
+ReplicationControllers and ReplicaSets schedule pods to random cluster nodes,
+whereas DaemonSets make sure every node runs a single instance of a pod
+defined in the DaemonSet.
+Pods that perform a batch task should be created through a Kubernetes Job
+resource, not directly or through a ReplicationController or similar object.
+Jobs that need to run sometime in the future can be created through CronJob
+resources. 
+ 
+",[],"[{'entity': 'ReplicationControllers', 'description': 'a resource for managing replicas of pods', 'category': 'software'}, {'entity': 'ReplicaSets', 'description': 'a resource that provides the same functionality as ReplicationControllers, but with additional features', 'category': 'software'}, {'entity': 'Deployments', 'description': 'a resource that provides powerful features for managing replicas of pods', 'category': 'software'}, {'entity': 'ReplicaSets', 'description': 'schedules pods to random cluster nodes', 'category': 'process'}, {'entity': 'DaemonSets', 'description': 'makes sure every node runs a single instance of a pod defined in the DaemonSet', 'category': 'process'}, {'entity': 'Pods', 'description': 'a resource that can be created through a Kubernetes Job resource or directly', 'category': 'container'}, {'entity': 'Jobs', 'description': 'a resource for managing batch tasks', 'category': 'software'}, {'entity': 'CronJob', 'description': 'a resource for creating Jobs that need to run sometime in the future', 'category': 'software'}]","[{'source_entity': '""ReplicationControllers""', 'description': 'create', 'destination_entity': '""Pods""'}, {'source_entity': '""CronJob""', 'description': 'schedule and run', 'destination_entity': '""Jobs""'}, {'source_entity': '""DaemonSets""', 'description': 'deploy and update', 'destination_entity': '""Pods""'}, {'source_entity': '""ReplicaSets""', 'description': 'ensure a specified number of', 'destination_entity': '""Pods""'}, {'source_entity': '""Deployments""', 'description': 'update and roll out', 'destination_entity': '""ReplicaSets""'}, {'source_entity': '""Jobs""', 'description': 'run to completion', 'destination_entity': '""Pods""'}]","['[\n  {\n    ""source"": ""ReplicationControllers"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""create"",\n    ""summary_er"": ""Replication Controllers create Pods by defining a desired state of multiple identical Pods.""\n  }\n]', '[\n  {\n    ""source"": ""CronJob"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""schedule and run"",\n    ""summary_er"": ""A CronJob schedules a job to run periodically, resulting in one or more Pods being created.""\n  }\n]', '[\n  {\n    ""source"": ""DaemonSets"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""deploy and update"",\n    ""summary_er"": ""DaemonSets deploy and update Pods, ensuring they run continuously even if nodes are added or removed.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSets"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""ensure a specified number of"",\n    ""summary_er"": ""ReplicaSets ensure a specified number of Pods are running, maintaining desired scale and availability.""\n  }\n]', '[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""update and roll out"",\n    ""summary_er"": ""Deployments manage rollout of Pods, ensuring desired state is maintained.""\n  },\n  {\n    ""source"": ""ReplicaSets"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""scale and maintain"",\n    ""summary_er"": ""ReplicaSets ensure a specified number of Pods are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""Jobs"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""run to completion"",\n    ""summary_er"": ""A Job in Kubernetes runs a task to completion, creating one or more Pods to execute the task.""\n  }\n]']","ReplicationControllers are being replaced with ReplicaSets and Deployments which provide additional features, DaemonSets ensure every node runs a pod instance, Jobs schedule batch tasks while CronJobs handle future executions.","[{'highlight': 'ReplicationControllers should be replaced with ReplicaSets and Deployments, which provide the same functionality, but with additional powerful features.'}, {'highlight': 'ReplicationControllers and ReplicaSets schedule pods to random cluster nodes, whereas DaemonSets make sure every node runs a single instance of a pod defined in the DaemonSet.'}, {'highlight': 'Pods that perform a batch task should be created through a Kubernetes Job resource, not directly or through a ReplicationController or similar object.'}, {'highlight': 'Jobs that need to run sometime in the future can be created through CronJob resources.'}, {'highlight': 'ReplicaSets and Deployments provide more features than ReplicationControllers.'}]"
+63,152,0,[],"120
+Services: enabling
+clients to discover
+and talk to pods
+You’ve learned about pods and how to deploy them through ReplicaSets and similar
+resources to ensure they keep running. Although certain pods can do their work
+independently of an external stimulus, many applications these days are meant to
+respond to external requests. For example, in the case of microservices, pods will
+usually respond to HTTP requests coming either from other pods inside the cluster
+or from clients outside the cluster. 
+ Pods need a way of finding other pods if they want to consume the services they
+provide. Unlike in the non-Kubernetes world, where a sysadmin would configure
+This chapter covers
+Creating Service resources to expose a group of 
+pods at a single address
+Discovering services in the cluster
+Exposing services to external clients
+Connecting to external services from inside the 
+cluster
+Controlling whether a pod is ready to be part of 
+the service or not
+Troubleshooting services
+ 
+",[],"[{'entity': 'Services', 'description': 'enabling clients to discover and talk to pods', 'category': 'software'}, {'entity': 'pods', 'description': 'independent units of application code that can be run in a Kubernetes cluster', 'category': 'container'}, {'entity': 'ReplicaSets', 'description': 'resources used to ensure pods keep running', 'category': 'software'}, {'entity': 'clients', 'description': 'external entities requesting services from pods', 'category': 'application'}, {'entity': 'HTTP requests', 'description': 'requests coming from clients or other pods inside the cluster', 'category': 'protocol'}, {'entity': 'sysadmin', 'description': 'system administrator configuring non-Kubernetes environment', 'category': 'personnel'}, {'entity': 'Service resources', 'description': 'used to expose a group of pods at a single address', 'category': 'software'}, {'entity': 'cluster', 'description': 'group of machines running Kubernetes', 'category': 'hardware'}, {'entity': 'external clients', 'description': 'clients outside the cluster requesting services from pods', 'category': 'application'}, {'entity': 'external services', 'description': 'services provided by entities outside the cluster', 'category': 'software'}, {'entity': 'pod readiness', 'description': 'controlling whether a pod is ready to be part of a service or not', 'category': 'process'}]","[{'source_entity': '""Services""', 'description': 'provides', 'destination_entity': '""external clients""'}, {'source_entity': '""Services""', 'description': 'exposes', 'destination_entity': '""Service resources""'}, {'source_entity': '""pods""', 'description': 'hosts', 'destination_entity': '""ReplicaSets""'}, {'source_entity': '""sysadmin""', 'description': 'manages', 'destination_entity': '""cluster""'}, {'source_entity': '""clients""', 'description': 'interacts with', 'destination_entity': '""Services""'}, {'source_entity': '""external services""', 'description': 'integrates with', 'destination_entity': '""Services""'}, {'source_entity': '""pods""', 'description': 'monitors for readiness', 'destination_entity': '""pod readiness""'}, {'source_entity': '""clients""', 'description': 'sends HTTP requests to', 'destination_entity': '""Services""'}]","['[\n  {\n    ""source"": ""Services"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""Services provide functionality to external clients by exposing APIs and interfaces, enabling them to interact with pods.""\n  }\n]', '[\n  {\n    ""source"": ""Services"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""A service exposes a pod\'s port to the outside world, allowing external traffic to reach the pod.""\n  }\n]', '[\n  {\n    ""source"": ""pods"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""A pod is a logical host for one or more application containers, providing shared resources and networking.""\n  },\n  {\n    ""source"": ""ReplicaSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""A ReplicaSet ensures that a specified number of replicas (identical pods) are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""sysadmin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Sysadmins manage pods in a Kubernetes cluster to ensure smooth operation and troubleshoot issues.""\n  },\n  {\n    ""source"": ""sysadmin"",\n    ""destination"": ""cluster"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Sysadmins manage clusters to deploy, scale, and monitor applications running on them.""\n  }\n]', '[\n  {\n    ""source"": ""clients"",\n    ""destination"": ""pod \\""Services\\"""",\n    ""relation_description"": ""interacts with"",\n    ""summary_er"": ""Clients interact with Services to access business logic and data.""\n  }\n]', '[\n  {\n    ""source"": ""external services"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""integrates with"",\n    ""summary_er"": ""External services integrate with pods to provide external connectivity and functionality.""\n  }\n]', '[\n  {\n    ""source"": ""pods"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""monitors for readiness"",\n    ""summary_er"": ""The Kubernetes controller monitors pods for readiness, ensuring they are prepared to receive traffic.""\n  }\n]', '[\n  {\n    ""source"": ""clients"",\n    ""destination"": ""pod \\""Services\\"""",\n    ""relation_description"": ""sends HTTP requests to"",\n    ""summary_er"": ""Clients send HTTP requests to Services, which act as entry points for external traffic.""\n  }\n]']","Services enable clients to discover and communicate with pods, allowing them to respond to external requests. This chapter covers creating Service resources to expose a group of pods at a single address, discovering services in the cluster, exposing services to external clients, connecting to external services from inside the cluster, controlling pod readiness for service participation, and troubleshooting services.","[{'highlight': 'Services enable clients to discover and talk to pods.'}, {'highlight': 'Pods need a way of finding other pods if they want to consume the services they provide.'}, {'highlight': 'This chapter covers creating Service resources to expose a group of pods at a single address.'}, {'highlight': 'Services allow pods to discover and connect to external services from inside the cluster.'}, {'highlight': 'Controlling whether a pod is ready to be part of the service or not is an important aspect of service management.'}]"
+64,153,0,[],"121
+Introducing services
+each client app by specifying the exact IP address or hostname of the server providing
+the service in the client’s configuration files, doing the same in Kubernetes wouldn’t
+work, because
+Pods are ephemeral—They may come and go at any time, whether it’s because a
+pod is removed from a node to make room for other pods, because someone
+scaled down the number of pods, or because a cluster node has failed.
+Kubernetes assigns an IP address to a pod after the pod has been scheduled to a node
+and before it’s started—Clients thus can’t know the IP address of the server pod
+up front.
+Horizontal scaling means multiple pods may provide the same service—Each of those
+pods has its own IP address. Clients shouldn’t care how many pods are backing
+the service and what their IPs are. They shouldn’t have to keep a list of all the
+individual IPs of pods. Instead, all those pods should be accessible through a
+single IP address.
+To solve these problems, Kubernetes also provides another resource type—Services—
+that we’ll discuss in this chapter.
+5.1
+Introducing services
+A Kubernetes Service is a resource you create to make a single, constant point of
+entry to a group of pods providing the same service. Each service has an IP address
+and port that never change while the service exists. Clients can open connections to
+that IP and port, and those connections are then routed to one of the pods backing
+that service. This way, clients of a service don’t need to know the location of individ-
+ual pods providing the service, allowing those pods to be moved around the cluster
+at any time. 
+EXPLAINING SERVICES WITH AN EXAMPLE
+Let’s revisit the example where you have a frontend web server and a backend data-
+base server. There may be multiple pods that all act as the frontend, but there may
+only be a single backend database pod. You need to solve two problems to make the
+system function:
+External clients need to connect to the frontend pods without caring if there’s
+only a single web server or hundreds.
+The frontend pods need to connect to the backend database. Because the data-
+base runs inside a pod, it may be moved around the cluster over time, causing
+its IP address to change. You don’t want to reconfigure the frontend pods every
+time the backend database is moved.
+By creating a service for the frontend pods and configuring it to be accessible from
+outside the cluster, you expose a single, constant IP address through which external
+clients can connect to the pods. Similarly, by also creating a service for the backend
+pod, you create a stable address for the backend pod. The service address doesn’t
+ 
+",[],"[{'entity': 'Pods', 'description': 'Ephemeral resources that may come and go at any time', 'category': 'container'}, {'entity': 'IP address', 'description': 'Assigned to a pod after scheduling, but can change', 'category': 'network'}, {'entity': 'Horizontal scaling', 'description': 'Multiple pods providing the same service', 'category': 'process'}, {'entity': 'Services', 'description': 'Resource type that provides a single, constant point of entry to a group of pods', 'category': 'application'}, {'entity': 'Kubernetes Service', 'description': 'Resource that makes a single, constant point of entry to a group of pods providing the same service', 'category': 'framework'}, {'entity': 'IP address and port', 'description': 'Constant point of entry for a service', 'category': 'network'}, {'entity': 'Frontend web server', 'description': 'Multiple pods providing the same service', 'category': 'application'}, {'entity': 'Backend database server', 'description': 'Single pod providing a service', 'category': 'database'}, {'entity': 'Service for frontend pods', 'description': 'Stable address for external clients to connect to the pods', 'category': 'application'}, {'entity': 'Service for backend pod', 'description': 'Stable address for the backend pod', 'category': 'application'}]","[{'source_entity': 'Services', 'description': 'exposes', 'destination_entity': 'IP address and port'}, {'source_entity': 'Frontend web server', 'description': 'uses', 'destination_entity': 'Service for frontend pods'}, {'source_entity': 'Horizontal scaling', 'description': 'enables', 'destination_entity': 'Pods'}, {'source_entity': 'Backend database server', 'description': 'communicates with', 'destination_entity': 'Service for backend pod'}, {'source_entity': 'Kubernetes Service', 'description': 'manages', 'destination_entity': 'Pods'}, {'source_entity': 'Service for frontend pods', 'description': 'provides', 'destination_entity': 'Frontend web server'}, {'source_entity': 'Service for backend pod', 'description': 'provides', 'destination_entity': 'Backend database server'}]","['[\n  {\n    ""source"": ""Services"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""A Service exposes a specific port on a Pod\'s IP address, allowing external traffic to reach the application running inside the Pod.""\n  }\n]', '[\n  {\n    ""source"": ""Frontend web server"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The Frontend web server utilizes a Pod to execute its functionality.""\n  },\n  {\n    ""source"": ""Service for frontend pods"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""for"",\n    ""summary_er"": ""A Service is provisioned specifically for the Pods of the Frontend.""\n  }\n]', '[\n  {\n    ""source"": ""Horizontal scaling"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""enables"",\n    ""summary_er"": ""Horizontal scaling allows for efficient resource allocation by enabling multiple pods to run concurrently, improving application scalability and responsiveness.""\n  }\n]', '[\n  {\n    ""source"": ""Backend database server"",\n    ""destination"": ""Service for backend pod"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The Backend database server communicates with the Service for backend pod to facilitate data exchange and synchronization.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes Service"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The Kubernetes Service manages a collection of Pods, ensuring they are running and accessible to users.""\n  }\n]', '[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""Frontend web server"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The service provides functionality to the frontend web server, enabling it to handle requests and serve content.""\n  }\n]', '[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""Backend Pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The Service provides functionality to the Backend Pod, ensuring it has access to necessary resources and dependencies.""\n  }\n]']","A Kubernetes Service is a resource that provides a single, constant point of entry to a group of pods providing the same service. Each service has an IP address and port that never change while the service exists, allowing clients to connect without needing to know individual pod locations. This enables external clients to connect to frontend pods without worrying about IP changes and allows frontend pods to connect to backend database services with a stable address.","[{'highlight': 'Kubernetes Services provide a single, constant point of entry to a group of pods providing the same service.'}, {'highlight': 'Each Service has an IP address and port that never change while the service exists.'}, {'highlight': 'Services allow clients to connect to a group of pods without caring about individual pod locations or IP addresses.'}, {'highlight': 'Creating Services for frontend and backend pods provides stable addresses for external clients and internal communication.'}, {'highlight': 'Services enable horizontal scaling, load balancing, and self-healing of pods providing the same service.'}]"
+65,154,0,[],"122
+CHAPTER 5
+Services: enabling clients to discover and talk to pods
+change even if the pod’s IP address changes. Additionally, by creating the service, you
+also enable the frontend pods to easily find the backend service by its name through
+either environment variables or DNS. All the components of your system (the two ser-
+vices, the two sets of pods backing those services, and the interdependencies between
+them) are shown in figure 5.1.
+You now understand the basic idea behind services. Now, let’s dig deeper by first see-
+ing how they can be created.
+5.1.1
+Creating services
+As you’ve seen, a service can be backed by more than one pod. Connections to the ser-
+vice are load-balanced across all the backing pods. But how exactly do you define
+which pods are part of the service and which aren’t? 
+ You probably remember label selectors and how they’re used in Replication-
+Controllers and other pod controllers to specify which pods belong to the same set.
+The same mechanism is used by services in the same way, as you can see in figure 5.2.
+ In the previous chapter, you created a ReplicationController which then ran three
+instances of the pod containing the Node.js app. Create the ReplicationController
+again and verify three pod instances are up and running. After that, you’ll create a
+Service for those three pods. 
+Frontend pod 1
+IP: 2.1.1.1
+External client
+Frontend pod 2
+IP: 2.1.1.2
+Frontend pod 3
+IP: 2.1.1.3
+Backend pod
+IP: 2.1.1.4
+Frontend service
+IP: 1.1.1.1
+Backend service
+IP: 1.1.1.2
+Frontend components
+Backend components
+Figure 5.1
+Both internal and external clients usually connect to pods through services.
+ 
+","[                      them) are shown in figure 5.1.  \
+0  Frontend components\nFrontend service\nExterna...   
+1                                               None   
+2                                               None   
+
+                                       n figure 5.1.  Col2  Col3  Col4  
+0  Frontend components\nFrontend service\nIP: 1.1...  None  None  None  
+1                                               None                    
+2  Backend components\nBackend service\nIP: 1.1.1...  None  None  None  ]","[{'entity': 'Services', 'description': 'enabling clients to discover and talk to pods', 'category': 'application'}, {'entity': 'pods', 'description': 'groups of containers that can be accessed by a service', 'category': 'container'}, {'entity': 'IP address', 'description': 'unique identifier for each pod', 'category': 'network'}, {'entity': 'labels', 'description': 'mechanism used to identify pods belonging to the same set', 'category': 'process'}, {'entity': 'ReplicationController', 'description': 'controller that ensures a specified number of replicas are running at any given time', 'category': 'application'}, {'entity': 'Node.js app', 'description': 'web application framework', 'category': 'software'}, {'entity': 'Frontend pod', 'description': 'pod containing the frontend components', 'category': 'container'}, {'entity': 'Backend pod', 'description': 'pod containing the backend components', 'category': 'container'}, {'entity': 'Service', 'description': 'load balancer that distributes traffic across multiple pods', 'category': 'application'}, {'entity': 'DNS', 'description': 'domain name system used to resolve service names to IP addresses', 'category': 'network'}]","[{'source_entity': 'labels', 'description': 'are used to identify and select pods based on their characteristics.', 'destination_entity': 'pods'}, {'source_entity': 'Services', 'description': 'provide a way to access applications running in pods, by exposing them to the network.', 'destination_entity': 'Node.js app'}, {'source_entity': 'Service', 'description': 'can be used to load balance and scale Node.js apps.', 'destination_entity': 'Node.js app'}, {'source_entity': 'Services', 'description': 'are typically exposed using a DNS name or IP address.', 'destination_entity': 'DNS'}, {'source_entity': 'ReplicationController', 'description': 'ensures that a specified number of pods are running at any given time, by creating and deleting them as needed.', 'destination_entity': 'pods'}, {'source_entity': 'Frontend pod', 'description': 'communicates with the Backend pod using an IP address.', 'destination_entity': 'IP address'}, {'source_entity': 'Frontend pod', 'description': 'is a type of pod that handles frontend-related tasks.', 'destination_entity': 'pods'}, {'source_entity': 'Backend pod', 'description': 'handles backend-related tasks and communicates with the Frontend pod using an IP address.', 'destination_entity': 'IP address'}]","['[\n  {\n    ""source"": ""labels"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to identify and select pods based on their characteristics."",\n    ""summary_er"": ""Labels are key-value pairs that help identify and filter pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Services"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provide a way to access applications running in pods, by exposing them to the network."",\n    ""summary_er"": ""Services expose Node.js apps running in pods to the network.""\n  }\n]', '[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""load balancing and scaling"",\n    ""summary_er"": ""A Service can be used to load balance and scale Node.js apps running in a Pod, ensuring efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""Services"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""are typically exposed using a DNS name or IP address."",\n    ""summary_er"": ""Services expose pods to the outside world via DNS names or IP addresses.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""ensures that a specified number of pods are running at any given time, by creating and deleting them as needed."",\n    ""summary_er"": ""ReplicationController ensures a fixed number of pod replicas are maintained.""\n  }\n]', '[\n  {\n    ""source"": ""Frontend pod"",\n    ""destination"": ""Backend pod"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The Frontend pod exchanges data with the Backend pod via an IP address, enabling seamless communication between the two.""\n  },\n  {\n    ""source"": ""Frontend pod"",\n    ""destination"": ""IP address"",\n    ""relation_description"": ""uses to communicate with"",\n    ""summary_er"": ""The Frontend pod utilizes an IP address to establish a connection with other pods for data exchange and communication.""\n  }\n]', '[\n  {\n    ""source"": ""Frontend pod"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""is a type of pod that handles frontend-related tasks."",\n    ""summary_er"": ""The Frontend pod is a specialized container within pods, responsible for handling frontend-related tasks.""\n  }\n]', '[\n  {\n    ""source"": ""Backend pod"",\n    ""destination"": ""Frontend pod"",\n    ""relation_description"": ""handles backend-related tasks and communicates using an IP address"",\n    ""summary_er"": ""The Backend pod handles backend tasks and communicates with the Frontend pod via IP address.""\n  },\n  {\n    ""source"": ""Frontend pod"",\n    ""destination"": ""Backend pod"",\n    ""relation_description"": ""communicates using an IP address"",\n    ""summary_er"": ""The Frontend pod communicates with the Backend pod through an IP address for task handling.""\n  }\n]']","A service enables clients to discover and talk to pods, even if the pod's IP address changes. Services are created using label selectors, which specify which pods belong to the same set. A service can be backed by more than one pod, with connections load-balanced across all backing pods.","[{'highlight': ""Services enable clients to discover and talk to pods without knowing their IP addresses, which can change even if the pod's IP address changes.""}, {'highlight': 'A service can be backed by more than one pod, with connections load-balanced across all backing pods.'}, {'highlight': 'Label selectors are used by services to specify which pods belong to the same set, just like in Replication-Controllers and other pod controllers.'}, {'highlight': 'Services provide a stable IP address (1.1.1.1) for frontend components, making it easy for internal and external clients to connect to them.'}, {'highlight': 'The same mechanism used by services is also used in Replication-Controllers and other pod controllers to specify which pods belong to the same set.'}]"
+66,155,0,[],"123
+Introducing services
+CREATING A SERVICE THROUGH KUBECTL EXPOSE
+The easiest way to create a service is through kubectl expose, which you’ve already
+used in chapter 2 to expose the ReplicationController you created earlier. The
+expose command created a Service resource with the same pod selector as the one
+used by the ReplicationController, thereby exposing all its pods through a single IP
+address and port. 
+ Now, instead of using the expose command, you’ll create a service manually by
+posting a YAML to the Kubernetes API server. 
+CREATING A SERVICE THROUGH A YAML DESCRIPTOR
+Create a file called kubia-svc.yaml with the following listing’s contents.
+apiVersion: v1
+kind: Service             
+metadata:
+  name: kubia              
+spec:
+  ports:
+  - port: 80              
+    targetPort: 8080       
+  selector:                 
+    app: kubia              
+You’re defining a service called kubia, which will accept connections on port 80 and
+route each connection to port 8080 of one of the pods matching the app=kubia
+label selector. 
+ Go ahead and create the service by posting the file using kubectl create.
+Listing 5.1
+A definition of a service: kubia-svc.yaml
+app: kubia
+Pod: kubia-q3vkg
+Pod: kubia-k0xz6
+Pod: kubia-53thy
+Client
+Service: kubia
+Selector: app=kubia
+app: kubia
+app: kubia
+Figure 5.2
+Label selectors 
+determine which pods belong 
+to the Service.
+The port this service 
+will be available on
+The container port the 
+service will forward to
+All pods with the app=kubia 
+label will be part of this service.
+ 
+",[],"[{'entity': 'kubectl expose', 'description': 'command to create a service through kubectl', 'category': 'command'}, {'entity': 'Service resource', 'description': ""a Kubernetes resource that exposes a pod's IP address and port"", 'category': 'resource'}, {'entity': 'ReplicationController', 'description': 'a Kubernetes resource that manages multiple replicas of a pod', 'category': 'resource'}, {'entity': 'kubectl create', 'description': 'command to create a service through a YAML descriptor', 'category': 'command'}, {'entity': 'kubia-svc.yaml', 'description': 'a YAML file that defines a service called kubia', 'category': 'file'}, {'entity': 'apiVersion', 'description': 'a field in the YAML descriptor that specifies the API version', 'category': 'field'}, {'entity': 'kind', 'description': 'a field in the YAML descriptor that specifies the type of resource', 'category': 'field'}, {'entity': 'metadata', 'description': 'a field in the YAML descriptor that contains metadata about the service', 'category': 'field'}, {'entity': 'name', 'description': 'a field in the YAML descriptor that specifies the name of the service', 'category': 'field'}, {'entity': 'ports', 'description': 'a field in the YAML descriptor that specifies the ports used by the service', 'category': 'field'}, {'entity': 'port', 'description': 'a field in the YAML descriptor that specifies a port number', 'category': 'field'}, {'entity': 'targetPort', 'description': 'a field in the YAML descriptor that specifies the target port for the service', 'category': 'field'}, {'entity': 'selector', 'description': 'a field in the YAML descriptor that specifies a label selector for the service', 'category': 'field'}, {'entity': 'app', 'description': 'a field in the YAML descriptor that specifies an application name', 'category': 'field'}, {'entity': 'kubia', 'description': 'the name of a service and an application', 'category': 'service/application'}, {'entity': 'Pod', 'description': 'a Kubernetes resource that represents a running container', 'category': 'resource'}, {'entity': 'label selectors', 'description': 'a mechanism for determining which pods belong to a service', 'category': 'mechanism'}]","[{'source_entity': 'kubectl create', 'description': 'creates a new Service resource', 'destination_entity': 'Service resource'}, {'source_entity': 'kubectl expose', 'description': 'exposes a ReplicationController as a Service', 'destination_entity': 'ReplicationController'}, {'source_entity': 'selector', 'description': 'selects the pods for the Service', 'destination_entity': 'Pod'}, {'source_entity': 'label selectors', 'description': 'labels the pods with specific labels', 'destination_entity': 'Pod'}, {'source_entity': 'kubectl create', 'description': 'creates a new YAML file for the Service resource', 'destination_entity': 'kubia-svc.yaml'}, {'source_entity': 'name', 'description': 'names the Service resource', 'destination_entity': 'Service resource'}, {'source_entity': 'ports', 'description': 'specifies the ports for the Service resource', 'destination_entity': 'Service resource'}, {'source_entity': 'port', 'description': 'specifies the port number for the Service resource', 'destination_entity': 'Service resource'}, {'source_entity': 'targetPort', 'description': 'specifies the target port number for the Service resource', 'destination_entity': 'Service resource'}, {'source_entity': 'app', 'description': 'names the application for the Service resource', 'destination_entity': 'Service resource'}, {'source_entity': 'kubia', 'description': 'names the service name for the Service resource', 'destination_entity': 'Service resource'}]","['[\n  {\n    ""source"": ""kubectl create"",\n    ""destination"": ""Service resource"",\n    ""relation_description"": ""creates a new"",\n    ""summary_er"": ""Using kubectl create command to dynamically provision a new Service resource in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""ReplicationController"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""Exposing a ReplicationController to make it accessible as a Service, allowing external access and load balancing.""\n  }\n]', '[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""selects the pods for the Service"",\n    ""summary_er"": ""The Service selects a set of Pods to serve traffic, ensuring high availability and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""label selector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""labels the pods with specific labels"",\n    ""summary_er"": ""A label selector is used to identify and select pods based on their labels, allowing for targeted management and deployment of resources.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates a new YAML file"",\n    ""summary_er"": ""Using kubectl to create a new Service resource YAML file for the pod \'kubia-svc.yaml\'.""\n  },\n  {\n    ""source"": ""Service resource"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defined in YAML file"",\n    ""summary_er"": ""The Service resource is defined in the YAML file \'kubia-svc.yaml\' for the pod.""\n  }\n]', '[\n  {\n    ""source"": ""Service resource"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""names"",\n    ""summary_er"": ""A Service resource in Kubernetes is associated with one or more pods, and its name refers to these pods.""\n  }\n]', '[\n  {\n    ""source"": ""ports"",\n    ""destination"": ""Service resource"",\n    ""relation_description"": ""specifies the ports for the Service resource"",\n    ""summary_er"": ""Ports are specified in a Service resource to define the network endpoints that can be accessed by clients.""\n  }\n]', '[\n  {\n    ""source"": ""port"",\n    ""destination"": ""Service resource"",\n    ""relation_description"": ""specifies the port number"",\n    ""summary_er"": ""The port specifies the port number for a Service resource, allowing it to be accessed by pods.""\n  },\n  {\n    ""source"": ""Service resource"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""accessed by"",\n    ""summary_er"": ""A Service resource can be accessed by one or more pods, providing a stable network identity and load balancing.""\n  }\n]', '[\n  {\n    ""source"": ""targetPort"",\n    ""destination"": ""Service resource"",\n    ""relation_description"": ""specifies the target port number"",\n    ""summary_er"": ""The targetPort specifies the port number for a Service to communicate with a Pod.""\n  },\n  {\n    ""source"": ""Service resource"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""communicate with"",\n    ""summary_er"": ""A Service communicates with a Pod through a specific port number.""\n  }\n]', '[\n  {\n    ""source"": ""app"",\n    ""destination"": ""Service resource"",\n    ""relation_description"": ""names the application for the Service resource"",\n    ""summary_er"": ""The \'app\' field in a Kubernetes Service resource specifies the name of the application it serves.""\n  },\n  {\n    ""source"": ""Service resource"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""the pod that provides the service"",\n    ""summary_er"": ""A Service resource in Kubernetes is associated with one or more pods that provide the same service.""\n  }\n]', '[\n  {\n    ""source"": ""kubia"",\n    ""destination"": ""Service resource"",\n    ""relation_description"": ""names the service name for the Service resource"",\n    ""summary_er"": ""The \'kubia\' service names a Service resource, which is a fundamental component in Kubernetes.""\n  },\n  {\n    ""source"": ""Service resource"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""and the destination pod"",\n    ""summary_er"": ""A Service resource can be associated with one or more pods, which are running instances of an application.""\n  }\n]']","A Kubernetes service called kubia is created manually by posting a YAML descriptor, which exposes all pods matching the app=kubia label selector on port 80 and routes connections to port 8080 of each pod. The service accepts connections on port 80 and forwards them to port 8080 of one of the matching pods, allowing clients to access the service through a single IP address and port.","[{'highlight': 'You can create a service through kubectl expose, which creates a Service resource with the same pod selector as the ReplicationController.'}, {'highlight': ""To create a service manually, you need to post a YAML descriptor to the Kubernetes API server, defining the service's metadata and spec.""}, {'highlight': 'The kubia-svc.yaml file defines a service called kubia that accepts connections on port 80 and routes each connection to port 8080 of one of the pods matching the app=kubia label selector.'}, {'highlight': 'Label selectors determine which pods belong to the Service, and in this case, all pods with the app=kubia label will be part of the service.'}, {'highlight': 'The service will be available on port 80 and will forward connections to port 8080 of one of the matching pods.'}]"
+67,156,0,[],"124
+CHAPTER 5
+Services: enabling clients to discover and talk to pods
+EXAMINING YOUR NEW SERVICE
+After posting the YAML, you can list all Service resources in your namespace and see
+that an internal cluster IP has been assigned to your service:
+$ kubectl get svc
+NAME         CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+kubernetes   10.111.240.1     <none>        443/TCP   30d
+kubia        10.111.249.153   <none>        80/TCP    6m     
+The list shows that the IP address assigned to the service is 10.111.249.153. Because
+this is the cluster IP, it’s only accessible from inside the cluster. The primary purpose
+of services is exposing groups of pods to other pods in the cluster, but you’ll usually
+also want to expose services externally. You’ll see how to do that later. For now, let’s
+use your service from inside the cluster and see what it does.
+TESTING YOUR SERVICE FROM WITHIN THE CLUSTER
+You can send requests to your service from within the cluster in a few ways:
+The obvious way is to create a pod that will send the request to the service’s
+cluster IP and log the response. You can then examine the pod’s log to see
+what the service’s response was.
+You can ssh into one of the Kubernetes nodes and use the curl command.
+You can execute the curl command inside one of your existing pods through
+the kubectl exec command.
+Let’s go for the last option, so you also learn how to run commands in existing pods. 
+REMOTELY EXECUTING COMMANDS IN RUNNING CONTAINERS
+The kubectl exec command allows you to remotely run arbitrary commands inside
+an existing container of a pod. This comes in handy when you want to examine the
+contents, state, and/or environment of a container. List the pods with the kubectl
+get pods command and choose one as your target for the exec command (in the fol-
+lowing example, I’ve chosen the kubia-7nog1 pod as the target). You’ll also need to
+obtain the cluster IP of your service (using kubectl get svc, for example). When run-
+ning the following commands yourself, be sure to replace the pod name and the ser-
+vice IP with your own: 
+$ kubectl exec kubia-7nog1 -- curl -s http://10.111.249.153
+You’ve hit kubia-gzwli
+If you’ve used ssh to execute commands on a remote system before, you’ll recognize
+that kubectl exec isn’t much different.
+ 
+ 
+ 
+ 
+Here’s your 
+service.
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command', 'category': 'software'}, {'entity': 'get svc', 'description': 'command', 'category': 'software'}, {'entity': 'Service resources', 'description': 'resources in Kubernetes namespace', 'category': 'application'}, {'entity': 'cluster IP', 'description': 'internal IP address assigned to service', 'category': 'network'}, {'entity': 'kubernetes', 'description': 'service name', 'category': 'software'}, {'entity': 'kubia', 'description': 'service name', 'category': 'software'}, {'entity': 'pod', 'description': 'container in Kubernetes cluster', 'category': 'application'}, {'entity': 'cluster IP', 'description': 'internal IP address assigned to service', 'category': 'network'}, {'entity': 'curl command', 'description': 'command for sending HTTP requests', 'category': 'software'}, {'entity': 'kubectl exec command', 'description': 'command for remotely executing commands in containers', 'category': 'software'}, {'entity': 'container', 'description': 'instance of a Docker image running in Kubernetes cluster', 'category': 'application'}, {'entity': 'pod name', 'description': 'name of the pod to execute commands in', 'category': 'application'}, {'entity': 'service IP', 'description': 'IP address of the service', 'category': 'network'}]","[{'source_entity': '""container""', 'description': 'is running on', 'destination_entity': '""pod""'}, {'source_entity': '""pod""', 'description': 'has a unique IP address called', 'destination_entity': '""cluster IP""'}, {'source_entity': '""service IP""', 'description': 'is used to access the service from outside the cluster', 'destination_entity': '""Service resources""'}, {'source_entity': '""kubectl""', 'description': 'can be used to interact with the Kubernetes API and manage resources', 'destination_entity': '""cluster IP""'}, {'source_entity': '""kubectl""', 'description': 'can be used to get information about services using command', 'destination_entity': '""get svc""'}, {'source_entity': '""kubectl exec command""', 'description': 'allows running commands inside a container or pod', 'destination_entity': '""container""'}, {'source_entity': '""pod name""', 'description': 'is used to identify and manage pods in the cluster', 'destination_entity': '""kubernetes""'}, {'source_entity': '""kubectl""', 'description': 'can be used to access the kubia service using command', 'destination_entity': '""curl command""'}, {'source_entity': '""Service resources""', 'description': 'are managed and accessed through Kubernetes API', 'destination_entity': '""kubernetes""'}]","['[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is running on"",\n    ""summary_er"": ""A container is a lightweight and portable executable that runs on top of an operating system, specifically running on a pod in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""cluster IP"",\n    ""relation_description"": ""has a unique IP address called"",\n    ""summary_er"": ""Each pod in Kubernetes has a unique cluster IP address assigned to it, allowing for communication between pods within the same cluster.""\n  }\n]', '[\n  {\n    ""source"": ""service IP"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to access the service from outside the cluster"",\n    ""summary_er"": ""A service IP is used to expose a pod\'s resources to external clients, allowing them to access the service from outside the cluster.""\n  },\n  {\n    ""source"": ""Service resources"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is managed by"",\n    ""summary_er"": ""Service resources are managed and allocated to pods, providing the necessary infrastructure for the pod\'s execution.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be used to interact with the Kubernetes API and manage resources"",\n    ""summary_er"": ""Kubectl is used to interact with Kubernetes API, managing pod resources.""\n  },\n  {\n    ""source"": ""cluster IP"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assigns a unique IP address to each pod"",\n    ""summary_er"": ""Cluster IP assigns a unique IP to each pod for communication.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be used to get information about services using command"",\n    ""summary_er"": ""Use kubectl to retrieve service info from a pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl exec command"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allows running commands inside a container or pod"",\n    ""summary_er"": ""Executes shell commands within a pod, providing access to its file system and processes.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Kubernetes"",\n    ""relation_description"": ""is managed by"",\n    ""summary_er"": ""Pods are identified and managed within a Kubernetes cluster, utilizing its features for efficient resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be used to access the kubia service using command"",\n    ""summary_er"": ""Kubectl can access Kubia pod via curl command.""\n  }\n]', '[\n  {\n    ""source"": ""Service resources"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managed and accessed through Kubernetes API"",\n    ""summary_er"": ""Service resources are managed and accessed through Kubernetes API, interacting with pods.""\n  }\n]']","The chapter explains services in Kubernetes, enabling clients to discover and talk to pods. A service is exposed through an internal cluster IP that's only accessible from inside the cluster. The primary purpose of services is exposing groups of pods to other pods in the cluster. To test a service, one can send requests to it from within the cluster using various methods such as creating a pod, ssh-ing into a node, or executing a command in an existing pod using kubectl exec.","[{'highlight': 'The list shows that the IP address assigned to the service is 10.111.249.153.'}, {'highlight': 'You can send requests to your service from within the cluster in a few ways:'}, {'highlight': 'The kubectl exec command allows you to remotely run arbitrary commands inside an existing container of a pod.'}, {'highlight': 'List the pods with the kubectl get pods command and choose one as your target for the exec command'}, {'highlight': ""You've hit kubia-gzwli, If you’ve used ssh to execute commands on a remote system before, you’ll recognize that kubectl exec isn’t much different.""}]"
+68,157,0,[],"125
+Introducing services
+Let’s go over what transpired when you ran the command. Figure 5.3 shows the
+sequence of events. You instructed Kubernetes to execute the curl command inside the
+container of one of your pods. Curl sent an HTTP request to the service IP, which is
+backed by three pods. The Kubernetes service proxy intercepted the connection,
+selected a random pod among the three pods, and forwarded the request to it. Node.js
+running inside that pod then handled the request and returned an HTTP response con-
+taining the pod’s name. Curl then printed the response to the standard output, which
+was intercepted and printed to its standard output on your local machine by kubectl.
+Why the double dash?
+The double dash (--) in the command signals the end of command options for
+kubectl. Everything after the double dash is the command that should be executed
+inside the pod. Using the double dash isn’t necessary if the command has no
+arguments that start with a dash. But in your case, if you don’t use the double dash
+there, the -s option would be interpreted as an option for kubectl exec and would
+result in the following strange and highly misleading error:
+$ kubectl exec kubia-7nog1 curl -s http://10.111.249.153
+The connection to the server 10.111.249.153 was refused – did you 
+specify the right host or port?
+This has nothing to do with your service refusing the connection. It’s because
+kubectl is not able to connect to an API server at 10.111.249.153 (the -s option
+is used to tell kubectl to connect to a different API server than the default).
+3. Curl sends HTTP
+GET request
+4. Service redirects HTTP
+connection to a randomly
+selected pod
+2. Curl is executed
+inside the container
+running node.js
+6. The output of the
+command is sent
+curl
+back to kubectl and
+printed by it
+5. HTTP response is
+sent back to curl
+Pod: kubia-7nog1
+Container
+node.js
+curl http://
+10.111.249.153
+Pod: kubia-gzwli
+Container
+node.js
+Pod: kubia-5fje3
+Container
+node.js
+1. kubectl exec
+Service: kubia
+10.111.249.153:80
+Figure 5.3
+Using kubectl exec to test out a connection to the service by running curl in one of the pods
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'kubectl', 'description': 'Command-line tool for managing Kubernetes clusters', 'category': 'software'}, {'entity': 'curl', 'description': 'Command-line tool for transferring data with HTTP requests', 'category': 'software'}, {'entity': 'pod', 'description': 'Lightweight and ephemeral container in a Kubernetes cluster', 'category': 'container'}, {'entity': 'service', 'description': 'Abstraction layer that provides a stable network identity and load balancing for accessing pods', 'category': 'application'}, {'entity': 'node.js', 'description': 'JavaScript runtime environment for building scalable server-side applications', 'category': 'software'}, {'entity': 'HTTP request', 'description': 'Request sent from client to server using the HTTP protocol', 'category': 'network'}, {'entity': 'HTTP response', 'description': 'Response sent from server to client using the HTTP protocol', 'category': 'network'}, {'entity': 'API server', 'description': 'Server that provides a RESTful API for managing Kubernetes clusters', 'category': 'software'}, {'entity': '-s option', 'description': 'Option used with kubectl exec to specify an alternate API server', 'category': 'command'}, {'entity': '--', 'description': 'Double dash character used to signal the end of command options for kubectl', 'category': 'command'}]","[{'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""API server""'}, {'source_entity': '""curl""', 'description': 'sends', 'destination_entity': '""HTTP request""'}, {'source_entity': '""API server""', 'description': 'processes', 'destination_entity': '""HTTP request""'}, {'source_entity': '""API server""', 'description': 'returns', 'destination_entity': '""HTTP response""'}, {'source_entity': '""kubectl""', 'description': 'interacts with', 'destination_entity': '""service""'}, {'source_entity': '""node.js""', 'description': 'runs on', 'destination_entity': '""pod""'}, {'source_entity': '""curl""', 'description': 'uses', 'destination_entity': '""-s option""'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubectl interacts with a pod to execute commands, leveraging its API to manage containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sends"",\n    ""summary_er"": ""The curl command sends HTTP requests to a pod, which can be a container running on a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""processes"",\n    ""summary_er"": ""The API server executes processes within a pod, utilizing its resources to handle incoming requests.""\n  },\n  {\n    ""source"": ""HTTP request"",\n    ""destination"": ""API server"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""An HTTP request is sent to the API server, which then processes and responds accordingly.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""returns"",\n    ""summary_er"": ""The API server sends HTTP responses back to clients, which are handled by pods in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""HTTP response"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""Pods receive and process HTTP requests from clients, generating responses that are sent back to the API server.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""interacts with"",\n    ""summary_er"": ""\\""Kubectl\\"" is a command-line tool that interacts with Kubernetes resources, including pods.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""service"",\n    ""relation_description"": ""interacts with"",\n    ""summary_er"": ""\\""Kubectl\\"" is a command-line tool that interacts with Kubernetes services to manage and configure them.""\n  }\n]', '[\n  {\n    ""source"": ""node.js"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs on"",\n    ""summary_er"": ""Node.js executes its code within a containerized environment provided by a Pod, utilizing the pod\'s resources and infrastructure.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The curl command utilizes a pod to execute its operations, leveraging the pod\'s resources and environment.""\n  }\n]']","When running curl inside a pod using kubectl exec, Kubernetes proxies the connection to a random available pod among those backing the service. The double dash (--), signals the end of command options for kubectl and everything after it is executed within the pod. Without the double dash, the -s option would be interpreted as an option for kubectl, resulting in misleading errors.","[{'highlight': ""When you run the command 'kubectl exec' with a double dash (--), it signals the end of command options for kubectl and everything after the double dash is executed inside the pod.""}, {'highlight': ""The double dash in the command prevents kubectl from interpreting the '-s' option as an option for kubectl exec, which would result in a misleading error message.""}, {'highlight': ""When you run 'kubectl exec' with curl, it sends an HTTP GET request to the service IP, which is backed by three pods, and selects a random pod to forward the request to.""}, {'highlight': ""The output of the command is sent back to kubectl and printed by it, showing the response from the selected pod's node.js container.""}, {'highlight': 'The service IP is 10.111.249.153:80, which is backed by three pods (kubia-7nog1, kubia-gzwli, and kubia-5fje3) running the node.js container.'}]"
+69,158,0,[],"126
+CHAPTER 5
+Services: enabling clients to discover and talk to pods
+In the previous example, you executed the curl command as a separate process, but
+inside the pod’s main container. This isn’t much different from the actual main pro-
+cess in the container talking to the service.
+CONFIGURING SESSION AFFINITY ON THE SERVICE
+If you execute the same command a few more times, you should hit a different pod
+with every invocation, because the service proxy normally forwards each connection
+to a randomly selected backing pod, even if the connections are coming from the
+same client. 
+ If, on the other hand, you want all requests made by a certain client to be redi-
+rected to the same pod every time, you can set the service’s sessionAffinity property
+to ClientIP (instead of None, which is the default), as shown in the following listing.
+apiVersion: v1
+kind: Service             
+spec:
+  sessionAffinity: ClientIP
+  ...
+This makes the service proxy redirect all requests originating from the same client IP
+to the same pod. As an exercise, you can create an additional service with session affin-
+ity set to ClientIP and try sending requests to it.
+ Kubernetes supports only two types of service session affinity: None and ClientIP.
+You may be surprised it doesn’t have a cookie-based session affinity option, but you
+need to understand that Kubernetes services don’t operate at the HTTP level. Services
+deal with TCP and UDP packets and don’t care about the payload they carry. Because
+cookies are a construct of the HTTP protocol, services don’t know about them, which
+explains why session affinity cannot be based on cookies. 
+EXPOSING MULTIPLE PORTS IN THE SAME SERVICE
+Your service exposes only a single port, but services can also support multiple ports. For
+example, if your pods listened on two ports—let’s say 8080 for HTTP and 8443 for
+HTTPS—you could use a single service to forward both port 80 and 443 to the pod’s
+ports 8080 and 8443. You don’t need to create two different services in such cases. Using
+a single, multi-port service exposes all the service’s ports through a single cluster IP.
+NOTE
+When creating a service with multiple ports, you must specify a name
+for each port.
+The spec for a multi-port service is shown in the following listing.
+apiVersion: v1
+kind: Service             
+metadata:
+  name: kubia              
+Listing 5.2
+A example of a service with ClientIP session affinity configured
+Listing 5.3
+Specifying multiple ports in a service definition
+ 
+",[],"[{'entity': 'curl command', 'description': ""a separate process executed inside the pod's main container"", 'category': 'command'}, {'entity': 'service proxy', 'description': 'forwards each connection to a randomly selected backing pod', 'category': 'process'}, {'entity': 'sessionAffinity property', 'description': ""sets the service's session affinity to ClientIP or None"", 'category': 'property'}, {'entity': 'ClientIP', 'description': 'a value for the sessionAffinity property that redirects all requests from the same client IP to the same pod', 'category': 'value'}, {'entity': 'None', 'description': 'the default value for the sessionAffinity property', 'category': 'value'}, {'entity': 'Kubernetes services', 'description': ""don't operate at the HTTP level and don't care about the payload they carry"", 'category': 'application'}, {'entity': 'TCP packets', 'description': 'and UDP packets are handled by Kubernetes services', 'category': 'protocol'}, {'entity': 'HTTP protocol', 'description': ""cookies are a construct of the HTTP protocol and aren't known to Kubernetes services"", 'category': 'protocol'}, {'entity': 'cookies', 'description': ""a construct of the HTTP protocol that can't be used for session affinity in Kubernetes services"", 'category': 'construct'}, {'entity': 'ports', 'description': 'can be exposed by a service, including multiple ports', 'category': 'component'}, {'entity': 'cluster IP', 'description': ""a single cluster IP can expose all the service's ports through a single port"", 'category': 'network'}, {'entity': 'multi-port service', 'description': 'a service that exposes multiple ports, including HTTP and HTTPS', 'category': 'service'}, {'entity': 'ports 80 and 443', 'description': ""can be forwarded to the pod's ports 8080 and 8443 using a single multi-port service"", 'category': 'port'}, {'entity': ""pod's ports 8080 and 8443"", 'description': 'can be exposed through a single cluster IP using a multi-port service', 'category': 'port'}]","[{'source_entity': 'Kubernetes services', 'description': 'expose to external traffic', 'destination_entity': 'TCP packets'}, {'source_entity': 'service proxy', 'description': 'forward incoming requests', 'destination_entity': 'TCP packets'}, {'source_entity': 'curl command', 'description': 'send HTTP request to service', 'destination_entity': 'Kubernetes services'}, {'source_entity': 'ports 80 and 443', 'description': 'handle incoming requests', 'destination_entity': 'TCP packets'}, {'source_entity': 'multi-port service', 'description': 'expose multiple ports to external traffic', 'destination_entity': 'Kubernetes services'}, {'source_entity': ""pod's ports 8080 and 8443"", 'description': 'handle incoming requests from clients', 'destination_entity': 'TCP packets'}, {'source_entity': 'ClientIP', 'description': 'identify client IP address', 'destination_entity': 'Kubernetes services'}, {'source_entity': 'cookies', 'description': 'store session information', 'destination_entity': 'sessionAffinity property'}, {'source_entity': 'HTTP protocol', 'description': 'establish communication with service', 'destination_entity': 'Kubernetes services'}, {'source_entity': 'None', 'description': 'no session affinity', 'destination_entity': 'sessionAffinity property'}, {'source_entity': 'cluster IP', 'description': 'assign internal IP address to service', 'destination_entity': 'Kubernetes services'}]","['[\n  {\n    ""source"": ""Kubernetes services"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""expose to external traffic"",\n    ""summary_er"": ""Kubernetes services expose pods to external traffic, enabling communication between pods and external clients.""\n  }\n]', '[\n  {\n    ""source"": ""service proxy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""forward incoming requests"",\n    ""summary_er"": ""The service proxy forwards incoming requests to a specific pod, acting as an intermediary between the request and the pod\'s TCP packets.""\n  }\n]', '[\n  {\n    ""source"": ""curl command"",\n    ""destination"": ""Kubernetes services"",\n    ""relation_description"": ""send HTTP request to service"",\n    ""summary_er"": ""The curl command sends an HTTP request to a Kubernetes service, allowing for communication between the client and the service.""\n  }\n]', '[\n    {\n        ""source"": ""ports 80 and 443"",\n        ""destination"": ""pod"",\n        ""relation_description"": ""handle incoming requests"",\n        ""summary_er"": ""The Kubernetes service uses ports 80 and 443 to handle incoming HTTP requests from clients, routing them to the corresponding pod for processing.""\n    },\n    {\n        ""source"": ""TCP packets"",\n        ""destination"": ""ports 80 and 443"",\n        ""relation_description"": ""incoming requests"",\n        ""summary_er"": ""Incoming TCP packets are received on ports 80 and 443, which are then processed by the Kubernetes service to handle incoming HTTP requests.""\n    }\n]', '[\n  {\n    ""source"": ""multi-port service"",\n    ""destination"": ""Kubernetes services"",\n    ""relation_description"": ""expose multiple ports to external traffic"",\n    ""summary_er"": ""A multi-port service in Kubernetes exposes multiple ports to external traffic, allowing for communication with the service from outside the cluster.""\n  }\n]', '[\n    {\n        ""source"": ""Pod"",\n        ""destination"": ""TCP Packets"",\n        ""relation_description"": ""handle incoming requests from clients"",\n        ""summary_er"": ""A Pod\'s ports 8080 and 8443 receive TCP packets to handle incoming client requests.""\n    }\n]', '[\n  {\n    ""source"": ""ClientIP"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""identify client IP address"",\n    ""summary_er"": ""The ClientIP entity identifies the IP address of a client, which is used to determine the destination pod in Kubernetes services.""\n  }\n]', '[\n  {\n    ""source"": ""cookies"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""store session information"",\n    ""summary_er"": ""Cookies are used to store session information, which is then utilized by a pod to maintain user sessions.""\n  }\n]', '[\n  {\n    ""source"": ""HTTP protocol"",\n    ""destination"": ""Kubernetes services"",\n    ""relation_description"": ""establish communication with service"",\n    ""summary_er"": ""The HTTP protocol enables Kubernetes services to establish communication with each other, facilitating data exchange and interaction between pods.""\n  }\n]', '[\n  {\n    ""source"": ""None"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""no session affinity"",\n    ""summary_er"": ""The \'sessionAffinity\' property is set to None, indicating that Kubernetes does not maintain any session affinity between a pod and its connections.""\n  }\n]', '[\n  {\n    ""source"": ""cluster IP"",\n    ""destination"": ""Kubernetes services"",\n    ""relation_description"": ""assign internal IP address to service"",\n    ""summary_er"": ""A cluster IP is assigned to a Kubernetes service, allowing it to communicate with pods within the same cluster.""\n  }\n]']","This chapter discusses services in Kubernetes, enabling clients to discover and talk to pods. Session affinity can be set to either None or ClientIP, redirecting requests from the same client IP to the same pod. Services can also support multiple ports, exposing all ports through a single cluster IP, with each port requiring a specified name.","[{'highlight': ""To redirect all requests made by a certain client to be redirected to the same pod every time, you can set the service's sessionAffinity property to ClientIP.""}, {'highlight': ""Kubernetes supports only two types of service session affinity: None and ClientIP. Services don't operate at the HTTP level and deal with TCP and UDP packets.""}, {'highlight': ""Services can also support multiple ports, for example, exposing port 80 and 443 to the pod's ports 8080 and 8443 through a single cluster IP.""}, {'highlight': 'When creating a service with multiple ports, you must specify a name for each port in the spec definition.'}, {'highlight': ""Kubernetes services don't know about HTTP protocol constructs like cookies, which explains why session affinity cannot be based on cookies.""}]"

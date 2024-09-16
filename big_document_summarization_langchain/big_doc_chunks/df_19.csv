@@ -1,0 +1,539 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+190,279,0,[],"247
+Talking to the Kubernetes API server
+Ruby—https:/
+/github.com/Ch00k/kubr
+Another Ruby client—https:/
+/github.com/abonas/kubeclient
+Clojure—https:/
+/github.com/yanatan16/clj-kubernetes-api
+Scala—https:/
+/github.com/doriordan/skuber
+Perl—https:/
+/metacpan.org/pod/Net::Kubernetes
+These libraries usually support HTTPS and take care of authentication, so you won’t
+need to use the ambassador container. 
+AN EXAMPLE OF INTERACTING WITH KUBERNETES WITH THE FABRIC8 JAVA CLIENT
+To give you a sense of how client libraries enable you to talk to the API server, the fol-
+lowing listing shows an example of how to list services in a Java app using the Fabric8
+Kubernetes client.
+import java.util.Arrays;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodList;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClient;
+public class Test {
+  public static void main(String[] args) throws Exception {
+    KubernetesClient client = new DefaultKubernetesClient();
+    // list pods in the default namespace
+    PodList pods = client.pods().inNamespace(""default"").list();
+    pods.getItems().stream()
+      .forEach(s -> System.out.println(""Found pod: "" +
+               s.getMetadata().getName()));
+    // create a pod
+    System.out.println(""Creating a pod"");
+    Pod pod = client.pods().inNamespace(""default"")
+      .createNew()
+      .withNewMetadata()
+        .withName(""programmatically-created-pod"")
+      .endMetadata()
+      .withNewSpec()
+        .addNewContainer()
+          .withName(""main"")
+          .withImage(""busybox"")
+          .withCommand(Arrays.asList(""sleep"", ""99999""))
+        .endContainer()
+      .endSpec()
+      .done();
+    System.out.println(""Created pod: "" + pod);
+    // edit the pod (add a label to it)
+    client.pods().inNamespace(""default"")
+      .withName(""programmatically-created-pod"")
+      .edit()
+      .editMetadata()
+Listing 8.17
+Listing, creating, updating, and deleting pods with the Fabric8 Java client
+ 
+",[],"[{'entity': 'Ruby', 'description': 'A programming language', 'category': 'software'}, {'entity': 'https://github.com/Ch00k/kubr', 'description': 'A Ruby client library for Kubernetes', 'category': 'software'}, {'entity': 'Another Ruby client', 'description': 'A Ruby client library for Kubernetes', 'category': 'software'}, {'entity': 'https://github.com/abonas/kubeclient', 'description': 'A Ruby client library for Kubernetes', 'category': 'software'}, {'entity': 'Clojure', 'description': 'A programming language', 'category': 'software'}, {'entity': 'https://github.com/yanatan16/clj-kubernetes-api', 'description': 'A Clojure client library for Kubernetes', 'category': 'software'}, {'entity': 'Scala', 'description': 'A programming language', 'category': 'software'}, {'entity': 'https://github.com/doriordan/skuber', 'description': 'A Scala client library for Kubernetes', 'category': 'software'}, {'entity': 'Perl', 'description': 'A programming language', 'category': 'software'}, {'entity': 'https://metacpan.org/pod/Net::Kubernetes', 'description': 'A Perl client library for Kubernetes', 'category': 'software'}, {'entity': 'Fabric8 Java Client', 'description': 'A Java client library for Kubernetes', 'category': 'software'}, {'entity': 'io.fabric8.kubernetes.api.model.Pod', 'description': 'A Kubernetes Pod object', 'category': 'software'}, {'entity': 'io.fabric8.kubernetes.api.model.PodList', 'description': 'A list of Kubernetes Pods', 'category': 'software'}, {'entity': 'DefaultKubernetesClient', 'description': 'A default Kubernetes client', 'category': 'software'}, {'entity': 'KubernetesClient', 'description': 'A Kubernetes client interface', 'category': 'software'}, {'entity': 'pods', 'description': 'A list of Kubernetes Pods', 'category': 'software'}, {'entity': 'inNamespace', 'description': 'A method to get pods in a specific namespace', 'category': 'software'}, {'entity': 'list', 'description': 'A method to list pods', 'category': 'software'}, {'entity': 'getItems', 'description': 'A method to get the items in a pod list', 'category': 'software'}, {'entity': 'stream', 'description': 'A method to stream the results of an operation', 'category': 'software'}, {'entity': 'forEach', 'description': 'A method to iterate over a collection', 'category': 'software'}, {'entity': 'getMetadata', 'description': 'A method to get the metadata of an object', 'category': 'software'}, {'entity': 'getName', 'description': 'A method to get the name of an object', 'category': 'software'}, {'entity': 'createNew', 'description': 'A method to create a new pod', 'category': 'software'}, {'entity': 'withName', 'description': 'A method to set the name of an object', 'category': 'software'}, {'entity': 'edit', 'description': 'A method to edit an existing pod', 'category': 'software'}, {'entity': 'withName', 'description': 'A method to set the name of an object', 'category': 'software'}]","[{'source_entity': '""io.fabric8.kubernetes.api.model.Pod""', 'description': 'is a Kubernetes API object', 'destination_entity': '""inNamespace""'}, {'source_entity': '""DefaultKubernetesClient""', 'description': 'provides a client for interacting with the Kubernetes API', 'destination_entity': '""io.fabric8.kubernetes.api.model.Pod""'}, {'source_entity': '""Fabric8 Java Client""', 'description': 'is a Java client library for interacting with the Kubernetes API', 'destination_entity': '""DefaultKubernetesClient""'}, {'source_entity': '""io.fabric8.kubernetes.api.model.PodList""', 'description': 'is a list of io.fabric8.kubernetes.api.model.Pod objects', 'destination_entity': '""forEach""'}, {'source_entity': '""getName""', 'description': 'returns the name of an io.fabric8.kubernetes.api.model.Pod object', 'destination_entity': '""io.fabric8.kubernetes.api.model.Pod""'}, {'source_entity': '""https://metacpan.org/pod/Net::Kubernetes""', 'description': 'is a Perl client library for interacting with the Kubernetes API', 'destination_entity': '""list""'}, {'source_entity': '""Another Ruby client""', 'description': 'is a Ruby client library for interacting with the Kubernetes API', 'destination_entity': '""https://github.com/Ch00k/kubr""'}, {'source_entity': '""withName""', 'description': 'returns an io.fabric8.kubernetes.api.model.Pod object by name', 'destination_entity': '""io.fabric8.kubernetes.api.model.PodList""'}, {'source_entity': '""https://github.com/yanatan16/clj-kubernetes-api""', 'description': 'is a Clojure client library for interacting with the Kubernetes API', 'destination_entity': '""KubernetesClient""'}, {'source_entity': '""edit""', 'description': 'edits an io.fabric8.kubernetes.api.model.Pod object', 'destination_entity': '""io.fabric8.kubernetes.api.model.Pod""'}, {'source_entity': '""pods""', 'description': 'returns a list of io.fabric8.kubernetes.api.model.Pod objects', 'destination_entity': '""list""'}, {'source_entity': '""Clojure""', 'description': 'is a programming language used to interact with the Kubernetes API', 'destination_entity': '""https://github.com/yanatan16/clj-kubernetes-api""'}, {'source_entity': '""stream""', 'description': 'returns an io.fabric8.kubernetes.api.model.Pod object as a stream', 'destination_entity': '""io.fabric8.kubernetes.api.model.PodList""'}, {'source_entity': '""https://github.com/abonas/kubeclient""', 'description': 'is a Scala client library for interacting with the Kubernetes API', 'destination_entity': '""getMetadata""'}, {'source_entity': '""createNew""', 'description': 'creates a new io.fabric8.kubernetes.api.model.Pod object', 'destination_entity': '""io.fabric8.kubernetes.api.model.PodList""'}, {'source_entity': '""getItems""', 'description': 'returns a list of io.fabric8.kubernetes.api.model.Pod objects', 'destination_entity': '""list""'}, {'source_entity': '""Scala""', 'description': 'is a programming language used to interact with the Kubernetes API', 'destination_entity': '""https://github.com/abonas/kubeclient""'}]","['[\n  {\n    ""source"": ""io.fabric8.kubernetes.api.model.Pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a Kubernetes API object"",\n    ""summary_er"": ""A Pod is a Kubernetes API object that represents a logical host for one or more application containers.""\n  },\n  {\n    ""source"": ""io.fabric8.kubernetes.api.model.Pod"",\n    ""destination"": ""inNamespace"",\n    ""relation_description"": ""property of a pod"",\n    ""summary_er"": ""The inNamespace property of a Pod specifies the namespace where the Pod is running.""\n  }\n]', '[\n  {\n    ""source"": ""DefaultKubernetesClient"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides a client for interacting with the Kubernetes API"",\n    ""summary_er"": ""The DefaultKubernetesClient provides an interface to interact with Kubernetes pods.""\n  }\n]', '[\n  {\n    ""source"": ""Fabric8 Java Client"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a client library for interacting with the Kubernetes API"",\n    ""summary_er"": ""The Fabric8 Java Client is used to interact with Kubernetes pods.""\n  },\n  {\n    ""source"": ""DefaultKubernetesClient"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""default client for interacting with the Kubernetes API"",\n    ""summary_er"": ""The DefaultKubernetesClient is a default client for interacting with Kubernetes pods.""\n  }\n]', '[\n  {\n    ""source"": ""io.fabric8.kubernetes.api.model.PodList"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a list of io.fabric8.kubernetes.api.model.Pod objects"",\n    ""summary_er"": ""PodList is a collection of Pod objects, each representing a running container in Kubernetes.""\n  },\n  {\n    ""source"": ""io.fabric8.kubernetes.api.model.PodList"",\n    ""destination"": ""forEach"",\n    ""relation_description"": ""iterates over the list of Pods"",\n    ""summary_er"": ""The forEach operation iterates over the PodList, allowing for processing or manipulation of each individual Pod.""\n  }\n]', '[\n  {\n    ""source"": ""getName"",\n    ""destination"": ""io.fabric8.kubernetes.api.model.Pod"",\n    ""relation_description"": ""returns the name of an io.fabric8.kubernetes.api.model.Pod object"",\n    ""summary_er"": ""This method retrieves the name attribute from a Pod object, providing its identifier.""\n  }\n]', '[\n  {\n    ""source"": ""Net::Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a Perl client library for interacting with the Kubernetes API"",\n    ""summary_er"": ""Perl client library interacts with Kubernetes API to manage pods.""\n  },\n  {\n    ""source"": ""Net::Kubernetes"",\n    ""destination"": ""list"",\n    ""relation_description"": ""is a Perl client library for interacting with the Kubernetes API"",\n    ""summary_er"": ""Perl client library uses list method to interact with Kubernetes API.""\n  }\n]', '[\n  {\n    ""source"": ""Another Ruby client"",\n    ""destination"": ""Kubernetes API"",\n    ""relation_description"": ""Ruby client library for interacting with"",\n    ""summary_er"": ""A Ruby client library enables interaction with the Kubernetes API, allowing developers to manage and control cluster resources.""\n  },\n  {\n    ""source"": ""Another Ruby client"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""interacting with the Kubernetes API"",\n    ""summary_er"": ""The Another Ruby client interacts with pods in a Kubernetes cluster, enabling management and control of containerized applications.""\n  },\n  {\n    ""source"": ""https://github.com/Ch00k/kubr"",\n    ""destination"": ""Kubernetes API"",\n    ""relation_description"": ""Ruby client library for interacting with"",\n    ""summary_er"": ""The kubr Ruby client library provides a way to interact with the Kubernetes API, enabling developers to manage and control cluster resources.""\n  },\n  {\n    ""source"": ""https://github.com/Ch00k/kubr"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""interacting with the Kubernetes API"",\n    ""summary_er"": ""The kubr Ruby client library interacts with pods in a Kubernetes cluster, enabling management and control of containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""io.fabric8.kubernetes.api.model.Pod"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""returns an io.fabric8.kubernetes.api.model.Pod object by name"",\n    ""summary_er"": ""Retrieves a Pod object from Kubernetes API using its name.""\n  },\n  {\n    ""source"": ""io.fabric8.kubernetes.api.model.PodList"",\n    ""destination"": ""PodList"",\n    ""relation_description"": ""list of all Pods in the cluster"",\n    ""summary_er"": ""Lists all available Pods in the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""https://github.com/yanatan16/clj-kubernetes-api"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a Clojure client library for interacting with the Kubernetes API"",\n    ""summary_er"": ""This library provides a Clojure interface to interact with Kubernetes APIs, allowing for management of pods and other resources.""\n  }\n]', '[\n  {\n    ""source"": ""edit"",\n    ""destination"": ""io.fabric8.kubernetes.api.model.Pod"",\n    ""relation_description"": ""edits an io.fabric8.kubernetes.api.model.Pod object"",\n    ""summary_er"": ""The edit operation modifies a Pod object in Kubernetes, updating its properties.""\n  }\n]', '[\n  {\n    ""source"": ""pods"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""returns a list of io.fabric8.kubernetes.api.model.Pod objects"",\n    ""summary_er"": ""Retrieves a list of pods in Kubernetes, returning Pod objects.""\n  },\n  {\n    ""source"": ""list"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""list"",\n    ""summary_er"": ""Lists all pods in the cluster, displaying their details.""\n  }\n]', '[\n  {\n    ""source"": ""Clojure"",\n    ""destination"": ""Kubernetes API"",\n    ""relation_description"": ""is used to interact with"",\n    ""summary_er"": ""Clojure is a programming language that interacts with the Kubernetes API.""\n  },\n  {\n    ""source"": ""Clojure"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to interact with"",\n    ""summary_er"": ""Clojure is a programming language used to interact with pods in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""stream"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""returns an io.fabric8.kubernetes.api.model.Pod object as a stream"",\n    ""summary_er"": ""A Kubernetes Pod can be retrieved from a stream using this method.""\n  },\n  {\n    ""source"": ""io.fabric8.kubernetes.api.model.PodList"",\n    ""destination"": ""pod_list"",\n    ""relation_description"": ""a list of io.fabric8.kubernetes.api.model.Pod objects"",\n    ""summary_er"": ""A collection of Kubernetes Pods can be retrieved as a list using this method.""\n  }\n]', '[\n  {\n    ""source"": ""kubeclient"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a Scala client library for interacting with the Kubernetes API"",\n    ""summary_er"": ""The kubeclient is a Scala library that interacts with the Kubernetes API to manage pods.""\n  },\n  {\n    ""source"": ""kubeclient"",\n    ""destination"": ""getMetadata"",\n    ""relation_description"": ""is a method in the pod object"",\n    ""summary_er"": ""The getMetadata method in the pod object retrieves metadata from kubeclient.""\n  }\n]', '[\n  {\n    ""source"": ""createNew"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates a new io.fabric8.kubernetes.api.model.Pod object"",\n    ""summary_er"": ""The \'createNew\' operation generates a new Pod object in Kubernetes, allowing for the creation of a containerized application instance.""\n  },\n  {\n    ""source"": ""createNew"",\n    ""destination"": ""io.fabric8.kubernetes.api.model.PodList"",\n    ""relation_description"": ""creates a new io.fabric8.kubernetes.api.model.Pod object"",\n    ""summary_er"": ""The \'createNew\' operation can also create a new PodList object, which is a collection of Pods in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""getItems"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""returns a list of io.fabric8.kubernetes.api.model.Pod objects"",\n    ""summary_er"": ""The getItems function returns a list of Pod objects, which represent running containers in Kubernetes.""\n  },\n  {\n    ""source"": ""list"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""list"",\n    ""summary_er"": ""The list function is used to retrieve a list of Pods in the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Scala"",\n    ""destination"": ""Kubernetes API"",\n    ""relation_description"": ""is used to interact with"",\n    ""summary_er"": ""Scala is a programming language that interacts with the Kubernetes API.""\n  },\n  {\n    ""source"": ""Scala"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to interact with"",\n    ""summary_er"": ""Scala is a programming language that interacts with pods in Kubernetes.""\n  },\n  {\n    ""source"": ""Kubernetes API"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""The Kubernetes API manages and orchestrates the lifecycle of pods.""\n  }\n]']","The page discusses interacting with the Kubernetes API server using various client libraries such as Ruby, Clojure, Scala, Perl, and Java (Fabric8 client). It provides examples of how to list services, create, edit, and delete pods in a Java app using the Fabric8 client, highlighting the simplicity and efficiency of these interactions.","[{'highlight': 'Kubernetes API server can be interacted with using various client libraries in different programming languages such as Ruby, Clojure, Scala, Perl, and Java.'}]"
+191,280,0,[],"248
+CHAPTER 8
+Accessing pod metadata and other resources from applications
+        .addToLabels(""foo"", ""bar"")
+      .endMetadata()
+      .done();
+    System.out.println(""Added label foo=bar to pod"");
+    System.out.println(""Waiting 1 minute before deleting pod..."");
+    Thread.sleep(60000);
+    // delete the pod
+    client.pods().inNamespace(""default"")
+      .withName(""programmatically-created-pod"")
+      .delete();
+    System.out.println(""Deleted the pod"");
+  }
+}
+The code should be self-explanatory, especially because the Fabric8 client exposes
+a nice, fluent Domain-Specific-Language (DSL) API, which is easy to read and
+understand.
+BUILDING YOUR OWN LIBRARY WITH SWAGGER AND OPENAPI
+If no client is available for your programming language of choice, you can use the
+Swagger API framework to generate the client library and documentation. The Kuber-
+netes API server exposes Swagger API definitions at /swaggerapi and OpenAPI spec at
+/swagger.json. 
+ To find out more about the Swagger framework, visit the website at http:/
+/swagger.io.
+EXPLORING THE API WITH SWAGGER UI
+Earlier in the chapter I said I’d point you to a better way of exploring the REST API
+instead of hitting the REST endpoints with curl. Swagger, which I mentioned in the
+previous section, is not just a tool for specifying an API, but also provides a web UI for
+exploring REST APIs if they expose the Swagger API definitions. The better way of
+exploring REST APIs is through this UI.
+ Kubernetes not only exposes the Swagger API, but it also has Swagger UI inte-
+grated into the API server, though it’s not enabled by default. You can enable it by
+running the API server with the --enable-swagger-ui=true option.
+TIP
+If you’re using Minikube, you can enable Swagger UI when starting the
+cluster: minikube start --extra-config=apiserver.Features.Enable-
+SwaggerUI=true
+After you enable the UI, you can open it in your browser by pointing it to:
+http(s)://<api server>:<port>/swagger-ui
+I urge you to give Swagger UI a try. It not only allows you to browse the Kubernetes
+API, but also interact with it (you can POST JSON resource manifests, PATCH resources,
+or DELETE them, for example). 
+ 
+",[],"[{'entity': 'addToLabels', 'description': 'A method to add labels to a pod', 'category': 'command'}, {'entity': 'endMetadata', 'description': 'A method to end metadata for a pod', 'category': 'command'}, {'entity': 'done', 'description': 'A method to indicate the completion of an operation', 'category': 'command'}, {'entity': 'System.out.println', 'description': 'A statement to print output to the console', 'category': 'statement'}, {'entity': 'Thread.sleep', 'description': 'A method to pause execution for a specified time', 'category': 'method'}, {'entity': 'client.pods().inNamespace', 'description': 'A method to access pods in a specific namespace', 'category': 'command'}, {'entity': 'withName', 'description': 'A method to specify the name of a pod', 'category': 'command'}, {'entity': 'delete', 'description': 'A method to delete a pod', 'category': 'command'}, {'entity': 'Swagger API', 'description': 'An API framework for generating client libraries and documentation', 'category': 'framework'}, {'entity': 'OpenAPI spec', 'description': 'A specification for defining APIs in a machine-readable format', 'category': 'specification'}, {'entity': 'Swagger UI', 'description': 'A web-based interface for exploring and interacting with REST APIs', 'category': 'interface'}, {'entity': 'Kubernetes API server', 'description': 'The server that exposes the Kubernetes API', 'category': 'server'}, {'entity': 'Minikube', 'description': 'A tool for running a local copy of a Kubernetes cluster', 'category': 'tool'}]","[{'source_entity': '""Kubernetes API server""', 'description': 'exposes', 'destination_entity': '""OpenAPI spec""'}, {'source_entity': '""Kubernetes API server""', 'description': 'provides', 'destination_entity': '""Swagger API""'}, {'source_entity': '""client.pods().inNamespace""', 'description': 'returns', 'destination_entity': '""list of pods""'}, {'source_entity': '""withName""', 'description': 'labels', 'destination_entity': '""pod""'}, {'source_entity': '""addToLabels""', 'description': 'adds', 'destination_entity': '""label to pod""'}, {'source_entity': '""endMetadata""', 'description': 'returns', 'destination_entity': '""metadata of pod""'}, {'source_entity': '""delete""', 'description': 'deletes', 'destination_entity': '""pod""'}, {'source_entity': '""Thread.sleep""', 'description': 'pauses', 'destination_entity': '""execution of thread""'}]","['[\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""The Kubernetes API server exposes a pod, making it accessible to clients and enabling communication with the container runtime.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The Kubernetes API server provides a pod, which is a basic execution unit in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes API"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""Client to list pods"",\n    ""summary_er"": ""The Kubernetes API client returns a list of pods in a specified namespace.""\n  }\n]', '[\n  {\n    ""source"": ""withName"",\n    ""destination"": ""labels"",\n    ""relation_description"": ""the relation description:"",\n    ""summary_er"": ""The \'withName\' field specifies a label for a Kubernetes object, such as a pod or service.""\n  },\n  {\n    ""source"": ""withName"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""the destination"",\n    ""summary_er"": ""A pod is the basic execution unit in a Kubernetes cluster, containing one or more application containers.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""adds label to"",\n    ""summary_er"": ""In Kubernetes, adding a label to a pod allows for easy filtering and organization of pods based on specific characteristics.""\n  }\n]', '[\n  {\n    ""source"": ""endMetadata"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""returns metadata of"",\n    ""summary_er"": ""The endMetadata relation returns metadata about a pod, including its configuration and status.""\n  }\n]', '[\n  {\n    ""source"": ""delete"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deletes"",\n    ""summary_er"": ""The delete command removes a pod from the Kubernetes cluster, deleting its associated resources.""\n  }\n]', '[\n  {\n    ""source"": ""Thread"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""pauses"",\n    ""summary_er"": ""A thread in a Kubernetes Pod pauses its execution, temporarily halting its processing.""\n  }\n]']","The chapter discusses accessing pod metadata and other resources from applications using the Fabric8 client's fluent DSL API. If no client is available, you can use Swagger to generate a client library and documentation. The Kubernetes API server exposes Swagger definitions at /swaggerapi and OpenAPI spec at /swagger.json. You can explore the API with Swagger UI, which provides a web interface for interacting with REST APIs.","[{'highlight': 'The Fabric8 client exposes a nice, fluent Domain-Specific-Language (DSL) API, which is easy to read and understand.'}, {'highlight': 'You can use the Swagger API framework to generate the client library and documentation if no client is available for your programming language of choice.'}, {'highlight': 'Swagger UI provides a web UI for exploring REST APIs if they expose the Swagger API definitions, allowing you to browse and interact with the Kubernetes API.'}, {'highlight': ""You can enable Swagger UI in Minikube by running 'minikube start --extra-config=apiserver.Features.Enable-SwaggerUI=true' when starting the cluster.""}, {'highlight': 'Swagger UI allows you to POST JSON resource manifests, PATCH resources, or DELETE them, providing a convenient way to interact with the Kubernetes API.'}]"
+192,281,0,[],"249
+Summary
+8.3
+Summary
+After reading this chapter, you now know how your app, running inside a pod, can get
+data about itself, other pods, and other components deployed in the cluster. You’ve
+learned
+How a pod’s name, namespace, and other metadata can be exposed to the pro-
+cess either through environment variables or files in a downwardAPI volume
+How CPU and memory requests and limits are passed to your app in any unit
+the app requires
+How a pod can use downwardAPI volumes to get up-to-date metadata, which
+may change during the lifetime of the pod (such as labels and annotations) 
+How you can browse the Kubernetes REST API through kubectl proxy
+How pods can find the API server’s location through environment variables or
+DNS, similar to any other Service defined in Kubernetes
+How an application running in a pod can verify that it’s talking to the API
+server and how it can authenticate itself
+How using an ambassador container can make talking to the API server from
+within an app much simpler
+How client libraries can get you interacting with Kubernetes in minutes
+In this chapter, you learned how to talk to the API server, so the next step is learning
+more about how it works. You’ll do that in chapter 11, but before we dive into such
+details, you still need to learn about two other Kubernetes resources—Deployments
+and StatefulSets. They’re explained in the next two chapters.
+ 
+",[],"[{'entity': 'pod', 'description': 'A pod is a logical host for one or more application containers.', 'category': 'container'}, {'entity': 'namespace', 'description': 'A namespace is a way to group resources together.', 'category': 'resource'}, {'entity': 'metadata', 'description': 'Metadata refers to data about the pod, such as its name and labels.', 'category': 'data'}, {'entity': 'environment variables', 'description': 'Environment variables are used to expose metadata to the process running in the pod.', 'category': 'process'}, {'entity': 'downwardAPI volume', 'description': 'A downwardAPI volume is a way for a pod to get up-to-date metadata from the API server.', 'category': 'volume'}, {'entity': 'CPU requests and limits', 'description': 'CPU requests and limits refer to the amount of CPU resources allocated to a pod.', 'category': 'resource'}, {'entity': 'memory requests and limits', 'description': 'Memory requests and limits refer to the amount of memory resources allocated to a pod.', 'category': 'resource'}, {'entity': 'labels', 'description': 'Labels are used to identify and select pods in the cluster.', 'category': 'metadata'}, {'entity': 'annotations', 'description': 'Annotations are used to add additional metadata to pods.', 'category': 'metadata'}, {'entity': 'API server', 'description': 'The API server is a component of the Kubernetes control plane that provides an interface for interacting with the cluster.', 'category': 'component'}, {'entity': 'kubectl proxy', 'description': 'kubectl proxy is a command-line tool used to browse the Kubernetes REST API.', 'category': 'tool'}, {'entity': 'DNS', 'description': 'DNS (Domain Name System) is used to resolve service names to IP addresses.', 'category': 'networking'}, {'entity': 'Service', 'description': 'A Service is an abstraction that provides a network identity and load balancing for accessing applications in the cluster.', 'category': 'resource'}, {'entity': 'ambassador container', 'description': 'An ambassador container is a special container used to make it easier to talk to the API server from within an application.', 'category': 'container'}, {'entity': 'client libraries', 'description': 'Client libraries are pre-built libraries that provide a simple interface for interacting with Kubernetes.', 'category': 'library'}]","[{'source_entity': '""CPU requests and limits""', 'description': 'can be set for a pod', 'destination_entity': '""pod""'}, {'source_entity': '""memory requests and limits""', 'description': 'can be set for a pod', 'destination_entity': '""pod""'}, {'source_entity': '""labels""', 'description': 'are used to identify and select pods', 'destination_entity': '""pod""'}, {'source_entity': '""metadata""', 'description': 'contains information about a pod, such as its name and namespace', 'destination_entity': '""pod""'}, {'source_entity': '""Service""', 'description': ""can be used to access a pod's API server"", 'destination_entity': '""API server""'}, {'source_entity': '""environment variables""', 'description': 'can be set for an ambassador container', 'destination_entity': '""ambassador container""'}, {'source_entity': '""annotations""', 'description': 'are used to add metadata to a pod or service', 'destination_entity': '""pod""'}, {'source_entity': '""downwardAPI volume""', 'description': 'can be used to provide configuration data to an ambassador container', 'destination_entity': '""ambassador container""'}, {'source_entity': '""client libraries""', 'description': 'are available for various programming languages to interact with the API server', 'destination_entity': '""API server""'}, {'source_entity': '""DNS""', 'description': ""can be used to access a service's IP address"", 'destination_entity': '""Service""'}, {'source_entity': '""kubectl proxy""', 'description': 'can be used to access the API server from within a pod', 'destination_entity': '""API server""'}]","['[\n  {\n    ""source"": ""CPU requests and limits"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be set for a pod"",\n    ""summary_er"": ""CPU resource allocation settings can be configured for a pod, allowing for efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""memory requests and limits"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be set for a pod"",\n    ""summary_er"": ""Memory requests and limits can be configured for a pod to manage resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""labels"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to identify and select pods"",\n    ""summary_er"": ""Labels are metadata that help identify and filter pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""metadata"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains information about a pod"",\n    ""summary_er"": ""The metadata contains details about a pod, including its name and namespace.""\n  }\n]', '[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""can be used to access a pod\'s API server"",\n    ""summary_er"": ""A Service provides a stable network identity and load balancing for accessing a Pod\'s API server, ensuring consistent communication with the container.""\n  }\n]', '[\n  {\n    ""source"": ""Environment Variables"",\n    ""destination"": ""Ambassador Container"",\n    ""relation_description"": ""can be set for an ambassador container and the destination pod"",\n    ""summary_er"": ""Environment variables can be configured to influence both the ambassador container and its corresponding pod, enabling dynamic interactions between them.""\n  }\n]', '[\n  {\n    ""source"": ""annotations"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to add metadata to a pod or service"",\n    ""summary_er"": ""Annotations are key-value pairs that provide additional information about a pod, allowing for customization and extension of its functionality.""\n  }\n]', '[\n  {\n    ""source"": ""Downward API Volume"",\n    ""destination"": ""Ambassador Container"",\n    ""relation_description"": ""Configuration Data"",\n    ""summary_er"": ""The Downward API Volume provides configuration data to both an Ambassador Container and a Destination Pod.""\n  }\n]', '[\n  {\n    ""source"": ""client libraries"",\n    ""destination"": ""API server"",\n    ""relation_description"": ""are available for various programming languages to interact with the API server"",\n    ""summary_er"": ""Client libraries enable interaction between various programming languages and the API server, facilitating communication.""\n  },\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""interact with the API server"",\n    ""summary_er"": ""The API server interacts with a pod to facilitate communication and data exchange.""\n  }\n]', '[\n  {\n    ""source"": ""DNS"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""can be used to access a service\'s IP address"",\n    ""summary_er"": ""A DNS can resolve to a pod, allowing access to its IP address.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl proxy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be used to access the API server from within a pod"",\n    ""summary_er"": ""Kubectl proxy allows accessing the API server from within a pod, enabling communication between the pod and the API server.""\n  }\n]']","You now know how your app running inside a pod can get data about itself, other pods, and components deployed in the cluster through environment variables or downwardAPI volumes. You've learned to access CPU and memory requests, browse the Kubernetes REST API, find the API server's location, authenticate yourself, and use client libraries to interact with Kubernetes.","[{'highlight': ""A pod's name, namespace, and other metadata can be exposed to the process either through environment variables or files in a downwardAPI volume.""}, {'highlight': 'CPU and memory requests and limits are passed to your app in any unit the app requires'}, {'highlight': 'Pods can use downwardAPI volumes to get up-to-date metadata, which may change during the lifetime of the pod (such as labels and annotations)'}, {'highlight': ""An application running in a pod can verify that it's talking to the API server and how it can authenticate itself""}, {'highlight': 'Client libraries can get you interacting with Kubernetes in minutes'}]"
+193,282,0,[],"250
+Deployments: updating
+applications declaratively
+You now know how to package your app components into containers, group them
+into pods, provide them with temporary or permanent storage, pass both secret
+and non-secret config data to them, and allow pods to find and talk to each other.
+You know how to run a full-fledged system composed of independently running
+smaller components—microservices, if you will. Is there anything else? 
+ Eventually, you’re going to want to update your app. This chapter covers how to
+update apps running in a Kubernetes cluster and how Kubernetes helps you move
+toward a true zero-downtime update process. Although this can be achieved using
+only ReplicationControllers or ReplicaSets, Kubernetes also provides a Deployment
+This chapter covers
+Replacing pods with newer versions
+Updating managed pods
+Updating pods declaratively using Deployment 
+resources
+Performing rolling updates
+Automatically blocking rollouts of bad versions
+Controlling the rate of the rollout
+Reverting pods to a previous version
+ 
+",[],"[{'entity': 'Deployments', 'description': 'a Kubernetes resource for managing applications', 'category': 'software'}, {'entity': 'applications', 'description': 'software programs that perform specific tasks', 'category': 'application'}, {'entity': 'containers', 'description': 'lightweight and standalone execution environments', 'category': 'container'}, {'entity': 'pods', 'description': 'the basic execution unit in Kubernetes, a group of one or more containers', 'category': 'container'}, {'entity': 'storage', 'description': 'temporary or permanent storage for pods', 'category': 'hardware'}, {'entity': 'config data', 'description': 'secret and non-secret configuration data passed to pods', 'category': 'software'}, {'entity': 'microservices', 'description': 'smaller components that make up a full-fledged system', 'category': 'application'}, {'entity': 'ReplicationControllers', 'description': 'a Kubernetes resource for managing replicas of pods', 'category': 'software'}, {'entity': 'ReplicaSets', 'description': 'a Kubernetes resource for managing replicas of pods, similar to ReplicationControllers', 'category': 'software'}, {'entity': 'Deployment resources', 'description': 'Kubernetes resources used by Deployments to manage applications', 'category': 'software'}, {'entity': 'rolling updates', 'description': 'the process of updating pods with newer versions while minimizing downtime', 'category': 'process'}, {'entity': 'rollouts', 'description': 'the process of deploying new versions of an application', 'category': 'process'}, {'entity': 'reverting', 'description': 'the process of reverting pods to a previous version', 'category': 'process'}]","[{'source_entity': '""Deployments""', 'description': 'are used to manage and update', 'destination_entity': '""pods""'}, {'source_entity': '""Deployments""', 'description': 'are a type of', 'destination_entity': '""Deployment resources""'}, {'source_entity': '""ReplicaSets""', 'description': 'ensure that a specified number of', 'destination_entity': '""pods""'}, {'source_entity': '""ReplicationControllers""', 'description': 'are used to manage and update', 'destination_entity': '""containers""'}, {'source_entity': '""ReplicaSets""', 'description': 'can be used as a replacement for', 'destination_entity': '""ReplicationControllers""'}, {'source_entity': '""Deployments""', 'description': 'are designed to handle', 'destination_entity': '""rollouts""'}, {'source_entity': '""Deployments""', 'description': 'can be used for', 'destination_entity': '""rolling updates""'}, {'source_entity': '""microservices""', 'description': 'are often deployed using', 'destination_entity': '""Deployments""'}, {'source_entity': '""storage""', 'description': 'is a critical component of', 'destination_entity': '""applications""'}, {'source_entity': '""config data""', 'description': 'should be stored in a way that allows for', 'destination_entity': '""rolling updates""'}]","['[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to manage and update"",\n    ""summary_er"": ""Deployments are used to manage and update pods, ensuring they run smoothly and efficiently.""\n  }\n]', '[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are a type of"",\n    ""summary_er"": ""Deployments are a type of pod, which is a container running an application.""\n  },\n  {\n    ""source"": ""Deployment resources"",\n    ""destination"": ""Deployments"",\n    ""relation_description"": ""contain"",\n    ""summary_er"": ""Deployment resources contain Deployments, which are used to manage and scale applications.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSets"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""ensure that a specified number of"",\n    ""summary_er"": ""ReplicaSets ensure a specified number of pods are running, maintaining desired scale and availability.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationControllers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to manage and update"",\n    ""summary_er"": ""Replication Controllers ensure a specified number of identical pod replicas are running at any given time, managing updates and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be used as a replacement for"",\n    ""summary_er"": ""ReplicaSets can replace ReplicationControllers by providing a more efficient and scalable way to manage pod replicas.""\n  },\n  {\n    ""source"": ""ReplicaSets"",\n    ""destination"": ""ReplicationControllers"",\n    ""relation_description"": ""replacement for"",\n    ""summary_er"": ""ReplicaSets serve as a replacement for ReplicationControllers, offering improved scalability and efficiency in managing pod replicas.""\n  }\n]', '[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are designed to handle"",\n    ""summary_er"": ""Deployments are designed to manage and maintain a specified number of replicas, ensuring that a certain number of pods are running at any given time.""\n  },\n  {\n    ""source"": ""rollouts"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are designed to handle"",\n    ""summary_er"": ""Rollouts are used to deploy new versions of an application or service, gradually replacing the existing version with the new one.""\n  }\n]', '[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be used for rolling updates"",\n    ""summary_er"": ""Deployments enable rolling updates of pods, allowing for seamless upgrades and minimization of downtime.""\n  }\n]', '[\n  {\n    ""source"": ""microservices"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are often deployed using"",\n    ""summary_er"": ""Microservices are typically deployed as individual pods in a Kubernetes cluster, allowing for independent scaling and management.""\n  }\n]', '[\n  {\n    ""source"": ""storage"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a critical component of"",\n    ""summary_er"": ""Storage provides essential data management for pods, ensuring reliable and efficient access to applications.""\n  },\n  {\n    ""source"": ""applications"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs on top of"",\n    ""summary_er"": ""Applications execute within pods, leveraging the pod\'s resources and isolation features for secure deployment.""\n  }\n]', '[{""source"": ""Config Data"", ""destination"": ""Pod"", ""relation_description"": ""should be stored in a way that allows for rolling updates"", ""summary_er"": ""Config data should be persisted to enable smooth rolling updates of pods.""}]']","This chapter covers updating apps running in a Kubernetes cluster, focusing on using Deployments to perform zero-downtime updates. Key topics include replacing pods with newer versions, updating managed pods, and performing rolling updates, as well as automatically blocking rollouts of bad versions and controlling the rollout rate.","[{'highlight': 'You now know how to package your app components into containers, group them into pods, provide them with temporary or permanent storage, pass both secret and non-secret config data to them, and allow pods to find and talk to each other.'}, {'highlight': 'This chapter covers how to update apps running in a Kubernetes cluster and how Kubernetes helps you move toward a true zero-downtime update process.'}, {'highlight': 'Kubernetes provides a Deployment resource that allows for declarative updates of managed pods, replacing ReplicationControllers or ReplicaSets.'}, {'highlight': 'The chapter covers various aspects of updating applications, including replacing pods with newer versions, performing rolling updates, and automatically blocking rollouts of bad versions.'}, {'highlight': 'Deployments enable controlling the rate of rollout, reverting pods to a previous version, and other features that facilitate zero-downtime updates in Kubernetes clusters.'}]"
+194,283,0,[],"251
+Updating applications running in pods
+resource that sits on top of ReplicaSets and enables declarative application updates. If
+you’re not completely sure what that means, keep reading—it’s not as complicated as
+it sounds.
+9.1
+Updating applications running in pods
+Let’s start off with a simple example. Imagine having a set of pod instances providing a
+service to other pods and/or external clients. After reading this book up to this point,
+you likely recognize that these pods are backed by a ReplicationController or a
+ReplicaSet. A Service also exists through which clients (apps running in other pods or
+external clients) access the pods. This is how a basic application looks in Kubernetes
+(shown in figure 9.1).
+Initially, the pods run the first version of your application—let’s suppose its image is
+tagged as v1. You then develop a newer version of the app and push it to an image
+repository as a new image, tagged as v2. You’d next like to replace all the pods with
+this new version. Because you can’t change an existing pod’s image after the pod is
+created, you need to remove the old pods and replace them with new ones running
+the new image. 
+ You have two ways of updating all those pods. You can do one of the following:
+Delete all existing pods first and then start the new ones.
+Start new ones and, once they’re up, delete the old ones. You can do this either
+by adding all the new pods and then deleting all the old ones at once, or
+sequentially, by adding new pods and removing old ones gradually.
+Both these strategies have their benefits and drawbacks. The first option would lead to
+a short period of time when your application is unavailable. The second option
+requires your app to handle running two versions of the app at the same time. If your
+app stores data in a data store, the new version shouldn’t modify the data schema or
+the data in such a way that breaks the previous version.
+ReplicationController
+or ReplicaSet
+Clients
+Service
+Pod
+Pod
+Pod
+Figure 9.1
+The basic outline of an 
+application running in Kubernetes
+ 
+",[],"[{'entity': 'ReplicaSets', 'description': 'resource that sits on top of ReplicaSets and enables declarative application updates', 'category': 'software'}, {'entity': 'pods', 'description': 'set of pod instances providing a service to other pods and/or external clients', 'category': 'container'}, {'entity': 'ReplicationController', 'description': 'resource that sits on top of ReplicaSets and enables declarative application updates', 'category': 'software'}, {'entity': 'Service', 'description': 'exists through which clients (apps running in other pods or external clients) access the pods', 'category': 'software'}, {'entity': 'Kubernetes', 'description': 'basic application looks like in Kubernetes', 'category': 'software'}, {'entity': 'image', 'description': 'tagged as v1 and v2, used to run different versions of an application', 'category': 'container'}, {'entity': 'ReplicaSet', 'description': 'resource that sits on top of ReplicaSets and enables declarative application updates', 'category': 'software'}, {'entity': 'pod', 'description': 'instance providing a service to other pods and/or external clients', 'category': 'container'}]","[{'source_entity': 'Kubernetes', 'description': 'manages', 'destination_entity': 'pods'}, {'source_entity': 'ReplicationController', 'description': 'ensures', 'destination_entity': 'pods'}, {'source_entity': 'Service', 'description': 'exposes', 'destination_entity': 'pods'}, {'source_entity': 'ReplicaSets', 'description': 'manages', 'destination_entity': 'pods'}, {'source_entity': 'image', 'description': 'used to create', 'destination_entity': 'pods'}, {'source_entity': 'ReplicaSets', 'description': 'managed by', 'destination_entity': 'Kubernetes'}, {'source_entity': 'pods', 'description': 'created from', 'destination_entity': 'image'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages a collection of containers called pods, providing resource allocation and orchestration.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""ensures"",\n    ""summary_er"": ""A ReplicationController ensures that a specified number of replicas (identical pod) are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""A Service provides a network interface to access Pods, exposing their ports and allowing external traffic to reach them.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSets"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""ReplicaSets manage and maintain a specified number of replicas (identical copies) of a pod, ensuring the desired state is achieved and maintained.""\n  }\n]', '[\n  {\n    ""source"": ""image"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to create"",\n    ""summary_er"": ""An image is used to create a pod in Kubernetes, which is a containerized application.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""ReplicaSets manage the deployment of pods in a Kubernetes cluster, ensuring a specified number of replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""pods"",\n    ""destination"": ""pod image"",\n    ""relation_description"": ""created from"",\n    ""summary_er"": ""Pods are created from a specific Docker image, which contains the application code and dependencies.""\n  },\n  {\n    ""source"": ""pod image"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""used by"",\n    ""summary_er"": ""A pod uses a specific Docker image to run its containerized application.""\n  }\n]']","Updating applications running in pods involves replacing old pods with new ones, either by deleting existing pods first and then starting the new ones or by adding new pods while gradually removing old ones, requiring app to handle two versions simultaneously.","[{'highlight': 'Updating applications running in pods is done through a resource that sits on top of ReplicaSets and enables declarative application updates.'}, {'highlight': ""There are two ways to update all pods: delete existing ones first and start new ones, or start new ones and delete old ones once they're up.""}, {'highlight': 'The first option for updating pods leads to a short period of time when the application is unavailable.'}, {'highlight': 'The second option for updating pods requires the app to handle running two versions at the same time.'}, {'highlight': 'When updating pods, the new version should not modify data schema or data in such a way that breaks the previous version.'}]"
+195,284,0,[],"252
+CHAPTER 9
+Deployments: updating applications declaratively
+ How do you perform these two update methods in Kubernetes? First, let’s look at
+how to do this manually; then, once you know what’s involved in the process, you’ll
+learn how to have Kubernetes perform the update automatically.
+9.1.1
+Deleting old pods and replacing them with new ones
+You already know how to get a ReplicationController to replace all its pod instances
+with pods running a new version. You probably remember the pod template of a
+ReplicationController can be updated at any time. When the ReplicationController
+creates new instances, it uses the updated pod template to create them.
+ If you have a ReplicationController managing a set of v1 pods, you can easily
+replace them by modifying the pod template so it refers to version v2 of the image and
+then deleting the old pod instances. The ReplicationController will notice that no
+pods match its label selector and it will spin up new instances. The whole process is
+shown in figure 9.2.
+This is the simplest way to update a set of pods, if you can accept the short downtime
+between the time the old pods are deleted and new ones are started.
+9.1.2
+Spinning up new pods and then deleting the old ones
+If you don’t want to see any downtime and your app supports running multiple ver-
+sions at once, you can turn the process around and first spin up all the new pods and
+Pod template
+changed
+v pods deleted
+1
+manually
+ReplicationController
+Service
+Pod: v1
+Pod: v1
+Pod
+template: v2
+ReplicationController
+Pod
+template: v2
+Pod: v1
+Service
+Pod: v2
+Pod: v2
+Pod: v2
+ReplicationController
+Service
+Pod: v1
+Pod: v1
+Pod
+template: v1
+Pod: v1
+ReplicationController
+Service
+Pod: v1
+Pod: v1
+Pod: v1
+Pod
+template: v2
+Short period of
+downtime here
+v2 pods created by
+ReplicationController
+Figure 9.2
+Updating pods by changing a ReplicationController’s pod template and deleting old Pods
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'Deployments', 'description': 'Update applications declaratively in Kubernetes', 'category': 'application'}, {'entity': 'ReplicationController', 'description': 'Manages a set of pods and ensures a specified number of replicas are running at any given time', 'category': 'process'}, {'entity': 'Pods', 'description': 'Lightweight and portable container runtime environment', 'category': 'container'}, {'entity': 'Image', 'description': 'A binary package that includes everything needed to run an application, including code, resources, settings, and dependencies', 'category': 'software'}, {'entity': 'Label selector', 'description': 'Used by ReplicationController to identify pods it needs to manage', 'category': 'process'}, {'entity': 'Service', 'description': 'A way to access a pod or group of pods in Kubernetes', 'category': 'application'}, {'entity': 'Downtime', 'description': 'Short period of time when the application is not available due to updates', 'category': 'hardware'}]","[{'source_entity': '""Deployments""', 'description': 'are used to manage and update the deployment of applications', 'destination_entity': '""Service""'}, {'source_entity': '""Deployments""', 'description': 'can be scaled up or down based on demand', 'destination_entity': '""Pods""'}, {'source_entity': '""ReplicationController""', 'description': 'ensures that a specified number of replicas are running at any given time', 'destination_entity': '""Pods""'}, {'source_entity': '""Downtime""', 'description': 'is minimized by using rolling updates and blue-green deployments', 'destination_entity': '""Deployments""'}, {'source_entity': '""Image""', 'description': 'is used to store the binary code for an application', 'destination_entity': '""Pods""'}, {'source_entity': '""Kubernetes""', 'description': 'manages and orchestrates the deployment of applications', 'destination_entity': '""Deployments""'}, {'source_entity': '""Label selector""', 'description': 'is used to select and manage specific pods based on labels', 'destination_entity': '""Pods""'}]","['[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""are used to manage and update the deployment of applications"",\n    ""summary_er"": ""Deployments manage application updates, while Pods represent running instances.""\n  },\n  {\n    ""source"": ""Service"",\n    ""destination"": ""Pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""Services provide access to Pods, allowing load balancing and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""can be scaled up or down based on demand"",\n    ""summary_er"": ""Deployments manage multiple Pods, scaling them up or down to meet changing demands.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""ensures that a specified number of replicas are running at any given time"",\n    ""summary_er"": ""ReplicationController ensures a fixed number of Pods are running, maintaining desired replica count.""\n  }\n]', '[\n  {\n    ""source"": ""Downtime"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is minimized by using rolling updates and blue-green deployments"",\n    ""summary_er"": ""Using rolling updates and blue-green deployments minimizes downtime for pods, ensuring high availability.""\n  }\n]', '[\n  {\n    ""source"": ""Image"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""is used to store the binary code for an application"",\n    ""summary_er"": ""Images are stored in Pods, containing the binary code for applications.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages and orchestrates the deployment of applications"",\n    ""summary_er"": ""Kubernetes manages and deploys applications to pods, ensuring efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""Label selector"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""is used to select and manage specific pods based on labels"",\n    ""summary_er"": ""A label selector is used to identify and manage specific pods in a Kubernetes cluster, allowing for targeted management and scaling of resources.""\n  }\n]']","In Kubernetes, you can update applications declaratively using Deployments, which can be updated automatically or manually. The manual method involves updating the pod template of a ReplicationController to refer to a new image version, then deleting the old pods. Alternatively, you can spin up new pods and delete the old ones without downtime, if your app supports running multiple versions at once.","[{'highlight': 'You can update a set of pods by modifying the pod template of a ReplicationController to refer to a new version of the image, then deleting the old pod instances.'}, {'highlight': 'The process involves spinning up new pods using the updated pod template, and then deleting the old ones, resulting in short downtime between the two.'}, {'highlight': ""If you don't want to see any downtime, you can spin up all the new pods first, then delete the old ones, allowing your app to run multiple versions at once.""}, {'highlight': 'A ReplicationController will notice that no pods match its label selector and it will spin up new instances when the pod template is updated.'}, {'highlight': 'The simplest way to update a set of pods is by modifying the pod template and deleting the old pod instances, but this results in short downtime between the two.'}]"
+196,285,0,[],"253
+Updating applications running in pods
+only then delete the old ones. This will require more hardware resources, because
+you’ll have double the number of pods running at the same time for a short while. 
+ This is a slightly more complex method compared to the previous one, but you
+should be able to do it by combining what you’ve learned about ReplicationControl-
+lers and Services so far.
+SWITCHING FROM THE OLD TO THE NEW VERSION AT ONCE
+Pods are usually fronted by a Service. It’s possible to have the Service front only the
+initial version of the pods while you bring up the pods running the new version. Then,
+once all the new pods are up, you can change the Service’s label selector and have the
+Service switch over to the new pods, as shown in figure 9.3. This is called a blue-green
+deployment. After switching over, and once you’re sure the new version functions cor-
+rectly, you’re free to delete the old pods by deleting the old ReplicationController.
+NOTE
+You can change a Service’s pod selector with the kubectl set selec-
+tor command.
+PERFORMING A ROLLING UPDATE
+Instead of bringing up all the new pods and deleting the old pods at once, you can
+also perform a rolling update, which replaces pods step by step. You do this by slowly
+scaling down the previous ReplicationController and scaling up the new one. In this
+case, you’ll want the Service’s pod selector to include both the old and the new pods,
+so it directs requests toward both sets of pods. See figure 9.4.
+ Doing a rolling update manually is laborious and error-prone. Depending on the
+number of replicas, you’d need to run a dozen or more commands in the proper
+order to perform the update process. Luckily, Kubernetes allows you to perform the
+rolling update with a single command. You’ll learn how in the next section.
+Service
+Service
+ReplicationController:
+v1
+Pod: v1
+Pod: v1
+Pod
+template: v1
+Pod: v1
+ReplicationController:
+v2
+Pod
+template: v2
+Pod: v2
+Pod: v2
+Pod: v2
+ReplicationController:
+v1
+Pod: v1
+Pod: v1
+Pod
+template: v1
+Pod: v1
+ReplicationController:
+v2
+Pod
+template: v2
+Pod: v2
+Pod: v2
+Pod: v2
+Figure 9.3
+Switching a Service from the old pods to the new ones
+ 
+",[],"[{'entity': 'ReplicationController', 'description': 'A Kubernetes resource that manages the replication of Pods.', 'category': 'software'}, {'entity': 'Service', 'description': 'A Kubernetes resource that provides a network identity and load balancing for accessing applications in a cluster.', 'category': 'software'}, {'entity': 'Pod', 'description': 'The basic execution unit in a Kubernetes cluster, representing a running instance of an application.', 'category': 'software'}, {'entity': 'ReplicationController:v1', 'description': 'A specific version of the ReplicationController resource.', 'category': 'software'}, {'entity': 'Pod:v1', 'description': 'A specific version of the Pod resource.', 'category': 'software'}, {'entity': 'ReplicationController:v2', 'description': 'A specific version of the ReplicationController resource.', 'category': 'software'}, {'entity': 'Pod:v2', 'description': 'A specific version of the Pod resource.', 'category': 'software'}, {'entity': 'ReplicationController', 'description': 'A Kubernetes resource that manages the replication of Pods.', 'category': 'software'}, {'entity': 'Pod', 'description': 'The basic execution unit in a Kubernetes cluster, representing a running instance of an application.', 'category': 'software'}, {'entity': 'ReplicationController:v1', 'description': 'A specific version of the ReplicationController resource.', 'category': 'software'}, {'entity': 'Pod:v1', 'description': 'A specific version of the Pod resource.', 'category': 'software'}, {'entity': 'ReplicationController:v2', 'description': 'A specific version of the ReplicationController resource.', 'category': 'software'}, {'entity': 'Pod:v2', 'description': 'A specific version of the Pod resource.', 'category': 'software'}, {'entity': 'kubectl', 'description': 'The command-line tool for interacting with a Kubernetes cluster.', 'category': 'software'}, {'entity': 'set selector', 'description': 'A command used to update the pod selector of a Service resource.', 'category': 'software'}]","[{'source_entity': '""Service""', 'description': 'is responsible for', 'destination_entity': '""ReplicationController""'}, {'source_entity': '""kubectl""', 'description': 'uses to manage', 'destination_entity': '""Pod:v1""'}, {'source_entity': '""kubectl""', 'description': 'uses to manage', 'destination_entity': '""Pod:v2""'}, {'source_entity': '""ReplicationController:v1""', 'description': 'is controlled by', 'destination_entity': '""set selector""'}, {'source_entity': '""ReplicationController:v2""', 'description': 'is controlled by', 'destination_entity': '""set selector""'}, {'source_entity': '""Pod:v1""', 'description': 'is created by', 'destination_entity': '""ReplicationController:v1""'}, {'source_entity': '""Pod:v2""', 'description': 'is created by', 'destination_entity': '""ReplicationController:v2""'}, {'source_entity': '""kubectl""', 'description': 'uses to update', 'destination_entity': '""ReplicationController:v1""'}, {'source_entity': '""kubectl""', 'description': 'uses to update', 'destination_entity': '""ReplicationController:v2""'}]","['[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is responsible for"",\n    ""summary_er"": ""A Service is a resource that provides a network interface to access a group of Pods, ensuring high availability and load balancing.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to manage"",\n    ""summary_er"": ""Kubectl manages pods, which are the basic execution units in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to manage"",\n    ""summary_er"": ""Kubectl uses Kubernetes API to manage Pod resources, including creation, deletion, and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is controlled by"",\n    ""summary_er"": ""A ReplicationController is a controller that ensures a specified number of replicas (identical pods) are running at any given time, and it\'s controlled by the pod\'s selector.""\n  },\n  {\n    ""source"": ""ReplicationController:v1"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""set selector"",\n    ""summary_er"": ""A ReplicationController version v1 sets a selector to identify which pods it controls, ensuring that only matching pods are managed by the controller.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController:v2"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is controlled by"",\n    ""summary_er"": ""A ReplicationController:v2 controls a pod, ensuring it runs multiple copies of an application.""\n  },\n  {\n    ""source"": ""ReplicationController:v2"",\n    ""destination"": ""set selector"",\n    ""relation_description"": ""set selector"",\n    ""summary_er"": ""A ReplicationController:v2 sets the selector for a pod, identifying which pods to manage.""\n  }\n]', '[\n  {\n    ""source"": ""Pod:v1"",\n    ""destination"": ""ReplicationController:v1"",\n    ""relation_description"": ""is created by"",\n    ""summary_er"": ""A pod is created by a replication controller to manage its lifecycle.""\n  }\n]', '[{""source"": ""Pod:v2"", ""destination"": ""ReplicationController:v2"", ""relation_description"": ""is created by"", ""summary_er"": ""A Pod is created by a ReplicationController to ensure a specified number of replicas are running.""}]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to update"",\n    ""summary_er"": ""Kubectl uses its update functionality to manage and update pod configurations.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to update"",\n    ""summary_er"": ""Kubectl updates a running pod by applying changes to its configuration.""\n  }\n]']","You can update applications running in pods by combining replication controllers and services, switching from the old to the new version at once using a blue-green deployment or performing a rolling update where you replace pods step by step. This requires updating the service's pod selector and scaling down the previous replication controller while scaling up the new one.","[{'highlight': 'You can update applications running in pods by bringing up new pods and then deleting the old ones, requiring more hardware resources.'}, {'highlight': 'A blue-green deployment involves switching a Service from the old pods to the new ones once all the new pods are up, allowing for a seamless transition.'}, {'highlight': 'A rolling update replaces pods step by step, scaling down the previous ReplicationController and scaling up the new one, directing requests toward both sets of pods.'}, {'highlight': 'Kubernetes allows performing a rolling update with a single command, making it easier to manage complex updates.'}, {'highlight': ""A Service's pod selector can be changed using the kubectl set selector command, enabling flexible deployment strategies.""}]"
+197,286,0,[],"254
+CHAPTER 9
+Deployments: updating applications declaratively
+9.2
+Performing an automatic rolling update with a 
+ReplicationController
+Instead of performing rolling updates using ReplicationControllers manually, you can
+have kubectl perform them. Using kubectl to perform the update makes the process
+much easier, but, as you’ll see later, this is now an outdated way of updating apps. Nev-
+ertheless, we’ll walk through this option first, because it was historically the first way of
+doing an automatic rolling update, and also allows us to discuss the process without
+introducing too many additional concepts. 
+9.2.1
+Running the initial version of the app
+Obviously, before you can update an app, you need to have an app deployed. You’re
+going to use a slightly modified version of the kubia NodeJS app you created in chap-
+ter 2 as your initial version. In case you don’t remember what it does, it’s a simple web-
+app that returns the pod’s hostname in the HTTP response. 
+CREATING THE V1 APP
+You’ll change the app so it also returns its version number in the response, which will
+allow you to distinguish between the different versions you’re about to build. I’ve
+already built and pushed the app image to Docker Hub under luksa/kubia:v1. The
+following listing shows the app’s code.
+const http = require('http');
+const os = require('os');
+console.log(""Kubia server starting..."");
+Listing 9.1
+The v1 version of our app: v1/app.js
+Service
+Pod: v1
+Pod: v1
+Replication
+Controller:
+v1
+v1
+Replication
+Controller:
+v2
+Pod: v2
+Service
+Pod: v2
+Pod: v2
+Pod: v2
+Service
+Pod: v1
+Pod: v1
+Pod: v1
+Service
+Pod: v1
+Pod: v2
+Pod: v2
+v2
+Replication
+Controller:
+v1
+v1
+Replication
+Controller:
+v2
+v2
+Replication
+Controller:
+v1
+Replication
+Controller:
+v2
+v2
+Replication
+Controller:
+v1
+v1
+v1
+Replication
+Controller:
+v2
+v2
+Figure 9.4
+A rolling update of pods using two ReplicationControllers
+ 
+","[  Service\nPod: v1 Pod: v1 Pod: v1\nReplication Replication\nController: Controller:\nv1 v2\nv1 v2  \
+0                   Replication\nController:\nv1\nv1                                                 
+
+                               Col1  \
+0  Replication\nController:\nv2\nv2   
+
+  Service\nPod: v1 Pod: v1 Pod: v2\nReplication Replication\nController: Controller:\nv1 v2\nv1 v2  \
+0                                               None                                                 
+
+  Service\nPod: v1 Pod: v2 Pod: v2\nReplication Replication\nController: Controller:\nv1 v2\nv1 v2  \
+0                                               None                                                 
+
+  Service\nPod: v2 Pod: v2 Pod: v2\nReplication Replication\nController: Controller:\nv1 v2\nv1 v2  \
+0                                               None                                                 
+
+                               Col5                              Col6  
+0  Replication\nController:\nv1\nv1  Replication\nController:\nv2\nv2  , Empty DataFrame
+Columns: [Replication
+Controller:
+v1
+v1, Replication
+Controller:
+v2
+v2]
+Index: [], Empty DataFrame
+Columns: [Replication
+Controller:
+v1
+v1, Replication
+Controller:
+v2
+v2]
+Index: []]","[{'entity': 'kubectl', 'description': 'command-line tool for interacting with Kubernetes clusters', 'category': 'software'}, {'entity': 'ReplicationController', 'description': 'Kubernetes resource for managing replicas of a pod', 'category': 'software'}, {'entity': 'Pod', 'description': 'Kubernetes object representing a running container', 'category': 'software'}, {'entity': 'Service', 'description': 'Kubernetes resource for exposing a pod to the network', 'category': 'software'}, {'entity': 'NodeJS', 'description': 'programming language and runtime environment', 'category': 'software'}, {'entity': 'Docker Hub', 'description': 'registry service for storing and sharing Docker images', 'category': 'service'}, {'entity': 'luksa/kubia:v1', 'description': 'Docker image tag', 'category': 'software'}, {'entity': 'http', 'description': 'built-in NodeJS module for creating HTTP servers', 'category': 'software'}, {'entity': 'os', 'description': 'built-in NodeJS module for interacting with the operating system', 'category': 'software'}, {'entity': 'ReplicationController:v1', 'description': 'Kubernetes resource for managing replicas of a pod, version v1', 'category': 'software'}, {'entity': 'ReplicationController:v2', 'description': 'Kubernetes resource for managing replicas of a pod, version v2', 'category': 'software'}]","[{'source_entity': 'luksa/kubia:v1', 'description': 'is based on', 'destination_entity': 'Docker Hub'}, {'source_entity': 'http', 'description': 'is used by', 'destination_entity': 'Service'}, {'source_entity': 'kubectl', 'description': 'manages', 'destination_entity': 'ReplicationController:v1'}, {'source_entity': 'os', 'description': 'runs on', 'destination_entity': 'Pod'}, {'source_entity': 'Docker Hub', 'description': 'hosts', 'destination_entity': 'luksa/kubia:v1'}, {'source_entity': 'kubectl', 'description': 'deploys', 'destination_entity': 'ReplicationController:v2'}, {'source_entity': 'NodeJS', 'description': 'is used by', 'destination_entity': 'Service'}, {'source_entity': 'ReplicationController:v1', 'description': 'is replaced by', 'destination_entity': 'ReplicationController:v2'}]","['[\n  {\n    ""source"": ""luksa/kubia:v1"",\n    ""destination"": ""Docker Hub"",\n    ""relation_description"": ""is based on"",\n    ""summary_er"": ""Kubia image is based on a Docker image from Docker Hub, providing a foundation for Kubernetes deployment.""\n  }\n]', '[\n  {\n    ""source"": ""http"",\n    ""destination"": ""Service"",\n    ""relation_description"": ""is used by"",\n    ""summary_er"": ""HTTP protocol is utilized by Service to handle incoming requests.""\n  },\n  {\n    ""source"": ""Service"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A Service encapsulates one or more pods, providing a stable network identity and load balancing.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubectl manages the lifecycle of a pod, ensuring it runs as expected.""\n  },\n  {\n    ""source"": ""ReplicationController:v1"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""A ReplicationController:v1 ensures that a specified number of pods are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""os"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs on"",\n    ""summary_er"": ""An operating system (OS) executes on a pod, utilizing its resources and providing a platform for applications to run.""\n  }\n]', '[\n  {\n    ""source"": ""Docker Hub"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""Docker Hub hosts a container image luksa/kubia:v1, which is deployed as a pod in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""Kubectl command deploys a pod, creating a running instance of a containerized application.""\n  }\n]', '[\n  {\n    ""source"": ""NodeJS"",\n    ""destination"": ""Service"",\n    ""relation_description"": ""is used by"",\n    ""summary_er"": ""NodeJS is utilized by a service to provide functionality.""\n  },\n  {\n    ""source"": ""NodeJS"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""and the destination pod"",\n    ""summary_er"": ""NodeJS interacts with a pod as part of its execution process.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController:v1"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is replaced by"",\n    ""summary_er"": ""ReplicationController:v1 is replaced by a pod, indicating a change in deployment strategy from traditional RC to modern pod-based architecture.""\n  }\n]']","You can perform an automatic rolling update with a ReplicationController by having kubectl do it, but this is now an outdated way of updating apps. The process involves running the initial version of the app, creating a modified version that returns its version number in the response, and using two ReplicationControllers to roll out the new version.","[{'highlight': 'You can have kubectl perform an automatic rolling update with a ReplicationController instead of doing it manually.'}, {'highlight': 'To update an app, you need to have an app deployed first, and then you can use a slightly modified version of the kubia NodeJS app as your initial version.'}, {'highlight': 'The v1 version of the app returns its version number in the response, which will allow you to distinguish between different versions.'}, {'highlight': 'A rolling update of pods using two ReplicationControllers is shown in Figure 9.4.'}, {'highlight': ""Performing an automatic rolling update with a ReplicationController is now an outdated way of updating apps, but it's still useful for educational purposes.""}]"
+198,287,0,[],"255
+Performing an automatic rolling update with a ReplicationController
+var handler = function(request, response) {
+  console.log(""Received request from "" + request.connection.remoteAddress);
+  response.writeHead(200);
+  response.end(""This is v1 running in pod "" + os.hostname() + ""\n"");
+};
+var www = http.createServer(handler);
+www.listen(8080);
+RUNNING THE APP AND EXPOSING IT THROUGH A SERVICE USING A SINGLE YAML FILE
+To run your app, you’ll create a ReplicationController and a LoadBalancer Service to
+enable you to access the app externally. This time, rather than create these two
+resources separately, you’ll create a single YAML for both of them and post it to the
+Kubernetes API with a single kubectl create command. A YAML manifest can con-
+tain multiple objects delimited with a line containing three dashes, as shown in the
+following listing.
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: kubia-v1
+spec:
+  replicas: 3
+  template:
+    metadata:
+      name: kubia
+      labels:                      
+        app: kubia                 
+    spec:
+      containers:
+      - image: luksa/kubia:v1     
+        name: nodejs
+---                         
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubia
+spec:
+  type: LoadBalancer
+  selector:                                        
+    app: kubia                                     
+  ports:
+  - port: 80
+    targetPort: 8080
+The YAML defines a ReplicationController called kubia-v1 and a Service called
+kubia. Go ahead and post the YAML to Kubernetes. After a while, your three v1 pods
+and the load balancer should all be running, so you can look up the Service’s external
+IP and start hitting the service with curl, as shown in the following listing.
+Listing 9.2
+A YAML containing an RC and a Service: kubia-rc-and-service-v1.yaml
+The Service fronts all 
+pods created by the 
+ReplicationController.
+You’re creating a 
+ReplicationController for 
+pods running this image.
+YAML files can contain 
+multiple resource 
+definitions separated by 
+a line with three dashes.
+ 
+",[],"[{'entity': 'ReplicationController', 'description': 'A Kubernetes object that ensures a specified number of replicas (identical pods) are running at any given time.', 'category': 'software'}, {'entity': 'LoadBalancer Service', 'description': 'A Kubernetes service that distributes incoming traffic across multiple pods.', 'category': 'software'}, {'entity': 'kubectl create', 'description': 'A command used to create a resource in the Kubernetes API server.', 'category': 'command'}, {'entity': 'YAML manifest', 'description': 'A file format for defining Kubernetes resources, which can contain multiple objects delimited by three dashes.', 'category': 'software'}, {'entity': 'apiVersion', 'description': 'A field in a YAML manifest that specifies the API version of the resource being defined.', 'category': 'field'}, {'entity': 'kind', 'description': 'A field in a YAML manifest that specifies the type of resource being defined.', 'category': 'field'}, {'entity': 'metadata', 'description': 'A field in a YAML manifest that contains metadata about the resource, such as its name and labels.', 'category': 'field'}, {'entity': 'spec', 'description': 'A field in a YAML manifest that contains the specification of the resource being defined.', 'category': 'field'}, {'entity': 'replicas', 'description': 'A field in a ReplicationController that specifies the number of replicas to run at any given time.', 'category': 'field'}, {'entity': 'template', 'description': 'A field in a ReplicationController that contains a pod template, which defines the configuration for each replica.', 'category': 'field'}, {'entity': 'metadata.name', 'description': 'A field in a YAML manifest that specifies the name of the resource being defined.', 'category': 'field'}, {'entity': 'labels', 'description': 'A field in a YAML manifest that contains labels associated with the resource.', 'category': 'field'}, {'entity': 'app', 'description': 'A label key used to identify an application or service.', 'category': 'label'}, {'entity': 'nodejs', 'description': 'A container image used by the ReplicationController to run a Node.js application.', 'category': 'image'}, {'entity': 'luksa/kubia:v1', 'description': 'The name and tag of a Docker image used by the ReplicationController to run a Kubia application.', 'category': 'image'}, {'entity': 'http.createServer', 'description': 'A function in Node.js that creates an HTTP server instance.', 'category': 'function'}, {'entity': 'handler', 'description': 'A callback function used as the request handler for an HTTP server.', 'category': 'function'}, {'entity': 'response.writeHead', 'description': 'A method of an HTTP response object that sets the HTTP status code and headers.', 'category': 'method'}, {'entity': 'response.end', 'description': 'A method of an HTTP response object that sends a final response to the client.', 'category': 'method'}, {'entity': 'os.hostname()', 'description': 'A function in Node.js that returns the hostname of the system.', 'category': 'function'}]","[{'source_entity': '""http.createServer""', 'description': 'creates', 'destination_entity': '""LoadBalancer Service""'}, {'source_entity': '""kind""', 'description': 'specifies', 'destination_entity': '""ReplicationController""'}, {'source_entity': '""YAML manifest""', 'description': 'defines', 'destination_entity': '""ReplicationController""'}, {'source_entity': '""response.writeHead""', 'description': 'sets HTTP header', 'destination_entity': '""response""'}, {'source_entity': '""response.end""', 'description': 'ends HTTP response', 'destination_entity': '""response""'}, {'source_entity': '""metadata.name""', 'description': 'gets name of metadata', 'destination_entity': '""metadata""'}, {'source_entity': '""os.hostname()""', 'description': 'gets hostname of OS', 'destination_entity': '""nodejs""'}, {'source_entity': '""apiVersion""', 'description': 'specifies API version', 'destination_entity': '""ReplicationController""'}, {'source_entity': '""template""', 'description': 'defines template for ReplicationController', 'destination_entity': '""ReplicationController""'}, {'source_entity': '""labels""', 'description': 'sets labels for ReplicationController', 'destination_entity': '""ReplicationController""'}, {'source_entity': '""metadata""', 'description': 'gets metadata of ReplicationController', 'destination_entity': '""ReplicationController""'}, {'source_entity': '""luksa/kubia:v1""', 'description': 'specifies image version for nodejs', 'destination_entity': '""nodejs""'}, {'source_entity': '""kubectl create""', 'description': 'creates ReplicationController using kubectl', 'destination_entity': '""ReplicationController""'}, {'source_entity': '""spec""', 'description': 'defines specification for ReplicationController', 'destination_entity': '""ReplicationController""'}, {'source_entity': '""replicas""', 'description': 'sets number of replicas for ReplicationController', 'destination_entity': '""ReplicationController""'}]","['[\n  {\n    ""source"": ""http.createServer"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates"",\n    ""summary_er"": ""Kubernetes service creation using HTTP server""\n  },\n  {\n    ""source"": ""LoadBalancer Service"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""Exposing pod to external traffic via Load Balancer service""\n  }\n]', '[\n  {\n    ""source"": ""Kind"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The Kind entity specifies the type of a Pod, which can be a Deployment, ReplicaSet, or other types.""\n  }\n]', '[\n  {\n    ""source"": ""YAML manifest"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A YAML file defines a pod, which is a basic execution unit in Kubernetes.""\n  },\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A ReplicationController manages one or more pods to ensure a specified number of replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""response"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets HTTP header"",\n    ""summary_er"": ""The response object sets an HTTP header in a Kubernetes pod, influencing how client requests are handled.""\n  }\n]', '[\n  {\n    ""source"": ""response.end"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""ends HTTP response"",\n    ""summary_er"": ""The Kubernetes pod receives the final HTTP response from a container, marking the end of the request-response cycle.""\n  }\n]', '[\n  {\n    ""source"": ""metadata.name"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""gets name of metadata"",\n    ""summary_er"": ""The Kubernetes metadata API retrieves the name of a pod, providing essential information for management and identification purposes.""\n  }\n]', '[\n  {\n    ""source"": ""os.hostname()"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""gets hostname of OS"",\n    ""summary_er"": ""The \'os.hostname()\' function retrieves the hostname of the operating system, which can be used to identify a pod.""\n  },\n  {\n    ""source"": ""nodejs"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""Node.js application running in a container"",\n    ""summary_er"": ""A Node.js application is deployed and runs within a pod, utilizing the containerization provided by Docker.""\n  }\n]', '[\n  {\n    ""source"": ""apiVersion"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies API version"",\n    ""summary_er"": ""API version specification for a Kubernetes pod.""\n  },\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""represents a replication controller"",\n    ""summary_er"": ""A ReplicationController in Kubernetes represents a pod that can be replicated and managed.""\n  }\n]', '[\n  {\n    ""source"": ""template"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines template for ReplicationController"",\n    ""summary_er"": ""A template in a ReplicationController defines the configuration for a pod, including container images and settings.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets labels for"",\n    ""summary_er"": ""A ReplicationController sets labels on a pod to manage its identity and behavior.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""gets metadata of ReplicationController"",\n    ""summary_er"": ""A ReplicationController provides metadata to a pod, ensuring consistent configuration and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""luksa/kubia:v1"",\n    ""destination"": ""nodejs"",\n    ""relation_description"": ""specifies image version for nodejs"",\n    ""summary_er"": ""The \'luksa/kubia:v1\' image specifies the Node.js version for a pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""ReplicationController"",\n    ""relation_description"": ""creates ReplicationController using kubectl"",\n    ""summary_er"": ""Kubernetes command creates a ReplicationController resource using kubectl, ensuring pod replication and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines specification for ReplicationController"",\n    ""summary_er"": ""The spec entity defines the configuration and behavior of a pod in a Kubernetes cluster, as specified by a ReplicationController.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets number of replicas"",\n    ""summary_er"": ""The ReplicationController sets the desired number of pod replicas, ensuring a consistent and scalable deployment.""\n  }\n]']","A single YAML file is used to create both a ReplicationController and a LoadBalancer Service, enabling external access to the app. The YAML defines 3 replicas of a pod running the luksa/kubia:v1 image, and exposes it on port 80 with targetPort 8080. After posting the YAML to Kubernetes, the three v1 pods and load balancer run, allowing curl requests to be made to the external IP.","[{'highlight': 'Performing an automatic rolling update with a ReplicationController using a single YAML file.'}, {'highlight': 'A YAML manifest can contain multiple objects delimited with a line containing three dashes.'}, {'highlight': 'The YAML defines a ReplicationController called kubia-v1 and a Service called kubia.'}, {'highlight': ""You're creating a ReplicationController for pods running this image.""}, {'highlight': 'YAML files can contain multiple resource definitions separated by a line with three dashes.'}]"
+199,288,0,[],"256
+CHAPTER 9
+Deployments: updating applications declaratively
+$ kubectl get svc kubia
+NAME      CLUSTER-IP     EXTERNAL-IP       PORT(S)         AGE
+kubia     10.3.246.195   130.211.109.222   80:32143/TCP    5m
+$ while true; do curl http://130.211.109.222; done
+This is v1 running in pod kubia-v1-qr192
+This is v1 running in pod kubia-v1-kbtsk
+This is v1 running in pod kubia-v1-qr192
+This is v1 running in pod kubia-v1-2321o
+...
+NOTE
+If you’re using Minikube or any other Kubernetes cluster where load
+balancer services aren’t supported, you can use the Service’s node port to
+access the app. This was explained in chapter 5.
+9.2.2
+Performing a rolling update with kubectl
+Next you’ll create version 2 of the app. To keep things simple, all you’ll do is change
+the response to say, “This is v2”:
+  response.end(""This is v2 running in pod "" + os.hostname() + ""\n"");
+This new version is available in the image luksa/kubia:v2 on Docker Hub, so you
+don’t need to build it yourself.
+Listing 9.3
+Getting the Service’s external IP and hitting the service in a loop with curl
+Pushing updates to the same image tag
+Modifying an app and pushing the changes to the same image tag isn’t a good idea,
+but we all tend to do that during development. If you’re modifying the latest tag,
+that’s not a problem, but when you’re tagging an image with a different tag (for exam-
+ple, tag v1 instead of latest), once the image is pulled by a worker node, the image
+will be stored on the node and not pulled again when a new pod using the same
+image is run (at least that’s the default policy for pulling images).
+That means any changes you make to the image won’t be picked up if you push them
+to the same tag. If a new pod is scheduled to the same node, the Kubelet will run the
+old version of the image. On the other hand, nodes that haven’t run the old version
+will pull and run the new image, so you might end up with two different versions of
+the pod running. To make sure this doesn’t happen, you need to set the container’s
+imagePullPolicy property to Always. 
+You need to be aware that the default imagePullPolicy depends on the image tag.
+If a container refers to the latest tag (either explicitly or by not specifying the tag at
+all), imagePullPolicy defaults to Always, but if the container refers to any other
+tag, the policy defaults to IfNotPresent. 
+When using a tag other than latest, you need to set the imagePullPolicy properly
+if you make changes to an image without changing the tag. Or better yet, make sure
+you always push changes to an image under a new tag.
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command-line tool for interacting with Kubernetes clusters', 'category': 'software'}, {'entity': 'get svc kubia', 'description': ""kubectl command to retrieve information about a service named 'kubia'"", 'category': 'software'}, {'entity': 'Service', 'description': 'Kubernetes concept that provides a network identity and load balancing for accessing applications', 'category': 'application'}, {'entity': 'cluster-ip', 'description': 'unique IP address assigned to a Service within a Kubernetes cluster', 'category': 'network'}, {'entity': 'external-ip', 'description': 'publicly accessible IP address of a Service, used for accessing the application from outside the cluster', 'category': 'network'}, {'entity': 'node port', 'description': 'port number on which a Service is exposed to the network, used when load balancer services are not supported', 'category': 'network'}, {'entity': 'Minikube', 'description': 'lightweight Kubernetes distribution for development and testing purposes', 'category': 'software'}, {'entity': 'Docker Hub', 'description': 'public registry of Docker images, used to store and share container images', 'category': 'cloud'}, {'entity': 'imagePullPolicy', 'description': 'property that controls how a Kubernetes pod pulls an image from a registry', 'category': 'software'}, {'entity': 'Always', 'description': 'imagePullPolicy value that forces the pod to always pull the latest image from the registry', 'category': 'software'}, {'entity': 'IfNotPresent', 'description': ""imagePullPolicy value that only pulls an image if it's not already present in the local cache"", 'category': 'software'}, {'entity': 'latest', 'description': 'tag used to refer to the most recent version of a Docker image', 'category': 'software'}, {'entity': 'v1', 'description': 'version tag for a Docker image, used to identify a specific revision of the application', 'category': 'software'}, {'entity': 'v2', 'description': 'version tag for a Docker image, used to identify a new revision of the application', 'category': 'software'}, {'entity': 'os.hostname()', 'description': 'function that returns the hostname of the machine running the pod', 'category': 'programming language'}, {'entity': 'response.end()', 'description': 'method for sending a response back to the client, used in Node.js applications', 'category': 'programming language'}]","[{'source_entity': '""kubectl""', 'description': 'used to manage and control the cluster', 'destination_entity': '""latest""'}, {'source_entity': '""kubectl""', 'description': 'used to get information about a service', 'destination_entity': '""Service""'}, {'source_entity': '""get svc kubia""', 'description': 'command used to retrieve information about the Kubia service', 'destination_entity': '""Service""'}, {'source_entity': '""kubectl""', 'description': 'used to set imagePullPolicy to Always', 'destination_entity': '""imagePullPolicy""'}, {'source_entity': '""Always""', 'description': 'value assigned to imagePullPolicy', 'destination_entity': '""imagePullPolicy""'}, {'source_entity': '""kubectl""', 'description': 'used to expose the Kubia service on a node port', 'destination_entity': '""node port""'}, {'source_entity': '""v1""', 'description': 'version of the Kubernetes API used', 'destination_entity': '""Minikube""'}, {'source_entity': '""kubectl""', 'description': 'used to get information about a service on Minikube', 'destination_entity': '""Service""'}, {'source_entity': '""get svc kubia""', 'description': 'command used to retrieve information about the Kubia service on Minikube', 'destination_entity': '""Service""'}, {'source_entity': '""kubectl""', 'description': 'used to get the external IP of a service', 'destination_entity': '""external-ip""'}, {'source_entity': '""os.hostname()""', 'description': 'function used to retrieve the hostname of the operating system', 'destination_entity': '""os.hostname()""'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to manage and control the cluster"",\n    ""summary_er"": ""Kubectl manages and controls Kubernetes clusters, interacting with pods to execute commands.""\n  },\n  {\n    ""source"": ""latest"",\n    ""destination"": ""image"",\n    ""relation_description"": ""tag"",\n    ""summary_er"": ""The \'latest\' tag refers to the most recent image version, ensuring consistency across deployments.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to get information about a service"",\n    ""summary_er"": ""Using kubectl to retrieve pod details for a specific service.""\n  }\n]', '[\n  {\n    ""source"": ""get svc kubia"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""command used to retrieve information about the Kubia service"",\n    ""summary_er"": ""The \'get svc kubia\' command is used to fetch details about the Kubia pod in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to set imagePullPolicy to Always"",\n    ""summary_er"": ""Kubectl command used to configure pod\'s image pull policy to always, ensuring latest image is pulled.""\n  }\n]', '[\n  {\n    ""source"": ""Always"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""value assigned to imagePullPolicy"",\n    ""summary_er"": ""The \'Always\' value for imagePullPolicy ensures that the latest Docker image is pulled from the registry before running a pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to expose the Kubia service on a node port"",\n    ""summary_er"": ""kubectl exposes Kubia service on a node port, targeting a pod.""\n  }\n]', '[\n  {\n    ""source"": ""v1"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""version of the Kubernetes API used"",\n    ""summary_er"": ""The v1 API version is used to manage pods in Minikube.""\n  },\n  {\n    ""source"": ""Minikube"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""container runtime environment"",\n    ""summary_er"": ""Minikube provides a container runtime environment for running pods.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to get information about a service on Minikube"",\n    ""summary_er"": ""kubectl retrieves pod info for services running on Minikube, enabling service monitoring and management.""\n  }\n]', '[\n  {\n    ""source"": ""get svc kubia"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""command used to retrieve information about the Kubia service on Minikube"",\n    ""summary_er"": ""Retrieves pod info for Kubia service using \'get svc\' command.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to get the external IP of a service"",\n    ""summary_er"": ""Using kubectl to retrieve the external IP of a pod, enabling communication with services from outside the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""os.hostname()"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""function used to retrieve the hostname of the operating system"",\n    ""summary_er"": ""The os.hostname() function retrieves the hostname of the operating system, which is a string that identifies the host machine. This information can be useful for identifying and logging purposes in a Kubernetes pod.""\n  }\n]']","This chapter discusses deploying and updating applications declaratively using Kubernetes Deployments. It explains how to perform a rolling update with kubectl by creating a new version of an app without disrupting existing traffic. The importance of setting the container's imagePullPolicy property to Always when pushing updates to the same image tag is also highlighted, especially when using tags other than latest. This ensures that all nodes run the updated image.","[{'highlight': ""You can use the Service's node port to access the app if you're using Minikube or any other Kubernetes cluster where load balancer services aren't supported.""}, {'highlight': ""Modifying an app and pushing changes to the same image tag isn't a good idea, as it won't be picked up by worker nodes that have already pulled the old image.""}, {'highlight': ""To ensure changes are applied, set the container's imagePullPolicy property to Always when using a tag other than latest.""}, {'highlight': 'The default imagePullPolicy depends on the image tag: Always for the latest tag and IfNotPresent for any other tag.'}, {'highlight': ""It's recommended to push changes to an image under a new tag, rather than modifying the existing image with the same tag.""}]"

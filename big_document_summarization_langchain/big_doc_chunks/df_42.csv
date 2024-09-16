@@ -1,0 +1,520 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+420,509,0,[],"477
+Best practices
+for developing apps
+We’ve now covered most of what you need to know to run your apps in Kubernetes.
+We’ve explored what each individual resource does and how it’s used. Now we’ll see
+how to combine them in a typical application running on Kubernetes. We’ll also
+look at how to make an application run smoothly. After all, that’s the whole point
+of using Kubernetes, isn’t it? 
+ Hopefully, this chapter will help to clear up any misunderstandings and explain
+things that weren’t explained clearly yet. Along the way, we’ll also introduce a few
+additional concepts that haven’t been mentioned up to this point.
+This chapter covers
+Understanding which Kubernetes resources 
+appear in a typical application
+Adding post-start and pre-stop pod lifecycle hooks
+Properly terminating an app without breaking 
+client requests
+Making apps easy to manage in Kubernetes
+Using init containers in a pod
+Developing locally with Minikube
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'Pods', 'description': 'Lightweight and portable container runtime environment', 'category': 'container'}, {'entity': 'Resources', 'description': 'Components that make up a Kubernetes application', 'category': 'application'}, {'entity': 'Hooks', 'description': 'Functions that run at specific points in the pod lifecycle', 'category': 'process'}, {'entity': 'Init containers', 'description': 'Containers that run before the main container in a pod', 'category': 'container'}, {'entity': 'Minikube', 'description': 'Tool for running Kubernetes locally on a single machine', 'category': 'software'}]","[{'source_entity': '""Kubernetes""', 'description': 'manages', 'destination_entity': '""Resources""'}, {'source_entity': '""Kubernetes""', 'description': 'allocates', 'destination_entity': '""Pods""'}, {'source_entity': '""Kubernetes""', 'description': 'deploys', 'destination_entity': '""Init containers""'}, {'source_entity': '""Minikube""', 'description': 'provides', 'destination_entity': '""Resources""'}, {'source_entity': '""Hooks""', 'description': 'executes', 'destination_entity': '""Pods""'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages resources for pods, ensuring efficient allocation and utilization of system resources.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""allocates"",\n    ""summary_er"": ""Kubernetes allocates resources to Pods, ensuring efficient deployment and scaling of containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""Kubernetes deploys pods, which are the basic execution units in a containerized application.""\n  }\n]', '[\n  {\n    ""source"": ""Minikube"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""Minikube provides a pod for running Kubernetes applications.""\n  }\n]', '[\n  {\n    ""source"": ""Hooks"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""Kubernetes Hooks execute a specific action on a Pod, such as restarting or deleting it.""\n  }\n]']","This chapter covers best practices for developing apps on Kubernetes, including understanding typical application resources, adding lifecycle hooks, properly terminating apps without breaking client requests, making apps easy to manage, using init containers, and developing locally with Minikube.","[{'highlight': 'We’ve now covered most of what you need to know to run your apps in Kubernetes.'}, {'highlight': 'This chapter covers \uf0a1Understanding which Kubernetes resources appear in a typical application'}, {'highlight': 'Properly terminating an app without breaking client requests'}, {'highlight': 'Making apps easy to manage in Kubernetes'}, {'highlight': 'Developing locally with Minikube'}]"
+421,510,0,[],"478
+CHAPTER 17
+Best practices for developing apps
+17.1
+Bringing everything together
+Let’s start by looking at what an actual application consists of. This will also give you a
+chance to see if you remember everything you’ve learned so far and look at the big
+picture. Figure 17.1 shows the Kubernetes components used in a typical application.
+A typical application manifest contains one or more Deployment and/or StatefulSet
+objects. Those include a pod template containing one or more containers, with a live-
+ness probe for each of them and a readiness probe for the service(s) the container
+provides (if any). Pods that provide services to others are exposed through one or
+more Services. When they need to be reachable from outside the cluster, the Services
+are either configured to be LoadBalancer or NodePort-type Services, or exposed
+through an Ingress resource. 
+ The pod templates (and the pods created from them) usually reference two types
+of Secrets—those for pulling container images from private image registries and those
+used directly by the process running inside the pods. The Secrets themselves are
+usually not part of the application manifest, because they aren’t configured by the
+application developers but by the operations team. Secrets are usually assigned to
+ServiceAccounts, which are assigned to individual pods. 
+Deﬁned in the app manifest by the developer
+Pod template
+Deployment
+labels
+Pod(s)
+Label selector
+labels
+Created automatically at runtime
+Created by a cluster admin beforehand
+Container(s)
+Volume(s)
+ReplicaSet(s)
+Endpoints
+• Health probes
+• Environment variables
+• Volume mounts
+• Resource reqs/limits
+Horizontal
+PodAutoscaler
+StatefulSet
+DaemonSet
+Job
+CronJob
+Persistent
+Volume
+ConﬁgMap
+Service
+Persistent
+Volume
+Claim
+Secret(s)
+Service
+account
+Storage
+Class
+LimitRange
+ResourceQuota
+Ingress
+imagePullSecret
+Figure 17.1
+Resources in a typical application
+ 
+","[  Defined in the app manifest by the developer\nDeployment\nPod template labels imagePullSe\nContainer(s)\nHorizontal • Health probes\nPodAutoscaler • Environment variables\n• Volume mounts\n• Resource reqs/limits\nStatefulSet\nPersistent\nVolume(s)\nDaemonSet Volume\nClaim\nJob\nConfigMap\nCronJob\nIngress Service  \
+0                                               None                                                                                                                                                                                                                                                                           
+1                                               None                                                                                                                                                                                                                                                                           
+2                                               None                                                                                                                                                                                                                                                                           
+3                                               None                                                                                                                                                                                                                                                                           
+4                                               None                                                                                                                                                                                                                                                                           
+
+   Col1  Col2  \
+0  None         
+1     e   cre   
+2  None  None   
+3  None         
+4  None         
+
+  Created by a cluster admin beforehand\nService\naccount\nt\nSecret(s)\nLimitRange\nStorage\nClass ResourceQuota  
+0                                               None                                                               
+1                                                  t                                                               
+2  Created automatically at runtime\nPersistent\n...                                                               
+3                                               None                                                               
+4                                               None                                                               ,   Deployment\nPod template labels\nContainer(s)\n• Health probes\n• Environment variables\n• Volume mounts\n• Resource reqs/limits\nVolume(s)  \
+0                                               None                                                                                            
+1                                               None                                                                                            
+2                                               None                                                                                            
+
+   Col1  Col2  Col3  
+0        None        
+1  None        None  
+2  None        None  ]","[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'Deployment', 'description': 'Manages rollout and rollbacks of applications', 'category': 'software'}, {'entity': 'StatefulSet', 'description': 'Manages stateful applications', 'category': 'software'}, {'entity': 'Pod template', 'description': ""Defines a pod's configuration"", 'category': 'software'}, {'entity': 'Container(s)', 'description': 'Executes an application or service', 'category': 'software'}, {'entity': 'Volume(s)', 'description': 'Provides persistent storage for pods', 'category': 'hardware'}, {'entity': 'ReplicaSet(s)', 'description': 'Manages the number of replicas of a pod', 'category': 'software'}, {'entity': 'Endpoints', 'description': ""Defines a service's IP address and port"", 'category': 'software'}, {'entity': 'Health probes', 'description': 'Checks the health of a container or pod', 'category': 'software'}, {'entity': 'Environment variables', 'description': 'Provides configuration data to containers', 'category': 'software'}, {'entity': 'Volume mounts', 'description': ""Mounts a volume to a container's file system"", 'category': 'hardware'}, {'entity': 'Resource reqs/limits', 'description': 'Defines resource constraints for pods and containers', 'category': 'software'}, {'entity': 'Horizontal Pod Autoscaler', 'description': 'Automatically scales the number of replicas based on CPU utilization', 'category': 'software'}, {'entity': 'ServiceAccount', 'description': 'Provides identity to a pod or container', 'category': 'software'}, {'entity': 'Secret(s)', 'description': 'Stores sensitive data, such as passwords and API keys', 'category': 'software'}, {'entity': 'Ingress', 'description': 'Manages incoming HTTP requests', 'category': 'software'}, {'entity': 'Persistent Volume Claim', 'description': 'Requests storage resources from a cluster', 'category': 'hardware'}, {'entity': 'LimitRange', 'description': 'Defines resource limits for pods and containers', 'category': 'software'}, {'entity': 'ResourceQuota', 'description': 'Defines resource quotas for namespaces', 'category': 'software'}]","[{'source_entity': 'Kubernetes', 'description': 'Manages and orchestrates', 'destination_entity': 'Pod template'}, {'source_entity': 'Kubernetes', 'description': 'Provides resource management for', 'destination_entity': 'Resource reqs/limits'}, {'source_entity': 'Horizontal Pod Autoscaler', 'description': 'Automatically scales the number of', 'destination_entity': 'Pod(s)'}, {'source_entity': 'StatefulSet', 'description': 'Manages stateful applications by', 'destination_entity': 'Persistent Volume Claim'}, {'source_entity': 'Endpoints', 'description': 'Provides a way to expose services to', 'destination_entity': 'Ingress'}, {'source_entity': 'Environment variables', 'description': 'Passes configuration settings to', 'destination_entity': 'Container(s)'}, {'source_entity': 'ServiceAccount', 'description': 'Provides an identity for pods to', 'destination_entity': 'Pod template'}, {'source_entity': 'ReplicaSet(s)', 'description': 'Ensures a specified number of replicas are running', 'destination_entity': 'Deployment'}, {'source_entity': 'Secret(s)', 'description': 'Provides sensitive information to', 'destination_entity': 'Container(s)'}, {'source_entity': 'LimitRange', 'description': 'Enforces resource limits on', 'destination_entity': 'Resource reqs/limits'}, {'source_entity': 'Volume mounts', 'description': 'Mounts persistent storage to', 'destination_entity': 'Container(s)'}, {'source_entity': 'Health probes', 'description': 'Checks the health of', 'destination_entity': 'Pod template'}, {'source_entity': 'Volume(s)', 'description': 'Provides persistent storage for', 'destination_entity': 'Deployment'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""Manages and orchestrates"",\n    ""summary_er"": ""Kubernetes manages and orchestrates pods, ensuring efficient resource allocation and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""Provides resource management for"",\n    ""summary_er"": ""Kubernetes manages resources for pods, ensuring efficient allocation and utilization of system resources.""\n  }\n]', '[\n  {\n    ""source"": ""Horizontal Pod Autoscaler"",\n    ""destination"": ""Pod(s)"",\n    ""relation_description"": ""Automatically scales the number of"",\n    ""summary_er"": ""The Horizontal Pod Autoscaler automatically adjusts the number of Pods to match changing workload demands, ensuring efficient resource utilization and optimal performance.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""Manages stateful applications by"",\n    ""summary_er"": ""StatefulSet manages stateful applications by ensuring that each pod in a deployment maintains its own unique identity and persistent data, even when the pods are recreated or scaled.""\n  },\n  {\n    ""source"": ""StatefulSet"",\n    ""destination"": ""Persistent Volume Claim"",\n    ""relation_description"": ""Manages stateful applications by"",\n    ""summary_er"": ""StatefulSet manages Persistent Volume Claims to provide persistent storage for stateful applications, ensuring that data is retained even when the application is scaled or recreated.""\n  }\n]', '[\n  {\n    ""source"": ""Endpoints"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""Provides a way to expose services to"",\n    ""summary_er"": ""Endpoints allow exposing services to pods, enabling external access.""\n  },\n  {\n    ""source"": ""Ingress"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""expose services to"",\n    ""summary_er"": ""Ingress exposes services to pods, allowing external requests to reach them.""\n  }\n]', '[\n  {\n    ""source"": ""Environment variables"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""Passes configuration settings to"",\n    ""summary_er"": ""Environment variables are used to pass configuration settings from a container to a pod in Kubernetes, allowing for dynamic configuration and customization.""\n  }\n]', '[\n  {\n    ""source"": ""ServiceAccount"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""Provides an identity for pods to"",\n    ""summary_er"": ""A ServiceAccount provides a unique identity for each pod, allowing it to access cluster resources and authenticate with other services.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""Ensures a specified number of replicas are running"",\n    ""summary_er"": ""ReplicaSet ensures a specified number of Pod replicas are running, guaranteeing availability and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""Secret(s)"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""Provides sensitive information to"",\n    ""summary_er"": ""A secret in Kubernetes provides sensitive data to a pod, which can access it for configuration or authentication purposes.""\n  }\n]', '[\n  {\n    ""source"": ""LimitRange"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""Enforces resource limits on"",\n    ""summary_er"": ""LimitRange enforces resource limits on pods to ensure efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""Volume mounts"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""Mounts persistent storage to"",\n    ""summary_er"": ""Persistent storage is mounted to a pod for data persistence and access.""\n  }\n]', '[\n  {\n    ""source"": ""Health probes"",\n    ""destination"": ""Pod template"",\n    ""relation_description"": ""Checks the health of"",\n    ""summary_er"": ""Health probes ensure that a pod\'s container(s) are running and responding correctly, as specified in its Pod Template.""\n  }\n]', '[\n  {\n    ""source"": ""Volume(s)"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""Provides persistent storage for"",\n    ""summary_er"": ""A Volume provides persistent storage for a Pod, allowing it to retain data even after restarts or terminations.""\n  }\n]']","A typical application manifest contains one or more Deployment and/or StatefulSet objects, including a pod template with containers, liveliness probes, readiness probes, and Services for exposing pods to others. The pod templates reference Secrets for pulling container images and those used directly by the process running inside the pods. Other resources like ReplicaSets, Endpoints, Horizontal Pod Autoscalers, and Ingress are also defined in the app manifest.","[{'highlight': 'A typical application manifest contains one or more Deployment and/or StatefulSet objects.'}, {'highlight': 'Pods that provide services to others are exposed through one or more Services.'}, {'highlight': 'The pod templates (and the pods created from them) usually reference two types of Secrets—those for pulling container images from private image registries and those used directly by the process running inside the pods.'}, {'highlight': 'Secrets are usually assigned to ServiceAccounts, which are assigned to individual pods.'}, {'highlight': 'A typical application consists of a pod template containing one or more containers, with a live-ness probe for each of them and a readiness probe for the service(s) the container provides (if any).'}]"
+422,511,0,[],"479
+Understanding the pod’s lifecycle
+ The application also contains one or more ConfigMaps, which are either used to
+initialize environment variables or mounted as a configMap volume in the pod. Cer-
+tain pods use additional volumes, such as an emptyDir or a gitRepo volume, whereas
+pods requiring persistent storage use persistentVolumeClaim volumes. The Persistent-
+VolumeClaims are also part of the application manifest, whereas StorageClasses refer-
+enced by them are created by system administrators upfront. 
+ In certain cases, an application also requires the use of Jobs or CronJobs. Daemon-
+Sets aren’t normally part of application deployments, but are usually created by sysad-
+mins to run system services on all or a subset of nodes. HorizontalPodAutoscalers
+are either included in the manifest by the developers or added to the system later by
+the ops team. The cluster administrator also creates LimitRange and ResourceQuota
+objects to keep compute resource usage of individual pods and all the pods (as a
+whole) under control.
+ After the application is deployed, additional objects are created automatically by
+the various Kubernetes controllers. These include service Endpoints objects created
+by the Endpoints controller, ReplicaSets created by the Deployment controller, and
+the actual pods created by the ReplicaSet (or Job, CronJob, StatefulSet, or DaemonSet)
+controllers.
+ Resources are often labeled with one or more labels to keep them organized. This
+doesn’t apply only to pods but to all other resources as well. In addition to labels, most
+resources also contain annotations that describe each resource, list the contact infor-
+mation of the person or team responsible for it, or provide additional metadata for
+management and other tools. 
+ At the center of all this is the Pod, which arguably is the most important Kuberne-
+tes resource. After all, each of your applications runs inside it. To make sure you know
+how to develop apps that make the most out of their environment, let’s take one last
+close look at pods—this time from the application’s perspective. 
+17.2
+Understanding the pod’s lifecycle
+We’ve said that pods can be compared to VMs dedicated to running only a single
+application. Although an application running inside a pod is not unlike an application
+running in a VM, significant differences do exist. One example is that apps running in
+a pod can be killed any time, because Kubernetes needs to relocate the pod to
+another node for a reason or because of a scale-down request. We’ll explore this
+aspect next.
+17.2.1 Applications must expect to be killed and relocated
+Outside Kubernetes, apps running in VMs are seldom moved from one machine to
+another. When an operator moves the app, they can also reconfigure the app and
+manually check that the app is running fine in the new location. With Kubernetes,
+apps are relocated much more frequently and automatically—no human operator
+ 
+",[],"[{'entity': 'Pod', 'description': 'A pod is a logical host for one or more application containers.', 'category': 'container'}, {'entity': 'ConfigMap', 'description': 'A ConfigMap is used to initialize environment variables or mounted as a configMap volume in the pod.', 'category': 'resource'}, {'entity': 'emptyDir', 'description': 'An emptyDir volume is used for pods requiring additional volumes.', 'category': 'volume'}, {'entity': 'gitRepo', 'description': 'A gitRepo volume is used for pods requiring additional volumes.', 'category': 'volume'}, {'entity': 'persistentVolumeClaim', 'description': 'A persistentVolumeClaim is used for pods requiring persistent storage.', 'category': 'resource'}, {'entity': 'StorageClass', 'description': 'A StorageClass is created by system administrators upfront and referenced by PersistentVolumeClaims.', 'category': 'resource'}, {'entity': 'Job', 'description': 'A Job is used for pods requiring the use of Jobs or CronJobs.', 'category': 'resource'}, {'entity': 'CronJob', 'description': 'A CronJob is used for pods requiring the use of Jobs or CronJobs.', 'category': 'resource'}, {'entity': 'DaemonSet', 'description': 'A DaemonSet is created by system administrators to run system services on all or a subset of nodes.', 'category': 'resource'}, {'entity': 'HorizontalPodAutoscaler', 'description': 'A HorizontalPodAutoscaler is used to keep compute resource usage of individual pods and all the pods under control.', 'category': 'resource'}, {'entity': 'LimitRange', 'description': 'A LimitRange is created by cluster administrators to keep compute resource usage of individual pods and all the pods under control.', 'category': 'resource'}, {'entity': 'ResourceQuota', 'description': 'A ResourceQuota is created by cluster administrators to keep compute resource usage of individual pods and all the pods under control.', 'category': 'resource'}, {'entity': 'Endpoints', 'description': 'An Endpoints object is created automatically by the Endpoints controller.', 'category': 'resource'}, {'entity': 'ReplicaSet', 'description': 'A ReplicaSet is created automatically by the Deployment controller.', 'category': 'resource'}, {'entity': 'Deployment', 'description': 'A Deployment is used to create a ReplicaSet and manage pods.', 'category': 'resource'}, {'entity': 'StatefulSet', 'description': 'A StatefulSet is used to create a ReplicaSet and manage pods.', 'category': 'resource'}, {'entity': 'DaemonSet', 'description': 'A DaemonSet is created by system administrators to run system services on all or a subset of nodes.', 'category': 'resource'}, {'entity': 'labels', 'description': 'Labels are used to keep resources organized.', 'category': 'metadata'}, {'entity': 'annotations', 'description': 'Annotations are used to describe each resource, list contact information of the person or team responsible for it, or provide additional metadata for management and other tools.', 'category': 'metadata'}]","[{'source_entity': 'Kubernetes', 'description': 'manages', 'destination_entity': 'Pod'}, {'source_entity': 'CronJob', 'description': 'schedules', 'destination_entity': 'Pod'}, {'source_entity': 'Deployment', 'description': 'orchestrates', 'destination_entity': 'ReplicaSet'}, {'source_entity': 'ReplicaSet', 'description': 'ensures', 'destination_entity': 'Pod'}, {'source_entity': 'Job', 'description': 'executes', 'destination_entity': 'Pod'}, {'source_entity': 'DaemonSet', 'description': 'deploys', 'destination_entity': 'Pod'}, {'source_entity': 'ConfigMap', 'description': 'provides', 'destination_entity': 'Pod'}, {'source_entity': 'StorageClass', 'description': 'manages', 'destination_entity': 'Persistent Volume'}, {'source_entity': 'gitRepo', 'description': 'stores', 'destination_entity': 'Image'}, {'source_entity': 'HorizontalPodAutoscaler', 'description': 'monitors', 'destination_entity': 'Pod'}, {'source_entity': 'emptyDir', 'description': 'provides', 'destination_entity': 'Pod'}, {'source_entity': 'Endpoints', 'description': 'exposes', 'destination_entity': 'Service'}, {'source_entity': 'annotations', 'description': 'adds', 'destination_entity': 'Pod'}, {'source_entity': 'ResourceQuota', 'description': 'enforces', 'destination_entity': 'Cluster'}, {'source_entity': 'StatefulSet', 'description': 'manages', 'destination_entity': 'Persistent Volume'}, {'source_entity': 'LimitRange', 'description': 'regulates', 'destination_entity': 'Pod'}, {'source_entity': 'persistentVolumeClaim', 'description': 'requests', 'destination_entity': 'StorageClass'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages a collection of containers called a pod, providing resource allocation and lifecycle management.""\n  }\n]', '[\n  {\n    ""source"": ""CronJob"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""schedules"",\n    ""summary_er"": ""A CronJob schedules a Pod to run periodically, ensuring that tasks are executed at specified intervals.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""orchestrates"",\n    ""summary_er"": ""A Deployment ensures a specified number of replicas (identical Pods) are running at any given time, orchestrating Pod creation and deletion as needed.""\n  },\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A ReplicaSet ensures a specified number of identical Pods are running at any given time, managing Pod creation and deletion as needed.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""ensures"",\n    ""summary_er"": ""A ReplicaSet ensures that a specified number of replicas (identical Pods) are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""Job"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""A Job in Kubernetes executes a set of tasks, which are run as Pods. The Job ensures that a specified number of replicas are running.""\n  }\n]', '[\n  {\n    ""source"": ""DaemonSet"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""A DaemonSet ensures a specified number of replicas (usually one) of a pod are deployed across the cluster, providing a basic service or functionality.""\n  }\n]', '[\n  {\n    ""source"": ""ConfigMap"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""A ConfigMap provides configuration data to a Pod, allowing it to access and use external data such as environment variables, files, or secrets.""\n  }\n]', '[\n  {\n    ""source"": ""StorageClass"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A StorageClass manages persistent volumes for a pod, ensuring data persistence and availability.""\n  }\n]', '[\n  {\n    ""source"": ""gitRepo"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores"",\n    ""summary_er"": ""A Git repository stores a Docker image, which is used to create a containerized application.""\n  }\n]', '[{\n  ""source"": ""HorizontalPodAutoscaler"",\n  ""destination"": ""Pod"",\n  ""relation_description"": ""monitors"",\n  ""summary_er"": ""The HorizontalPodAutoscaler continuously monitors a Pod\'s performance, scaling it up or down as needed to maintain optimal resource utilization.""\n}]', '[\n  {\n    ""source"": ""emptyDir"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The emptyDir volume provides a directory that exists only in memory, allowing for temporary storage of data within a pod.""\n  }\n]', '[\n  {\n    ""source"": ""Endpoints"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""Endpoints expose a set of network ports that allow external traffic to reach a Pod.""\n  }\n]', '[\n  {\n    ""source"": ""annotations"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""adds"",\n    ""summary_er"": ""Annotations add metadata to a pod, which can be used by Kubernetes to manage and configure the pod.""\n  }\n]', '[\n  {\n    ""source"": ""ResourceQuota"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""ResourceQuota enforces resource constraints on pods, ensuring they do not exceed allocated limits.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A StatefulSet manages a set of replicas, ensuring that a specified number of pods are running at any given time.""\n  }\n]', '[{\n  ""source"": ""LimitRange"",\n  ""destination"": ""Pod"",\n  ""relation_description"": ""regulates"",\n  ""summary_er"": ""A LimitRange resource regulates the resources (CPU and memory) that a Pod can use.""\n}]', '[\n  {\n    ""source"": ""persistentVolumeClaim"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""Persistent Volume Claim requests storage resources from a Pod, ensuring data persistence and availability.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""StorageClass"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A Pod uses a StorageClass to provision persistent storage for its containers, leveraging the underlying storage infrastructure.""\n  }\n]']","A pod's lifecycle is crucial to understand, as it can be killed and relocated by Kubernetes at any time due to scale-down requests or node relocations. This differs from traditional VMs where apps are rarely moved, giving operators more control over the app in its new location. Kubernetes controllers automatically create objects such as Endpoints, ReplicaSets, and pods, which are often labeled and annotated for organization and metadata purposes.","[{'highlight': 'The application contains one or more ConfigMaps, which are used to initialize environment variables or mounted as a configMap volume in the pod.'}, {'highlight': 'Persistent-VolumeClaims are part of the application manifest, whereas StorageClasses referenced by them are created by system administrators upfront.'}, {'highlight': 'After the application is deployed, additional objects are created automatically by the various Kubernetes controllers, including service Endpoints objects and ReplicaSets.'}, {'highlight': 'Resources are often labeled with one or more labels to keep them organized, and most resources also contain annotations that describe each resource and provide additional metadata for management and other tools.'}, {'highlight': 'Pods can be killed any time by Kubernetes due to relocation or scale-down requests, which is a significant difference from apps running in VMs outside of Kubernetes.'}]"
+423,512,0,[],"480
+CHAPTER 17
+Best practices for developing apps
+reconfigures them and makes sure they still run properly after the move. This means
+application developers need to make sure their apps allow being moved relatively
+often. 
+EXPECTING THE LOCAL IP AND HOSTNAME TO CHANGE
+When a pod is killed and run elsewhere (technically, it’s a new pod instance replac-
+ing the old one; the pod isn’t relocated), it not only has a new IP address but also a
+new name and hostname. Most stateless apps can usually handle this without any
+adverse effects, but stateful apps usually can’t. We’ve learned that stateful apps can
+be run through a StatefulSet, which ensures that when the app starts up on a new
+node after being rescheduled, it will still see the same host name and persistent state
+as before. The pod’s IP will change nevertheless. Apps need to be prepared for that
+to happen. The application developer therefore should never base membership in a
+clustered app on the member’s IP address, and if basing it on the hostname, should
+always use a StatefulSet.
+EXPECTING THE DATA WRITTEN TO DISK TO DISAPPEAR
+Another thing to keep in mind is that if the app writes data to disk, that data may not be
+available after the app is started inside a new pod, unless you mount persistent storage at
+the location the app is writing to. It should be clear this happens when the pod is
+rescheduled, but files written to disk will disappear even in scenarios that don’t involve
+any rescheduling. Even during the lifetime of a single pod, the files written to disk by
+the app running in the pod may disappear. Let me explain this with an example.
+ Imagine an app that has a long and computationally intensive initial startup proce-
+dure. To help the app come up faster on subsequent startups, the developers make
+the app cache the results of the initial startup on disk (an example of this would be
+the scanning of all Java classes for annotations at startup and then writing the results
+to an index file). Because apps in Kubernetes run in containers by default, these files
+are written to the container’s filesystem. If the container is then restarted, they’re all
+lost, because the new container starts off with a completely new writable layer (see fig-
+ure 17.2).
+ Don’t forget that individual containers may be restarted for several reasons, such
+as because the process crashes, because the liveness probe returned a failure, or
+because the node started running out of memory and the process was killed by the
+OOMKiller. When this happens, the pod is still the same, but the container itself is
+completely new. The Kubelet doesn’t run the same container again; it always creates a
+new container. 
+USING VOLUMES TO PRESERVE DATA ACROSS CONTAINER RESTARTS
+When its container is restarted, the app in the example will need to perform the
+intensive startup procedure again. This may or may not be desired. To make sure data
+like this isn’t lost, you need to use at least a pod-scoped volume. Because volumes live
+and die together with the pod, the new container will be able to reuse the data written
+to the volume by the previous container (figure 17.3).
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'pod', 'description': 'Lightweight and portable executable container', 'category': 'container'}, {'entity': 'StatefulSet', 'description': 'Ensures that when the app starts up on a new node after being rescheduled, it will still see the same host name and persistent state as before', 'category': 'software'}, {'entity': 'clustered app', 'description': 'Application running in multiple pods', 'category': 'application'}, {'entity': 'IP address', 'description': ""Unique identifier for a pod's network interface"", 'category': 'network'}, {'entity': 'hostname', 'description': ""Unique identifier for a pod's host name"", 'category': 'hardware'}, {'entity': 'container', 'description': 'Lightweight and portable executable container', 'category': 'container'}, {'entity': 'OOMKiller', 'description': 'Process that kills processes when the node runs out of memory', 'category': 'process'}, {'entity': 'liveness probe', 'description': 'Mechanism to check if a process is running correctly', 'category': 'process'}, {'entity': 'volume', 'description': 'Persistent storage for data across container restarts', 'category': 'storage'}, {'entity': 'pod-scoped volume', 'description': 'Volume that lives and dies together with the pod', 'category': 'storage'}, {'entity': 'Kubelet', 'description': 'Agent that runs on each node to manage pods', 'category': 'software'}]","[{'source_entity': 'Kubernetes', 'description': 'manages', 'destination_entity': 'container'}, {'source_entity': 'container', 'description': 'runs', 'destination_entity': 'clustered app'}, {'source_entity': 'clustered app', 'description': 'uses', 'destination_entity': 'volume'}, {'source_entity': 'Kubernetes', 'description': 'orchestrates', 'destination_entity': 'pod'}, {'source_entity': 'liveness probe', 'description': 'monitors', 'destination_entity': 'container'}, {'source_entity': 'OOMKiller', 'description': 'kills', 'destination_entity': 'container'}, {'source_entity': 'hostname', 'description': 'provides', 'destination_entity': 'Kubelet'}, {'source_entity': 'StatefulSet', 'description': 'manages', 'destination_entity': 'pod-scoped volume'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages a collection of containers called pods, providing a way to deploy and manage applications.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""A container runs within a pod, providing isolation and resource management for the application.""\n  }\n]', '[\n  {\n    ""source"": ""clustered app"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A clustered app utilizes a pod to execute its functionality, leveraging the pod\'s resources and capabilities.""\n  },\n  {\n    ""source"": ""clustered app"",\n    ""destination"": ""volume"",\n    ""relation_description"": ""volume"",\n    ""summary_er"": ""A clustered app employs a volume to store and manage its data, ensuring efficient storage and retrieval mechanisms.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""orchestrates"",\n    ""summary_er"": ""Kubernetes manages and coordinates the execution of pods, ensuring efficient resource utilization and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""liveness probe"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""monitors"",\n    ""summary_er"": ""The liveness probe monitors the health of a pod, ensuring it\'s running correctly and responding to requests.""\n  }\n]', '[\n  {\n    ""source"": ""OOMKiller"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""kills"",\n    ""summary_er"": ""OOMKiller terminates a pod\'s process when it exceeds its allocated memory, preventing resource starvation.""\n  }\n]', '[\n  {\n    ""source"": ""hostname"",\n    ""destination"": ""Kubelet"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The hostname provides essential information to Kubelet, enabling it to manage and monitor pods within a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A StatefulSet manages a set of identical pods, ensuring consistent state across all replicas.""\n  },\n  {\n    ""source"": ""StatefulSet"",\n    ""destination"": ""pod-scoped volume"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A StatefulSet manages a pod-scoped volume, providing persistent storage for each pod in the set.""\n  }\n]']","Kubernetes application developers should ensure their apps can be moved and restarted without issues, considering IP and hostname changes. Stateful apps should use StatefulSets for persistence. Apps writing data to disk may lose it when restarted or rescheduled unless using persistent storage. Volumes can preserve data across container restarts, making them useful for caching results or other sensitive data.","[{'highlight': 'When a pod is killed and run elsewhere, it not only has a new IP address but also a new name and hostname.'}, {'highlight': ""Apps need to be prepared for their pod's IP to change when rescheduled, and should never base membership in a clustered app on the member's IP address.""}, {'highlight': 'Files written to disk by an app running in a pod may disappear even during the lifetime of a single pod, unless persistent storage is mounted at the location the app is writing to.'}, {'highlight': 'Individual containers may be restarted for several reasons, such as process crashes or node memory issues, resulting in lost data written to disk by previous container instances.'}, {'highlight': 'Using pod-scoped volumes can help preserve data across container restarts, allowing new containers to reuse data written to the volume by previous containers.'}]"
+424,513,0,[],"481
+Understanding the pod’s lifecycle
+Container
+Process
+Writes to
+Filesystem
+Writable layer
+Read-only layer
+Read-only layer
+Image layers
+Container crashes
+or is killed
+Pod
+New container
+New process
+Filesystem
+New writable layer
+Read-only layer
+Read-only layer
+Image layers
+New container started
+(part of the same pod)
+New container
+starts with new
+writeable layer:
+all ﬁles are lost
+Figure 17.2
+Files written to the container’s filesystem are lost when the container is restarted.
+Container
+Process
+Writes to
+Can read
+the same ﬁles
+Filesystem
+volumeMount
+Container crashes
+or is killed
+Pod
+New container
+New process
+Filesystem
+volumeMount
+New container started
+(part of the same pod)
+New process can
+use data preserved
+in the volume
+Volume
+Figure 17.3
+Using a volume to persist data across container restarts
+ 
+",[],"[{'entity': 'Container', 'description': 'A lightweight and standalone executable software package.', 'category': 'Software'}, {'entity': 'Process', 'description': 'A program in execution, occupying memory and CPU resources.', 'category': 'Process'}, {'entity': 'Writes to', 'description': 'An operation that saves data to a file or filesystem.', 'category': 'Process'}, {'entity': 'Filesystem', 'description': 'A hierarchical organization of files and directories on a storage device.', 'category': 'Hardware'}, {'entity': 'Writable layer', 'description': ""A part of the container's filesystem where changes can be made."", 'category': 'Software'}, {'entity': 'Read-only layer', 'description': ""A part of the container's filesystem that cannot be modified."", 'category': 'Software'}, {'entity': 'Image layers', 'description': 'Pre-built components that make up a container image.', 'category': 'Software'}, {'entity': 'Pod', 'description': 'The basic execution unit in Kubernetes, consisting of one or more containers.', 'category': 'Application'}, {'entity': 'New container', 'description': 'A new instance of a container created to replace an existing one.', 'category': 'Software'}, {'entity': 'New process', 'description': 'A new program in execution within a container.', 'category': 'Process'}, {'entity': 'Filesystem volumeMount', 'description': 'The ability to mount a filesystem as a directory within a container.', 'category': 'Hardware'}, {'entity': 'Volume', 'description': 'A shared storage resource that persists data across container restarts.', 'category': 'Database'}]","[{'source_entity': 'Writes to', 'description': 'writes data to a container', 'destination_entity': 'Container'}, {'source_entity': 'Writes to', 'description': 'creates a new writable layer for a container', 'destination_entity': 'Writable layer'}, {'source_entity': 'Writes to', 'description': 'writes data to an image layer', 'destination_entity': 'Image layers'}, {'source_entity': 'Pod', 'description': 'hosts one or more containers', 'destination_entity': 'Container'}, {'source_entity': 'Pod', 'description': 'uses a filesystem volume mount to share data with containers', 'destination_entity': 'Filesystem volumeMount'}, {'source_entity': 'Pod', 'description': 'uses a filesystem to store data shared with containers', 'destination_entity': 'Filesystem'}, {'source_entity': 'Container', 'description': 'runs a new process or uses an existing one', 'destination_entity': 'New process'}, {'source_entity': 'Container', 'description': 'uses a writable layer to store data', 'destination_entity': 'Writable layer'}, {'source_entity': 'Container', 'description': 'reads from an image layer or a read-only layer', 'destination_entity': 'Image layers'}, {'source_entity': 'New container', 'description': 'is created by writing data to a writable layer', 'destination_entity': 'Writable layer'}, {'source_entity': 'New process', 'description': 'is run within a container or an existing process', 'destination_entity': 'Process'}, {'source_entity': 'Read-only layer', 'description': 'provides data that cannot be modified by containers', 'destination_entity': 'Image layers'}, {'source_entity': 'Filesystem volumeMount', 'description': 'shares data between a pod and its containers', 'destination_entity': 'Filesystem'}]","['[\n  {\n    ""source"": ""Writes"",\n    ""destination"": ""to"",\n    ""relation_description"": ""the"",\n    ""summary_er"": ""A Kubernetes component that initiates data transfer to a target entity.""\n  },\n  {\n    ""source"": ""writes"",\n    ""destination"": ""data"",\n    ""relation_description"": ""to"",\n    ""summary_er"": ""Data is being written into a container for storage and management purposes.""\n  },\n  {\n    ""source"": ""writes"",\n    ""destination"": ""a"",\n    ""relation_description"": ""container"",\n    ""summary_er"": ""A Docker container is being created to store data for efficient processing.""\n  },\n  {\n    ""source"": ""to"",\n    ""destination"": ""the"",\n    ""relation_description"": ""pod"",\n    ""summary_er"": ""Data is being written into a pod for deployment and execution purposes.""\n  }\n]', '[\n  {\n    ""source"": ""Writes to"",\n    ""destination"": ""the relation description"",\n    ""relation_description"": ""creates a new writable layer for a container"",\n    ""summary_er"": ""A pod creates a new writable layer for a container, enabling data persistence.""\n  },\n  {\n    ""source"": ""the relation description"",\n    ""destination"": ""Writable layer"",\n    ""relation_description"": ""for a container"",\n    ""summary_er"": ""A container utilizes a writable layer to store and manage its data persistently.""\n  }\n]', '[\n  {\n    ""source"": ""Writes to"",\n    ""destination"": ""the relation description"",\n    ""relation_description"": ""writes data to an image layer"",\n    ""summary_er"": ""The source entity \'Writes to\' writes data to an image layer, which is then used by the destination entity \'the relation description\'.""\n  },\n  {\n    ""source"": ""the relation description"",\n    ""destination"": ""Image layers"",\n    ""relation_description"": ""writes data to an image layer"",\n    ""summary_er"": ""The source entity \'the relation description\' writes data to an image layer, which is a type of Image layers used by the destination entity.""\n  },\n  {\n    ""source"": ""Writes to"",\n    ""destination"": ""Image layers"",\n    ""relation_description"": ""writes data to an image layer"",\n    ""summary_er"": ""The source entity \'Writes to\' writes data to an image layer, which is a type of Image layers used by the destination entity.""\n  },\n  {\n    ""source"": ""the relation description"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""writes data to an image layer"",\n    ""summary_er"": ""The source entity \'the relation description\' writes data to an image layer, which is then used by the destination entity \'pod\'.""\n  },\n  {\n    ""source"": ""Writes to"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""writes data to an image layer"",\n    ""summary_er"": ""The source entity \'Writes to\' writes data to an image layer, which is then used by the destination entity \'pod\'.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Container"",\n    ""relation_description"": ""hosts one or more containers"",\n    ""summary_er"": ""A Pod can host one or more containers, providing a shared environment for them to run in.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Filesystem Volume Mount"",\n    ""relation_description"": ""uses a filesystem volume mount to share data with containers"",\n    ""summary_er"": ""A Pod uses a Filesystem Volume Mount to share data with its containers, enabling them to access and manipulate shared files.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Filesystem"",\n    ""relation_description"": ""uses a filesystem to store data shared with containers"",\n    ""summary_er"": ""A Pod uses a Filesystem to share data with its containers, enabling efficient storage and retrieval of shared resources.""\n  }\n]', '[\n  {\n    ""source"": ""Container"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""runs a new process or uses an existing one"",\n    ""summary_er"": ""A container runs within a pod, utilizing either a new or existing process.""\n  }\n]', '[\n  {\n    ""source"": ""Container"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""uses a writable layer to store data"",\n    ""summary_er"": ""A container uses a writable layer in a pod to store data, enabling efficient and persistent storage.""\n  }\n]', '[\n  {\n    ""source"": ""Container"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""reads from an image layer or a read-only layer"",\n    ""summary_er"": ""A container in a pod reads data from an image layer, which is a read-only snapshot of a filesystem.""\n  }\n]', '[\n  {\n    ""source"": ""New container"",\n    ""destination"": ""Writable layer"",\n    ""relation_description"": ""is created by writing data to a writable layer"",\n    ""summary_er"": ""A new container is created by writing data to a writable layer, which serves as the foundation for the pod\'s storage.""\n  }\n]', '[\n  {\n    ""source"": ""New process"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is run within a container or an existing process"",\n    ""summary_er"": ""A new process is executed within a container or an existing pod, leveraging Docker for isolation and resource management.""\n  }\n]', '[\n  {\n    ""source"": ""Read-only layer"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides data that cannot be modified by containers"",\n    ""summary_er"": ""A read-only layer provides immutable data to a pod, ensuring container modifications are not persisted.""\n  },\n  {\n    ""source"": ""Image layers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""builds the base image for the container"",\n    ""summary_er"": ""Image layers construct the foundation of a pod\'s container, defining its initial state and configuration.""\n  }\n]', '[\n  {\n    ""source"": ""Filesystem volumeMount"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""shares data between a pod and its containers"",\n    ""summary_er"": ""A Filesystem volumeMount enables data sharing between a pod and its associated containers, facilitating efficient communication and resource management.""\n  },\n  {\n    ""source"": ""Filesystem volumeMount"",\n    ""destination"": ""containers"",\n    ""relation_description"": ""shares data between a pod and its containers"",\n    ""summary_er"": ""A Filesystem volumeMount allows containers within a pod to access and share data, promoting collaborative processing and resource utilization.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""Filesystem volumeMount"",\n    ""relation_description"": ""shares data between a pod and its containers"",\n    ""summary_er"": ""A pod utilizes Filesystem volumeMount to manage and share data with its associated containers, ensuring seamless communication and resource allocation.""\n  },\n  {\n    ""source"": ""containers"",\n    ""destination"": ""Filesystem volumeMount"",\n    ""relation_description"": ""shares data between a pod and its containers"",\n    ""summary_er"": ""Containers within a pod rely on Filesystem volumeMount to access and share data, facilitating efficient communication and resource management.""\n  }\n]']","A pod's lifecycle involves a container and its process, which writes to a filesystem with a writable layer on top of read-only layers and image layers. When the container crashes or is killed, a new container starts with a new writable layer, losing all previous files. Using a volume mounts allows data persistence across container restarts, enabling a new process to use preserved data in the volume.","[{'highlight': 'Files written to the container’s filesystem are lost when the container is restarted.'}, {'highlight': 'New process can use data preserved in the volume'}, {'highlight': 'Container crashes or is killed, Pod creates a new container with a new writable layer and read-only layers from image'}, {'highlight': 'Using a volume to persist data across container restarts'}, {'highlight': 'New container starts with a new writable layer: all files are lost'}]"
+425,514,0,[],"482
+CHAPTER 17
+Best practices for developing apps
+Using a volume to preserve files across container restarts is a great idea sometimes,
+but not always. What if the data gets corrupted and causes the newly created process
+to crash again? This will result in a continuous crash loop (the pod will show the
+CrashLoopBackOff status). If you hadn’t used a volume, the new container would start
+from scratch and most likely not crash. Using volumes to preserve files across con-
+tainer restarts like this is a double-edged sword. You need to think carefully about
+whether to use them or not.
+17.2.2 Rescheduling of dead or partially dead pods
+If a pod’s container keeps crashing, the Kubelet will keep restarting it indefinitely.
+The time between restarts will be increased exponentially until it reaches five minutes.
+During those five minute intervals, the pod is essentially dead, because its container’s
+process isn’t running. To be fair, if it’s a multi-container pod, certain containers may
+be running normally, so the pod is only partially dead. But if a pod contains only a sin-
+gle container, the pod is effectively dead and completely useless, because no process is
+running in it anymore.
+ You may find it surprising to learn that such pods aren’t automatically removed
+and rescheduled, even if they’re part of a ReplicaSet or similar controller. If you cre-
+ate a ReplicaSet with a desired replica count of three, and then one of the containers
+in one of those pods starts crashing, Kubernetes will not delete and replace the pod.
+The end result is a ReplicaSet with only two properly running replicas instead of the
+desired three (figure 17.4).
+You’d probably expect the pod to be deleted and replaced with another pod instance
+that might run successfully on another node. After all, the container may be crashing
+because of a node-related problem that doesn’t manifest itself on other nodes. Sadly,
+that isn’t the case. The ReplicaSet controller doesn’t care if the pods are dead—all it
+ReplicaSet
+Desired replicas: 3
+Actual replicas: 3
+Only two pods are actually
+performing their jobs
+Third pod’s status is Running,
+but its container keeps crashing,
+with signiﬁcant delays between
+restarts (CrashLoopBackOff)
+We want
+three pods
+Pod
+Running
+container
+Pod
+Running
+container
+Pod
+Dead
+container
+Figure 17.4
+A ReplicaSet controller doesn’t reschedule dead pods.
+ 
+",[],"[{'entity': 'volume', 'description': 'a persistent storage solution in Docker', 'category': 'software/container'}, {'entity': 'Kubelet', 'description': 'the agent that runs on each node in a Kubernetes cluster', 'category': 'software/container'}, {'entity': 'pod', 'description': 'the basic execution unit in Kubernetes, a pod is a logical host for one or more containers', 'category': 'software/container'}, {'entity': 'container', 'description': 'a lightweight and standalone process in Docker', 'category': 'software/container'}, {'entity': 'ReplicaSet', 'description': 'a controller that ensures a specified number of replicas (identical pods) are running at any given time', 'category': 'software/container'}, {'entity': 'CrashLoopBackOff', 'description': ""the status displayed by Kubernetes when a pod's container keeps crashing and restarting indefinitely"", 'category': 'software/container'}, {'entity': 'Kubernetes', 'description': 'an open-source container orchestration system for automating the deployment, scaling, and management of containers', 'category': 'software/container'}, {'entity': 'Docker', 'description': 'a lightweight and portable virtualization platform that allows developers to package their applications and its dependencies into a single container', 'category': 'software/container'}]","[{'source_entity': '""Kubernetes""', 'description': 'manages', 'destination_entity': '""container""'}, {'source_entity': '""Kubernetes""', 'description': 'orchestrates', 'destination_entity': '""pod""'}, {'source_entity': '""Kubernetes""', 'description': 'ensures', 'destination_entity': '""ReplicaSet""'}, {'source_entity': '""Docker""', 'description': 'provides', 'destination_entity': '""container""'}, {'source_entity': '""Kubelet""', 'description': 'communicates', 'destination_entity': '""Kubernetes""'}, {'source_entity': '""CrashLoopBackOff""', 'description': 'indicates', 'destination_entity': '""pod""'}, {'source_entity': '""volume""', 'description': 'is attached to', 'destination_entity': '""container""'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages pods, ensuring efficient resource allocation and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""orchestrates"",\n    ""summary_er"": ""Kubernetes manages and orchestrates multiple pods to ensure efficient resource utilization and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""ensures"",\n    ""summary_er"": ""Kubernetes ensures a specified number of replicas (in this case, one) are running at any given time, guaranteeing that the pod is always available.""\n  }\n]', '[\n  {\n    ""source"": ""Docker"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""Docker provides a container runtime environment for pods to run in.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""communicates"",\n    ""summary_er"": ""The Kubelet, a critical component of Kubernetes, communicates with pods to manage and orchestrate containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""CrashLoopBackOff"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""indicates"",\n    ""summary_er"": ""A CrashLoopBackOff error in Kubernetes indicates that a pod is unable to start or restart due to a crash loop, where the container crashes and the kubelet tries to restart it indefinitely.""\n  }\n]', '[\n    {\n        ""source"": ""volume"",\n        ""destination"": ""pod"",\n        ""relation_description"": ""is attached to"",\n        ""summary_er"": ""A volume is attached to a pod, providing persistent storage for the container\'s data.""\n    }\n]']","Using volumes to preserve files across container restarts can be a double-edged sword, as it may lead to continuous crash loops if data gets corrupted. Similarly, dead or partially dead pods are not automatically removed and rescheduled by ReplicaSet controllers, even if they're part of a desired replica count, resulting in a lower actual replica count.","[{'highlight': 'Using a volume to preserve files across container restarts is not always recommended, as it can lead to a continuous crash loop if the data gets corrupted.'}, {'highlight': ""Kubernetes does not automatically remove and reschedule dead or partially dead pods, even if they're part of a ReplicaSet or similar controller.""}, {'highlight': ""A pod's container keeps crashing indefinitely until it reaches five minutes between restarts, after which the pod is essentially dead.""}, {'highlight': ""The ReplicaSet controller doesn't care if the pods are dead and will not delete and replace them with a new instance.""}, {'highlight': 'A ReplicaSet with a desired replica count of three can end up with only two properly running replicas due to a crashing container in one of the pods.'}]"
+426,515,0,[],"483
+Understanding the pod’s lifecycle
+cares about is that the number of pods matches the desired replica count, which in
+this case, it does.
+ If you’d like to see for yourself, I’ve included a YAML manifest for a ReplicaSet
+whose pods will keep crashing (see file replicaset-crashingpods.yaml in the code
+archive). If you create the ReplicaSet and inspect the pods that are created, the follow-
+ing listing is what you’ll see.
+$ kubectl get po
+NAME                  READY     STATUS             RESTARTS   AGE
+crashing-pods-f1tcd   0/1       CrashLoopBackOff   5          6m     
+crashing-pods-k7l6k   0/1       CrashLoopBackOff   5          6m
+crashing-pods-z7l3v   0/1       CrashLoopBackOff   5          6m
+$ kubectl describe rs crashing-pods
+Name:           crashing-pods
+Replicas:       3 current / 3 desired                       
+Pods Status:    3 Running / 0 Waiting / 0 Succeeded / 0 Failed      
+$ kubectl describe po crashing-pods-f1tcd
+Name:           crashing-pods-f1tcd
+Namespace:      default
+Node:           minikube/192.168.99.102
+Start Time:     Thu, 02 Mar 2017 14:02:23 +0100
+Labels:         app=crashing-pods
+Status:         Running                      
+In a way, it’s understandable that Kubernetes behaves this way. The container will be
+restarted every five minutes in the hope that the underlying cause of the crash will be
+resolved. The rationale is that rescheduling the pod to another node most likely
+wouldn’t fix the problem anyway, because the app is running inside a container and
+all the nodes should be mostly equivalent. That’s not always the case, but it is most of
+the time. 
+17.2.3 Starting pods in a specific order
+One other difference between apps running in pods and those managed manually is
+that the ops person deploying those apps knows about the dependencies between
+them. This allows them to start the apps in order. 
+UNDERSTANDING HOW PODS ARE STARTED
+When you use Kubernetes to run your multi-pod applications, you don’t have a built-
+in way to tell Kubernetes to run certain pods first and the rest only when the first pods
+are already up and ready to serve. Sure, you could post the manifest for the first app
+and then wait for the pod(s) to be ready before you post the second manifest, but your
+Listing 17.1
+ReplicaSet and pods that keep crashing
+The pod’s status shows the Kubelet is
+delaying the restart because the
+container keeps crashing.
+No action taken 
+by the controller, 
+because current 
+replicas match 
+desired replicas
+Three 
+replicas are 
+shown as 
+running.
+kubectl describe 
+also shows pod’s 
+status as running
+ 
+",[],"[{'entity': 'ReplicaSet', 'description': 'A Kubernetes resource that ensures a specified number of replicas (identical pods) are running at any given time.', 'category': 'software'}, {'entity': 'pods', 'description': 'The basic execution unit in Kubernetes, which is a container with its own IP address and network stack.', 'category': 'software'}, {'entity': 'kubectl', 'description': 'A command-line tool for interacting with Kubernetes clusters.', 'category': 'command'}, {'entity': 'get', 'description': 'A kubectl command to retrieve information about pods, services, and other resources.', 'category': 'command'}, {'entity': 'po', 'description': 'The output format for the get command, which displays detailed information about pods.', 'category': 'output_format'}, {'entity': 'CrashLoopBackOff', 'description': 'A pod status indicating that a container has crashed and will be restarted.', 'category': 'pod_status'}, {'entity': 'describe', 'description': 'A kubectl command to display detailed information about resources, such as pods, services, and ReplicaSets.', 'category': 'command'}, {'entity': 'rs', 'description': 'The output format for the describe command, which displays detailed information about ReplicaSets.', 'category': 'output_format'}, {'entity': 'pod', 'description': 'A container with its own IP address and network stack, which is the basic execution unit in Kubernetes.', 'category': 'software'}, {'entity': 'container', 'description': 'A lightweight and standalone executable package of software that includes everything needed to run an application.', 'category': 'software'}, {'entity': 'Kubelet', 'description': 'The agent running on each node in a Kubernetes cluster, which is responsible for starting and managing pods.', 'category': 'software'}, {'entity': 'node', 'description': 'A machine or virtual machine that runs the Kubelet and hosts pods.', 'category': 'hardware'}]","[{'source_entity': '""pods""', 'description': 'are created by', 'destination_entity': '""container""'}, {'source_entity': '""CrashLoopBackOff""', 'description': 'is a condition that occurs when', 'destination_entity': '""pod""'}, {'source_entity': '""ReplicaSet""', 'description': 'manages the number of', 'destination_entity': '""pods""'}, {'source_entity': '""kubectl""', 'description': 'is used to', 'destination_entity': '""describe""'}, {'source_entity': '""kubectl""', 'description': 'is used to', 'destination_entity': '""get""'}, {'source_entity': '""node""', 'description': 'is a machine that runs', 'destination_entity': '""Kubelet""'}, {'source_entity': '""rs""', 'description': 'is short for ReplicaSet, which is used to', 'destination_entity': '""pods""'}, {'source_entity': '""po""', 'description': 'is short for pod, which is a', 'destination_entity': '""container""'}]","['[\n  {\n    ""source"": ""Pods"",\n    ""destination"": ""Container"",\n    ""relation_description"": ""are created by"",\n    ""summary_er"": ""A container is created by a pod, which provides resources and environment for the container to run.""\n  }\n]', '[\n  {\n    ""source"": ""CrashLoopBackOff"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a condition that occurs when"",\n    ""summary_er"": ""CrashLoopBackOff is a condition that occurs when a pod crashes and restarts repeatedly, causing a loopback error.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages the number of"",\n    ""summary_er"": ""A ReplicaSet manages the desired number of pod replicas, ensuring a specified number of identical pods are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to"",\n    ""summary_er"": ""The Kubernetes command-line tool (kubectl) is used to interact with a pod, which is a container running an application.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""describe"",\n    ""relation_description"": ""command"",\n    ""summary_er"": ""Kubectl describe is a command that provides detailed information about a Kubernetes resource, such as a pod or service.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to get"",\n    ""summary_er"": ""The Kubernetes command-line tool (kubectl) is used to retrieve information about a pod, such as its status and configuration.""\n  }\n]', '[\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a machine that runs"",\n    ""summary_er"": ""A node is a physical or virtual machine that executes and manages one or more pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is managed by"",\n    ""summary_er"": ""A ReplicaSet is responsible for managing a specified number of replicas (identical Pod instances) to ensure high availability and scalability.""\n  },\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""ReplicaSet"",\n    ""relation_description"": ""is created from"",\n    ""summary_er"": ""A Pod is created by a ReplicaSet, which ensures that the desired number of identical Pods are running in the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""container"",\n    ""relation_description"": ""is short for"",\n    ""summary_er"": ""A pod is a logical host that can contain one or more containers, providing a shared namespace and resources.""\n  }\n]']","A Kubernetes ReplicaSet with pods that keep crashing due to a container issue is created. The pod's status shows the Kubelet delaying the restart, but no action is taken by the controller since the current replicas match the desired ones, showing three running replicas.","[{'highlight': 'When a pod crashes in Kubernetes, it will be restarted every five minutes in the hope that the underlying cause of the crash will be resolved.'}, {'highlight': 'Kubernetes does not have a built-in way to start certain pods first and others only when the first pods are already up and ready to serve.'}, {'highlight': ""The pod's status shows the Kubelet is delaying the restart because the container keeps crashing, but no action is taken by the controller if current replicas match desired replicas.""}, {'highlight': 'A ReplicaSet in Kubernetes will keep creating new pods to replace ones that crash, until the desired replica count is met.'}, {'highlight': 'The kubectl get and describe commands can be used to inspect the status of pods and ReplicaSets in a Kubernetes cluster.'}]"
+427,516,0,[],"484
+CHAPTER 17
+Best practices for developing apps
+whole system is usually defined in a single YAML or JSON containing multiple Pods,
+Services, and other objects. 
+ The Kubernetes API server does process the objects in the YAML/JSON in the
+order they’re listed, but this only means they’re written to etcd in that order. You have
+no guarantee that pods will also be started in that order. 
+ But you can prevent a pod’s main container from starting until a precondition is
+met. This is done by including an init containers in the pod. 
+INTRODUCING INIT CONTAINERS
+In addition to regular containers, pods can also include init containers. As the name
+suggests, they can be used to initialize the pod—this often means writing data to the
+pod’s volumes, which are then mounted into the pod’s main container(s).
+ A pod may have any number of init containers. They’re executed sequentially and
+only after the last one completes are the pod’s main containers started. This means
+init containers can also be used to delay the start of the pod’s main container(s)—for
+example, until a certain precondition is met. An init container could wait for a service
+required by the pod’s main container to be up and ready. When it is, the init container
+terminates and allows the main container(s) to be started. This way, the main con-
+tainer wouldn’t use the service before it’s ready.
+ Let’s look at an example of a pod using an init container to delay the start of the
+main container. Remember the fortune pod you created in chapter 7? It’s a web
+server that returns a fortune quote as a response to client requests. Now, let’s imagine
+you have a fortune-client pod that requires the fortune Service to be up and run-
+ning before its main container starts. You can add an init container, which checks
+whether the Service is responding to requests. Until that’s the case, the init container
+keeps retrying. Once it gets a response, the init container terminates and lets the main
+container start.
+ADDING AN INIT CONTAINER TO A POD
+Init containers can be defined in the pod spec like main containers but through the
+spec.initContainers field. You’ll find the complete YAML for the fortune-client pod
+in the book’s code archive. The following listing shows the part where the init con-
+tainer is defined.
+spec:
+  initContainers:      
+  - name: init
+    image: busybox
+    command:
+    - sh
+    - -c
+    - 'while true; do echo ""Waiting for fortune service to come up..."";  
+    ➥ wget http://fortune -q -T 1 -O /dev/null >/dev/null 2>/dev/null   
+    ➥ && break; sleep 1; done; echo ""Service is up! Starting main       
+    ➥ container.""'
+Listing 17.2
+An init container defined in a pod: fortune-client.yaml
+You’re defining 
+an init container, 
+not a regular 
+container.
+The init container runs a
+loop that runs until the
+fortune Service is up.
+ 
+",[],"[{'entity': 'Kubernetes API server', 'description': 'processes objects in YAML/JSON', 'category': 'software'}, {'entity': 'etcd', 'description': 'stores data in order of listing', 'category': 'database'}, {'entity': 'pods', 'description': 'units of deployment, can include multiple containers and volumes', 'category': 'application'}, {'entity': 'init containers', 'description': 'used to initialize a pod before main containers start', 'category': 'software'}, {'entity': 'containers', 'description': 'run in a pod, can be used for initialization or as the main container', 'category': 'application'}, {'entity': 'volumes', 'description': ""persistent storage that can be mounted into a pod's containers"", 'category': 'storage'}, {'entity': 'fortune Service', 'description': 'a service required by the fortune-client pod', 'category': 'software'}, {'entity': 'fortune-client pod', 'description': 'a pod that requires the fortune Service to be up before its main container starts', 'category': 'application'}, {'entity': 'initContainers field', 'description': ""specifies init containers in a pod's YAML spec"", 'category': 'software'}, {'entity': 'busybox image', 'description': 'used as the base image for the init container', 'category': 'software'}, {'entity': 'while true loop', 'description': 'a loop that runs until the fortune Service is up', 'category': 'programming language'}, {'entity': 'wget command', 'description': 'used to check if the fortune Service is responding to requests', 'category': 'command'}]","[{'source_entity': '""fortune Service""', 'description': 'provides', 'destination_entity': '""pods""'}, {'source_entity': '""fortune Service""', 'description': 'manages', 'destination_entity': '""containers""'}, {'source_entity': '""fortune-client pod""', 'description': 'uses', 'destination_entity': '""busybox image""'}, {'source_entity': '""initContainers field""', 'description': 'specifies', 'destination_entity': '""wget command""'}, {'source_entity': '""init containers""', 'description': 'runs', 'destination_entity': '""while true loop""'}, {'source_entity': '""Kubernetes API server""', 'description': 'communicates with', 'destination_entity': '""etcd""'}, {'source_entity': '""fortune Service""', 'description': 'deploys', 'destination_entity': '""volumes""'}]","['[\n  {\n    ""source"": ""Fortune Service"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The Fortune Service offers a range of benefits to Pods, including resource allocation and management.""\n  }\n]', '[\n  {\n    ""source"": ""Fortune Service"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The Fortune Service manages a collection of containers within pods, ensuring efficient resource allocation and utilization.""\n  }\n]', '[\n  {\n    ""source"": ""fortune-client pod"",\n    ""destination"": ""busybox image"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The fortune-client pod utilizes the busybox image for its functionality.""\n  }\n]', '[\n  {\n    ""source"": ""initContainers field"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The initContainers field in a Kubernetes configuration specifies a list of containers to run before the main application container.""\n  }\n]', '[\n  {\n    ""source"": ""init containers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""Init containers are special containers that run before the main container in a pod, setting up necessary dependencies and resources.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The Kubernetes API server interacts with pods to manage and orchestrate containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""Fortune Service"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""Deploys"",\n    ""summary_er"": ""The Fortune Service is deployed to a Pod, which provides a runtime environment for the service.""\n  }\n]']","Kubernetes pods can include init containers to initialize the pod and delay the start of main containers. Init containers are executed sequentially and only after completion do main containers start. An example shows an init container checking if a service is responding before allowing the main container to start, using a busybox image and a while loop to continuously check until the service is up.","[{'highlight': ""A pod may have any number of init containers, which are executed sequentially and only after the last one completes are the pod's main containers started.""}, {'highlight': ""Init containers can be used to delay the start of a pod's main container(s) until a certain precondition is met, such as waiting for a service required by the pod's main container to be up and ready.""}, {'highlight': 'An init container can check whether a Service is responding to requests and retry until it gets a response, then terminate and let the main container start.'}, {'highlight': 'Init containers are defined in the pod spec through the spec.initContainers field, like main containers but with their own set of fields.'}, {'highlight': ""The order in which init containers are listed in a YAML or JSON file does not guarantee the order in which they will be started; however, you can use an init container to delay the start of a pod's main container(s).""}]"
+428,517,0,[],"485
+Understanding the pod’s lifecycle
+When you deploy this pod, only its init container is started. This is shown in the pod’s
+status when you list pods with kubectl get:
+$ kubectl get po
+NAME             READY     STATUS     RESTARTS   AGE
+fortune-client   0/1       Init:0/1   0          1m
+The STATUS column shows that zero of one init containers have finished. You can see
+the log of the init container with kubectl logs:
+$ kubectl logs fortune-client -c init
+Waiting for fortune service to come up...
+When running the kubectl logs command, you need to specify the name of the init
+container with the -c switch (in the example, the name of the pod’s init container is
+init, as you can see in listing 17.2).
+ The main container won’t run until you deploy the fortune Service and the
+fortune-server pod. You’ll find them in the fortune-server.yaml file. 
+BEST PRACTICES FOR HANDLING INTER-POD DEPENDENCIES
+You’ve seen how an init container can be used to delay starting the pod’s main con-
+tainer(s) until a precondition is met (making sure the Service the pod depends on is
+ready, for example), but it’s much better to write apps that don’t require every service
+they rely on to be ready before the app starts up. After all, the service may also go
+offline later, while the app is already running.
+ The application needs to handle internally the possibility that its dependencies
+aren’t ready. And don’t forget readiness probes. If an app can’t do its job because one
+of its dependencies is missing, it should signal that through its readiness probe, so
+Kubernetes knows it, too, isn’t ready. You’ll want to do this not only because it pre-
+vents the app from being added as a service endpoint, but also because the app’s read-
+iness is also used by the Deployment controller when performing a rolling update,
+thereby preventing a rollout of a bad version. 
+17.2.4 Adding lifecycle hooks
+We’ve talked about how init containers can be used to hook into the startup of the
+pod, but pods also allow you to define two lifecycle hooks:
+Post-start hooks
+Pre-stop hooks
+These lifecycle hooks are specified per container, unlike init containers, which apply
+to the whole pod. As their names suggest, they’re executed when the container starts
+and before it stops. 
+ Lifecycle hooks are similar to liveness and readiness probes in that they can either
+Execute a command inside the container
+Perform an HTTP GET request against a URL
+ 
+",[],"[{'entity': 'pod', 'description': 'A pod is the basic execution unit in Kubernetes.', 'category': 'application'}, {'entity': 'init container', 'description': 'An init container is a special type of container that runs before the main container(s) in a pod.', 'category': 'container'}, {'entity': 'kubectl get', 'description': 'A command used to list pods and their status.', 'category': 'command'}, {'entity': 'kubectl logs', 'description': 'A command used to view the log of a pod or container.', 'category': 'command'}, {'entity': 'fortune Service', 'description': 'A Kubernetes service that provides access to a fortune server.', 'category': 'service'}, {'entity': 'fortune-server pod', 'description': 'A pod that runs the fortune server.', 'category': 'application'}, {'entity': 'readiness probes', 'description': 'A mechanism used to determine if a container is ready to handle requests.', 'category': 'process'}, {'entity': 'Deployment controller', 'description': 'A Kubernetes component that manages the rollout of new versions of an application.', 'category': 'controller'}, {'entity': 'lifecycle hooks', 'description': 'Hooks that can be used to execute commands or perform HTTP requests when a container starts or stops.', 'category': 'process'}, {'entity': 'post-start hooks', 'description': 'A type of lifecycle hook that is executed when a container starts.', 'category': 'process'}, {'entity': 'pre-stop hooks', 'description': 'A type of lifecycle hook that is executed before a container stops.', 'category': 'process'}]","[{'source_entity': '""fortune Service""', 'description': 'provides', 'destination_entity': '""pod""'}, {'source_entity': '""kubectl get""', 'description': 'fetches', 'destination_entity': '""lifecycle hooks""'}, {'source_entity': '""post-start hooks""', 'description': 'executes', 'destination_entity': '""fortune-server pod""'}, {'source_entity': '""readiness probes""', 'description': 'monitors', 'destination_entity': '""fortune-server pod""'}, {'source_entity': '""pre-stop hooks""', 'description': 'executes', 'destination_entity': '""fortune-server pod""'}, {'source_entity': '""kubectl logs""', 'description': 'displays', 'destination_entity': '""init container""'}, {'source_entity': '""Deployment controller""', 'description': 'manages', 'destination_entity': '""fortune Service""'}]","['[\n  {\n    ""source"": ""Fortune Service"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The Fortune Service offers a pod, providing a deployable unit of an application.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""fetches"",\n    ""summary_er"": ""Kubectl command retrieves information about a running pod, including its status and configuration.""\n  },\n  {\n    ""source"": ""lifecycle hooks"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""Lifecycle hooks in Kubernetes are related to the lifecycle of a pod, managing events such as creation and termination.""\n  }\n]', '[\n  {\n    ""source"": ""post-start hooks"",\n    ""destination"": ""fortune-server pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""The post-start hook executes a command on the fortune-server pod, likely to start or configure it.""\n  }\n]', '[\n  {\n    ""source"": ""readiness probes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""monitors"",\n    ""summary_er"": ""Readiness probes monitor the health of a pod, ensuring it\'s ready to receive traffic before serving requests.""\n  },\n  {\n    ""source"": ""fortune-server pod"",\n    ""destination"": ""readiness probes"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The fortune-server pod uses readiness probes to verify its readiness for incoming requests and traffic.""\n  }\n]', '[\n  {\n    ""source"": ""pre-stop hooks"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""Pre-stop hooks execute a set of commands before stopping a pod, ensuring proper cleanup and resource release.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays init container"",\n    ""summary_er"": ""Kubectl command displays logs of an init container within a pod, providing visibility into its execution and any potential issues.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment controller"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The Deployment controller is responsible for managing the lifecycle of a pod, ensuring it runs as expected and scales accordingly.""\n  },\n  {\n    ""source"": ""fortune Service"",\n    ""destination"": """",\n    ""relation_description"": """",\n    ""summary_er"": """"\n  }\n]']","When deploying a pod, its init container is started first, shown by kubectl get. The main container won't run until dependencies are met, such as services being ready. It's best to write apps that handle internal dependencies and use readiness probes to signal unavailability. Lifecycle hooks can also be defined per container for post-start and pre-stop execution, similar to liveness and readiness probes.","[{'highlight': 'When you deploy this pod, only its init container is started. This is shown in the pod’s status when you list pods with kubectl get:'}, {'highlight': 'The main container won’t run until you deploy the fortune Service and the fortune-server pod.'}, {'highlight': 'You’ve seen how an init container can be used to delay starting the pod’s main container(s) until a precondition is met, but it’s much better to write apps that don’t require every service they rely on to be ready before the app starts up.'}, {'highlight': 'The application needs to handle internally the possibility that its dependencies aren’t ready. And don’t forget readiness probes.'}, {'highlight': 'pods also allow you to define two lifecycle hooks: Post-start hooks and Pre-stop hooks, which are specified per container and can execute a command or perform an HTTP GET request against a URL'}]"
+429,518,0,[],"486
+CHAPTER 17
+Best practices for developing apps
+Let’s look at the two hooks individually to see what effect they have on the container
+lifecycle.
+USING A POST-START CONTAINER LIFECYCLE HOOK
+A post-start hook is executed immediately after the container’s main process is started.
+You use it to perform additional operations when the application starts. Sure, if you’re
+the author of the application running in the container, you can always perform those
+operations inside the application code itself. But when you’re running an application
+developed by someone else, you mostly don’t want to (or can’t) modify its source
+code. Post-start hooks allow you to run additional commands without having to touch
+the app. These may signal to an external listener that the app is starting, or they may
+initialize the application so it can start doing its job.
+ The hook is run in parallel with the main process. The name might be somewhat
+misleading, because it doesn’t wait for the main process to start up fully (if the process
+has an initialization procedure, the Kubelet obviously can’t wait for the procedure to
+complete, because it has no way of knowing when that is). 
+ But even though the hook runs asynchronously, it does affect the container in two
+ways. Until the hook completes, the container will stay in the Waiting state with the
+reason ContainerCreating. Because of this, the pod’s status will be Pending instead of
+Running. If the hook fails to run or returns a non-zero exit code, the main container
+will be killed. 
+ A pod manifest containing a post-start hook looks like the following listing.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-with-poststart-hook
+spec:
+  containers:
+  - image: luksa/kubia
+    name: kubia
+    lifecycle:          
+      postStart:        
+        exec:                                                               
+          command:                                                          
+          - sh                                                              
+          - -c                                                              
+          - ""echo 'hook will fail with exit code 15'; sleep 5; exit 15""     
+In the example, the echo, sleep, and exit commands are executed along with the
+container’s main process as soon as the container is created. Rather than run a com-
+mand like this, you’d typically run a shell script or a binary executable file stored in
+the container image. 
+ Sadly, if the process started by the hook logs to the standard output, you can’t see
+the output anywhere. This makes debugging lifecycle hooks painful. If the hook fails,
+Listing 17.3
+A pod with a post-start lifecycle hook: post-start-hook.yaml
+The hook is executed as 
+the container starts.
+It executes the
+postStart.sh
+script in the /bin
+directory inside
+the container.
+ 
+",[],"[{'entity': 'Post-Start Hook', 'description': ""A hook executed immediately after the container's main process is started."", 'category': 'Container Lifecycle'}, {'entity': 'Kubelet', 'description': 'The component responsible for running containers in a Kubernetes cluster.', 'category': 'Software'}, {'entity': 'Pod', 'description': 'A logical host in a Kubernetes cluster, which can contain one or more containers.', 'category': 'Application'}, {'entity': 'ContainerCreating', 'description': 'The state of a container while it is being created.', 'category': 'Container State'}, {'entity': 'Pending', 'description': 'The status of a pod while its containers are being created.', 'category': 'Pod Status'}, {'entity': 'Running', 'description': 'The status of a pod when all its containers are running.', 'category': 'Pod Status'}, {'entity': 'apiVersion', 'description': 'A field in the pod manifest that specifies the API version used to create the pod.', 'category': 'API Field'}, {'entity': 'kind', 'description': 'A field in the pod manifest that specifies the type of resource being created (e.g., Pod).', 'category': 'Resource Type'}, {'entity': 'metadata', 'description': 'A section in the pod manifest that contains metadata about the pod.', 'category': 'Pod Metadata'}, {'entity': 'spec', 'description': 'A section in the pod manifest that specifies the desired state of the pod.', 'category': 'Pod Specification'}, {'entity': 'containers', 'description': 'A field in the pod manifest that lists the containers running in the pod.', 'category': 'Container List'}, {'entity': 'image', 'description': 'A field in the container specification that specifies the Docker image used to create the container.', 'category': 'Container Image'}, {'entity': 'lifecycle', 'description': 'A section in the container specification that specifies lifecycle hooks for the container.', 'category': 'Container Lifecycle'}, {'entity': 'postStart', 'description': 'A field in the lifecycle hook specification that specifies a post-start hook to be executed when the container starts.', 'category': 'Lifecycle Hook'}, {'entity': 'exec', 'description': 'A command used to execute a shell script or binary executable file stored in the container image.', 'category': 'Container Command'}, {'entity': 'command', 'description': 'A field in the exec specification that specifies the command to be executed when the hook runs.', 'category': 'Hook Command'}, {'entity': 'sh', 'description': 'The shell used to execute a shell script or binary executable file stored in the container image.', 'category': 'Shell'}, {'entity': 'sleep', 'description': 'A command used to pause execution of a hook for a specified amount of time.', 'category': 'Hook Command'}, {'entity': 'exit', 'description': 'A command used to terminate the execution of a hook with a specified exit code.', 'category': 'Hook Command'}]","[{'source_entity': '""Running""', 'description': 'executes', 'destination_entity': '""containers""'}, {'source_entity': '""spec""', 'description': 'defines', 'destination_entity': '""metadata""'}, {'source_entity': '""image""', 'description': 'specifies', 'destination_entity': '""Post-Start Hook""'}, {'source_entity': '""sleep""', 'description': 'causes', 'destination_entity': '""ContainerCreating""'}, {'source_entity': '""Command""', 'description': 'executes', 'destination_entity': '""Kubelet""'}, {'source_entity': '""apiVersion""', 'description': 'specifies', 'destination_entity': '""kind""'}, {'source_entity': '""postStart""', 'description': 'defines', 'destination_entity': '""exec""'}, {'source_entity': '""Pending""', 'description': 'indicates', 'destination_entity': '""status""'}, {'source_entity': '""sh""', 'description': 'runs', 'destination_entity': '""command""'}]","['[\n  {\n    ""source"": ""Running"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""A running process executes a pod, which is a containerized application in Kubernetes.""\n  },\n  {\n    ""source"": ""containers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""Containers are contained within a pod, providing isolation and resource sharing in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""The spec section of a Kubernetes object defines the configuration for a pod, including its container(s), volumes, and other settings.""\n  },\n  {\n    ""source"": ""metadata"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""The metadata section of a Kubernetes object contains information about the pod, such as its name, labels, and annotations.""\n  }\n]', '[\n  {\n    ""source"": ""image"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The image entity specifies the source of a container in a pod, providing the necessary binaries and libraries for execution.""\n  },\n  {\n    ""source"": ""Post-Start Hook"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""A Post-Start Hook is an executable command that runs after a pod has been started, allowing for initialization or setup tasks to be performed.""\n  }\n]', '[\n  {\n    ""source"": ""sleep"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""causes"",\n    ""summary_er"": ""The \'sleep\' entity causes a pod to be in the \'ContainerCreating\' state, indicating that the container is being created.""\n  }\n]', '[\n  {\n    ""source"": ""Command"",\n    ""destination"": ""Kubelet"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""The Kubelet executes commands to manage and run pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""apiVersion"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The apiVersion field in Kubernetes specifies the API version of the resource, which is used to determine the schema and validation rules for the pod.""\n  },\n  {\n    ""source"": ""kind"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""The kind field defines the type of resource being described, in this case a pod, which is a containerized application or service in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""container"",\n    ""relation_description"": ""postStart"",\n    ""summary_er"": ""The postStart hook is executed after a container has started, allowing for initialization scripts to run.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""container"",\n    ""relation_description"": ""exec"",\n    ""summary_er"": ""The exec command allows running commands inside a container without creating a new process.""\n  }\n]', '[\n  {\n    ""source"": ""Pending"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""status"",\n    ""summary_er"": ""The status of a pending pod indicates that it has not yet been scheduled or started.""\n  }\n]', '[\n  {\n    ""source"": ""sh"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""The \'sh\' command executes a shell script within a Kubernetes pod.""\n  }\n]']","A post-start hook in Kubernetes is executed immediately after a container's main process is started. It runs in parallel with the main process and can perform additional operations without modifying the application source code. The hook affects the container by keeping it in the Waiting state until completion, and if it fails or returns a non-zero exit code, the main container will be killed. A pod manifest containing a post-start hook is shown, executing a shell script as part of the container lifecycle.","[{'highlight': 'A post-start hook is executed immediately after the container’s main process is started.'}, {'highlight': 'The hook runs asynchronously, but it does affect the container in two ways: until the hook completes, the container will stay in the Waiting state with the reason ContainerCreating.'}, {'highlight': 'A pod manifest containing a post-start hook looks like the following listing.'}, {'highlight': 'The echo, sleep, and exit commands are executed along with the container’s main process as soon as the container is created.'}, {'highlight': 'If the hook fails, the main container will be killed.'}]"

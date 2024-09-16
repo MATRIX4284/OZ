@@ -1,0 +1,538 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+300,389,0,[],"357
+Securing the cluster with role-based access control
+CREATING THE NAMESPACES AND RUNNING THE PODS
+You’re going to create one pod in namespace foo and the other one in namespace
+bar, as shown in the following listing.
+$ kubectl create ns foo
+namespace ""foo"" created
+$ kubectl run test --image=luksa/kubectl-proxy -n foo
+deployment ""test"" created
+$ kubectl create ns bar
+namespace ""bar"" created
+$ kubectl run test --image=luksa/kubectl-proxy -n bar
+deployment ""test"" created
+Now open two terminals and use kubectl exec to run a shell inside each of the two
+pods (one in each terminal). For example, to run the shell in the pod in namespace
+foo, first get the name of the pod:
+$ kubectl get po -n foo
+NAME                   READY     STATUS    RESTARTS   AGE
+test-145485760-ttq36   1/1       Running   0          1m
+Then use the name in the kubectl exec command:
+$ kubectl exec -it test-145485760-ttq36 -n foo sh
+/ #
+Do the same in the other terminal, but for the pod in the bar namespace.
+LISTING SERVICES FROM YOUR PODS
+To verify that RBAC is enabled and preventing the pod from reading cluster state, use
+curl to list Services in the foo namespace:
+/ # curl localhost:8001/api/v1/namespaces/foo/services
+User ""system:serviceaccount:foo:default"" cannot list services in the 
+namespace ""foo"".
+You’re connecting to localhost:8001, which is where the kubectl proxy process is
+listening (as explained in chapter 8). The process received your request and sent it to
+the API server while authenticating as the default ServiceAccount in the foo name-
+space (as evident from the API server’s response). 
+ The API server responded that the ServiceAccount isn’t allowed to list Services in
+the foo namespace, even though the pod is running in that same namespace. You’re
+seeing RBAC in action. The default permissions for a ServiceAccount don’t allow it to
+list or modify any resources. Now, let’s learn how to allow the ServiceAccount to do
+that. First, you’ll need to create a Role resource.
+Listing 12.7
+Running test pods in different namespaces
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command-line tool for managing Kubernetes clusters', 'category': 'software'}, {'entity': 'namespaces', 'description': 'logical isolation of resources within a cluster', 'category': 'application'}, {'entity': 'pods', 'description': 'lightweight and portable containers running in the cluster', 'category': 'container'}, {'entity': 'deployment', 'description': 'managed set of replica sets, used to update applications', 'category': 'application'}, {'entity': 'kubectl exec', 'description': 'command for running a shell inside a pod', 'category': 'software'}, {'entity': 'curl', 'description': 'command-line tool for transferring data to/from a web server', 'category': 'software'}, {'entity': 'API server', 'description': 'component of the Kubernetes cluster that manages API requests', 'category': 'application'}, {'entity': 'ServiceAccount', 'description': 'identity for pods to authenticate with the API server', 'category': 'software'}, {'entity': 'Role', 'description': 'resource that defines permissions for a ServiceAccount', 'category': 'application'}]","[{'source_entity': 'kubectl', 'description': 'executes commands on pods', 'destination_entity': 'pods'}, {'source_entity': 'ServiceAccount', 'description': 'authenticates with the API server', 'destination_entity': 'API server'}, {'source_entity': 'Role', 'description': 'defines permissions for ServiceAccounts', 'destination_entity': 'ServiceAccount'}, {'source_entity': 'kubectl exec', 'description': 'executes commands on pods within a namespace', 'destination_entity': 'pods'}, {'source_entity': 'curl', 'description': 'makes API requests to the API server', 'destination_entity': 'API server'}, {'source_entity': 'kubectl exec', 'description': 'uses a ServiceAccount for authentication', 'destination_entity': 'ServiceAccount'}, {'source_entity': 'deployment', 'description': 'manages pods within a namespace', 'destination_entity': 'pods'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes commands on"",\n    ""summary_er"": ""Kubectl executes commands directly on pods, bypassing the need for a separate shell session.""\n  }\n]', '[\n  {\n    ""source"": ""ServiceAccount"",\n    ""destination"": ""API server"",\n    ""relation_description"": ""authenticates with"",\n    ""summary_er"": ""A ServiceAccount authenticates with the API server to obtain an access token, allowing it to interact with Kubernetes resources.""\n  },\n  {\n    ""source"": ""ServiceAccount"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs within"",\n    ""summary_er"": ""A ServiceAccount runs within a pod, providing identity and authentication for its containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""Role"",\n    ""destination"": ""ServiceAccount"",\n    ""relation_description"": ""defines permissions"",\n    ""summary_er"": ""A Role defines permissions for a ServiceAccount, controlling access to resources.""\n  },\n  {\n    ""source"": ""ServiceAccount"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""A ServiceAccount is related to a pod, providing identity and access control.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes commands"",\n    ""summary_er"": ""Executes commands on pods within a namespace using kubectl.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""API server"",\n    ""relation_description"": ""makes API requests to the API server"",\n    ""summary_er"": ""Curl makes HTTP requests to the API server, allowing it to interact with the server and retrieve or send data.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""API server"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The pod communicates with the API server to exchange information and perform tasks.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl exec"",\n    ""destination"": ""ServiceAccount"",\n    ""relation_description"": ""uses a ServiceAccount for authentication"",\n    ""summary_er"": ""Kubectl exec uses a ServiceAccount to authenticate with Kubernetes, ensuring secure access to pods.""\n  }\n]', '[\n  {\n    ""source"": ""deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages pods within a namespace"",\n    ""summary_er"": ""A deployment manages one or more replicas of a pod, ensuring that the desired number of pods are running at any given time.""\n  }\n]']","The document explains how to secure a Kubernetes cluster with role-based access control (RBAC). It demonstrates creating two pods in separate namespaces using kubectl commands and attempting to list services from within each pod using curl. The example shows that RBAC prevents the default ServiceAccount from listing services, even though it's running in the same namespace, and guides the reader on how to create a Role resource to allow the ServiceAccount to perform such actions.","[{'highlight': 'You’re going to create one pod in namespace foo and the other one in namespace bar.'}, {'highlight': 'To verify that RBAC is enabled and preventing the pod from reading cluster state, use curl to list Services in the foo namespace:'}, {'highlight': 'The default permissions for a ServiceAccount don’t allow it to list or modify any resources.'}, {'highlight': 'You’re seeing RBAC in action.'}, {'highlight': 'First, you’ll need to create a Role resource.'}]"
+301,390,0,[],"358
+CHAPTER 12
+Securing the Kubernetes API server
+12.2.3 Using Roles and RoleBindings
+A Role resource defines what actions can be taken on which resources (or, as
+explained earlier, which types of HTTP requests can be performed on which RESTful
+resources). The following listing defines a Role, which allows users to get and list
+Services in the foo namespace.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: foo            
+  name: service-reader
+rules:
+- apiGroups: [""""]            
+  verbs: [""get"", ""list""]     
+  resources: [""services""]   
+WARNING
+The plural form must be used when specifying resources.
+This Role resource will be created in the foo namespace. In chapter 8, you learned that
+each resource type belongs to an API group, which you specify in the apiVersion field
+(along with the version) in the resource’s manifest. In a Role definition, you need to spec-
+ify the apiGroup for the resources listed in each rule included in the definition. If you’re
+allowing access to resources belonging to different API groups, you use multiple rules.
+NOTE
+In the example, you’re allowing access to all Service resources, but you
+could also limit access only to specific Service instances by specifying their
+names through an additional resourceNames field.
+Figure 12.4 shows the Role, its verbs and resources, and the namespace it will be cre-
+ated in.
+Listing 12.8
+A definition of a Role: service-reader.yaml
+Roles are namespaced (if namespace is 
+omitted, the current namespace is used).
+Services are resources in the core apiGroup, 
+which has no name – hence the """".
+Getting individual Services (by name) 
+and listing all of them is allowed.
+This rule pertains to services 
+(plural name must be used!).
+Allows getting
+Allows listing
+Services
+Role:
+service-reader
+Services
+Namespace: foo
+Namespace: bar
+Does not allow users to
+get or list Services in
+other namespaces
+Figure 12.4
+The service-reader Role allows getting and listing Services in the foo namespace.
+ 
+",[],"[{'entity': 'Role', 'description': 'defines what actions can be taken on which resources', 'category': 'software'}, {'entity': 'Role resource', 'description': 'allows users to get and list Services in the foo namespace', 'category': 'software'}, {'entity': 'apiVersion', 'description': 'specifies the version of the API group', 'category': 'software'}, {'entity': 'kind', 'description': ' specifies the type of resource (e.g. Role)', 'category': 'software'}, {'entity': 'metadata', 'description': 'provides additional information about the resource', 'category': 'software'}, {'entity': 'namespace', 'description': 'specifies the namespace in which the resource is created', 'category': 'software'}, {'entity': 'name', 'description': ' specifies the name of the resource', 'category': 'software'}, {'entity': 'rules', 'description': 'defines what actions can be taken on which resources', 'category': 'software'}, {'entity': 'apiGroups', 'description': 'specifies the API group to which the resource belongs', 'category': 'software'}, {'entity': 'verbs', 'description': ' specifies the HTTP verbs that can be used on the resource', 'category': 'software'}, {'entity': 'resources', 'description': 'specifies the resources to which access is being granted', 'category': 'software'}, {'entity': 'services', 'description': 'a type of resource in the core API group', 'category': 'software'}, {'entity': 'RoleBindings', 'description': 'binds a Role to a user or group', 'category': 'software'}, {'entity': 'namespace', 'description': 'specifies the namespace in which the resource is created', 'category': 'software'}, {'entity': 'foo', 'description': 'a namespace in which resources are created', 'category': 'software'}, {'entity': 'bar', 'description': 'another namespace in which resources can be created', 'category': 'software'}]","[{'source_entity': 'Role resource', 'description': 'defines', 'destination_entity': 'metadata'}, {'source_entity': 'Role resource', 'description': 'specifies', 'destination_entity': 'name'}, {'source_entity': 'Role resource', 'description': 'includes', 'destination_entity': 'verbs'}, {'source_entity': 'Role resource', 'description': 'defines', 'destination_entity': 'kind'}, {'source_entity': 'Role resource', 'description': 'specifies', 'destination_entity': 'namespace'}, {'source_entity': 'Role resource', 'description': 'includes', 'destination_entity': 'services'}, {'source_entity': 'Role resource', 'description': 'defines', 'destination_entity': 'apiVersion'}, {'source_entity': 'Role resource', 'description': 'specifies', 'destination_entity': 'resources'}, {'source_entity': 'Role resource', 'description': 'includes', 'destination_entity': 'apiGroups'}, {'source_entity': 'Role resource', 'description': 'defines', 'destination_entity': 'RoleBindings'}, {'source_entity': 'Role resource', 'description': 'specifies', 'destination_entity': 'rules'}, {'source_entity': 'Role resource', 'description': 'includes', 'destination_entity': 'Role'}, {'source_entity': 'Role resource', 'description': 'defines', 'destination_entity': 'bar'}]","['[\n  {\n    ""source"": ""Role"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A Role defines a set of permissions for a Pod, determining what actions it can perform within the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Role"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""A role defines a set of permissions for a user, which can be applied to a pod to specify its access level.""\n  }\n]', '[\n  {\n    ""source"": ""Role"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""includes"",\n    ""summary_er"": ""A Role can include a Pod, meaning the Role\'s permissions are applied to the Pod.""\n  }\n]', '[\n  {\n    ""source"": ""Role"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A Role defines a set of permissions for a Pod, determining what actions it can perform within the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Role"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""A Role defines a set of permissions for a Pod, specifying what actions it can perform within a namespace.""\n  }\n]', '[\n  {\n    ""source"": ""Role"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""includes"",\n    ""summary_er"": ""A Role defines a set of permissions for a Pod, which includes access to specific services and resources.""\n  }\n]', '[\n  {\n    ""source"": ""Role"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A Role defines a set of permissions for a Pod, specifying what actions it can perform within the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Role"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""A role defines a set of permissions for a user, which can be applied to a pod to manage its resources.""\n  }\n]', '[\n  {\n    ""source"": ""Role"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""includes"",\n    ""summary_er"": ""A Role can include a Pod, allowing it to access resources within the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Role"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A Role defines a set of permissions for a Pod, specifying what actions it can perform within the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Role"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""A Role defines a set of permissions that can be assigned to a Pod, specifying what actions it can perform within the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Role"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""includes"",\n    ""summary_er"": ""A role defines a set of permissions for a user, which can include access to specific pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Role"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A Role defines a set of permissions for a Pod, specifying what actions it can perform within the Kubernetes cluster.""\n  }\n]']","A Role resource defines what actions can be taken on which resources, allowing users to get and list Services in a specific namespace (foo) via a Role named service-reader.","[{'highlight': 'A Role resource defines what actions can be taken on which resources (or, as explained earlier, which types of HTTP requests can be performed on which RESTful resources).'}]"
+302,391,0,[],"359
+Securing the cluster with role-based access control
+CREATING A ROLE
+Create the previous Role in the foo namespace now:
+$ kubectl create -f service-reader.yaml -n foo
+role ""service-reader"" created
+NOTE
+The -n option is shorthand for --namespace.
+Note that if you’re using GKE, the previous command may fail because you don’t have
+cluster-admin rights. To grant the rights, run the following command:
+$ kubectl create clusterrolebinding cluster-admin-binding 
+➥ --clusterrole=cluster-admin --user=your.email@address.com
+Instead of creating the service-reader Role from a YAML file, you could also create
+it with the special kubectl create role command. Let’s use this method to create the
+Role in the bar namespace:
+$ kubectl create role service-reader --verb=get --verb=list 
+➥ --resource=services -n bar
+role ""service-reader"" created
+These two Roles will allow you to list Services in the foo and bar namespaces from
+within your two pods (running in the foo and bar namespace, respectively). But cre-
+ating the two Roles isn’t enough (you can check by executing the curl command
+again). You need to bind each of the Roles to the ServiceAccounts in their respec-
+tive namespaces. 
+BINDING A ROLE TO A SERVICEACCOUNT
+A Role defines what actions can be performed, but it doesn’t specify who can perform
+them. To do that, you must bind the Role to a subject, which can be a user, a Service-
+Account, or a group (of users or ServiceAccounts).
+ Binding Roles to subjects is achieved by creating a RoleBinding resource. To bind
+the Role to the default ServiceAccount, run the following command:
+$ kubectl create rolebinding test --role=service-reader 
+➥ --serviceaccount=foo:default -n foo
+rolebinding ""test"" created
+The command should be self-explanatory. You’re creating a RoleBinding, which binds
+the service-reader Role to the default ServiceAccount in namespace foo. You’re cre-
+ating the RoleBinding in namespace foo. The RoleBinding and the referenced Service-
+Account and Role are shown in figure 12.5.
+NOTE
+To bind a Role to a user instead of a ServiceAccount, use the --user
+argument to specify the username. To bind it to a group, use --group.
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command-line tool for managing Kubernetes clusters', 'category': 'software'}, {'entity': 'Role', 'description': 'resource that defines what actions can be performed on a set of resources', 'category': 'software'}, {'entity': 'service-reader', 'description': 'specific Role created to allow listing Services in the foo and bar namespaces', 'category': 'software'}, {'entity': 'YAML file', 'description': 'file format for defining Kubernetes resources', 'category': 'software'}, {'entity': 'GKE', 'description': 'Google Kubernetes Engine, a managed Kubernetes service', 'category': 'hardware'}, {'entity': 'cluster-admin rights', 'description': 'permissions required to manage a Kubernetes cluster', 'category': 'software'}, {'entity': 'clusterrolebinding', 'description': 'resource that binds a Role to a user or ServiceAccount', 'category': 'software'}, {'entity': 'ServiceAccounts', 'description': 'resources that represent an identity for a pod or container', 'category': 'software'}, {'entity': 'RoleBinding', 'description': 'resource that binds a Role to a subject (user, ServiceAccount, or group)', 'category': 'software'}, {'entity': 'default ServiceAccount', 'description': 'ServiceAccount created automatically by Kubernetes for each namespace', 'category': 'software'}, {'entity': '--verb=get', 'description': 'command-line option for specifying the actions allowed by a Role', 'category': 'software'}, {'entity': '--verb=list', 'description': 'command-line option for specifying the actions allowed by a Role', 'category': 'software'}, {'entity': '--resource=services', 'description': 'command-line option for specifying the resources affected by a Role', 'category': 'software'}, {'entity': '--namespace=foo', 'description': 'command-line option for specifying the namespace in which to create a resource', 'category': 'software'}, {'entity': '--clusterrolebinding', 'description': 'command-line option for creating a clusterrolebinding resource', 'category': 'software'}]","[{'source_entity': '""kubectl""', 'description': 'is used to', 'destination_entity': '""--resource=services""'}, {'source_entity': '""service-reader""', 'description': 'reads', 'destination_entity': '""YAML file""'}, {'source_entity': '""kubectl""', 'description': 'uses the verb ""get""', 'destination_entity': '""--resource=services""'}, {'source_entity': '""kubectl""', 'description': 'uses the verb ""list""', 'destination_entity': '""--resource=services""'}, {'source_entity': '""kubectl""', 'description': 'lists', 'destination_entity': '""ServiceAccounts""'}, {'source_entity': '""kubectl""', 'description': 'gets', 'destination_entity': '""default ServiceAccount""'}, {'source_entity': '""RoleBinding""', 'description': 'binds', 'destination_entity': '""clusterrolebinding""'}, {'source_entity': '""GKE""', 'description': 'has', 'destination_entity': '""clusterrolebinding""'}, {'source_entity': '""kubectl""', 'description': 'uses the verb ""get""', 'destination_entity': '""RoleBinding""'}, {'source_entity': '""kubectl""', 'description': 'uses the verb ""list""', 'destination_entity': '""clusterrolebinding""'}, {'source_entity': '""--verb=list""', 'description': 'lists', 'destination_entity': '""ServiceAccounts""'}, {'source_entity': '""kubectl""', 'description': 'uses the verb ""list""', 'destination_entity': '""RoleBinding""'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to"",\n    ""summary_er"": ""The kubectl command is used to manage and interact with pods, which are the basic execution units of a Kubernetes application.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""services"",\n    ""relation_description"": ""--resource=services"",\n    ""summary_er"": ""The --resource=services flag in kubectl is used to specify that services should be managed and interacted with, rather than pods or other resources.""\n  }\n]', '[\n  {\n    ""source"": ""service-reader"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""reads"",\n    ""summary_er"": ""The service-reader component reads data from a YAML file, which contains configuration information for a pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses the verb \'get\'"",\n    ""summary_er"": ""kubectl uses get verb to retrieve information about a pod.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""services"",\n    ""relation_description"": ""--resource=services"",\n    ""summary_er"": ""kubectl uses --resource=services option to interact with services.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses the verb \'list\' --resource=services"",\n    ""summary_er"": ""Kubectl uses list command to display a list of services in the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""lists"",\n    ""summary_er"": ""Kubectl lists all running pods in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""ServiceAccounts"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""access"",\n    ""summary_er"": ""Service Accounts provide access to pods for authentication and authorization purposes.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""gets"",\n    ""summary_er"": ""Kubectl uses the \'get\' command to retrieve information about a pod, such as its status and configuration.""\n  },\n  {\n    ""source"": ""default ServiceAccount"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A default ServiceAccount is used by a pod to authenticate with the Kubernetes API server.""\n  }\n]', '[\n  {\n    ""source"": ""RoleBinding"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""binds"",\n    ""summary_er"": ""A RoleBinding binds a Role to a set of users, groups or service accounts, granting them access to resources within a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""GKE"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""has"",\n    ""summary_er"": ""Google Kubernetes Engine (GKE) has a cluster role binding, which grants permissions to pods within the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses the verb \'get\'"",\n    ""summary_er"": ""Kubectl uses the \'get\' verb to retrieve information about a pod, such as its status and configuration.""\n  },\n  {\n    ""source"": ""RoleBinding"",\n    ""destination"": ""cluster"",\n    ""relation_description"": ""defines access control for"",\n    ""summary_er"": ""A RoleBinding defines access control for a cluster by binding a role to a user or group, granting them specific permissions.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses the verb \'list\'"",\n    ""summary_er"": ""Kubectl uses the list command to display a list of running pods in the cluster.""\n  },\n  {\n    ""source"": ""clusterrolebinding"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assigns permissions to access pod resources"",\n    ""summary_er"": ""A ClusterRoleBinding assigns permissions to access pod resources, allowing users or services to interact with pods in the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""ServiceAccount"",\n    ""relation_description"": ""lists"",\n    ""summary_er"": ""A Pod can list its associated Service Accounts, which are used for authentication and authorization.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses the verb \'list\'"",\n    ""summary_er"": ""Kubectl uses list verb to display information about pods in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""RoleBinding"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""binds to"",\n    ""summary_er"": ""A RoleBinding binds to a pod, granting it access to resources and permissions within the Kubernetes cluster.""\n  }\n]']","To secure a Kubernetes cluster with role-based access control, create a Role (e.g. service-reader) in a namespace using kubectl create or -f service-reader.yaml. Bind the Role to a ServiceAccount in the same namespace using kubectl create rolebinding, specifying the Role and ServiceAccount names. This grants permissions for the ServiceAccount to perform actions defined by the Role.","[{'highlight': 'You can create a role in Kubernetes using the `kubectl create` command with the `-f` option and a YAML file containing the role definition.'}, {'highlight': 'To bind a role to a ServiceAccount, you need to create a RoleBinding resource using the `kubectl create rolebinding` command.'}, {'highlight': 'You can specify who can perform actions defined by a role by binding it to a user, ServiceAccount, or group using a RoleBinding resource.'}, {'highlight': 'The `-n` option in Kubernetes is shorthand for `--namespace`, allowing you to specify the namespace for a command.'}, {'highlight': 'You need to have cluster-admin rights to create certain resources in GKE, and can grant these rights using a `clusterrolebinding` command.'}]"
+303,392,0,[],"360
+CHAPTER 12
+Securing the Kubernetes API server
+The following listing shows the YAML of the RoleBinding you created.
+$ kubectl get rolebinding test -n foo -o yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: test
+  namespace: foo
+  ...
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role                         
+  name: service-reader               
+subjects:
+- kind: ServiceAccount       
+  name: default              
+  namespace: foo             
+As you can see, a RoleBinding always references a single Role (as evident from the
+roleRef property), but can bind the Role to multiple subjects (for example, one or
+more ServiceAccounts and any number of users or groups). Because this RoleBinding
+binds the Role to the ServiceAccount the pod in namespace foo is running under, you
+can now list Services from within that pod.
+/ # curl localhost:8001/api/v1/namespaces/foo/services
+{
+  ""kind"": ""ServiceList"",
+  ""apiVersion"": ""v1"",
+  ""metadata"": {
+    ""selfLink"": ""/api/v1/namespaces/foo/services"",
+Listing 12.9
+A RoleBinding referencing a Role
+Listing 12.10
+Getting Services from the API server
+Namespace: foo
+Role:
+service-reader
+Get, list
+Default ServiceAccount
+is allowed to get and list
+services in this namespace
+Services
+RoleBinding:
+test
+Service-
+Account:
+default
+Figure 12.5
+The test RoleBinding binds the default ServiceAccount with the 
+service-reader Role.
+This RoleBinding references 
+the service-reader Role.
+And binds it to the 
+default ServiceAccount 
+in the foo namespace.
+ 
+",[],"[{'entity': 'RoleBinding', 'description': 'A Kubernetes object that binds a Role to one or more subjects.', 'category': 'software'}, {'entity': 'kubectl', 'description': 'The command-line tool for interacting with a Kubernetes cluster.', 'category': 'application'}, {'entity': 'yaml', 'description': 'A human-readable serialization format for Kubernetes objects.', 'category': 'software'}, {'entity': 'Role', 'description': 'A Kubernetes object that defines a set of permissions.', 'category': 'software'}, {'entity': 'service-reader', 'description': 'A Role that allows access to Services in a namespace.', 'category': 'software'}, {'entity': 'ServiceAccount', 'description': 'A Kubernetes object that represents an identity for a pod or container.', 'category': 'software'}, {'entity': 'default', 'description': 'The default ServiceAccount in the foo namespace.', 'category': 'software'}, {'entity': 'ServiceList', 'description': 'A Kubernetes object that represents a list of Services.', 'category': 'software'}, {'entity': 'curl', 'description': 'The command-line tool for transferring data with HTTP requests.', 'category': 'application'}, {'entity': 'localhost:8001/api/v1/namespaces/foo/services', 'description': 'The URL of the Kubernetes API server to list Services in the foo namespace.', 'category': 'network'}]","[{'source_entity': '""ServiceList""', 'description': 'lists all services', 'destination_entity': '""localhost:8001/api/v1/namespaces/foo/services""'}, {'source_entity': '""kubectl""', 'description': 'executes a command to get service list', 'destination_entity': '""ServiceList""'}, {'source_entity': '""curl""', 'description': 'makes an API call to get service list', 'destination_entity': '""localhost:8001/api/v1/namespaces/foo/services""'}, {'source_entity': '""default""', 'description': 'is the default namespace for services', 'destination_entity': '""ServiceList""'}, {'source_entity': '""Role""', 'description': 'defines permissions for a service account', 'destination_entity': '""service-reader""'}, {'source_entity': '""RoleBinding""', 'description': 'binds a role to a service account', 'destination_entity': '""service-reader""'}, {'source_entity': '""ServiceAccount""', 'description': 'is the entity that uses a service', 'destination_entity': '""ServiceList""'}]","['[\n  {\n    ""source"": ""ServiceList"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""lists all services"",\n    ""summary_er"": ""The ServiceList entity lists all services in a Kubernetes cluster, with each service corresponding to a pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes a command to get service list"",\n    ""summary_er"": ""Kubectl uses a command to retrieve a list of services running on a pod.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""makes an API call to get service list"",\n    ""summary_er"": ""Curl makes a GET request to retrieve a list of services in the \'foo\' namespace, returning details about each pod.""\n  }\n]', '[\n  {\n    ""source"": ""default"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is the default namespace for services"",\n    ""summary_er"": ""The default namespace is used by services to manage pods.""\n  },\n  {\n    ""source"": ""ServiceList"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""list of services"",\n    ""summary_er"": ""A ServiceList contains a collection of services that can be accessed by pods.""\n  }\n]', '[\n  {\n    ""source"": ""Role"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines permissions for a service account"",\n    ""summary_er"": ""A Role defines permissions for a Service Account, which are then applied to a Pod.""\n  }\n]', '[\n  {\n    ""source"": ""RoleBinding"",\n    ""destination"": ""ServiceAccount"",\n    ""relation_description"": ""binds a role to"",\n    ""summary_er"": ""A RoleBinding binds a role to a ServiceAccount, granting access to resources.""\n  },\n  {\n    ""source"": ""RoleBinding"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""grants access to"",\n    ""summary_er"": ""A RoleBinding grants access to a Pod by binding a role to it, allowing for resource access.""\n  }\n]', '[\n  {\n    ""source"": ""ServiceAccount"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is the entity that uses a service"",\n    ""summary_er"": ""A ServiceAccount is an entity that utilizes a service to interact with a pod.""\n  },\n  {\n    ""source"": ""ServiceList"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""list of services used by a pod"",\n    ""summary_er"": ""A ServiceList is a collection of services utilized by a pod for communication and interaction.""\n  }\n]']","A RoleBinding references a single Role and can bind it to multiple subjects, such as ServiceAccounts, users, or groups. In this case, the test RoleBinding binds the default ServiceAccount with the service-reader Role in the foo namespace, allowing the pod running under that account to list Services.","[{'highlight': 'A RoleBinding always references a single Role but can bind the Role to multiple subjects.'}, {'highlight': 'The test RoleBinding binds the default ServiceAccount with the service-reader Role and allows it to get and list services in namespace foo.'}, {'highlight': 'You can now list Services from within the pod in namespace foo using curl localhost:8001/api/v1/namespaces/foo/services'}, {'highlight': 'The roleRef property references a single Role, which is service-reader in this case.'}, {'highlight': 'This RoleBinding binds the default ServiceAccount with the service-reader Role in the foo namespace.'}]"
+304,393,0,[],"361
+Securing the cluster with role-based access control
+    ""resourceVersion"": ""24906""
+  },
+  ""items"": []     
+}
+INCLUDING SERVICEACCOUNTS FROM OTHER NAMESPACES IN A ROLEBINDING
+The pod in namespace bar can’t list the Services in its own namespace, and obviously
+also not those in the foo namespace. But you can edit your RoleBinding in the foo
+namespace and add the other pod’s ServiceAccount, even though it’s in a different
+namespace. Run the following command:
+$ kubectl edit rolebinding test -n foo
+Then add the following lines to the list of subjects, as shown in the following listing.
+subjects:
+- kind: ServiceAccount
+  name: default          
+  namespace: bar         
+Now you can also list Services in the foo namespace from inside the pod running in
+the bar namespace. Run the same command as in listing 12.10, but do it in the other
+terminal, where you’re running the shell in the other pod.
+ Before moving on to ClusterRoles and ClusterRoleBindings, let’s summarize
+what RBAC resources you currently have. You have a RoleBinding in namespace
+foo, which references the service-reader Role (also in the foo namespace) and
+binds the default ServiceAccounts in both the foo and the bar namespaces, as
+depicted in figure 12.6.
+Listing 12.11
+Referencing a ServiceAccount from another namespace
+The list of items is empty, 
+because no Services exist.
+You’re referencing the default 
+ServiceAccount in the bar namespace.
+Namespace: foo
+Role:
+service-reader
+Get, list
+Both ServiceAccounts are
+allowed to get and list Services
+in the foo namespace
+Services
+Namespace: bar
+RoleBinding:
+test
+Service-
+Account:
+default
+Service-
+Account:
+default
+Figure 12.6
+A RoleBinding binding ServiceAccounts from different namespaces to the same Role.
+ 
+","[Empty DataFrame
+Columns: [Namespace: foo
+Service- RoleBinding: Role: Get, list
+Account: Services
+test service-reader
+default, Col1, Namespace: bar
+Service-
+Account:
+default]
+Index: []]","[{'entity': 'role-based access control', 'description': 'a method for controlling access to resources within a Kubernetes cluster', 'category': 'software'}, {'entity': 'serviceaccounts', 'description': 'an object that represents a service account in a Kubernetes namespace', 'category': 'software'}, {'entity': 'rolebinding', 'description': 'a resource that binds a role to a set of subjects, such as users or service accounts', 'category': 'software'}, {'entity': 'kubectl', 'description': 'the command-line tool for interacting with a Kubernetes cluster', 'category': 'software'}, {'entity': 'role', 'description': 'a resource that defines a set of permissions within a Kubernetes namespace', 'category': 'software'}, {'entity': 'clusterroles', 'description': 'a resource that defines a set of permissions across an entire Kubernetes cluster', 'category': 'software'}, {'entity': 'clusterrolebindings', 'description': 'a resource that binds a cluster role to a set of subjects, such as users or service accounts', 'category': 'software'}, {'entity': 'namespace', 'description': 'a logical partitioning of resources within a Kubernetes cluster', 'category': 'software'}, {'entity': 'pod', 'description': 'an object that represents a running container in a Kubernetes cluster', 'category': 'software'}, {'entity': 'serviceaccount', 'description': 'an object that represents a service account in a Kubernetes namespace', 'category': 'software'}, {'entity': 'default', 'description': 'the default service account in a Kubernetes namespace', 'category': 'software'}, {'entity': 'test', 'description': 'a role binding name', 'category': 'software'}]","[{'source_entity': 'kubectl', 'description': 'creates', 'destination_entity': 'clusterroles'}, {'source_entity': 'kubectl', 'description': 'applies', 'destination_entity': 'rolebinding'}, {'source_entity': 'kubectl', 'description': 'binds', 'destination_entity': 'serviceaccount'}, {'source_entity': 'kubectl', 'description': 'assigns', 'destination_entity': 'clusterrolebindings'}, {'source_entity': 'kubectl', 'description': 'manages', 'destination_entity': 'namespace'}, {'source_entity': 'kubectl', 'description': 'deploys', 'destination_entity': 'pod'}, {'source_entity': 'kubectl', 'description': 'creates', 'destination_entity': 'serviceaccounts'}, {'source_entity': 'role-based access control', 'description': 'regulates', 'destination_entity': 'clusterroles'}, {'source_entity': 'role-based access control', 'description': 'defines', 'destination_entity': 'rolebinding'}, {'source_entity': 'role-based access control', 'description': 'enforces', 'destination_entity': 'serviceaccount'}, {'source_entity': 'default', 'description': 'specifies', 'destination_entity': 'namespace'}, {'source_entity': 'test', 'description': 'performs', 'destination_entity': 'pod'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) creates a new pod in the cluster, which is a container running an application.""\n  },\n  {\n    ""source"": ""clusterroles"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""accesses"",\n    ""summary_er"": ""ClusterRoles define permissions for accessing pods and other resources within a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) applies configurations to a running pod, ensuring it meets the desired state.""\n  },\n  {\n    ""source"": ""rolebinding"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assigns permissions"",\n    ""summary_er"": ""RoleBinding assigns permissions to a pod, allowing it to access specific resources and perform actions within the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""binds"",\n    ""summary_er"": ""Kubernetes command that binds a pod to a service account, granting access to cluster resources.""\n  },\n  {\n    ""source"": ""serviceaccount"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""binds"",\n    ""summary_er"": ""Service account that is bound to a pod, providing identity and permissions for the pod\'s actions.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assigns"",\n    ""summary_er"": ""Kubectl assigns a pod to a cluster, allowing it to be managed and scaled within the Kubernetes environment.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) manages and controls pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) deploys a pod, which is a containerized application instance.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) creates a new pod, which is a container running an application.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""serviceaccounts"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) manages service accounts, which provide credentials for pods to access cluster resources.""\n  }\n]', '[\n  {\n    ""source"": ""role-based access control"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""regulates"",\n    ""summary_er"": ""Role-based access control regulates access to pods in a Kubernetes cluster, ensuring that only authorized entities can interact with them.""\n  }\n]', '[\n  {\n    ""source"": ""role-based access control"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""Role-based access control defines a set of permissions for pods, controlling what actions can be performed on them.""\n  }\n]', '[\n  {\n    ""source"": ""role-based access control"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""Role-based access control ensures that a pod\'s access to resources is enforced based on its identity and permissions.""\n  },\n  {\n    ""source"": ""serviceaccount"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""associated with"",\n    ""summary_er"": ""A service account is associated with a pod, providing it with the necessary credentials to access cluster resources.""\n  }\n]', '[\n  {\n    ""source"": ""default"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""namespace"",\n    ""summary_er"": ""The default namespace is a container for pods, providing isolation and resource management.""\n  }\n]', '[\n  {\n    ""source"": ""test"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""performs"",\n    ""summary_er"": ""The test performs on a pod, indicating that the test is executed within the pod\'s environment.""\n  }\n]']","You can add a pod's ServiceAccount from another namespace to a RoleBinding by editing the RoleBinding and adding the subject, allowing the pod to list Services in its own and other namespaces.","[{'highlight': 'You can edit your RoleBinding in the foo namespace and add the other pod’s ServiceAccount, even though it’s in a different namespace.'}, {'highlight': 'To do this, run the command: $ kubectl edit rolebinding test -n foo'}, {'highlight': 'Add the following lines to the list of subjects: subjects: - kind: ServiceAccount name: default namespace: bar'}, {'highlight': 'This allows you to list Services in the foo namespace from inside the pod running in the bar namespace.'}, {'highlight': 'You have a RoleBinding in namespace foo, which references the service-reader Role and binds the default ServiceAccounts in both the foo and the bar namespaces.'}]"
+305,394,0,[],"362
+CHAPTER 12
+Securing the Kubernetes API server
+12.2.4 Using ClusterRoles and ClusterRoleBindings
+Roles and RoleBindings are namespaced resources, meaning they reside in and apply
+to resources in a single namespace, but, as we saw, RoleBindings can refer to Service-
+Accounts from other namespaces, too. 
+ In addition to these namespaced resources, two cluster-level RBAC resources also
+exist: ClusterRole and ClusterRoleBinding. They’re not namespaced. Let’s see why
+you need them.
+ A regular Role only allows access to resources in the same namespace the Role is
+in. If you want to allow someone access to resources across different namespaces, you
+have to create a Role and RoleBinding in every one of those namespaces. If you want
+to extend this to all namespaces (this is something a cluster administrator would prob-
+ably need), you need to create the same Role and RoleBinding in each namespace.
+When creating an additional namespace, you have to remember to create the two
+resources there as well. 
+ As you’ve learned throughout the book, certain resources aren’t namespaced at
+all (this includes Nodes, PersistentVolumes, Namespaces, and so on). We’ve also
+mentioned the API server exposes some URL paths that don’t represent resources
+(/healthz for example). Regular Roles can’t grant access to those resources or non-
+resource URLs, but ClusterRoles can.
+ A ClusterRole is a cluster-level resource for allowing access to non-namespaced
+resources or non-resource URLs or used as a common role to be bound inside individ-
+ual namespaces, saving you from having to redefine the same role in each of them.
+ALLOWING ACCESS TO CLUSTER-LEVEL RESOURCES
+As mentioned, a ClusterRole can be used to allow access to cluster-level resources.
+Let’s look at how to allow your pod to list PersistentVolumes in your cluster. First,
+you’ll create a ClusterRole called pv-reader:
+$ kubectl create clusterrole pv-reader --verb=get,list 
+➥ --resource=persistentvolumes
+clusterrole ""pv-reader"" created
+The ClusterRole’s YAML is shown in the following listing.
+$ kubectl get clusterrole pv-reader -o yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:                                       
+  name: pv-reader                               
+  resourceVersion: ""39932""                      
+  selfLink: ...                                 
+  uid: e9ac1099-30e2-11e7-955c-080027e6b159     
+Listing 12.12
+A ClusterRole definition
+ClusterRoles aren’t 
+namespaced, hence 
+no namespace field.
+ 
+",[],"[{'entity': 'Kubernetes API server', 'description': 'The main entry point for interacting with a Kubernetes cluster.', 'category': 'application'}, {'entity': 'ClusterRoles', 'description': 'A cluster-level resource for allowing access to non-namespaced resources or non-resource URLs.', 'category': 'resource'}, {'entity': 'RoleBindings', 'description': 'Namespaced resources that allow access to resources in a single namespace.', 'category': 'resource'}, {'entity': 'Roles', 'description': 'Namespaced resources that allow access to resources in the same namespace as the Role.', 'category': 'resource'}, {'entity': 'ClusterRoleBinding', 'description': 'A cluster-level resource for binding a ClusterRole to a user or service account.', 'category': 'resource'}, {'entity': 'ClusterRole', 'description': 'A cluster-level resource that allows access to non-namespaced resources or non-resource URLs.', 'category': 'resource'}, {'entity': 'PersistentVolumes', 'description': 'A Kubernetes resource for storing data persistently across pod restarts.', 'category': 'resource'}, {'entity': 'Pod', 'description': 'A lightweight and portable container that runs an application.', 'category': 'container'}, {'entity': 'Service-Accounts', 'description': 'An identity for a service running in a Kubernetes cluster.', 'category': 'resource'}, {'entity': 'Namespace', 'description': 'A logical partitioning of resources within a Kubernetes cluster.', 'category': 'resource'}, {'entity': 'Node', 'description': 'A machine running the Kubernetes agent and serving as a worker for pods.', 'category': 'hardware'}, {'entity': 'kubectl', 'description': 'The command-line tool for interacting with a Kubernetes cluster.', 'category': 'command'}]","[{'source_entity': 'kubectl', 'description': 'uses to manage cluster resources', 'destination_entity': 'ClusterRole'}, {'source_entity': 'kubectl', 'description': 'binds roles to service accounts', 'destination_entity': 'Service-Accounts'}, {'source_entity': 'kubectl', 'description': 'manages namespace resources', 'destination_entity': 'Namespace'}, {'source_entity': 'kubectl', 'description': 'binds roles to users or groups', 'destination_entity': 'Roles'}, {'source_entity': 'Kubernetes API server', 'description': 'validates and processes requests from clients', 'destination_entity': 'kubectl'}, {'source_entity': 'ClusterRoleBinding', 'description': 'binds a cluster role to a user or group', 'destination_entity': 'Roles'}, {'source_entity': 'ClusterRoleBinding', 'description': 'binds a cluster role to a service account', 'destination_entity': 'Service-Accounts'}, {'source_entity': 'PersistentVolumes', 'description': 'provides persistent storage for pods', 'destination_entity': 'Pod'}, {'source_entity': 'RoleBindings', 'description': 'binds a role to a user or group', 'destination_entity': 'Roles'}, {'source_entity': 'ClusterRoles', 'description': 'defines permissions for cluster-wide access', 'destination_entity': 'Kubernetes API server'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to manage cluster resources"",\n    ""summary_er"": ""kubectl manages cluster resources by interacting with pods.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""Service-Accounts"",\n    ""relation_description"": ""binds roles to"",\n    ""summary_er"": ""Kubectl binds service account roles to pods, enabling authentication and authorization.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""Namespace"",\n    ""relation_description"": ""manages namespace resources"",\n    ""summary_er"": ""Kubectl manages namespace resources, allowing users to create, update, and delete namespaces.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""binds roles to users or groups"",\n    ""summary_er"": ""Kubectl binds user roles to pods, enabling access control and security for containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""validates and processes requests from clients"",\n    ""summary_er"": ""The Kubernetes API server validates and processes client requests, ultimately leading to the creation or management of a pod.""\n  }\n]', '[\n  {\n    ""source"": ""ClusterRoleBinding"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""binds a cluster role to a user or group"",\n    ""summary_er"": ""A ClusterRoleBinding binds a cluster role to a user or group, granting them access to pods and other resources within the cluster.""\n  },\n  {\n    ""source"": ""Roles"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assigns permissions to users or groups"",\n    ""summary_er"": ""Roles assign permissions to users or groups, allowing them to perform actions on pods and other resources within the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""ClusterRoleBinding"",\n    ""destination"": ""Service-Accounts"",\n    ""relation_description"": ""binds a cluster role to a service account"",\n    ""summary_er"": ""A ClusterRoleBinding binds a cluster role to a ServiceAccount, granting permissions to the account.""\n  }\n]', '[{\n  ""source"": ""PersistentVolumes"",\n  ""destination"": ""pod"",\n  ""relation_description"": ""provides persistent storage for"",\n  ""summary_er"": ""Persistent Volumes provide long-term storage for Pods, enabling them to store data persistently across restarts and re-deployments.""\n}]', '[\n  {\n    ""source"": ""RoleBindings"",\n    ""destination"": ""Roles"",\n    ""relation_description"": ""binds a role to a user or group"",\n    ""summary_er"": ""RoleBindings bind roles to users or groups, granting access and permissions.""\n  }\n]', '[\n  {\n    ""source"": ""ClusterRoles"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines permissions for cluster-wide access"",\n    ""summary_er"": ""ClusterRoles define permissions for pods to access cluster-wide resources.""\n  }\n]']","Regular Roles allow access to resources in the same namespace but not across different namespaces. ClusterRoles, on the other hand, are cluster-level resources that can grant access to non-namespaced resources, non-resource URLs, or used as a common role inside individual namespaces. A ClusterRole is created using kubectl create clusterrole with the desired verb and resource, and can be bound to a ServiceAccount in a specific namespace using ClusterRoleBinding.","[{'highlight': 'ClusterRoles and ClusterRoleBindings are cluster-level RBAC resources that allow access to non-namespaced resources or non-resource URLs.'}, {'highlight': ""Regular Roles can't grant access to cluster-level resources, but ClusterRoles can.""}, {'highlight': 'A ClusterRole is a cluster-level resource for allowing access to non-namespaced resources or non-resource URLs.'}, {'highlight': ""ClusterRoles are not namespaced, so they don't have a namespace field.""}, {'highlight': ""To allow access to PersistentVolumes in the cluster, create a ClusterRole called pv-reader with the verb 'get' and 'list' for the resource 'persistentvolumes'.""}]"
+306,395,0,[],"363
+Securing the cluster with role-based access control
+rules:
+- apiGroups:                      
+  - """"                            
+  resources:                      
+  - persistentvolumes             
+  verbs:                          
+  - get                           
+  - list                          
+Before you bind this ClusterRole to your pod’s ServiceAccount, verify whether the pod
+can list PersistentVolumes. Run the following command in the first terminal, where
+you’re running the shell inside the pod in the foo namespace:
+/ # curl localhost:8001/api/v1/persistentvolumes
+User ""system:serviceaccount:foo:default"" cannot list persistentvolumes at the 
+cluster scope.
+NOTE
+The URL contains no namespace, because PersistentVolumes aren’t
+namespaced. 
+As expected, the default ServiceAccount can’t list PersistentVolumes. You need to
+bind the ClusterRole to your ServiceAccount to allow it to do that. ClusterRoles can
+be bound to subjects with regular RoleBindings, so you’ll create a RoleBinding now:
+$ kubectl create rolebinding pv-test --clusterrole=pv-reader 
+➥ --serviceaccount=foo:default -n foo
+rolebinding ""pv-test"" created
+Can you list PersistentVolumes now?
+/ # curl localhost:8001/api/v1/persistentvolumes
+User ""system:serviceaccount:foo:default"" cannot list persistentvolumes at the 
+cluster scope.
+Hmm, that’s strange. Let’s examine the RoleBinding’s YAML in the following listing.
+Can you tell what (if anything) is wrong with it?
+$ kubectl get rolebindings pv-test -o yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pv-test
+  namespace: foo
+  ...
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole              
+  name: pv-reader                
+Listing 12.13
+A RoleBinding referencing a ClusterRole
+In this case, the 
+rules are exactly 
+like those in a 
+regular Role.
+The binding references the 
+pv-reader ClusterRole.
+ 
+",[],"[{'entity': 'role-based access control', 'description': 'a security feature that allows administrators to define roles and permissions for users or groups within a cluster', 'category': 'software'}, {'entity': 'apiGroups', 'description': 'a field in Kubernetes role-based access control rules that specifies the API group(s) affected by the rule', 'category': 'software'}, {'entity': '', 'description': 'the empty string, indicating that the rule applies to all API groups', 'category': 'software'}, {'entity': 'resources', 'description': 'a field in Kubernetes role-based access control rules that specifies the resources affected by the rule', 'category': 'software'}, {'entity': 'persistentvolumes', 'description': 'a resource type in Kubernetes that represents a persistent volume', 'category': 'software'}, {'entity': 'verbs', 'description': 'a field in Kubernetes role-based access control rules that specifies the verbs (e.g. get, list) allowed on the affected resources', 'category': 'software'}, {'entity': 'get', 'description': 'a verb in Kubernetes role-based access control rules that allows a user to retrieve information about a resource', 'category': 'software'}, {'entity': 'list', 'description': 'a verb in Kubernetes role-based access control rules that allows a user to list all resources of a given type', 'category': 'software'}, {'entity': 'ClusterRole', 'description': 'a type of role in Kubernetes that can be bound to multiple subjects and applies across the entire cluster', 'category': 'software'}, {'entity': 'RoleBinding', 'description': 'an object in Kubernetes that binds a role (e.g. ClusterRole) to one or more subjects (e.g. ServiceAccount)', 'category': 'software'}, {'entity': 'kubectl', 'description': 'the command-line tool used to interact with a Kubernetes cluster', 'category': 'software'}, {'entity': 'curl', 'description': 'a command-line utility for transferring data to and from a web server using HTTP or HTTPS protocols', 'category': 'software'}, {'entity': 'PersistentVolumes', 'description': 'a resource type in Kubernetes that represents a persistent volume', 'category': 'software'}, {'entity': 'ServiceAccount', 'description': 'an object in Kubernetes that represents an identity for a pod or other cluster component', 'category': 'software'}, {'entity': 'RoleBindings', 'description': 'a type of binding in Kubernetes that associates a role with one or more subjects', 'category': 'software'}]","[{'source_entity': 'kubectl', 'description': 'uses to list ClusterRole', 'destination_entity': 'ClusterRole'}, {'source_entity': 'kubectl', 'description': 'uses to get verbs', 'destination_entity': 'verbs'}, {'source_entity': 'kubectl', 'description': 'uses to list RoleBinding', 'destination_entity': 'RoleBinding'}, {'source_entity': 'kubectl', 'description': 'uses to list resources', 'destination_entity': 'resources'}, {'source_entity': 'kubectl', 'description': 'uses to get apiGroups', 'destination_entity': 'apiGroups'}, {'source_entity': 'kubectl', 'description': 'uses to get RoleBindings', 'destination_entity': 'RoleBindings'}, {'source_entity': 'kubectl', 'description': 'uses to list persistentvolumes', 'destination_entity': 'persistentvolumes'}, {'source_entity': 'kubectl', 'description': 'uses to get ServiceAccount', 'destination_entity': 'ServiceAccount'}, {'source_entity': 'kubectl', 'description': 'uses to get PersistentVolumes', 'destination_entity': 'PersistentVolumes'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to list"",\n    ""summary_er"": ""Kubectl lists pods in a Kubernetes cluster, providing information on running containers and their status.""\n  },\n  {\n    ""source"": ""ClusterRole"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""list ClusterRole"",\n    ""summary_er"": ""A ClusterRole defines permissions for accessing Kubernetes resources, including pods, which are the basic execution units in a cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to get verbs"",\n    ""summary_er"": ""Kubectl uses verbs to interact with pods, allowing users to perform various actions such as listing, describing, and deleting pods.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to list"",\n    ""summary_er"": ""Kubectl lists pods by querying the API server, which returns a list of pod objects.""\n  },\n  {\n    ""source"": ""RoleBinding"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""list RoleBinding"",\n    ""summary_er"": ""A RoleBinding is used to grant permissions to a pod, allowing it to access resources in the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to list resources"",\n    ""summary_er"": ""Kubectl lists available pods, providing resource information for management and monitoring.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to get apiGroups"",\n    ""summary_er"": ""kubectl retrieves API groups from a pod, enabling cluster management and resource access.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to get"",\n    ""summary_er"": ""kubectl is used to retrieve information about a specific pod, including its status and configuration.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""persistentvolumes"",\n    ""relation_description"": ""uses to list"",\n    ""summary_er"": ""Kubectl uses command to list all available persistent volumes in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""ServiceAccount"",\n    ""relation_description"": ""uses to get"",\n    ""summary_er"": ""kubectl retrieves a ServiceAccount object, providing access credentials for pods.""\n  },\n  {\n    ""source"": ""ServiceAccount"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""providing access credentials for"",\n    ""summary_er"": ""A ServiceAccount is used to authenticate and authorize pod access to cluster resources.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""PersistentVolumes"",\n    ""relation_description"": ""uses to get"",\n    ""summary_er"": ""kubectl is used to retrieve information about Persistent Volumes, allowing for management and configuration of storage resources.""\n  }\n]']","To secure a Kubernetes cluster with role-based access control, create a ClusterRole that specifies API groups, resources, and verbs. Bind this ClusterRole to a ServiceAccount using a RoleBinding, then verify if the ServiceAccount can list PersistentVolumes using curl.","[{'highlight': 'To secure a Kubernetes cluster with role-based access control rules, you need to bind a ClusterRole to your ServiceAccount.'}, {'highlight': 'The default ServiceAccount cannot list PersistentVolumes at the cluster scope and requires a RoleBinding to allow it to do so.'}, {'highlight': 'A RoleBinding referencing a ClusterRole has exactly the same rules as a regular Role.'}, {'highlight': 'You can create a RoleBinding using the command `kubectl create rolebinding pv-test --clusterrole=pv-reader --serviceaccount=foo:default -n foo`'}, {'highlight': ""The RoleBinding's YAML output should be checked to ensure it is correctly referencing the ClusterRole.""}]"
+307,396,0,[],"364
+CHAPTER 12
+Securing the Kubernetes API server
+subjects:
+- kind: ServiceAccount          
+  name: default                 
+  namespace: foo                
+The YAML looks perfectly fine. You’re referencing the correct ClusterRole and the
+correct ServiceAccount, as shown in figure 12.7, so what’s wrong?
+Although you can create a RoleBinding and have it reference a ClusterRole when you
+want to enable access to namespaced resources, you can’t use the same approach for
+cluster-level (non-namespaced) resources. To grant access to cluster-level resources,
+you must always use a ClusterRoleBinding.
+ Luckily, creating a ClusterRoleBinding isn’t that different from creating a Role-
+Binding, but you’ll clean up and delete the RoleBinding first:
+$ kubectl delete rolebinding pv-test
+rolebinding ""pv-test"" deleted
+Now create the ClusterRoleBinding:
+$ kubectl create clusterrolebinding pv-test --clusterrole=pv-reader 
+➥ --serviceaccount=foo:default
+clusterrolebinding ""pv-test"" created
+As you can see, you replaced rolebinding with clusterrolebinding in the command
+and didn’t (need to) specify the namespace. Figure 12.8 shows what you have now.
+ Let’s see if you can list PersistentVolumes now:
+/ # curl localhost:8001/api/v1/persistentvolumes
+{
+  ""kind"": ""PersistentVolumeList"",
+  ""apiVersion"": ""v1"",
+...
+The bound subject is the 
+default ServiceAccount in 
+the foo namespace.
+Namespace: foo
+Cluster-level resources
+ClusterRole:
+pv-reader
+Get, list
+Persistent
+Volumes
+RoleBinding:
+pv-test
+Default ServiceAccount
+is unable to get and list
+PersistentVolumes
+Service-
+Account:
+default
+Figure 12.7
+A RoleBinding referencing a ClusterRole doesn’t grant access to cluster-
+level resources.
+ 
+","[Empty DataFrame
+Columns: [Namespace: foo
+Service-
+RoleBinding:
+Account:
+pv-test
+default, Col1, Cluster-level resources
+ClusterRole: Get, list Persistent
+pv-reader Volumes]
+Index: []]","[{'entity': 'Kubernetes API server', 'description': 'The Kubernetes API server is responsible for managing and controlling the cluster.', 'category': 'software'}, {'entity': 'ServiceAccount', 'description': 'A ServiceAccount is an object that represents a service account in Kubernetes.', 'category': 'software'}, {'entity': 'default', 'description': 'The default ServiceAccount in the foo namespace.', 'category': 'software'}, {'entity': 'foo', 'description': 'The namespace where the default ServiceAccount is located.', 'category': 'namespace'}, {'entity': 'ClusterRole', 'description': 'A ClusterRole is a Kubernetes object that defines permissions for cluster-level resources.', 'category': 'software'}, {'entity': 'pv-reader', 'description': 'The ClusterRole used to grant access to PersistentVolumes.', 'category': 'software'}, {'entity': 'ClusterRoleBinding', 'description': 'A ClusterRoleBinding is a Kubernetes object that binds a ClusterRole to a ServiceAccount or user.', 'category': 'software'}, {'entity': 'pv-test', 'description': 'The ClusterRoleBinding used to grant access to PersistentVolumes.', 'category': 'software'}, {'entity': 'kubectl', 'description': 'The command-line tool used to interact with the Kubernetes API server.', 'category': 'command'}, {'entity': 'curl', 'description': 'The command used to make a GET request to the Kubernetes API server.', 'category': 'command'}, {'entity': 'PersistentVolumeList', 'description': 'A list of PersistentVolumes in the cluster.', 'category': 'software'}, {'entity': 'PersistentVolumes', 'description': 'Cluster-level resources that represent persistent storage.', 'category': 'cluster-resource'}]","[{'source_entity': '""Kubernetes API server""', 'description': 'provides', 'destination_entity': '""default""'}, {'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""Kubernetes API server""'}, {'source_entity': '""curl""', 'description': 'interacts with', 'destination_entity': '""Kubernetes API server""'}, {'source_entity': '""ClusterRole""', 'description': 'defines permissions for', 'destination_entity': '""pv-reader""'}, {'source_entity': '""pv-reader""', 'description': 'has access to', 'destination_entity': '""PersistentVolumeList""'}, {'source_entity': '""kubectl""', 'description': 'manages', 'destination_entity': '""ClusterRoleBinding""'}, {'source_entity': '""ServiceAccount""', 'description': 'is associated with', 'destination_entity': '""pv-test""'}, {'source_entity': '""PersistentVolumes""', 'description': 'are managed by', 'destination_entity': '""Kubernetes API server""'}]","['[\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The Kubernetes API server manages and exposes the cluster\'s resources, including pods, to users and applications.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The Kubernetes command-line tool (kubectl) uses a pod to execute commands and interact with the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""interacts with"",\n    ""summary_er"": ""The curl command interacts with a Kubernetes pod, utilizing its API to execute commands and manage resources.""\n  },\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The Kubernetes API server manages pods, creating, scheduling, and deleting them as needed for efficient resource utilization.""\n  }\n]', '[{""source"": ""ClusterRole"", ""destination"": ""pod"", ""relation_description"": ""defines permissions for"", ""summary_er"": ""A ClusterRole defines permissions for pods, allowing them to access resources.""}]', '[\n  {\n    ""source"": ""pv-reader"",\n    ""destination"": ""PersistentVolumeList"",\n    ""relation_description"": ""has access to"",\n    ""summary_er"": ""The pv-reader has read-only access to the PersistentVolumeList, allowing it to retrieve a list of persistent volumes.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubectl manages pods, which are the basic execution units in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""ClusterRoleBinding"",\n    ""destination"": ""cluster"",\n    ""relation_description"": ""binds"",\n    ""summary_er"": ""A ClusterRoleBinding binds a role to a user or service account at the cluster level, granting access to resources within the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""ServiceAccount"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is associated with"",\n    ""summary_er"": ""A ServiceAccount is a Kubernetes object that provides an identity for pods, allowing them to authenticate and authorize access to cluster resources.""\n  },\n  {\n    ""source"": ""pv-test"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""destination"",\n    ""summary_er"": ""pv-test is a Persistent Volume (PV) in Kubernetes, providing storage capacity for a pod named pv-test.""\n  }\n]', '[\n  {\n    ""source"": ""PersistentVolumes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are managed by"",\n    ""summary_er"": ""Persistent Volumes are managed by Kubernetes, providing persistent storage for pods.""\n  },\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""The Kubernetes API server manages and controls the lifecycle of pods, ensuring they run smoothly.""\n  }\n]']","To secure the Kubernetes API server, you must use a ClusterRoleBinding to grant access to cluster-level (non-namespaced) resources, unlike with namespaced resources where a RoleBinding can be used. The command to create a ClusterRoleBinding is similar to that of a RoleBinding, but without specifying the namespace and replacing rolebinding with clusterrolebinding.","[{'highlight': 'To grant access to cluster-level resources, you must always use a ClusterRoleBinding.'}, {'highlight': ""You can't use RoleBinding for cluster-level (non-namespaced) resources; instead, use ClusterRoleBinding.""}, {'highlight': 'Delete the existing RoleBinding before creating a ClusterRoleBinding: $ kubectl delete rolebinding pv-test'}, {'highlight': ""Create a ClusterRoleBinding by replacing 'rolebinding' with 'clusterrolebinding' in the command and omitting namespace: $ kubectl create clusterrolebinding pv-test --clusterrole=pv-reader --serviceaccount=foo:default""}, {'highlight': 'The default ServiceAccount in the foo namespace is unable to get and list PersistentVolumes due to lack of ClusterRoleBinding.'}]"
+308,397,0,[],"365
+Securing the cluster with role-based access control
+You can! It turns out you must use a ClusterRole and a ClusterRoleBinding when
+granting access to cluster-level resources.
+TIP
+Remember that a RoleBinding can’t grant access to cluster-level resources,
+even if it references a ClusterRoleBinding.
+ALLOWING ACCESS TO NON-RESOURCE URLS
+We’ve mentioned that the API server also exposes non-resource URLs. Access to these
+URLs must also be granted explicitly; otherwise the API server will reject the client’s
+request. Usually, this is done for you automatically through the system:discovery
+ClusterRole and the identically named ClusterRoleBinding, which appear among
+other predefined ClusterRoles and ClusterRoleBindings (we’ll explore them in sec-
+tion 12.2.5). 
+ Let’s inspect the system:discovery ClusterRole shown in the following listing.
+$ kubectl get clusterrole system:discovery -o yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:discovery
+  ...
+rules:
+- nonResourceURLs:      
+  - /api                
+  - /api/*              
+  - /apis               
+  - /apis/*             
+  - /healthz            
+  - /swaggerapi         
+  - /swaggerapi/*       
+  - /version            
+Listing 12.14
+The default system:discovery ClusterRole
+Namespace: foo
+Cluster-level resources
+ClusterRole:
+pv-reader
+Get, list
+Persistent
+Volumes
+ClusterRoleBinding:
+pv-test
+Default ServiceAccount in
+foo namespace is now allowed
+to get and list PersistentVolumes
+Service-
+Account:
+default
+Figure 12.8
+A ClusterRoleBinding and ClusterRole must be used to grant access to cluster-
+level resources.
+Instead of referring 
+to resources, this rule 
+refers to non-resource 
+URLs.
+ 
+","[Empty DataFrame
+Columns: [Namespace: foo
+Service-
+Account:
+default, Col1, Cluster-level resources
+ClusterRoleBinding: ClusterRole: Get, list Persistent
+pv-test pv-reader Volumes]
+Index: []]","[{'entity': 'ClusterRole', 'description': 'A Kubernetes resource that defines a set of permissions for cluster-level access.', 'category': 'software'}, {'entity': 'ClusterRoleBinding', 'description': 'A Kubernetes resource that binds a ClusterRole to a user, service account, or group.', 'category': 'software'}, {'entity': 'RoleBinding', 'description': 'A Kubernetes resource that binds a Role to a user, service account, or group.', 'category': 'software'}, {'entity': '/api', 'description': 'A non-resource URL exposed by the API server.', 'category': 'network'}, {'entity': '/api/*', 'description': 'A non-resource URL pattern exposed by the API server.', 'category': 'network'}, {'entity': '/apis', 'description': 'A non-resource URL exposed by the API server.', 'category': 'network'}, {'entity': '/apis/*', 'description': 'A non-resource URL pattern exposed by the API server.', 'category': 'network'}, {'entity': '/healthz', 'description': 'A non-resource URL exposed by the API server.', 'category': 'network'}, {'entity': '/swaggerapi', 'description': 'A non-resource URL exposed by the API server.', 'category': 'network'}, {'entity': '/swaggerapi/*', 'description': 'A non-resource URL pattern exposed by the API server.', 'category': 'network'}, {'entity': '/version', 'description': 'A non-resource URL exposed by the API server.', 'category': 'network'}, {'entity': 'kubectl', 'description': 'A command-line tool for interacting with Kubernetes clusters.', 'category': 'software'}, {'entity': 'get clusterrole system:discovery -o yaml', 'description': 'A command used to retrieve the system:discovery ClusterRole in YAML format.', 'category': 'software'}, {'entity': 'pv-reader', 'description': 'A ClusterRole that grants access to Persistent Volumes.', 'category': 'software'}, {'entity': 'pv-test', 'description': 'A ClusterRoleBinding that grants access to Persistent Volumes for a ServiceAccount.', 'category': 'software'}, {'entity': 'default', 'description': 'The default ServiceAccount in the foo namespace.', 'category': 'software'}]","[{'source_entity': '""/swaggerapi""', 'description': 'provides', 'destination_entity': '""default""'}, {'source_entity': '""default""', 'description': 'uses', 'destination_entity': '""pv-test""'}, {'source_entity': '""pv-test""', 'description': 'is accessed by', 'destination_entity': '""/apis""'}, {'source_entity': '""get clusterrole system:discovery -o yaml""', 'description': 'fetches', 'destination_entity': '""ClusterRoleBinding""'}, {'source_entity': '""ClusterRoleBinding""', 'description': 'is related to', 'destination_entity': '""ClusterRole""'}, {'source_entity': '""/apis/*""', 'description': 'accesses', 'destination_entity': '""/api""'}, {'source_entity': '""pv-reader""', 'description': 'has access to', 'destination_entity': '""/swaggerapi/*""'}, {'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""RoleBinding""'}, {'source_entity': '""RoleBinding""', 'description': 'is related to', 'destination_entity': '""pv-reader""'}, {'source_entity': '""/swaggerapi/*""', 'description': 'accesses', 'destination_entity': '""/version""'}, {'source_entity': '""/api/*""', 'description': 'is accessed by', 'destination_entity': '""/healthz""'}]","['[\n  {\n    ""source"": ""/swaggerapi"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""/swaggerapi provides access to Kubernetes API, allowing users to interact with pods.""\n  }\n]', '[\n  {\n    ""source"": ""default"",\n    ""destination"": ""pod pv-test"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The default configuration utilizes the \'pv-test\' pod for its operations.""\n  }\n]', '[\n  {\n    ""source"": ""pv-test"",\n    ""destination"": ""/apis"",\n    ""relation_description"": ""is accessed by"",\n    ""summary_er"": ""Persistent Volume (PV) \'pv-test\' is accessed by a pod to interact with the \'/apis\' endpoint, enabling communication between the PV and the pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""fetches"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) fetches information from a pod.""\n  },\n  {\n    ""source"": ""ClusterRole"",\n    ""destination"": ""ClusterRoleBinding"",\n    ""relation_description"": ""binds to"",\n    ""summary_er"": ""A ClusterRole binds to a ClusterRoleBinding, granting permissions to a user or service account.""\n  }\n]', '[\n  {\n    ""source"": ""ClusterRoleBinding"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is related to"",\n    ""summary_er"": ""A ClusterRoleBinding is a Kubernetes object that binds a ClusterRole to a user, service account, or group, granting access to pods and other resources.""\n  }\n]', '[\n  {\n    ""source"": ""/apis/*"",\n    ""destination"": ""/api"",\n    ""relation_description"": ""accesses"",\n    ""summary_er"": ""/apis/* accesses /api, indicating that the API endpoint at /apis/* has access to the pod at /api.""\n  }\n]', '[\n  {\n    ""source"": ""pv-reader"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""has access to"",\n    ""summary_er"": ""The pv-reader has read-only access to the pod\'s /swaggerapi/* endpoint, allowing it to retrieve data without modifying the underlying resources.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubectl, a command-line tool for Kubernetes, uses pods to manage containerized applications.""\n  },\n  {\n    ""source"": ""RoleBinding"",\n    ""destination"": ""user"",\n    ""relation_description"": ""assigns"",\n    ""summary_er"": ""A RoleBinding in Kubernetes assigns roles to users, granting access to specific resources and actions.""\n  }\n]', '[\n  {\n    ""source"": ""RoleBinding"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is related to"",\n    ""summary_er"": ""A RoleBinding is a Kubernetes object that binds a role to a pod, granting it access to resources.""\n  },\n  {\n    ""source"": ""pv-reader"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is related to"",\n    ""summary_er"": ""The pv-reader is a pod that reads data from Persistent Volumes (PVs) in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""/swaggerapi/*"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""accesses"",\n    ""summary_er"": ""/swaggerapi/* accesses a pod, which is a containerized application running in the Kubernetes cluster.""\n  },\n  {\n    ""source"": ""/version"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""/version exposes information about the pod\'s version and configuration, providing insights into its current state.""\n  }\n]', '[\n  {\n    ""source"": ""/api/*"",\n    ""destination"": ""/healthz"",\n    ""relation_description"": ""is accessed by"",\n    ""summary_er"": ""/api/* is accessed by /healthz, indicating that API endpoints are being monitored for health checks.""\n  }\n]']","To secure a Kubernetes cluster with role-based access control, use a ClusterRole and a ClusterRoleBinding to grant access to cluster-level resources. Non-resource URLs must also be granted explicitly, usually done through the system:discovery ClusterRole and its binding, which allow access to URLs like /api, /apis, /healthz, etc.",[{'highlight': 'You can use a ClusterRole and a ClusterRoleBinding when granting access to cluster-level resources.'}]
+309,398,0,[],"366
+CHAPTER 12
+Securing the Kubernetes API server
+  verbs:             
+  - get              
+You can see this ClusterRole refers to URLs instead of resources (field nonResource-
+URLs is used instead of the resources field). The verbs field only allows the GET HTTP
+method to be used on these URLs.
+NOTE
+For non-resource URLs, plain HTTP verbs such as post, put, and
+patch are used instead of create or update. The verbs need to be specified in
+lowercase.
+As with cluster-level resources, ClusterRoles for non-resource URLs must be bound
+with a ClusterRoleBinding. Binding them with a RoleBinding won’t have any effect.
+The system:discovery ClusterRole has a corresponding system:discovery Cluster-
+RoleBinding, so let’s see what’s in it by examining the following listing.
+$ kubectl get clusterrolebinding system:discovery -o yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system:discovery
+  ...
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole                           
+  name: system:discovery                      
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group                                 
+  name: system:authenticated                  
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group                                 
+  name: system:unauthenticated                
+The YAML shows the ClusterRoleBinding refers to the system:discovery ClusterRole,
+as expected. It’s bound to two groups, system:authenticated and system:unauthenti-
+cated, which makes it bound to all users. This means absolutely everyone can access
+the URLs listed in the ClusterRole. 
+NOTE
+Groups are in the domain of the authentication plugin. When a
+request is received by the API server, it calls the authentication plugin to
+obtain the list of groups the user belongs to. This information is then used
+in authorization.
+You can confirm this by accessing the /api URL path from inside the pod (through
+the kubectl proxy, which means you’ll be authenticated as the pod’s ServiceAccount)
+Listing 12.15
+The default system:discovery ClusterRoleBinding
+Only the HTTP GET method 
+is allowed for these URLs.
+This ClusterRoleBinding references 
+the system:discovery ClusterRole.
+It binds the ClusterRole 
+to all authenticated and 
+unauthenticated users 
+(that is, everyone).
+ 
+",[],"[{'entity': 'ClusterRole', 'description': 'A Kubernetes object that defines a set of permissions for non-resource URLs.', 'category': 'software'}, {'entity': 'verbs', 'description': 'HTTP methods allowed on non-resource URLs, such as GET, POST, PUT, and PATCH.', 'category': 'software'}, {'entity': 'ClusterRoleBinding', 'description': 'A Kubernetes object that binds a ClusterRole to a set of users or groups.', 'category': 'software'}, {'entity': 'system:discovery', 'description': 'A specific ClusterRole and ClusterRoleBinding used for discovery purposes.', 'category': 'software'}, {'entity': 'kubectl', 'description': 'The Kubernetes command-line tool used to interact with the API server.', 'category': 'software'}, {'entity': 'API server', 'description': 'The central component of a Kubernetes cluster that handles incoming requests.', 'category': 'software'}, {'entity': 'ClusterRoleBinding', 'description': 'A YAML output format used to display the contents of a ClusterRoleBinding object.', 'category': 'software'}, {'entity': 'system:authenticated', 'description': 'A group that represents all authenticated users in a Kubernetes cluster.', 'category': 'software'}, {'entity': 'system:unauthenticated', 'description': 'A group that represents all unauthenticated users in a Kubernetes cluster.', 'category': 'software'}, {'entity': 'authentication plugin', 'description': 'A component of the Kubernetes API server responsible for authenticating incoming requests.', 'category': 'software'}, {'entity': '/api', 'description': 'The URL path used to access the Kubernetes API server.', 'category': 'network'}]","[{'source_entity': '""system:authenticated""', 'description': 'authenticates users', 'destination_entity': '""/api""'}, {'source_entity': '""system:discovery""', 'description': 'discovers cluster information', 'destination_entity': '""ClusterRoleBinding""'}, {'source_entity': '""authentication plugin""', 'description': 'provides authentication services', 'destination_entity': '""kubectl""'}, {'source_entity': '""verbs""', 'description': 'defines allowed actions on resources', 'destination_entity': '""ClusterRoleBinding""'}, {'source_entity': '""kubectl""', 'description': 'interacts with API server', 'destination_entity': '""/api""'}, {'source_entity': '""system:unauthenticated""', 'description': 'denies access to unauthorized users', 'destination_entity': '""ClusterRoleBinding""'}, {'source_entity': '""ClusterRoleBinding""', 'description': 'binds roles to users or groups', 'destination_entity': '""API server""'}]","['[\n  {\n    ""source"": ""system"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""authenticates users"",\n    ""summary_er"": ""The system authenticates users by verifying their credentials to access a pod, ensuring secure interactions with the /api endpoint.""\n  }\n]', '[\n  {\n    ""source"": ""system"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""discovery"",\n    ""summary_er"": ""The system discovers cluster information by interacting with a pod, which provides details about the cluster\'s configuration and status.""\n  },\n  {\n    ""source"": ""ClusterRoleBinding"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""binding"",\n    ""summary_er"": ""A ClusterRoleBinding binds a role to a user or service account, granting access to resources within a pod, which contains the application\'s code and data.""\n  }\n]', '[\n  {\n    ""source"": ""authentication plugin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides authentication services"",\n    ""summary_er"": ""The authentication plugin provides secure login services to pods, ensuring only authorized access.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes commands on"",\n    ""summary_er"": ""Kubectl is a command-line tool that executes commands on pods, allowing users to manage and interact with them.""\n  }\n]', '[\n  {\n    ""source"": ""verbs"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines allowed actions on resources"",\n    ""summary_er"": ""Defines permitted actions (verbs) for a pod, such as create, update, or delete.""\n  },\n  {\n    ""source"": ""ClusterRoleBinding"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines allowed actions on resources"",\n    ""summary_er"": ""Associates a cluster role with a user or group, granting permissions to manage pods and other resources within the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""API Server"",\n    ""relation_description"": ""interacts with"",\n    ""summary_er"": ""kubectl communicates with the API Server to manage Kubernetes resources.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""/api"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""The /api endpoint is exposed by kubectl to provide a RESTful interface for interacting with the API Server.""\n  }\n]', '[\n  {\n    ""source"": ""system:unauthenticated"",\n    ""destination"": ""pod/ClusterRoleBinding"",\n    ""relation_description"": ""denies access to unauthorized users"",\n    ""summary_er"": ""Unauthorized system users are denied access to ClusterRoleBinding pod due to lack of authentication.""\n  }\n]', '[\n  {\n    ""source"": ""ClusterRoleBinding"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""binds roles to users or groups"",\n    ""summary_er"": ""A ClusterRoleBinding binds a cluster role to a user, group, or service account. It grants permissions to access cluster resources.""\n  }\n]']","The system:discovery ClusterRole allows access to non-resource URLs with only GET HTTP method, and can be bound to all users through a ClusterRoleBinding. This binding grants access to the API server's /api URL path to anyone who accesses it from within a pod.","[{'highlight': 'The verbs field only allows the GET HTTP method to be used on these URLs.'}, {'highlight': 'For non-resource URLs, plain HTTP verbs such as post, put, and patch are used instead of create or update.'}, {'highlight': 'The system:discovery ClusterRole has a corresponding system:discovery Cluster-RoleBinding, so let’s see what’s in it by examining the following listing.'}, {'highlight': 'This means absolutely everyone can access the URLs listed in the ClusterRole.'}, {'highlight': 'Only the HTTP GET method is allowed for these URLs.'}]"

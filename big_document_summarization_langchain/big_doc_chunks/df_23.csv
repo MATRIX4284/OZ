@@ -1,0 +1,574 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+230,319,0,[],"287
+Understanding StatefulSets
+The new pod isn’t necessarily scheduled to the same node, but as you learned early
+on, what node a pod runs on shouldn’t matter. This holds true even for stateful pods.
+Even if the pod is scheduled to a different node, it will still be available and reachable
+under the same hostname as before. 
+SCALING A STATEFULSET
+Scaling the StatefulSet creates a new pod instance with the next unused ordinal index.
+If you scale up from two to three instances, the new instance will get index 2 (the exist-
+ing instances obviously have indexes 0 and 1). 
+ The nice thing about scaling down a StatefulSet is the fact that you always know
+what pod will be removed. Again, this is also in contrast to scaling down a ReplicaSet,
+where you have no idea what instance will be deleted, and you can’t even specify
+which one you want removed first (but this feature may be introduced in the future).
+Scaling down a StatefulSet always removes the instances with the highest ordinal index
+first (shown in figure 10.7). This makes the effects of a scale-down predictable.
+Because certain stateful applications don’t handle rapid scale-downs nicely, Stateful-
+Sets scale down only one pod instance at a time. A distributed data store, for example,
+may lose data if multiple nodes go down at the same time. For example, if a replicated
+data store is configured to store two copies of each data entry, in cases where two
+nodes go down at the same time, a data entry would be lost if it was stored on exactly
+those two nodes. If the scale-down was sequential, the distributed data store has time
+to create an additional replica of the data entry somewhere else to replace the (single)
+lost copy.
+ For this exact reason, StatefulSets also never permit scale-down operations if any of
+the instances are unhealthy. If an instance is unhealthy, and you scale down by one at
+the same time, you’ve effectively lost two cluster members at once.
+10.2.3 Providing stable dedicated storage to each stateful instance
+You’ve seen how StatefulSets ensure stateful pods have a stable identity, but what
+about storage? Each stateful pod instance needs to use its own storage, plus if a state-
+ful pod is rescheduled (replaced with a new instance but with the same identity as
+before), the new instance must have the same storage attached to it. How do Stateful-
+Sets achieve this?
+Pod
+A-0
+Pod
+A-1
+Pod
+A-2
+StatefulSet A
+Replicas: 3
+Pod
+A-0
+Pod
+A-1
+Pod
+A-2
+StatefulSet A
+Replicas: 2
+Pod
+A-0
+Pod
+A-1
+StatefulSet A
+Replicas: 1
+Scale down
+Scale down
+Figure 10.7
+Scaling down a StatefulSet always removes the pod with the highest ordinal index first.
+ 
+",[],"[{'entity': 'StatefulSets', 'description': 'A Kubernetes object that manages stateful applications', 'category': 'software'}, {'entity': 'pod', 'description': 'A container running an application', 'category': 'container'}, {'entity': 'node', 'description': 'A machine in a cluster', 'category': 'hardware'}, {'entity': 'hostname', 'description': 'The name of a node or pod', 'category': 'network'}, {'entity': 'ordinal index', 'description': 'A unique identifier for each pod instance', 'category': 'process'}, {'entity': 'ReplicaSet', 'description': 'A Kubernetes object that manages replicas of an application', 'category': 'software'}, {'entity': 'scale-down', 'description': 'The process of reducing the number of pod instances', 'category': 'process'}, {'entity': 'StatefulSets scale down', 'description': 'The process of scaling down a StatefulSet', 'category': 'process'}, {'entity': 'distributed data store', 'description': 'A type of database that stores data across multiple nodes', 'category': 'database'}, {'entity': 'data entry', 'description': 'A single unit of data stored in a database', 'category': 'database'}, {'entity': 'replica', 'description': 'A copy of a data entry stored on multiple nodes', 'category': 'database'}, {'entity': 'storage', 'description': 'The storage space allocated to each pod instance', 'category': 'hardware'}]","[{'source_entity': 'StatefulSets', 'description': 'scale down', 'destination_entity': 'ordinal index'}, {'source_entity': 'StatefulSets', 'description': 'manage', 'destination_entity': 'replica'}, {'source_entity': 'StatefulSets', 'description': 'orchestrate', 'destination_entity': 'pod'}, {'source_entity': 'StatefulSets', 'description': 'utilize', 'destination_entity': 'storage'}, {'source_entity': 'ReplicaSet', 'description': 'manage', 'destination_entity': 'node'}, {'source_entity': 'StatefulSets', 'description': 'coordinate with', 'destination_entity': 'distributed data store'}, {'source_entity': 'StatefulSets', 'description': 'assign', 'destination_entity': 'hostname'}]","['[\n  {\n    ""source"": ""StatefulSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""scale down"",\n    ""summary_er"": ""When a StatefulSet scales down, it reduces the number of replicas to the minimum required, deleting excess pods.""\n  },\n  {\n    ""source"": ""StatefulSets"",\n    ""destination"": ""ordinal index"",\n    ""relation_description"": ""ordinal index"",\n    ""summary_er"": ""A StatefulSet assigns an ordinal index to each pod in a deployment, ensuring correct ordering and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSets"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manage"",\n    ""summary_er"": ""StatefulSets manage replicas of pods, ensuring consistent data across multiple instances.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""orchestrate"",\n    ""summary_er"": ""StatefulSets manage and orchestrate stateful applications, ensuring consistent data storage across multiple pods.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""utilize"",\n    ""summary_er"": ""StatefulSets utilize pods for stateful applications, ensuring data persistence across pod restarts and rescheduling.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manage"",\n    ""summary_er"": ""A ReplicaSet manages a specified number of replicas (identical Pod instances) to ensure desired availability and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""coordinate with"",\n    ""summary_er"": ""StatefulSets manage and coordinate pods, ensuring consistent data storage across a distributed system.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assign"",\n    ""summary_er"": ""StatefulSets are used to manage stateful applications, assigning a persistent identity to each pod.""\n  }\n]']","StatefulSets ensure stateful pods have stable identities, even when scaled up or down. Scaling up creates new instances with unused ordinal indexes, while scaling down removes instances with the highest index first, making effects predictable. StatefulSets also prevent scale-down operations if any instance is unhealthy and provide stable dedicated storage to each instance.","[{'highlight': 'Even if the pod is scheduled to a different node, it will still be available and reachable under the same hostname as before.'}, {'highlight': 'Scaling down a StatefulSet always removes the instances with the highest ordinal index first (shown in figure 10.7).'}, {'highlight': 'StatefulSets scale down only one pod instance at a time to prevent data loss in distributed data stores.'}, {'highlight': 'StatefulSets never permit scale-down operations if any of the instances are unhealthy, as it would effectively lose two cluster members at once.'}, {'highlight': 'Each stateful pod instance needs to use its own storage, and StatefulSets ensure that new instances have the same storage attached to them when rescheduled.'}]"
+231,320,0,[],"288
+CHAPTER 10
+StatefulSets: deploying replicated stateful applications
+ Obviously, storage for stateful pods needs to be persistent and decoupled from
+the pods. In chapter 6 you learned about PersistentVolumes and PersistentVolume-
+Claims, which allow persistent storage to be attached to a pod by referencing the
+PersistentVolumeClaim in the pod by name. Because PersistentVolumeClaims map
+to PersistentVolumes one-to-one, each pod of a StatefulSet needs to reference a dif-
+ferent PersistentVolumeClaim to have its own separate PersistentVolume. Because
+all pod instances are stamped from the same pod template, how can they each refer
+to a different PersistentVolumeClaim? And who creates these claims? Surely you’re
+not expected to create as many PersistentVolumeClaims as the number of pods you
+plan to have in the StatefulSet upfront? Of course not.
+TEAMING UP POD TEMPLATES WITH VOLUME CLAIM TEMPLATES
+The StatefulSet has to create the PersistentVolumeClaims as well, the same way it’s cre-
+ating the pods. For this reason, a StatefulSet can also have one or more volume claim
+templates, which enable it to stamp out PersistentVolumeClaims along with each pod
+instance (see figure 10.8).
+The PersistentVolumes for the claims can either be provisioned up-front by an admin-
+istrator or just in time through dynamic provisioning of PersistentVolumes, as explained
+at the end of chapter 6. 
+UNDERSTANDING THE CREATION AND DELETION OF PERSISTENTVOLUMECLAIMS
+Scaling up a StatefulSet by one creates two or more API objects (the pod and one or
+more PersistentVolumeClaims referenced by the pod). Scaling down, however, deletes
+only the pod, leaving the claims alone. The reason for this is obvious, if you consider
+what happens when a claim is deleted. After a claim is deleted, the PersistentVolume it
+was bound to gets recycled or deleted and its contents are lost. 
+ Because stateful pods are meant to run stateful applications, which implies that the
+data they store in the volume is important, deleting the claim on scale-down of a Stateful-
+Set could be catastrophic—especially since triggering a scale-down is as simple as
+decreasing the replicas field of the StatefulSet. For this reason, you’re required to
+delete PersistentVolumeClaims manually to release the underlying PersistentVolume.
+PVC A-0
+PV
+Pod A-0
+PVC A-1
+PV
+Pod A-1
+PVC A-2
+PV
+Pod A-2
+StatefulSet A
+Pod
+template
+Volume claim
+template
+Figure 10.8
+A StatefulSet creates both pods and PersistentVolumeClaims.
+ 
+",[],"[{'entity': 'PersistentVolumes', 'description': 'persistent storage for stateful pods', 'category': 'database'}, {'entity': 'PersistentVolume-Claims', 'description': 'allow persistent storage to be attached to a pod by referencing the PersistentVolumeClaim in the pod by name', 'category': 'database'}, {'entity': 'StatefulSets', 'description': 'deploying replicated stateful applications', 'category': 'application'}, {'entity': 'pods', 'description': 'stateful pods that run stateful applications', 'category': 'container'}, {'entity': 'PersistentVolumeClaim', 'description': 'persistent storage for a pod, created by a StatefulSet', 'category': 'database'}, {'entity': 'volume claim templates', 'description': 'enable a StatefulSet to stamp out PersistentVolumeClaims along with each pod instance', 'category': 'process'}, {'entity': 'PersistentVolumes', 'description': 'persistent storage for stateful pods, can be provisioned up-front or dynamically', 'category': 'database'}, {'entity': 'API objects', 'description': 'pod and one or more PersistentVolumeClaims referenced by the pod, created when scaling up a StatefulSet', 'category': 'process'}, {'entity': 'replicas field', 'description': 'field in a StatefulSet that determines how many replicas to create', 'category': 'application'}, {'entity': 'scale-down', 'description': 'decreasing the replicas field of a StatefulSet, which deletes only the pod and leaves the claims alone', 'category': 'process'}, {'entity': 'PVC A-0', 'description': 'PersistentVolumeClaim for pod A-0', 'category': 'database'}, {'entity': 'PV', 'description': 'PersistentVolume associated with PVC A-0', 'category': 'database'}, {'entity': 'Pod A-0', 'description': 'stateful pod that runs a stateful application, associated with PVC A-0 and PV', 'category': 'container'}, {'entity': 'PVC A-1', 'description': 'PersistentVolumeClaim for pod A-1', 'category': 'database'}, {'entity': 'PV', 'description': 'PersistentVolume associated with PVC A-1', 'category': 'database'}, {'entity': 'Pod A-1', 'description': 'stateful pod that runs a stateful application, associated with PVC A-1 and PV', 'category': 'container'}, {'entity': 'PVC A-2', 'description': 'PersistentVolumeClaim for pod A-2', 'category': 'database'}, {'entity': 'PV', 'description': 'PersistentVolume associated with PVC A-2', 'category': 'database'}, {'entity': 'Pod A-2', 'description': 'stateful pod that runs a stateful application, associated with PVC A-2 and PV', 'category': 'container'}]","[{'source_entity': '""Pod A-0""', 'description': 'scales down', 'destination_entity': '""pods""'}, {'source_entity': '""Pod A-0""', 'description': 'uses', 'destination_entity': '""volume claim templates""'}, {'source_entity': '""Pod A-0""', 'description': 'requests', 'destination_entity': '""PersistentVolumeClaim""'}, {'source_entity': '""Pod A-0""', 'description': 'specifies', 'destination_entity': '""replicas field""'}, {'source_entity': '""PVC A-2""', 'description': 'provides', 'destination_entity': '""PV""'}, {'source_entity': '""PVC A-2""', 'description': 'is bound to', 'destination_entity': '""API objects""'}, {'source_entity': '""PVC A-1""', 'description': 'requests', 'destination_entity': '""PersistentVolume-Claims""'}, {'source_entity': '""Pod A-1""', 'description': 'uses', 'destination_entity': '""StatefulSets""'}, {'source_entity': '""Pod A-2""', 'description': 'requests', 'destination_entity': '""PersistentVolumes""'}, {'source_entity': '""PVC A-0""', 'description': 'provides', 'destination_entity': '""PV""'}]","['[\n  {\n    ""source"": ""Pod A-0"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""scales down"",\n    ""summary_er"": ""Pod A-0 scales down to manage resource utilization among pods.""\n  }\n]', '[\n  {\n    ""source"": ""Pod A-0"",\n    ""destination"": ""volume claim templates"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Pod A-0 utilizes volume claim templates for persistent storage.""\n  }\n]', '[\n  {\n    ""source"": ""Pod A-0"",\n    ""destination"": ""PersistentVolumeClaim"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""Pod A-0 requests resources from PersistentVolumeClaim for storage needs.""\n  }\n]', '[\n  {\n    ""source"": ""Pod A-0"",\n    ""destination"": ""replicas field"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The replicas field specifies the number of copies of Pod A-0 to run.""\n  }\n]', '[\n  {\n    ""source"": ""PVC A-2"",\n    ""destination"": ""PV"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""A PVC (Persistent Volume Claim) named \'A-2\' provides storage resources to a PV (Persistent Volume), ensuring data persistence and availability.""\n  }\n]', '[\n  {\n    ""source"": ""PVC A-2"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is bound to"",\n    ""summary_er"": ""A Persistent Volume Claim (PVC) is bound to a Pod, which uses it for storage.""\n  }\n]', '[\n  {\n    ""source"": ""PVC A-1"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""A Persistent Volume Claim (PVC) named PVC A-1 requests resources from a pod to store data persistently.""\n  }\n]', '[\n  {\n    ""source"": ""Pod A-1"",\n    ""destination"": ""StatefulSets"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Pod A-1 uses StatefulSets for stateful application deployment and management.""\n  }\n]', '[\n  {\n    ""source"": ""Pod A-2"",\n    ""destination"": ""PersistentVolumes"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""Pod A-2 requests access to PersistentVolumes for storage needs.""\n  }\n]', '[\n  {\n    ""source"": ""PVC A-0"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""A Persistent Volume Claim (PVC) named PVC A-0 provides storage resources to a Pod.""\n  }\n]']","In Kubernetes, StatefulSets deploy replicated stateful applications by creating separate PersistentVolumeClaims for each pod instance. The StatefulSet stamps out these claims along with the pod instances, allowing for persistent storage to be attached to each pod. Scaling up a StatefulSet creates new API objects, including one or more PersistentVolumeClaims, while scaling down deletes only the pod, leaving the claims intact. Manual deletion of PersistentVolumeClaims is required to release the underlying PersistentVolumes and prevent data loss.","[{'highlight': 'The StatefulSet has to create the PersistentVolumeClaims as well, the same way it’s creating the pods.'}, {'highlight': 'Scaling up a StatefulSet by one creates two or more API objects (the pod and one or more PersistentVolumeClaims referenced by the pod).'}, {'highlight': 'Because stateful pods are meant to run stateful applications, which implies that the data they store in the volume is important,'}, {'highlight': 'A StatefulSet creates both pods and PersistentVolumeClaims.'}, {'highlight': 'For this reason, you’re required to delete PersistentVolumeClaims manually to release the underlying PersistentVolume.'}]"
+232,321,0,[],"289
+Understanding StatefulSets
+REATTACHING THE PERSISTENTVOLUMECLAIM TO THE NEW INSTANCE OF THE SAME POD
+The fact that the PersistentVolumeClaim remains after a scale-down means a subse-
+quent scale-up can reattach the same claim along with the bound PersistentVolume
+and its contents to the new pod instance (shown in figure 10.9). If you accidentally
+scale down a StatefulSet, you can undo the mistake by scaling up again and the new
+pod will get the same persisted state again (as well as the same name).
+10.2.4 Understanding StatefulSet guarantees
+As you’ve seen so far, StatefulSets behave differently from ReplicaSets or Replication-
+Controllers. But this doesn’t end with the pods having a stable identity and storage.
+StatefulSets also have different guarantees regarding their pods. 
+UNDERSTANDING THE IMPLICATIONS OF STABLE IDENTITY AND STORAGE
+While regular, stateless pods are fungible, stateful pods aren’t. We’ve already seen how
+a stateful pod is always replaced with an identical pod (one having the same name and
+hostname, using the same persistent storage, and so on). This happens when Kuber-
+netes sees that the old pod is no longer there (for example, when you delete the pod
+manually). 
+ But what if Kubernetes can’t be sure about the state of the pod? If it creates a
+replacement pod with the same identity, two instances of the app with the same iden-
+tity might be running in the system. The two would also be bound to the same storage,
+Pod
+A-0
+Pod
+A-1
+StatefulSet A
+Replicas: 2
+Scale
+down
+Scale
+up
+New pod instance created
+with same identity as before
+PVC is
+re-attached
+PVC
+A-0
+PV
+PVC
+A-1
+PV
+Pod
+A-0
+StatefulSet A
+Replicas: 1
+PVC
+A-0
+PV
+PVC
+A-1
+PV
+Pod
+A-0
+Pod has been deleted
+Pod
+A-1
+StatefulSet A
+Replicas: 2
+PVC
+A-0
+PV
+PVC
+A-1
+PVC has not
+been deleted
+PV
+Figure 10.9
+StatefulSets don’t delete PersistentVolumeClaims when scaling down; then they 
+reattach them when scaling back up.
+ 
+","[Empty DataFrame
+Columns: [PVC has not PVC is
+been deleted re-attached
+PV PV PV PV PV PV
+PVC PVC PVC PVC PVC PVC
+A-0 A-1 A-0 A-1 A-0 A-1
+Pod Pod Pod Pod Pod
+A-0 A-1 A-0 A-0 A-1
+Scale Scale
+down up
+StatefulSet A StatefulSet A StatefulSet A
+Replicas: 2 Replicas: 1 Replicas: 2
+Pod has been deleted New pod instance created
+with same identity as before, Col1]
+Index: []]","[{'entity': 'PersistentVolumeClaim', 'description': 'A request for storage resources in a Kubernetes cluster.', 'category': 'database'}, {'entity': 'StatefulSet', 'description': 'A Kubernetes resource that manages stateful applications.', 'category': 'application'}, {'entity': 'Pod', 'description': 'A single instance of a running application in a Kubernetes cluster.', 'category': 'container'}, {'entity': 'PersistentVolume', 'description': 'A storage resource in a Kubernetes cluster that can be used by multiple pods.', 'category': 'database'}, {'entity': 'ReplicaSet', 'description': 'A Kubernetes resource that manages the number of replicas of an application.', 'category': 'application'}, {'entity': 'Replication-Controller', 'description': 'A legacy Kubernetes resource that manages the number of replicas of an application.', 'category': 'application'}, {'entity': 'Kubernetes', 'description': 'An open-source container orchestration system.', 'category': 'software'}, {'entity': 'scale-down', 'description': 'The process of reducing the number of replicas in a Kubernetes resource.', 'category': 'process'}, {'entity': 'scale-up', 'description': 'The process of increasing the number of replicas in a Kubernetes resource.', 'category': 'process'}]","[{'source_entity': '""scale-down""', 'description': 'reduces the number of replicas', 'destination_entity': '""Replication-Controller""'}, {'source_entity': '""scale-up""', 'description': 'increases the number of replicas', 'destination_entity': '""Replication-Controller""'}, {'source_entity': '""StatefulSet""', 'description': 'manages stateful applications', 'destination_entity': '""PersistentVolumeClaim""'}, {'source_entity': '""StatefulSet""', 'description': 'ensures data persistence', 'destination_entity': '""PersistentVolume""'}, {'source_entity': '""ReplicaSet""', 'description': 'guarantees a specified number of replicas', 'destination_entity': '""Pod""'}, {'source_entity': '""Kubernetes""', 'description': 'orchestrates containerized applications', 'destination_entity': '""Replication-Controller""'}, {'source_entity': '""Kubernetes""', 'description': 'manages stateful and stateless applications', 'destination_entity': '""StatefulSet""'}, {'source_entity': '""Kubernetes""', 'description': 'provides persistent storage', 'destination_entity': '""PersistentVolumeClaim""'}]","['[\n  {\n    ""source"": ""scale-down"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""reduces the number of replicas"",\n    ""summary_er"": ""Scale down reduces the number of pod replicas, potentially saving resources.""\n  },\n  {\n    ""source"": ""Replication-Controller"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages and replicates"",\n    ""summary_er"": ""Replication Controller manages and replicates pods to ensure desired state is maintained.""\n  }\n]', '[\n  {\n    ""source"": ""scale-up"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""increases the number of replicas"",\n    ""summary_er"": ""Scale-up increases the number of replicas for a pod, ensuring high availability and scalability.""\n  },\n  {\n    ""source"": ""Replication-Controller"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages and replicates"",\n    ""summary_er"": ""A Replication-Controller manages and replicates pods to ensure consistent and scalable deployment.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A StatefulSet manages a set of stateful applications, including pods.""\n  },\n  {\n    ""source"": ""PersistentVolumeClaim"",\n    ""destination"": ""Persistent Volume"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""A PersistentVolumeClaim requests access to a persistent volume for storage needs.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""ensures data persistence"",\n    ""summary_er"": ""A StatefulSet ensures data persistence by managing a set of identical pods that maintain their own state.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""guarantees a specified number of replicas"",\n    ""summary_er"": ""A ReplicaSet ensures that a specified number of Pod instances are running at any given time, providing high availability and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""orchestrates containerized applications"",\n    ""summary_er"": ""Kubernetes manages and schedules pods, ensuring efficient resource utilization and high availability.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages stateful and stateless applications"",\n    ""summary_er"": ""Kubernetes manages and orchestrates deployment, scaling, and management of pods in a cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides persistent storage"",\n    ""summary_er"": ""Kubernetes provides persistent storage to pods, enabling them to access and utilize shared storage resources.""\n  }\n]']","StatefulSets in Kubernetes allow for stable identity and storage of pods, guaranteeing that a pod's replacement has the same name, hostname, and persistent storage as the original. This means that if a StatefulSet is scaled down and then scaled back up, the new pod instance will have the same persisted state and be reattached to the same PersistentVolumeClaim, preventing data loss and ensuring consistency in the system.","[{'highlight': 'The fact that the PersistentVolumeClaim remains after a scale-down means a subsequent scale-up can reattach the same claim along with the bound PersistentVolume and its contents to the new pod instance.'}, {'highlight': 'StatefulSets also have different guarantees regarding their pods, including stable identity and storage, which is not the case for regular, stateless pods.'}, {'highlight': ""If Kubernetes can't be sure about the state of the pod, creating a replacement pod with the same identity might result in two instances of the app running in the system, both bound to the same storage.""}, {'highlight': ""StatefulSets don't delete PersistentVolumeClaims when scaling down; instead, they reattach them when scaling back up, allowing for persisted state and name consistency across pod replacements.""}, {'highlight': 'A subsequent scale-up after a scale-down can undo the mistake by restoring the same persisted state and name to the new pod instance, as shown in figure 10.9.'}]"
+233,322,0,[],"290
+CHAPTER 10
+StatefulSets: deploying replicated stateful applications
+so two processes with the same identity would be writing over the same files. With pods
+managed by a ReplicaSet, this isn’t a problem, because the apps are obviously made to
+work on the same files. Also, ReplicaSets create pods with a randomly generated iden-
+tity, so there’s no way for two processes to run with the same identity. 
+INTRODUCING STATEFULSET’S AT-MOST-ONE SEMANTICS
+Kubernetes must thus take great care to ensure two stateful pod instances are never
+running with the same identity and are bound to the same PersistentVolumeClaim. A
+StatefulSet must guarantee at-most-one semantics for stateful pod instances. 
+ This means a StatefulSet must be absolutely certain that a pod is no longer run-
+ning before it can create a replacement pod. This has a big effect on how node fail-
+ures are handled. We’ll demonstrate this later in the chapter. Before we can do that,
+however, you need to create a StatefulSet and see how it behaves. You’ll also learn a
+few more things about them along the way.
+10.3
+Using a StatefulSet
+To properly show StatefulSets in action, you’ll build your own little clustered data
+store. Nothing fancy—more like a data store from the Stone Age. 
+10.3.1 Creating the app and container image
+You’ll use the kubia app you’ve used throughout the book as your starting point. You’ll
+expand it so it allows you to store and retrieve a single data entry on each pod instance. 
+ The important parts of the source code of your data store are shown in the follow-
+ing listing.
+...
+const dataFile = ""/var/data/kubia.txt"";
+...
+var handler = function(request, response) {
+  if (request.method == 'POST') {                
+    var file = fs.createWriteStream(dataFile);                     
+    file.on('open', function (fd) {                                
+      request.pipe(file);                                          
+      console.log(""New data has been received and stored."");       
+      response.writeHead(200);                                     
+      response.end(""Data stored on pod "" + os.hostname() + ""\n"");  
+    });
+  } else {                                       
+    var data = fileExists(dataFile)                                
+      ? fs.readFileSync(dataFile, 'utf8')                          
+      : ""No data posted yet"";                                      
+    response.writeHead(200);                                       
+    response.write(""You've hit "" + os.hostname() + ""\n"");          
+    response.end(""Data stored on this pod: "" + data + ""\n"");       
+  }
+};
+Listing 10.1
+A simple stateful app: kubia-pet-image/app.js
+On POST 
+requests, store 
+the request’s 
+body into a 
+data file.
+On GET (and all 
+other types of) 
+requests, return 
+your hostname 
+and the contents 
+of the data file.
+ 
+",[],"[{'entity': 'StatefulSets', 'description': 'a Kubernetes resource that manages a set of stateful pod instances', 'category': 'software'}, {'entity': 'ReplicaSet', 'description': 'a Kubernetes resource that ensures a specified number of replicas (pods) are running at any given time', 'category': 'software'}, {'entity': 'PersistentVolumeClaim', 'description': 'a Kubernetes resource that requests access to a persistent volume', 'category': 'software'}, {'entity': 'Pods', 'description': 'the basic execution unit in a Kubernetes cluster', 'category': 'software'}, {'entity': 'StatefulSet', 'description': 'a Kubernetes resource that manages a set of stateful pod instances with at-most-one semantics', 'category': 'software'}, {'entity': 'Kubernetes', 'description': 'an open-source container orchestration system', 'category': 'software'}, {'entity': 'Node', 'description': 'a machine in a Kubernetes cluster', 'category': 'hardware'}, {'entity': 'Pod instance', 'description': 'a single instance of a pod running on a node', 'category': 'software'}, {'entity': 'Data store', 'description': 'a simple clustered data store used as an example in the chapter', 'category': 'application'}, {'entity': 'Kubia app', 'description': 'the starting point for building a stateful application', 'category': 'application'}, {'entity': 'Container image', 'description': 'an image that contains the necessary code and dependencies to run an application', 'category': 'software'}, {'entity': 'fs.createWriteStream()', 'description': 'a function used to create a write stream for writing data to a file', 'category': 'programming language'}, {'entity': 'request.pipe()', 'description': 'a method used to pipe the request body into a write stream', 'category': 'programming language'}, {'entity': 'fs.readFileSync()', 'description': 'a function used to read data from a file synchronously', 'category': 'programming language'}, {'entity': 'fileExists()', 'description': 'a function used to check if a file exists', 'category': 'programming language'}, {'entity': 'os.hostname()', 'description': 'a function used to get the hostname of the current node', 'category': 'programming language'}]","[{'source_entity': '""Data store""', 'description': 'stores data', 'destination_entity': '""Kubia app""'}, {'source_entity': '""Node""', 'description': 'provides a node for the Kubia app to run on', 'destination_entity': '""Pod instance""'}, {'source_entity': '""request.pipe()""', 'description': 'pipes data from one place to another', 'destination_entity': '""fs.createWriteStream()""'}, {'source_entity': '""StatefulSet""', 'description': 'manages the deployment of stateful applications', 'destination_entity': '""Kubia app""'}, {'source_entity': '""PersistentVolumeClaim""', 'description': 'requests storage resources for the Kubia app', 'destination_entity': '""Data store""'}, {'source_entity': '""Pod instance""', 'description': 'runs a pod instance of the Kubia app', 'destination_entity': '""Kubia app""'}, {'source_entity': '""fs.readFileSync()""', 'description': 'reads data from a file system', 'destination_entity': '""Data store""'}, {'source_entity': '""os.hostname()""', 'description': 'gets the hostname of the node running the Kubia app', 'destination_entity': '""Kubia app""'}, {'source_entity': '""fs.createWriteStream()""', 'description': 'writes data to a file system', 'destination_entity': '""Data store""'}, {'source_entity': '""ReplicaSet""', 'description': 'manages the deployment of replicas for the Kubia app', 'destination_entity': '""Kubia app""'}]","['[\n  {\n    ""source"": ""Data store"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""stores data"",\n    ""summary_er"": ""A Data store entity stores data in a Pod, which is a containerized application.""\n  },\n  {\n    ""source"": ""Kubia app"",\n    ""destination"": ""Pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""The Kubia app runs on a Pod, which provides a lightweight and portable environment for the application.""\n  }\n]', '[\n  {\n    ""source"": ""Node"",\n    ""destination"": ""Pod instance"",\n    ""relation_description"": ""provides a node for the Kubia app to run on"",\n    ""summary_er"": ""A Node provides a runtime environment for a Pod instance, allowing it to execute and manage containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""request.pipe()"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""pipes data from one place to another"",\n    ""summary_er"": ""The request pipe function sends data from a source to a pod, utilizing pipes for efficient data transfer.""\n  },\n  {\n    ""source"": ""fs.createWriteStream()"",\n    ""destination"": ""file system"",\n    ""relation_description"": ""creates a write stream for file system operations"",\n    ""summary_er"": ""The fs createWriteStream function generates a write stream to interact with the file system, facilitating data writing and storage.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages the deployment of stateful applications"",\n    ""summary_er"": ""StatefulSet manages pod deployment for stateful apps, ensuring consistent data across replicas.""\n  },\n  {\n    ""source"": ""Kubia app"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs on top of"",\n    ""summary_er"": ""The Kubia app runs as a process within the pod, utilizing its resources and environment.""\n  }\n]', '[\n  {\n    ""source"": ""PersistentVolumeClaim"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests storage resources for the Kubia app"",\n    ""summary_er"": ""A Persistent Volume Claim requests storage resources from a pod to run the Kubia app.""\n  }\n]', '[\n  {\n    ""source"": ""Pod instance"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs a pod instance of the Kubia app"",\n    ""summary_er"": ""A Pod instance runs an application, in this case, the Kubia app.""\n  },\n  {\n    ""source"": ""Kubia app"",\n    ""destination"": ""Pod instance"",\n    ""relation_description"": ""is run by a pod instance"",\n    ""summary_er"": ""The Kubia app is executed within a Pod instance, utilizing its resources.""\n  }\n]', '[\n  {\n    ""source"": ""fs.readFileSync()"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""reads data from a file system"",\n    ""summary_er"": ""The fs.readFileSync() function reads data from a file system and stores it in a pod, allowing for efficient data retrieval.""\n  }\n]', '[\n  {\n    ""source"": ""os.hostname()"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""gets the hostname of the node running the Kubia app"",\n    ""summary_er"": ""The Kubia app retrieves the hostname of the node it\'s running on, providing a unique identifier for the pod.""\n  }\n]', '[\n  {\n    ""source"": ""fs.createWriteStream()"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""writes data to a file system"",\n    ""summary_er"": ""A Kubernetes pod writes data to a file system using fs.createWriteStream().""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages the deployment of replicas"",\n    ""summary_er"": ""A ReplicaSet manages the deployment of replicas for the Kubia app, ensuring a specified number of identical pod replicas are running at any given time.""\n  }\n]']","StatefulSets in Kubernetes must ensure two stateful pod instances are never running with the same identity and are bound to the same PersistentVolumeClaim. A StatefulSet must guarantee at-most-one semantics for stateful pod instances, ensuring a pod is no longer running before creating a replacement pod. This affects node failure handling, as demonstrated later in the chapter. A simple clustered data store is built using the kubia app, allowing data storage and retrieval on each pod instance.","[{'highlight': 'StatefulSets guarantee at-most-one semantics for stateful pod instances, ensuring two stateful pod instances are never running with the same identity and bound to the same PersistentVolumeClaim.'}, {'highlight': 'A StatefulSet must be absolutely certain that a pod is no longer running before it can create a replacement pod, which has a big effect on how node failures are handled.'}, {'highlight': 'The kubia app will be expanded to allow storing and retrieving a single data entry on each pod instance, demonstrating StatefulSets in action.'}, {'highlight': 'StatefulSets require careful management of PersistentVolumeClaims to ensure that two stateful pod instances are never bound to the same claim.'}, {'highlight': 'The kubia-pet-image/app.js listing shows a simple stateful app that stores and retrieves data on each pod instance, using POST requests to store data and GET requests to retrieve it.'}]"
+234,323,0,[],"291
+Using a StatefulSet
+var www = http.createServer(handler);
+www.listen(8080);
+Whenever the app receives a POST request, it writes the data it receives in the body of
+the request to the file /var/data/kubia.txt. Upon a GET request, it returns the host-
+name and the stored data (contents of the file). Simple enough, right? This is the first
+version of your app. It’s not clustered yet, but it’s enough to get you started. You’ll
+expand the app later in the chapter.
+ The Dockerfile for building the container image is shown in the following listing
+and hasn’t changed from before.
+FROM node:7
+ADD app.js /app.js
+ENTRYPOINT [""node"", ""app.js""]
+Go ahead and build the image now, or use the one I pushed to docker.io/luksa/kubia-pet.
+10.3.2 Deploying the app through a StatefulSet
+To deploy your app, you’ll need to create two (or three) different types of objects:
+PersistentVolumes for storing your data files (you’ll need to create these only if
+the cluster doesn’t support dynamic provisioning of PersistentVolumes).
+A governing Service required by the StatefulSet.
+The StatefulSet itself.
+For each pod instance, the StatefulSet will create a PersistentVolumeClaim that will
+bind to a PersistentVolume. If your cluster supports dynamic provisioning, you don’t
+need to create any PersistentVolumes manually (you can skip the next section). If it
+doesn’t, you’ll need to create them as explained in the next section. 
+CREATING THE PERSISTENT VOLUMES
+You’ll need three PersistentVolumes, because you’ll be scaling the StatefulSet up to
+three replicas. You must create more if you plan on scaling the StatefulSet up more
+than that.
+ If you’re using Minikube, deploy the PersistentVolumes defined in the Chapter06/
+persistent-volumes-hostpath.yaml file in the book’s code archive. 
+ If you’re using Google Kubernetes Engine, you’ll first need to create the actual
+GCE Persistent Disks like this:
+$ gcloud compute disks create --size=1GiB --zone=europe-west1-b pv-a
+$ gcloud compute disks create --size=1GiB --zone=europe-west1-b pv-b
+$ gcloud compute disks create --size=1GiB --zone=europe-west1-b pv-c
+NOTE
+Make sure to create the disks in the same zone that your nodes are
+running in.
+Listing 10.2
+Dockerfile for the stateful app: kubia-pet-image/Dockerfile
+ 
+",[],"[{'entity': 'StatefulSet', 'description': 'A Kubernetes object that manages a set of replicas with persistent storage.', 'category': 'application'}, {'entity': 'PersistentVolumes', 'description': 'Kubernetes objects for storing data files.', 'category': 'database'}, {'entity': 'Service', 'description': 'A Kubernetes object that provides a network identity and load balancing for accessing applications.', 'category': 'application'}, {'entity': 'PersistentVolumeClaim', 'description': 'A request for storage resources from a Persistent Volume.', 'category': 'database'}, {'entity': 'Dockerfile', 'description': 'A text file that contains instructions for building a Docker image.', 'category': 'software'}, {'entity': 'node:7', 'description': 'A Docker base image based on Node.js version 7.', 'category': 'container'}, {'entity': 'app.js', 'description': 'The main application file for the kubia-pet app.', 'category': 'software'}, {'entity': 'http.createServer(handler)', 'description': 'A Node.js function that creates an HTTP server and sets up a handler function.', 'category': 'process'}, {'entity': 'listen(8080)', 'description': 'A method call to start the HTTP server listening on port 8080.', 'category': 'process'}, {'entity': 'POST request', 'description': 'An HTTP request method for sending data to a server.', 'category': 'network'}, {'entity': 'GET request', 'description': 'An HTTP request method for retrieving data from a server.', 'category': 'network'}, {'entity': 'gcloud compute disks create', 'description': 'A command to create a Google Compute Engine persistent disk.', 'category': 'command'}, {'entity': 'Minikube', 'description': 'A tool for running Kubernetes locally on a machine.', 'category': 'software'}, {'entity': 'Google Kubernetes Engine', 'description': 'A managed Kubernetes service provided by Google Cloud Platform.', 'category': 'application'}]","[{'source_entity': 'Service', 'description': 'exposes to external traffic', 'destination_entity': 'GET request'}, {'source_entity': 'StatefulSet', 'description': 'manages and updates', 'destination_entity': 'PersistentVolumeClaim'}, {'source_entity': 'Service', 'description': 'routes incoming requests to', 'destination_entity': 'http.createServer(handler)'}, {'source_entity': 'POST request', 'description': 'sends data to the server', 'destination_entity': 'app.js'}, {'source_entity': 'Google Kubernetes Engine', 'description': 'hosts and manages', 'destination_entity': 'StatefulSet'}, {'source_entity': 'node:7', 'description': 'runs on top of', 'destination_entity': 'listen(8080)'}, {'source_entity': 'gcloud compute disks create', 'description': 'creates and manages', 'destination_entity': 'PersistentVolumes'}, {'source_entity': 'Minikube', 'description': 'hosts and runs', 'destination_entity': 'Dockerfile'}]","['[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""exposes to external traffic"",\n    ""summary_er"": ""A Service allows external traffic to reach a Pod, enabling communication between them.""\n  },\n  {\n    ""source"": ""GET request"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""HTTP request"",\n    ""summary_er"": ""A GET request is sent from the client to the Pod, retrieving data or resources as needed.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages and updates"",\n    ""summary_er"": ""A StatefulSet manages and updates a set of identical pods, ensuring consistent state across the cluster.""\n  },\n  {\n    ""source"": ""StatefulSet"",\n    ""destination"": ""PersistentVolumeClaim"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A StatefulSet uses Persistent Volume Claims to store data persistently across pod restarts and updates.""\n  }\n]', '[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""routes incoming requests to"",\n    ""summary_er"": ""A Service directs incoming HTTP requests to a specific Pod, acting as an entry point for external traffic.""\n  }\n]', '[\n  {\n    ""source"": ""POST request"",\n    ""destination"": ""app.js"",\n    ""relation_description"": ""sends data to the server"",\n    ""summary_er"": ""A POST request sends HTTP data to a server, which can be processed by an application like app.js.""\n  }\n]', '[\n  {\n    ""source"": ""Google Kubernetes Engine"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts and manages"",\n    ""summary_er"": ""GKE provides a managed environment for running pods, ensuring scalability and high availability.""\n  },\n  {\n    ""source"": ""Google Kubernetes Engine"",\n    ""destination"": ""StatefulSet"",\n    ""relation_description"": ""hosts and manages"",\n    ""summary_er"": ""GKE supports StatefulSets, allowing for the deployment of stateful applications with persistent storage.""\n  }\n]', '[\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs on top of"",\n    ""summary_er"": ""A node in a Kubernetes cluster runs on top of a pod, which is a container that can run multiple applications.""\n  },\n  {\n    ""source"": ""node"",\n    ""destination"": ""container"",\n    ""relation_description"": ""runs on top of"",\n    ""summary_er"": ""A node in a Kubernetes cluster runs on top of a container, which is a lightweight and portable execution environment.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""application"",\n    ""relation_description"": ""can run multiple applications"",\n    ""summary_er"": ""A pod in a Kubernetes cluster can run multiple applications, each running in its own container.""\n  }\n]', '[\n  {\n    ""source"": ""gcloud compute disks create"",\n    ""destination"": ""PersistentVolumes"",\n    ""relation_description"": ""creates and manages"",\n    ""summary_er"": ""GCP disk creation tool creates and manages Persistent Volumes for Kubernetes pods.""\n  }\n]', '[\n  {\n    ""source"": ""Minikube"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts and runs"",\n    ""summary_er"": ""Minikube, a Kubernetes cluster manager, hosts and runs pods, which are the basic execution units in a containerized application.""\n  },\n  {\n    ""source"": ""Dockerfile"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to create"",\n    ""summary_er"": ""A Dockerfile is used to create an image that can be run as a pod, which is the basic execution unit in a containerized application.""\n  }\n]']","A simple app is created using Node.js and a Docker image, which writes POST requests to a file and returns stored data on GET requests. To deploy this app through a StatefulSet, PersistentVolumes must be created for storing data files, along with a governing Service required by the StatefulSet, and the StatefulSet itself. For Minikube users, PersistentVolumes can be deployed from a YAML file, while Google Kubernetes Engine users need to create actual GCE Persistent Disks before proceeding.","[{'highlight': ""To deploy the app, you'll need to create three types of objects: PersistentVolumes, a governing Service, and a StatefulSet.""}, {'highlight': 'The StatefulSet will create a PersistentVolumeClaim for each pod instance that binds to a PersistentVolume.'}, {'highlight': ""If your cluster supports dynamic provisioning, you don't need to create any PersistentVolumes manually.""}, {'highlight': ""You'll need three PersistentVolumes because the StatefulSet is scaled up to three replicas.""}, {'highlight': 'To create PersistentVolumes on Google Kubernetes Engine, use the gcloud command to create GCE Persistent Disks in the same zone as your nodes.'}]"
+235,324,0,[],"292
+CHAPTER 10
+StatefulSets: deploying replicated stateful applications
+Then create the PersistentVolumes from the persistent-volumes-gcepd.yaml file,
+which is shown in the following listing.
+kind: List                     
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: PersistentVolume       
+  metadata:
+    name: pv-a                
+  spec:
+    capacity:
+      storage: 1Mi            
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Recycle     
+    gcePersistentDisk:         
+      pdName: pv-a             
+      fsType: nfs4                         
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: pv-b
+ ...
+NOTE
+In the previous chapter you specified multiple resources in the same
+YAML by delimiting them with a three-dash line. Here you’re using a differ-
+ent approach by defining a List object and listing the resources as items of
+the object. Both methods are equivalent.
+This manifest creates PersistentVolumes called pv-a, pv-b, and pv-c. They use GCE Per-
+sistent Disks as the underlying storage mechanism, so they’re not appropriate for clus-
+ters that aren’t running on Google Kubernetes Engine or Google Compute Engine. If
+you’re running the cluster elsewhere, you must modify the PersistentVolume definition
+and use an appropriate volume type, such as NFS (Network File System), or similar.
+CREATING THE GOVERNING SERVICE
+As explained earlier, before deploying a StatefulSet, you first need to create a headless
+Service, which will be used to provide the network identity for your stateful pods. The
+following listing shows the Service manifest.
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubia       
+spec:
+  clusterIP: None    
+Listing 10.3
+Three PersistentVolumes: persistent-volumes-gcepd.yaml
+Listing 10.4
+Headless service to be used in the StatefulSet: kubia-service-headless.yaml
+File describes a list 
+of three persistent 
+volumes
+Persistent volumes’ names 
+are pv-a, pv-b, and pv-c
+Capacity of each persistent 
+volume is 1 Mebibyte
+When the volume 
+is released by the 
+claim, it’s recycled 
+to be used again.
+The volume uses a GCE 
+Persistent Disk as the underlying 
+storage mechanism.
+Name of the 
+Service
+The StatefulSet’s governing 
+Service must be headless.
+ 
+",[],"[{'entity': 'StatefulSets', 'description': 'deploying replicated stateful applications', 'category': 'application'}, {'entity': 'PersistentVolumes', 'description': 'from the persistent-volumes-gcepd.yaml file', 'category': 'resource'}, {'entity': 'List', 'description': 'object and listing the resources as items of the object', 'category': 'data structure'}, {'entity': 'PersistentVolume', 'description': 'pv-a, pv-b, and pv-c', 'category': 'resource'}, {'entity': 'GCE Persistent Disk', 'description': 'underlying storage mechanism', 'category': 'hardware'}, {'entity': 'NFS (Network File System)', 'description': 'volume type', 'category': 'software'}, {'entity': 'Service', 'description': 'headless Service, which will be used to provide the network identity for your stateful pods', 'category': 'resource'}, {'entity': 'clusterIP', 'description': 'None', 'category': 'parameter'}, {'entity': 'StatefulSet', 'description': 'governing Service must be headless', 'category': 'application'}, {'entity': 'pv-a, pv-b, and pv-c', 'description': 'PersistentVolumes names', 'category': 'resource'}, {'entity': '1 Mi', 'description': 'capacity of each persistent volume', 'category': 'parameter'}, {'entity': 'ReadWriteOnce', 'description': 'access mode', 'category': 'parameter'}, {'entity': 'Recycle', 'description': 'persistentVolumeReclaimPolicy', 'category': 'parameter'}]","[{'source_entity': '""Recycle""', 'description': 'reclaims resources', 'destination_entity': '""GCE Persistent Disk""'}, {'source_entity': '""Service""', 'description': 'exposes to external traffic', 'destination_entity': '""clusterIP""'}, {'source_entity': '""StatefulSet""', 'description': 'manages stateful applications', 'destination_entity': '""PersistentVolume""'}, {'source_entity': '""NFS (Network File System)""', 'description': 'provides shared storage', 'destination_entity': '""pv-a, pv-b, and pv-c""'}, {'source_entity': '""ReadWriteOnce""', 'description': 'grants read-write access to a single node', 'destination_entity': '""PersistentVolume""'}, {'source_entity': '""StatefulSets""', 'description': 'orchestrates stateful applications', 'destination_entity': '""PersistentVolumes""'}, {'source_entity': '""List""', 'description': 'displays a collection of resources', 'destination_entity': '""PersistentVolume""'}]","['[\n  {\n    ""source"": ""Recycle"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""reclaims resources"",\n    ""summary_er"": ""The Recycle process reclaims resources by utilizing Pod\'s efficient resource management, reducing waste and optimizing system performance.""\n  },\n  {\n    ""source"": ""Recycle"",\n    ""destination"": ""GCE Persistent Disk"",\n    ""relation_description"": ""reclaims resources"",\n    ""summary_er"": ""The Recycle process reclaims resources by utilizing GCE Persistent Disk\'s storage optimization, minimizing data loss and ensuring efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""exposes to external traffic"",\n    ""summary_er"": ""A Service exposes a Pod\'s IP address to external traffic, allowing clients to access it.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages stateful applications"",\n    ""summary_er"": ""A StatefulSet manages a set of stateful pods, ensuring consistent application state across restarts and scaling.""\n  },\n  {\n    ""source"": ""PersistentVolume"",\n    ""destination"": ""StatefulSet"",\n    ""relation_description"": ""provides persistent storage"",\n    ""summary_er"": ""A PersistentVolume provides persistent storage for a StatefulSet, allowing it to maintain data across restarts and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""NFS (Network File System)"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides shared storage"",\n    ""summary_er"": ""The NFS provides a shared storage solution for pods, enabling multiple containers to access and share files.""\n  },\n  {\n    ""source"": ""pv-a, pv-b, and pv-c"",\n    ""destination"": ""NFS (Network File System)"",\n    ""relation_description"": ""uses as persistent volumes"",\n    ""summary_er"": ""Persistent Volumes a, b, and c utilize the NFS for shared storage, ensuring data persistence across pod restarts.""\n  }\n]', '[\n  {\n    ""source"": ""ReadWriteOnce"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""grants read-write access to a single node"",\n    ""summary_er"": ""ReadWriteOnce grants read-write access to a pod on a single node, allowing for efficient data storage and retrieval.""\n  },\n  {\n    ""source"": ""PersistentVolume"",\n    ""destination"": ""ReadWriteOnce"",\n    ""relation_description"": ""persistent volume claim"",\n    ""summary_er"": ""A PersistentVolume is claimed by ReadWriteOnce, providing a persistent storage solution that can be accessed by the pod for efficient data management and retrieval.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""orchestrates stateful applications"",\n    ""summary_er"": ""StatefulSets manages stateful applications by orchestrating pods, ensuring data persistence and consistency across restarts.""\n  },\n  {\n    ""source"": ""PersistentVolumes"",\n    ""destination"": ""StatefulSets"",\n    ""relation_description"": ""provides persistent storage"",\n    ""summary_er"": ""PersistentVolumes provides durable storage for StatefulSets, allowing them to maintain state and data integrity.""\n  }\n]', '[\n  {\n    ""source"": ""List"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays a collection of resources"",\n    ""summary_er"": ""A Kubernetes List displays a collection of pods, providing visibility into running containers and their status.""\n  },\n  {\n    ""source"": ""List"",\n    ""destination"": ""PersistentVolume"",\n    ""relation_description"": ""displays a collection of resources"",\n    ""summary_er"": ""A Kubernetes List also displays a collection of Persistent Volumes, showing storage resources allocated to the cluster.""\n  }\n]']","This chapter explains how to deploy replicated stateful applications using StatefulSets. A list of three PersistentVolumes is created from the persistent-volumes-gcepd.yaml file, with each volume having a capacity of 1 Mebibyte and recycling when released. A headless Service called kubia is also created as the governing Service for the StatefulSet, which must be used to provide network identity for stateful pods.","[{'highlight': 'Three PersistentVolumes are created in the persistent-volumes-gcepd.yaml file, with names pv-a, pv-b, and pv-c.'}, {'highlight': 'Each PersistentVolume has a capacity of 1 Mebibyte and uses a GCE Persistent Disk as the underlying storage mechanism.'}, {'highlight': 'When released by a claim, the PersistentVolumes are recycled to be used again.'}, {'highlight': 'A headless Service called kubia is created to provide network identity for stateful pods in the StatefulSet.'}, {'highlight': 'The PersistentVolumes and Service manifest files use a List object to define multiple resources, which is equivalent to specifying them in the same YAML file.'}]"
+236,325,0,[],"293
+Using a StatefulSet
+  selector:           
+    app: kubia        
+  ports:
+  - name: http
+    port: 80
+You’re setting the clusterIP field to None, which makes this a headless Service. It will
+enable peer discovery between your pods (you’ll need this later). Once you create the
+Service, you can move on to creating the actual StatefulSet.
+CREATING THE STATEFULSET MANIFEST
+Now you can finally create the StatefulSet. The following listing shows the manifest.
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: kubia
+spec:
+  serviceName: kubia
+  replicas: 2
+  template:
+    metadata:
+      labels:                  
+        app: kubia             
+    spec:
+      containers:
+      - name: kubia
+        image: luksa/kubia-pet
+        ports:
+        - name: http
+          containerPort: 8080
+        volumeMounts:
+        - name: data                  
+          mountPath: /var/data        
+  volumeClaimTemplates:
+  - metadata:                  
+      name: data               
+    spec:                      
+      resources:               
+        requests:              
+          storage: 1Mi         
+      accessModes:             
+      - ReadWriteOnce          
+The StatefulSet manifest isn’t that different from ReplicaSet or Deployment manifests
+you’ve created so far. What’s new is the volumeClaimTemplates list. In it, you’re defin-
+ing one volume claim template called data, which will be used to create a Persistent-
+VolumeClaim for each pod. As you may remember from chapter 6, a pod references a
+claim by including a persistentVolumeClaim volume in the manifest. In the previous
+Listing 10.5
+StatefulSet manifest: kubia-statefulset.yaml
+All pods with the app=kubia 
+label belong to this service.
+Pods created by the StatefulSet 
+will have the app=kubia label.
+The container inside the pod will 
+mount the pvc volume at this path.
+The PersistentVolumeClaims 
+will be created from this 
+template.
+ 
+",[],"[{'entity': 'StatefulSet', 'description': 'a Kubernetes resource that manages a set of replicas with persistent storage', 'category': 'application'}, {'entity': 'Service', 'description': 'a Kubernetes resource that provides a network identity and load balancing for accessing applications', 'category': 'application'}, {'entity': 'clusterIP', 'description': 'the IP address assigned to a Service by the Kubernetes cluster', 'category': 'network'}, {'entity': 'selector', 'description': 'a label selector used to identify pods belonging to a Service or StatefulSet', 'category': 'application'}, {'entity': 'app', 'description': 'a label key used to identify pods belonging to a Service or StatefulSet', 'category': 'application'}, {'entity': 'ports', 'description': 'the ports exposed by a container or pod', 'category': 'container'}, {'entity': 'http', 'description': 'the HTTP port exposed by the kubia container', 'category': 'container'}, {'entity': 'replicas', 'description': 'the number of replicas in a StatefulSet or Deployment', 'category': 'application'}, {'entity': 'template', 'description': 'a template used to create pods in a StatefulSet or Deployment', 'category': 'application'}, {'entity': 'metadata', 'description': 'metadata associated with a Kubernetes resource, such as labels and annotations', 'category': 'application'}, {'entity': 'labels', 'description': 'key-value pairs that provide additional information about a pod or container', 'category': 'container'}, {'entity': 'volumeClaimTemplates', 'description': 'a list of templates used to create PersistentVolumeClaims for pods in a StatefulSet', 'category': 'database'}, {'entity': 'PersistentVolumeClaim', 'description': 'a request for storage resources from the Kubernetes cluster', 'category': 'database'}, {'entity': 'pod', 'description': 'the basic execution unit in Kubernetes, consisting of one or more containers', 'category': 'container'}, {'entity': 'containerPort', 'description': 'the port exposed by a container within a pod', 'category': 'container'}, {'entity': 'volumeMounts', 'description': 'the volumes mounted by a container within a pod', 'category': 'container'}, {'entity': 'mountPath', 'description': 'the path where a volume is mounted within a container or pod', 'category': 'container'}]","[{'source_entity': 'template', 'description': 'defines a template for creating StatefulSets', 'destination_entity': 'StatefulSet'}, {'source_entity': 'labels', 'description': 'assigns labels to pods and services', 'destination_entity': 'pod'}, {'source_entity': 'labels', 'description': 'assigns labels to pods and services', 'destination_entity': 'Service'}, {'source_entity': 'metadata', 'description': 'provides metadata for StatefulSets, Services, and Pods', 'destination_entity': 'StatefulSet'}, {'source_entity': 'metadata', 'description': 'provides metadata for StatefulSets, Services, and Pods', 'destination_entity': 'Service'}, {'source_entity': 'metadata', 'description': 'provides metadata for StatefulSets, Services, and Pods', 'destination_entity': 'pod'}, {'source_entity': 'ports', 'description': 'defines ports for pods and services', 'destination_entity': 'Service'}, {'source_entity': 'ports', 'description': 'defines ports for pods and services', 'destination_entity': 'pod'}, {'source_entity': 'clusterIP', 'description': 'assigns a cluster IP address to a Service', 'destination_entity': 'Service'}, {'source_entity': 'PersistentVolumeClaim', 'description': 'requests storage resources for pods', 'destination_entity': 'pod'}, {'source_entity': 'mountPath', 'description': 'defines the path where a volume is mounted in a pod', 'destination_entity': 'volumeMounts'}, {'source_entity': 'volumeClaimTemplates', 'description': 'defines templates for PersistentVolumeClaims', 'destination_entity': 'PersistentVolumeClaim'}, {'source_entity': 'replicas', 'description': 'specifies the number of replicas for a StatefulSet or Deployment', 'destination_entity': 'StatefulSet'}, {'source_entity': 'selector', 'description': 'defines labels that match pods and services', 'destination_entity': 'Service'}, {'source_entity': 'containerPort', 'description': 'exposes a port from a container in a pod', 'destination_entity': 'pod'}, {'source_entity': 'app', 'description': 'defines the application name for a Service or Deployment', 'destination_entity': 'Service'}]","['[\n  {\n    ""source"": ""template"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines a template for creating StatefulSets"",\n    ""summary_er"": ""A template used to create multiple instances of a pod with persistent storage, ensuring consistent state across restarts.""\n  }\n]', '[\n  {\n    ""source"": ""labels"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assigns labels to pods and services"",\n    ""summary_er"": ""Labels are used in Kubernetes to assign metadata to pods and services, enabling filtering and selection of resources.""\n  }\n]', '[\n  {\n    ""source"": ""labels"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assigns labels to pods and services"",\n    ""summary_er"": ""Labels are used in Kubernetes to assign metadata to pods and services, enabling filtering and organization of resources.""\n  }\n]', '[\n  {\n    ""source"": ""metadata"",\n    ""destination"": ""StatefulSet"",\n    ""relation_description"": ""provides metadata for StatefulSets, Services, and Pods"",\n    ""summary_er"": ""Metadata provides configuration information for StatefulSets, enabling them to manage pods with unique identities.""\n  }\n]', '[\n  {\n    ""source"": ""metadata"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides metadata for StatefulSets, Services, and Pods"",\n    ""summary_er"": ""Metadata provides essential information about a Pod, including its name, labels, and annotations.""\n  }\n]', '[\n  {\n    ""source"": ""metadata"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides metadata for StatefulSets, Services, and Pods"",\n    ""summary_er"": ""Metadata provides essential information about a pod, enabling Kubernetes to manage and orchestrate it effectively.""\n  }\n]', '[\n  {\n    ""source"": ""ports"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines ports for pods and services"",\n    ""summary_er"": ""Ports configuration for pods and services, ensuring secure and controlled communication.""\n  }\n]', '[\n  {\n    ""source"": ""ports"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines ports for pods and services"",\n    ""summary_er"": ""Ports configuration in Kubernetes defines the network interfaces for pods and services, enabling communication between them.""\n  }\n]', '[\n  {\n    ""source"": ""clusterIP"",\n    ""destination"": ""Service"",\n    ""relation_description"": ""assigns a cluster IP address to a Service"",\n    ""summary_er"": ""The clusterIP assigns an IP address to a Service, enabling communication between pods and services within the same cluster.""\n  }\n]', '[\n  {\n    ""source"": ""PersistentVolumeClaim"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests storage resources for"",\n    ""summary_er"": ""A Persistent Volume Claim requests storage resources from a pod to ensure data persistence.""\n  }\n]', '[\n  {\n    ""source"": ""mountPath"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the path where a volume is mounted"",\n    ""summary_er"": ""A mount path defines where a volume is attached to a pod, allowing data access and sharing.""\n  },\n  {\n    ""source"": ""volumeMounts"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""lists the volumes that are being mounted in a pod"",\n    ""summary_er"": ""Volume mounts list the storage devices attached to a pod, enabling data persistence and retrieval.""\n  }\n]', '[\n  {\n    ""source"": ""volumeClaimTemplates"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines templates for PersistentVolumeClaims"",\n    ""summary_er"": ""Defines a template for Persistent Volume Claims, which can be used to create multiple PVCs with similar specifications.""\n  }\n]', '[\n  {\n    ""source"": ""replicas"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the number of replicas for a StatefulSet or Deployment"",\n    ""summary_er"": ""Replica count determines the number of identical pod instances in a StatefulSet or Deployment.""\n  }\n]', '[\n  {\n    ""source"": ""selector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines labels that match pods and services"",\n    ""summary_er"": ""A selector is used to label pods and services, enabling matching and selection for various Kubernetes operations.""\n  }\n]', '[\n  {\n    ""source"": ""containerPort"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes a port from a container in a pod"",\n    ""summary_er"": ""A container exposes a port to communicate with a pod, enabling data exchange between them.""\n  }\n]', '[\n  {\n    ""source"": ""app"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the application name for a Service or Deployment"",\n    ""summary_er"": ""The \'app\' field in Kubernetes defines the application name for a pod, which can be referenced by Services and Deployments to identify the associated container.""\n  }\n]']","A stateless Service is created with a clusterIP field set to None, enabling peer discovery between pods. A StatefulSet manifest is then created with a serviceName and replicas of 2, using a volumeClaimTemplates list to define a Persistent-VolumeClaim for each pod, referencing a persistentVolumeClaim volume in the manifest.","[{'highlight': 'selector:           app: kubia        ports: - name: http    port: 80'}, {'highlight': 'apiVersion: apps/v1beta1 kind: StatefulSet metadata:   name: kubia spec:   serviceName: kubia replicas: 2 template:   metadata:     labels:                   app: kubia             spec:     containers:     - name: kubia       image: luksa/kubia-pet       ports:       - name: http         containerPort: 8080'}, {'highlight': 'The StatefulSet manifest isn’t that different from ReplicaSet or Deployment manifests you’ve created so far. What’s new is the volumeClaimTemplates list.'}, {'highlight': 'volumeClaimTemplates: - metadata:           name: data             spec:               resources:                 requests:                   storage: 1Mi               accessModes:             - ReadWriteOnce'}, {'highlight': 'Pods created by the StatefulSet will have the app=kubia label. The container inside the pod will mount the pvc volume at this path.'}]"
+237,326,0,[],"294
+CHAPTER 10
+StatefulSets: deploying replicated stateful applications
+pod template, you’ll find no such volume. The StatefulSet adds it to the pod specifica-
+tion automatically and configures the volume to be bound to the claim the StatefulSet
+created for the specific pod.
+CREATING THE STATEFULSET
+You’ll create the StatefulSet now:
+$ kubectl create -f kubia-statefulset.yaml 
+statefulset ""kubia"" created
+Now, list your pods:
+$ kubectl get po
+NAME      READY     STATUS              RESTARTS   AGE
+kubia-0   0/1       ContainerCreating   0          1s
+Notice anything strange? Remember how a ReplicationController or a ReplicaSet cre-
+ates all the pod instances at the same time? Your StatefulSet is configured to create
+two replicas, but it created a single pod. 
+ Don’t worry, nothing is wrong. The second pod will be created only after the first
+one is up and ready. StatefulSets behave this way because certain clustered stateful
+apps are sensitive to race conditions if two or more cluster members come up at the
+same time, so it’s safer to bring each member up fully before continuing to bring up
+the rest.
+ List the pods again to see how the pod creation is progressing:
+$ kubectl get po
+NAME      READY     STATUS              RESTARTS   AGE
+kubia-0   1/1       Running             0          8s
+kubia-1   0/1       ContainerCreating   0          2s
+See, the first pod is now running, and the second one has been created and is being
+started. 
+EXAMINING THE GENERATED STATEFUL POD
+Let’s take a closer look at the first pod’s spec in the following listing to see how the
+StatefulSet has constructed the pod from the pod template and the PersistentVolume-
+Claim template.
+$ kubectl get po kubia-0 -o yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  ...
+spec:
+  containers:
+  - image: luksa/kubia-pet
+    ...
+Listing 10.6
+A stateful pod created by the StatefulSet
+ 
+",[],"[{'entity': 'StatefulSets', 'description': 'deploying replicated stateful applications', 'category': 'application'}, {'entity': 'pod template', 'description': 'template for creating pods', 'category': 'container'}, {'entity': 'volume', 'description': 'persistent storage for a pod', 'category': 'storage'}, {'entity': 'claim', 'description': 'request for persistent storage', 'category': 'storage'}, {'entity': 'StatefulSet', 'description': 'a Kubernetes resource for deploying stateful applications', 'category': 'application'}, {'entity': '$ kubectl create -f kubia-statefulset.yaml ', 'description': 'command to create a StatefulSet', 'category': 'command'}, {'entity': 'kubia-statefulset.yaml', 'description': 'configuration file for the StatefulSet', 'category': 'file'}, {'entity': '$ kubectl get po', 'description': 'command to list pods', 'category': 'command'}, {'entity': 'pod', 'description': 'a running instance of a container', 'category': 'container'}, {'entity': 'ReplicationController', 'description': 'a Kubernetes resource for deploying replicated applications', 'category': 'application'}, {'entity': 'ReplicaSet', 'description': 'a Kubernetes resource for deploying replicated applications', 'category': 'application'}, {'entity': '$ kubectl get po kubia-0 -o yaml', 'description': 'command to view the pod spec in YAML format', 'category': 'command'}, {'entity': 'apiVersion', 'description': 'header for a Kubernetes API request', 'category': 'header'}, {'entity': 'kind', 'description': 'type of Kubernetes resource', 'category': 'resource'}, {'entity': 'metadata', 'description': 'metadata for a Kubernetes resource', 'category': 'resource'}, {'entity': 'spec', 'description': 'specification for a Kubernetes resource', 'category': 'resource'}]","[{'source_entity': 'apiVersion', 'description': 'specifies the API version for the Kubernetes object', 'destination_entity': 'metadata'}, {'source_entity': 'metadata', 'description': 'contains metadata about the Kubernetes object', 'destination_entity': 'ReplicationController'}, {'source_entity': 'ReplicationController', 'description': 'manages a set of replicas for the application', 'destination_entity': 'StatefulSet'}, {'source_entity': 'StatefulSet', 'description': 'manages a set of stateful pods for the application', 'destination_entity': 'claim'}, {'source_entity': 'claim', 'description': 'requests storage resources from the Kubernetes cluster', 'destination_entity': '$ kubectl get po kubia-0 -o yaml'}, {'source_entity': '$ kubectl get po kubia-0 -o yaml', 'description': 'displays detailed information about a pod in YAML format', 'destination_entity': 'spec'}, {'source_entity': 'spec', 'description': 'defines the configuration for the pod or container', 'destination_entity': 'volume'}, {'source_entity': 'volume', 'description': 'provides persistent storage resources to a pod', 'destination_entity': 'pod template'}, {'source_entity': 'pod template', 'description': 'defines the configuration for a new pod', 'destination_entity': 'kind'}, {'source_entity': '$ kubectl create -f kubia-statefulset.yaml ', 'description': 'creates a new Kubernetes object from a YAML file', 'destination_entity': 'pod'}, {'source_entity': 'pod', 'description': 'represents a running instance of an application', 'destination_entity': 'StatefulSets'}, {'source_entity': '$ kubectl get po', 'description': 'displays information about all pods in the Kubernetes cluster', 'destination_entity': 'kubia-statefulset.yaml'}, {'source_entity': 'kubia-statefulset.yaml', 'description': 'defines a StatefulSet configuration for the application', 'destination_entity': 'ReplicaSet'}]","['[\n  {\n    ""source"": ""apiVersion"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the API version for the Kubernetes object"",\n    ""summary_er"": ""API version specifies the version of the Kubernetes API used to manage a pod.""\n  }\n]', '[\n  {\n    ""source"": ""metadata"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains metadata about the Kubernetes object"",\n    ""summary_er"": ""Metadata provides configuration details for a pod, including labels and annotations.""\n  },\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managed by ReplicationController"",\n    ""summary_er"": ""A ReplicationController ensures that a specified number of replicas (pods) are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages a set of replicas for the application"",\n    ""summary_er"": ""ReplicationController manages and scales a set of identical pods to ensure high availability and reliability.""\n  },\n  {\n    ""source"": ""StatefulSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages a set of stateful replicas for the application"",\n    ""summary_er"": ""StatefulSet ensures each pod in a deployment has a unique identity and maintains its own state, even across restarts.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""claim"",\n    ""summary_er"": ""A StatefulSet claims a set of pods for an application, managing their state and lifecycle.""\n  }\n]', '[\n  {\n    ""source"": ""claim"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests storage resources from the Kubernetes cluster"",\n    ""summary_er"": ""A claim requests storage resources from a pod in a Kubernetes cluster, enabling data persistence and sharing.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays detailed information about a pod in YAML format"",\n    ""summary_er"": ""kubectl is used to display detailed information about a pod in YAML format, providing insights into the pod\'s specifications.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""spec"",\n    ""relation_description"": ""configuration details of the pod"",\n    ""summary_er"": ""The spec section of a pod contains configuration details such as labels, annotations, and container settings.""\n  }\n]', '[\n  {\n    ""source"": ""spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the configuration"",\n    ""summary_er"": ""The spec entity defines the configuration for a pod, which is a container or process running on a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""spec"",\n    ""destination"": ""container"",\n    ""relation_description"": ""defines the configuration"",\n    ""summary_er"": ""The spec entity also defines the configuration for a container, which is a lightweight and standalone executable package.""\n  },\n  {\n    ""source"": ""volume"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides storage"",\n    ""summary_er"": ""A volume provides persistent storage to a pod, allowing it to store data even after the pod is deleted or recreated.""\n  }\n]', '[\n  {\n    ""source"": ""volume"",\n    ""destination"": ""pod template"",\n    ""relation_description"": ""provides persistent storage resources to a pod"",\n    ""summary_er"": ""A volume provides persistent storage for a pod template, enabling data persistence across pod restarts and terminations.""\n  }\n]', '[\n  {\n    ""source"": ""pod template"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the configuration for a new pod"",\n    ""summary_er"": ""The pod template defines the configuration for a new pod, specifying its characteristics and settings.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates a new Kubernetes object from a YAML file"",\n    ""summary_er"": ""Using kubectl to create a new pod in Kubernetes by applying a YAML configuration file.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""represents a running instance of an application"",\n    ""summary_er"": ""A pod is a running instance of an application, encapsulating one or more containers.""\n  },\n  {\n    ""source"": ""StatefulSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages stateful applications"",\n    ""summary_er"": ""StatefulSets manage stateful applications by ensuring consistent deployment and scaling of pods.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays information about all pods in the Kubernetes cluster"",\n    ""summary_er"": ""Kubectl displays pod info for all pods in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""kubia-statefulset.yaml"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deployment configuration file"",\n    ""summary_er"": ""Kubia statefulset yaml is a deployment config file for pods in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""kubia-statefulset.yaml"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines a StatefulSet configuration for the application"",\n    ""summary_er"": ""A YAML file that defines a StatefulSet, which manages a set of identical pods, in this case, the KubeIA application.""\n  },\n  {\n    ""source"": ""kubia-statefulset.yaml"",\n    ""destination"": ""ReplicaSet"",\n    ""relation_description"": ""defines a StatefulSet configuration for the application"",\n    ""summary_er"": ""A YAML file that defines a ReplicaSet, which ensures a specified number of replicas (pods) are running at any given time.""\n  }\n]']","StatefulSets in Kubernetes create pods one at a time, ensuring safety for clustered apps sensitive to race conditions. The first pod is brought up fully before continuing to bring up the rest. A closer look at the first pod's spec shows how the StatefulSet constructs the pod from templates and PersistentVolume-Claim template, adding volumes automatically.","[{'highlight': 'StatefulSets automatically add a volume to the pod specification and configure it to be bound to the claim created for the specific pod.'}, {'highlight': 'StatefulSets create pods sequentially, with each subsequent pod being created only after the previous one is up and ready, to avoid race conditions in clustered stateful apps.'}, {'highlight': ""The first pod created by a StatefulSet will have a status of 'Running' once it's fully started, while subsequent pods will be in a 'ContainerCreating' or 'Running' status.""}, {'highlight': ""You can examine the generated stateful pod's spec using `kubectl get po <pod_name> -o yaml` to see how the StatefulSet constructed the pod from the pod template and PersistentVolumeClaim template.""}, {'highlight': 'StatefulSets are particularly useful for deploying replicated stateful applications that require each member to be fully started before continuing to bring up the rest, such as clustered databases or messaging systems.'}]"
+238,327,0,[],"295
+Using a StatefulSet
+    volumeMounts:
+    - mountPath: /var/data           
+      name: data                     
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: default-token-r2m41
+      readOnly: true
+  ...
+  volumes:
+  - name: data                       
+    persistentVolumeClaim:           
+      claimName: data-kubia-0            
+  - name: default-token-r2m41
+    secret:
+      secretName: default-token-r2m41
+The PersistentVolumeClaim template was used to create the PersistentVolumeClaim
+and the volume inside the pod, which refers to the created PersistentVolumeClaim. 
+EXAMINING THE GENERATED PERSISTENTVOLUMECLAIMS
+Now list the generated PersistentVolumeClaims to confirm they were created:
+$ kubectl get pvc
+NAME           STATUS    VOLUME    CAPACITY   ACCESSMODES   AGE
+data-kubia-0   Bound     pv-c      0                        37s
+data-kubia-1   Bound     pv-a      0                        37s
+The names of the generated PersistentVolumeClaims are composed of the name
+defined in the volumeClaimTemplate and the name of each pod. You can examine the
+claims’ YAML to see that they match the template.
+10.3.3 Playing with your pods
+With the nodes of your data store cluster now running, you can start exploring it. You
+can’t communicate with your pods through the Service you created because it’s head-
+less. You’ll need to connect to individual pods directly (or create a regular Service, but
+that wouldn’t allow you to talk to a specific pod).
+ You’ve already seen ways to connect to a pod directly: by piggybacking on another
+pod and running curl inside it, by using port-forwarding, and so on. This time, you’ll
+try another option. You’ll use the API server as a proxy to the pods. 
+COMMUNICATING WITH PODS THROUGH THE API SERVER
+One useful feature of the API server is the ability to proxy connections directly to indi-
+vidual pods. If you want to perform requests against your kubia-0 pod, you hit the fol-
+lowing URL:
+<apiServerHost>:<port>/api/v1/namespaces/default/pods/kubia-0/proxy/<path>
+Because the API server is secured, sending requests to pods through the API server is
+cumbersome (among other things, you need to pass the authorization token in each
+request). Luckily, in chapter 8 you learned how to use kubectl proxy to talk to the
+The volume mount, as 
+specified in the manifest
+The volume created 
+by the StatefulSet
+The claim referenced 
+by this volume
+ 
+",[],"[{'entity': 'StatefulSet', 'description': 'A Kubernetes resource that manages a set of replicas with persistent storage.', 'category': 'software'}, {'entity': 'volumeMounts', 'description': 'A field in the StatefulSet manifest that specifies where to mount volumes.', 'category': 'software'}, {'entity': '/var/data', 'description': 'The mount path for the data volume.', 'category': 'hardware'}, {'entity': '/var/run/secrets/kubernetes.io/serviceaccount', 'description': 'The mount path for the service account secrets.', 'category': 'hardware'}, {'entity': 'data', 'description': 'A PersistentVolumeClaim that provides persistent storage for the StatefulSet.', 'category': 'software'}, {'entity': 'default-token-r2m41', 'description': 'A secret that provides authentication tokens for the StatefulSet.', 'category': 'software'}, {'entity': 'kubectl', 'description': 'A command-line tool for interacting with Kubernetes clusters.', 'category': 'software'}, {'entity': 'get pvc', 'description': 'A command used to list PersistentVolumeClaims.', 'category': 'software'}, {'entity': 'pvc', 'description': 'PersistentVolumeClaim objects that provide persistent storage for pods.', 'category': 'software'}, {'entity': 'data-kubia-0', 'description': 'A PersistentVolumeClaim created by the StatefulSet.', 'category': 'software'}, {'entity': 'pv-c', 'description': 'A Persistent Volume object associated with the data-kubia-0 PVC.', 'category': 'hardware'}, {'entity': 'pv-a', 'description': 'A Persistent Volume object associated with another PVC.', 'category': 'hardware'}, {'entity': 'nodes', 'description': 'Physical machines in a Kubernetes cluster that run pods.', 'category': 'hardware'}, {'entity': 'Service', 'description': 'A Kubernetes resource that provides network access to a set of pods.', 'category': 'software'}, {'entity': 'pod', 'description': 'A lightweight and ephemeral container that runs an application.', 'category': 'software'}, {'entity': 'API server', 'description': 'The central component of the Kubernetes control plane that manages cluster state.', 'category': 'software'}, {'entity': '/api/v1/namespaces/default/pods/kubia-0/proxy/<path>', 'description': 'A URL used to proxy connections directly to a pod through the API server.', 'category': 'hardware'}, {'entity': 'kubectl proxy', 'description': 'A command-line tool that provides a simple HTTP proxy for accessing pods through the API server.', 'category': 'software'}]","[{'source_entity': 'pvc', 'description': 'is associated with', 'destination_entity': '/var/data'}, {'source_entity': 'Service', 'description': 'is created by', 'destination_entity': 'StatefulSet'}, {'source_entity': 'kubectl', 'description': 'is used to manage', 'destination_entity': 'pvc'}, {'source_entity': 'pv-c', 'description': 'is a persistent volume claim for', 'destination_entity': 'data-kubia-0'}, {'source_entity': 'kubectl proxy', 'description': 'provides access to', 'destination_entity': '/api/v1/namespaces/default/pods/kubia-0/proxy/<path>'}, {'source_entity': 'API server', 'description': 'is responsible for managing', 'destination_entity': 'pvc'}, {'source_entity': 'kubectl', 'description': 'uses to get information about', 'destination_entity': 'pv-a'}, {'source_entity': 'volumeMounts', 'description': 'are used by', 'destination_entity': 'pod'}, {'source_entity': 'default-token-r2m41', 'description': 'is a token used by', 'destination_entity': 'nodes'}, {'source_entity': 'get pvc', 'description': 'is a command used to retrieve information about', 'destination_entity': 'pvc'}, {'source_entity': 'kubectl proxy', 'description': 'provides access to the API server for', 'destination_entity': 'Service'}]","['[\n  {\n    ""source"": ""pvc"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is associated with"",\n    ""summary_er"": ""A Persistent Volume Claim (PVC) is a request for storage resources that is used by a Pod to access data.""\n  }\n]', '[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is created by"",\n    ""summary_er"": ""A Service is dynamically created to manage traffic to a Pod, ensuring high availability and scalability.""\n  },\n  {\n    ""source"": ""Service"",\n    ""destination"": ""StatefulSet"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A StatefulSet manages the deployment of a Service, providing stable network identities and persistent storage for Pods.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to manage"",\n    ""summary_er"": ""Kubectl manages pods, which are the basic execution units in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pvc"",\n    ""relation_description"": ""is used to manage"",\n    ""summary_er"": ""Kubectl also manages Persistent Volumes (PVs) and Claims (PVCs), which provide persistent storage for pods.""\n  }\n]', '[\n  {\n    ""source"": ""pv-c"",\n    ""destination"": ""pod/data-kubia-0"",\n    ""relation_description"": ""is a persistent volume claim for"",\n    ""summary_er"": ""Persistent Volume Claim pv-c provides storage for Pod data-kubia-0, ensuring data persistence and availability.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl proxy"",\n    ""destination"": ""/api/v1/namespaces/default/pods/kubia-0/proxy/<path>"",\n    ""relation_description"": ""provides access to"",\n    ""summary_er"": ""Kubectl proxy provides a reverse proxy for accessing the Kubia pod\'s API.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is responsible for managing"",\n    ""summary_er"": ""The API server manages pods, ensuring they run smoothly and efficiently.""\n  },\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pvc"",\n    ""relation_description"": ""is responsible for managing"",\n    ""summary_er"": ""The API server manages Persistent Volumes (PVs) and Claims (PVCs), providing storage resources to pods.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to get information about"",\n    ""summary_er"": ""kubectl is used to retrieve information about a specific pod, such as its status, logs, and configuration.""\n  }\n]', '[\n  {\n    ""source"": ""volumeMounts"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used by"",\n    ""summary_er"": ""Volume mounts are utilized by a pod to access and utilize external storage resources.""\n  }\n]', '[\n  {\n    ""source"": ""default-token-r2m41"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a token used by"",\n    ""summary_er"": ""A security token, default-token-r2m41, is utilized by pod nodes.""\n  }\n]', '[\n  {\n    ""source"": ""get"",\n    ""destination"": ""pvc"",\n    ""relation_description"": ""is a command used to retrieve information about"",\n    ""summary_er"": ""The \'get\' command is used to display detailed information about Persistent Volumes (PVs) or Persistent Volume Claims (PVCs), including their status and configuration.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl proxy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides access to the API server for"",\n    ""summary_er"": ""Kubectl proxy provides a web interface to interact with Kubernetes API, allowing users to manage pods and other resources.""\n  }\n]']","A StatefulSet was used to create a PersistentVolumeClaim and volume inside a pod. The PersistentVolumeClaims were listed using kubectl get pvc, showing two claims bound to volumes pv-c and pv-a. Communication with individual pods can be done by proxying through the API server or using port-forwarding.","[{'highlight': 'A PersistentVolumeClaim template was used to create a PersistentVolumeClaim and a volume inside the pod, which refers to the created PersistentVolumeClaim.'}, {'highlight': 'Two PersistentVolumeClaims (data-kubia-0 and data-kubia-1) were generated with names composed of the name defined in the volumeClaimTemplate and the name of each pod.'}, {'highlight': 'The API server can proxy connections directly to individual pods, allowing requests to be made against specific pods using a URL format.'}, {'highlight': 'To communicate with pods through the API server, use the following URL format: <apiServerHost>:<port>/api/v1/namespaces/default/pods/<podName>/proxy/<path>.'}, {'highlight': 'The volume mount in the manifest is used to create a volume by the StatefulSet, which references a PersistentVolumeClaim named data-kubia-0.'}]"
+239,328,0,[],"296
+CHAPTER 10
+StatefulSets: deploying replicated stateful applications
+API server without having to deal with authentication and SSL certificates. Run the
+proxy again:
+$ kubectl proxy
+Starting to serve on 127.0.0.1:8001
+Now, because you’ll be talking to the API server through the kubectl proxy, you’ll use
+localhost:8001 rather than the actual API server host and port. You’ll send a request to
+the kubia-0 pod like this:
+$ curl localhost:8001/api/v1/namespaces/default/pods/kubia-0/proxy/
+You've hit kubia-0
+Data stored on this pod: No data posted yet
+The response shows that the request was indeed received and handled by the app run-
+ning in your pod kubia-0. 
+NOTE
+If you receive an empty response, make sure you haven’t left out that
+last slash character at the end of the URL (or make sure curl follows redirects
+by using its -L option). 
+Because you’re communicating with the pod through the API server, which you’re
+connecting to through the kubectl proxy, the request went through two different
+proxies (the first was the kubectl proxy and the other was the API server, which prox-
+ied the request to the pod). For a clearer picture, examine figure 10.10.
+The request you sent to the pod was a GET request, but you can also send POST
+requests through the API server. This is done by sending a POST request to the same
+proxy URL as the one you sent the GET request to. 
+ When your app receives a POST request, it stores whatever’s in the request body
+into a local file. Send a POST request to the kubia-0 pod:
+$ curl -X POST -d ""Hey there! This greeting was submitted to kubia-0.""
+➥ localhost:8001/api/v1/namespaces/default/pods/kubia-0/proxy/
+Data stored on pod kubia-0
+kubectl proxy
+curl
+GET localhost:8001/api/v1/namespaces/default/pods/kubia-0/proxy/
+GET 192.168.99.100:8443/api/v1/namespaces/default/pods/kubia-0/proxy/
+Authorization: Bearer <token>
+GET 172.17.0.3:8080/
+API server
+Pod: kubia-0
+192.168.99.100
+172.17.0.3
+localhost
+Figure 10.10
+Connecting to a pod through both the kubectl proxy and API server proxy
+ 
+",[],"[{'entity': 'StatefulSets', 'description': 'a Kubernetes feature for deploying replicated stateful applications', 'category': 'software'}, {'entity': 'API server', 'description': 'the central component of a Kubernetes cluster that manages the entire cluster lifecycle', 'category': 'software'}, {'entity': 'kubectl proxy', 'description': 'a command-line tool for running a local proxy to the API server', 'category': 'software'}, {'entity': 'curl', 'description': 'a command-line tool for transferring data with URL syntax', 'category': 'software'}, {'entity': 'GET request', 'description': 'a type of HTTP request used to retrieve data from a server', 'category': 'protocol'}, {'entity': 'POST request', 'description': 'a type of HTTP request used to send data to a server', 'category': 'protocol'}, {'entity': 'localhost:8001', 'description': 'the URL for accessing the API server through the kubectl proxy', 'category': 'network'}, {'entity': 'kubia-0 pod', 'description': 'a container running a simple web application', 'category': 'container'}, {'entity': 'API server host and port', 'description': 'the address of the API server', 'category': 'network'}, {'entity': 'namespaces', 'description': 'a way to group resources in a Kubernetes cluster', 'category': 'software'}, {'entity': '-L option', 'description': 'an option for curl to follow redirects', 'category': 'software'}, {'entity': 'kubectl proxy and API server proxy', 'description': 'two different proxies used to access the pod', 'category': 'software'}]","[{'source_entity': '""kubia-0 pod""', 'description': 'sends', 'destination_entity': '""GET request""'}, {'source_entity': '""kubectl proxy and API server proxy""', 'description': 'proxies', 'destination_entity': '""API server host and port""'}, {'source_entity': '""curl""', 'description': 'sends', 'destination_entity': '""GET request""'}, {'source_entity': '""kubectl proxy""', 'description': 'proxies', 'destination_entity': '""API server host and port""'}, {'source_entity': '""POST request""', 'description': 'sent to', 'destination_entity': '""API server host and port""'}, {'source_entity': '""kubectl proxy and API server proxy""', 'description': 'uses', 'destination_entity': '""-L option""'}, {'source_entity': '""curl""', 'description': 'uses', 'destination_entity': '""-L option""'}, {'source_entity': '""kubectl proxy and API server proxy""', 'description': 'exposes', 'destination_entity': '""API server host and port""'}, {'source_entity': '""StatefulSets""', 'description': 'managed by', 'destination_entity': '""namespaces""'}]","['[\n  {\n    ""source"": ""kubia-0 pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sends"",\n    ""summary_er"": ""The kubia-0 pod sends a GET request to an unknown destination.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""proxies"",\n    ""summary_er"": ""Kubectl uses API server proxy to communicate with pods, enabling configuration and management of containerized applications.""\n  },\n  {\n    ""source"": ""API server host"",\n    ""destination"": ""port"",\n    ""relation_description"": ""and"",\n    ""summary_er"": ""The API server host is associated with a specific port number for communication purposes in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sends"",\n    ""summary_er"": ""The curl command sends a GET request to a pod, likely to retrieve data or execute an action within the containerized environment.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl proxy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""proxies"",\n    ""summary_er"": ""The kubectl proxy command serves as a proxy for API server host and port, allowing access to pod resources.""\n  },\n  {\n    ""source"": ""API server host and port"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""serves as a proxy"",\n    ""summary_er"": ""The API server host and port is served by the kubectl proxy command for accessing pod resources.""\n  }\n]', '[\n  {\n    ""source"": ""POST request"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sent to"",\n    ""summary_er"": ""A POST request is sent from an API client to a pod, which processes the request and returns a response.""\n  },\n  {\n    ""source"": ""API server host and port"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The API server host and port communicate with a pod to handle incoming requests and provide services.""\n  }\n]', '[\n  {\n    ""source"": ""API Server"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The API server uses a Pod to manage containerized applications, enabling communication between the server and the pod.""\n  },\n  {\n    ""source"": ""kubectl proxy"",\n    ""destination"": ""API Server"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""kubectl proxy utilizes the API server to interact with Kubernetes resources, providing a local proxy for remote access.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The curl command utilizes a pod to execute its operations, leveraging the pod\'s resources and environment.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""Kubectl uses API server proxy to expose pod resources.""\n  },\n  {\n    ""source"": ""API server host"",\n    ""destination"": ""port"",\n    ""relation_description"": ""and"",\n    ""summary_er"": ""API server host is used with port for communication.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""A StatefulSet manages a set of replicas, ensuring that each replica has a unique identity and persists data across restarts.""\n  },\n  {\n    ""source"": ""namespaces"",\n    ""destination"": ""StatefulSets"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A namespace contains one or more StatefulSets, which are managed by the Kubernetes cluster.""\n  }\n]']","The chapter explains how to deploy replicated stateful applications using StatefulSets in Kubernetes. It demonstrates how to use the kubectl proxy to communicate with a pod, send GET and POST requests to the pod, and store data on the pod. The example uses curl commands to interact with the pod through the API server, showing how to retrieve data from the pod and update it with new information.","[{'highlight': 'To communicate with a pod, you can use the `kubectl proxy` command to start an API server that allows you to send requests to the pod without having to deal with authentication and SSL certificates.'}, {'highlight': 'You can send GET or POST requests to the pod by using the `curl` command with the `-X` option to specify the request type, and the `-d` option to specify the data to be sent in the request body.'}, {'highlight': ""The API server proxy allows you to access the pod's API at a URL like `localhost:8001/api/v1/namespaces/default/pods/kubia-0/proxy/`, where `kubia-0` is the name of the pod.""}, {'highlight': 'When sending a POST request, the app running in the pod stores whatever data is sent in the request body into a local file.'}, {'highlight': ""You can also use the `kubectl proxy` command to start an API server that allows you to access the pod's API at a URL like `localhost:8001/api/v1/namespaces/default/pods/kubia-0/proxy/`, where `kubia-0` is the name of the pod.""}]"

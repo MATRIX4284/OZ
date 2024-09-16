@@ -1,0 +1,518 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+30,119,0,[],"87
+Keeping pods healthy
+The pod descriptor defines an httpGet liveness probe, which tells Kubernetes to peri-
+odically perform HTTP GET requests on path / on port 8080 to determine if the con-
+tainer is still healthy. These requests start as soon as the container is run.
+ After five such requests (or actual client requests), your app starts returning
+HTTP status code 500, which Kubernetes will treat as a probe failure, and will thus
+restart the container. 
+4.1.3
+Seeing a liveness probe in action
+To see what the liveness probe does, try creating the pod now. After about a minute and
+a half, the container will be restarted. You can see that by running kubectl get:
+$ kubectl get po kubia-liveness
+NAME             READY     STATUS    RESTARTS   AGE
+kubia-liveness   1/1       Running   1          2m
+The RESTARTS column shows that the pod’s container has been restarted once (if you
+wait another minute and a half, it gets restarted again, and then the cycle continues
+indefinitely).
+You can see why the container had to be restarted by looking at what kubectl describe
+prints out, as shown in the following listing.
+$ kubectl describe po kubia-liveness
+Name:           kubia-liveness
+...
+Containers:
+  kubia:
+    Container ID:       docker://480986f8
+    Image:              luksa/kubia-unhealthy
+    Image ID:           docker://sha256:2b208508
+    Port:
+    State:              Running                            
+      Started:          Sun, 14 May 2017 11:41:40 +0200    
+Obtaining the application log of a crashed container
+In the previous chapter, you learned how to print the application’s log with kubectl
+logs. If your container is restarted, the kubectl logs command will show the log of
+the current container. 
+When you want to figure out why the previous container terminated, you’ll want to
+see those logs instead of the current container’s logs. This can be done by using
+the --previous option:
+$ kubectl logs mypod --previous
+Listing 4.2
+A pod’s description after its container is restarted
+The container is 
+currently running.
+ 
+",[],"[{'entity': 'httpGet liveness probe', 'description': 'a mechanism to periodically perform HTTP GET requests on a path to determine if a container is still healthy', 'category': 'software'}, {'entity': 'Kubernetes', 'description': 'an open-source container orchestration system for automating the deployment, scaling, and management of containers', 'category': 'software'}, {'entity': 'pod descriptor', 'description': 'a configuration file that defines a pod in Kubernetes', 'category': 'software'}, {'entity': 'kubectl get', 'description': 'a command to retrieve information about pods, services, and other resources in a Kubernetes cluster', 'category': 'command'}, {'entity': 'RESTARTS column', 'description': ""a column in the output of kubectl get that shows how many times a pod's container has been restarted"", 'category': 'software'}, {'entity': 'kubectl describe', 'description': 'a command to display detailed information about a pod, service, or other resource in a Kubernetes cluster', 'category': 'command'}, {'entity': 'kubia-liveness', 'description': 'the name of a pod in the example', 'category': 'software'}, {'entity': 'kubectl logs', 'description': 'a command to retrieve the log output from a container running in a Kubernetes pod', 'category': 'command'}, {'entity': '--previous option', 'description': 'an option for kubectl logs that allows retrieving the log output from a previous instance of a container', 'category': 'software'}, {'entity': 'myped', 'description': 'the name of a pod in the example', 'category': 'software'}]","[{'source_entity': '""Kubernetes""', 'description': 'provides', 'destination_entity': '""httpGet liveness probe""'}, {'source_entity': '""kubectl logs""', 'description': 'displays', 'destination_entity': '""pod descriptor""'}, {'source_entity': '""kubectl describe""', 'description': 'provides detailed information about', 'destination_entity': '""Kubernetes pod (kubia-liveness)""'}, {'source_entity': '""kubectl get""', 'description': 'fetches and displays', 'destination_entity': '""pod descriptor""'}, {'source_entity': '""--previous option""', 'description': 'specifies the', 'destination_entity': '""kubectl logs"" command to display previous logs'}, {'source_entity': '""RESTARTS column""', 'description': 'displays the number of', 'destination_entity': '""kubia-liveness pod restarts""'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""Kubernetes manages and orchestrates containerized applications, including pods, which are the basic execution unit in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""httpGet liveness probe"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The httpGet liveness probe is used to check the health of a pod by sending an HTTP request and verifying its response, ensuring the pod is running correctly.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""logs"",\n    ""summary_er"": ""Displays logs of a running Kubernetes pod using kubectl command.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""descriptor"",\n    ""relation_description"": ""descriptor"",\n    ""summary_er"": ""Represents the configuration and metadata of a Kubernetes pod in YAML format.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides detailed information about"",\n    ""summary_er"": ""The \'kubectl describe\' command provides a detailed view of a Kubernetes pod\'s configuration and status, including its labels, annotations, and container specifications.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl get"",\n    ""destination"": ""pod descriptor"",\n    ""relation_description"": ""fetches and displays"",\n    ""summary_er"": ""Kubectl command fetches and displays information about a pod\'s descriptor, which contains metadata such as labels, annotations, and other details.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the"",\n    ""summary_er"": ""The kubectl command displays previous logs for a pod.""\n  }\n]', '[\n  {\n    ""source"": ""RESTARTS column"",\n    ""destination"": ""kubia-liveness pod"",\n    ""relation_description"": ""displays the number of"",\n    ""summary_er"": ""The RESTARTS column displays the number of restarts for the kubia-liveness pod, indicating its reliability and stability in a Kubernetes environment.""\n  }\n]']","The document explains how Kubernetes uses liveness probes to keep pods healthy. An httpGet liveness probe sends HTTP GET requests to a path on port 8080, and if the status code becomes 500, Kubernetes restarts the container. The document also demonstrates this by creating a pod with a liveness probe, showing it gets restarted after about a minute and a half, and describes how to obtain the application log of a crashed container using kubectl logs --previous.","[{'highlight': 'The pod descriptor defines an httpGet liveness probe, which tells Kubernetes to periodically perform HTTP GET requests on path / on port 8080 to determine if the container is still healthy.'}, {'highlight': 'After five such requests (or actual client requests), your app starts returning HTTP status code 500, which Kubernetes will treat as a probe failure, and will thus restart the container.'}, {'highlight': 'The RESTARTS column shows that the pod’s container has been restarted once (if you wait another minute and a half, it gets restarted again, and then the cycle continues indefinitely).'}, {'highlight': 'You can see why the container had to be restarted by looking at what kubectl describe prints out.'}, {'highlight': 'When you want to figure out why the previous container terminated, you’ll want to see those logs instead of the current container’s logs. This can be done by using the --previous option:'}]"
+31,120,0,[],"88
+CHAPTER 4
+Replication and other controllers: deploying managed pods
+    Last State:         Terminated                         
+      Reason:           Error                              
+      Exit Code:        137                                
+      Started:          Mon, 01 Jan 0001 00:00:00 +0000    
+      Finished:         Sun, 14 May 2017 11:41:38 +0200    
+    Ready:              True
+    Restart Count:      1                                 
+    Liveness:           http-get http://:8080/ delay=0s timeout=1s
+                        period=10s #success=1 #failure=3
+    ...
+Events:
+... Killing container with id docker://95246981:pod ""kubia-liveness ...""
+    container ""kubia"" is unhealthy, it will be killed and re-created.
+You can see that the container is currently running, but it previously terminated
+because of an error. The exit code was 137, which has a special meaning—it denotes
+that the process was terminated by an external signal. The number 137 is a sum of two
+numbers: 128+x, where x is the signal number sent to the process that caused it to ter-
+minate. In the example, x equals 9, which is the number of the SIGKILL signal, mean-
+ing the process was killed forcibly.
+ The events listed at the bottom show why the container was killed—Kubernetes
+detected the container was unhealthy, so it killed and re-created it. 
+NOTE
+When a container is killed, a completely new container is created—it’s
+not the same container being restarted again.
+4.1.4
+Configuring additional properties of the liveness probe
+You may have noticed that kubectl describe also displays additional information
+about the liveness probe:
+Liveness: http-get http://:8080/ delay=0s timeout=1s period=10s #success=1 
+          ➥ #failure=3
+Beside the liveness probe options you specified explicitly, you can also see additional
+properties, such as delay, timeout, period, and so on. The delay=0s part shows that
+the probing begins immediately after the container is started. The timeout is set to
+only 1 second, so the container must return a response in 1 second or the probe is
+counted as failed. The container is probed every 10 seconds (period=10s) and the
+container is restarted after the probe fails three consecutive times (#failure=3). 
+ These additional parameters can be customized when defining the probe. For
+example, to set the initial delay, add the initialDelaySeconds property to the live-
+ness probe as shown in the following listing.
+   livenessProbe:          
+     httpGet:              
+       path: /             
+Listing 4.3
+A liveness probe with an initial delay: kubia-liveness-probe-initial-delay.yaml
+The previous 
+container terminated 
+with an error and 
+exited with code 137.
+The container 
+has been 
+restarted once.
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'Pod', 'description': 'Basic execution unit in Kubernetes', 'category': 'application'}, {'entity': 'Container', 'description': 'Lightweight and standalone executable package', 'category': 'container'}, {'entity': 'Liveness Probe', 'description': 'Mechanism to check if a container is running correctly', 'category': 'process'}, {'entity': 'http-get', 'description': 'HTTP request method used in liveness probe', 'category': 'command'}, {'entity': 'delay=0s', 'description': 'Initial delay before starting the liveness probe', 'category': 'parameter'}, {'entity': 'timeout=1s', 'description': 'Timeout period for the liveness probe', 'category': 'parameter'}, {'entity': 'period=10s', 'description': 'Period between consecutive liveness probes', 'category': 'parameter'}, {'entity': '#success=1', 'description': 'Number of successful liveness probe attempts', 'category': 'parameter'}, {'entity': '#failure=3', 'description': 'Number of failed liveness probe attempts before restart', 'category': 'parameter'}, {'entity': 'SIGKILL', 'description': 'Signal sent to a process to terminate it forcibly', 'category': 'signal'}, {'entity': 'kubectl describe', 'description': 'Command used to display information about a pod', 'category': 'command'}]","[{'source_entity': 'Liveness Probe', 'description': 'checks the health of a Container', 'destination_entity': 'Container'}, {'source_entity': 'Kubernetes', 'description': 'manages the lifecycle of a Pod', 'destination_entity': 'Pod'}, {'source_entity': 'kubectl describe', 'description': 'provides detailed information about a Pod', 'destination_entity': 'Pod'}, {'source_entity': 'Liveness Probe', 'description': 'periodically checks the health of a Container', 'destination_entity': 'Container'}, {'source_entity': 'Kubernetes', 'description': 'ensures that a Pod is running for at least period=10s', 'destination_entity': 'Pod'}, {'source_entity': 'Liveness Probe', 'description': 'terminates a Container if it fails to respond within timeout=1s', 'destination_entity': 'Container'}, {'source_entity': 'Kubernetes', 'description': 'retries the liveness probe up to #failure=3 times', 'destination_entity': 'Pod'}, {'source_entity': 'kubectl describe', 'description': 'displays information about a Pod, including its status and events', 'destination_entity': 'Pod'}]","['[\n  {\n    ""source"": ""Liveness Probe"",\n    ""destination"": ""Container"",\n    ""relation_description"": ""checks the health of a Container"",\n    ""summary_er"": ""The Liveness Probe ensures a Container\'s health by periodically checking its status, restarting it if necessary.""\n  },\n  {\n    ""source"": ""Liveness Probe"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""A Pod is the basic execution unit in Kubernetes, and Liveness Probes are used to monitor its health.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages the lifecycle of a Pod"",\n    ""summary_er"": ""Kubernetes manages the creation, scaling, and termination of Pods, ensuring efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""provides detailed information about a Pod"",\n    ""summary_er"": ""Kubectl provides detailed info about a running Pod, including its status and configuration.""\n  }\n]', '[\n  {\n    ""source"": ""Liveness Probe"",\n    ""destination"": ""Container"",\n    ""relation_description"": ""periodically checks the health of a Container"",\n    ""summary_er"": ""The Liveness Probe ensures a Container\'s health by periodically checking its status, preventing it from running indefinitely if it becomes unresponsive.""\n  },\n  {\n    ""source"": ""Liveness Probe"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""periodically checks the health of a Pod"",\n    ""summary_er"": ""The Liveness Probe monitors a Pod\'s health by periodically checking its status, ensuring it remains responsive and functional.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""ensures that a Pod is running for at least period=10s"",\n    ""summary_er"": ""Kubernetes guarantees a minimum uptime of 10 seconds for each Pod, ensuring continuous operation.""\n  }\n]', '[\n  {\n    ""source"": ""Liveness Probe"",\n    ""destination"": ""Container"",\n    ""relation_description"": ""terminates a Container if it fails to respond within timeout=1s"",\n    ""summary_er"": ""A Liveness Probe monitors a Container\'s health, terminating it if it doesn\'t respond within 1 second.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""retries the liveness probe up to #failure=3 times"",\n    ""summary_er"": ""Kubernetes retries a pod\'s liveness probe up to 3 times before considering it failed, ensuring reliability and fault tolerance.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""describe"",\n    ""summary_er"": ""Displays information about a Pod, including its status and events.""\n  }\n]']","This page discusses replication and other controllers in Kubernetes, specifically the liveness probe which checks if a container is running correctly. If the container fails the probe, it will be killed and re-created. The page also explains how to configure additional properties of the liveness probe, such as delay, timeout, period, and initial delay. An example YAML file is provided to demonstrate how to set an initial delay for the liveness probe.","[{'highlight': 'A container was killed due to an error and exited with exit code 137, which is a special meaning that denotes the process was terminated by an external signal.'}, {'highlight': 'When a container is killed, a completely new container is created—it’s not the same container being restarted again.'}, {'highlight': 'The liveness probe options include delay=0s (immediate probing), timeout=1s (container must return a response in 1 second), period=10s (probing every 10 seconds), and #failure=3 (restart after three consecutive failed probes).'}, {'highlight': 'Additional parameters can be customized when defining the probe, such as setting an initial delay using the initialDelaySeconds property.'}, {'highlight': 'A container was restarted once due to being unhealthy and detected by Kubernetes, which killed and re-created it.'}]"
+32,121,0,[],"89
+Keeping pods healthy
+       port: 8080          
+     initialDelaySeconds: 15   
+If you don’t set the initial delay, the prober will start probing the container as soon as
+it starts, which usually leads to the probe failing, because the app isn’t ready to start
+receiving requests. If the number of failures exceeds the failure threshold, the con-
+tainer is restarted before it’s even able to start responding to requests properly. 
+TIP
+Always remember to set an initial delay to account for your app’s startup
+time.
+I’ve seen this on many occasions and users were confused why their container was
+being restarted. But if they’d used kubectl describe, they’d have seen that the con-
+tainer terminated with exit code 137 or 143, telling them that the pod was terminated
+externally. Additionally, the listing of the pod’s events would show that the container
+was killed because of a failed liveness probe. If you see this happening at pod startup,
+it’s because you failed to set initialDelaySeconds appropriately.
+NOTE
+Exit code 137 signals that the process was killed by an external signal
+(exit code is 128 + 9 (SIGKILL). Likewise, exit code 143 corresponds to 128 +
+15 (SIGTERM).
+4.1.5
+Creating effective liveness probes
+For pods running in production, you should always define a liveness probe. Without
+one, Kubernetes has no way of knowing whether your app is still alive or not. As long
+as the process is still running, Kubernetes will consider the container to be healthy. 
+WHAT A LIVENESS PROBE SHOULD CHECK
+Your simplistic liveness probe simply checks if the server is responding. While this may
+seem overly simple, even a liveness probe like this does wonders, because it causes the
+container to be restarted if the web server running within the container stops
+responding to HTTP requests. Compared to having no liveness probe, this is a major
+improvement, and may be sufficient in most cases.
+ But for a better liveness check, you’d configure the probe to perform requests on a
+specific URL path (/health, for example) and have the app perform an internal sta-
+tus check of all the vital components running inside the app to ensure none of them
+has died or is unresponsive. 
+TIP
+Make sure the /health HTTP endpoint doesn’t require authentication;
+otherwise the probe will always fail, causing your container to be restarted
+indefinitely.
+Be sure to check only the internals of the app and nothing influenced by an external
+factor. For example, a frontend web server’s liveness probe shouldn’t return a failure
+when the server can’t connect to the backend database. If the underlying cause is in
+the database itself, restarting the web server container will not fix the problem.
+Kubernetes will wait 15 seconds 
+before executing the first probe.
+ 
+",[],"[{'entity': 'pods', 'description': 'units of deployment in Kubernetes', 'category': 'application'}, {'entity': 'port', 'description': 'network port number', 'category': 'hardware/network'}, {'entity': 'initialDelaySeconds', 'description': 'delay before executing a probe', 'category': 'process/thread'}, {'entity': 'probe', 'description': 'mechanism to check the health of a container', 'category': 'application/process'}, {'entity': 'container', 'description': 'isolated process in Kubernetes', 'category': 'application/process'}, {'entity': 'kubectl', 'description': 'command-line tool for managing Kubernetes clusters', 'category': 'software/command'}, {'entity': 'describe', 'description': 'kubectl command to display detailed information about a resource', 'category': 'software/command'}, {'entity': 'exit code', 'description': 'numeric value indicating the reason for a process termination', 'category': 'process/thread'}, {'entity': 'SIGKILL', 'description': 'signal sent to terminate a process immediately', 'category': 'hardware/network'}, {'entity': 'SIGTERM', 'description': 'signal sent to request termination of a process', 'category': 'hardware/network'}, {'entity': 'liveness probe', 'description': 'probe that checks the health of a container', 'category': 'application/process'}, {'entity': 'health check', 'description': 'mechanism to verify the internal status of an application', 'category': 'application/process'}, {'entity': '/health', 'description': 'HTTP endpoint for health checks', 'category': 'hardware/network'}, {'entity': 'Kubernetes', 'description': 'container orchestration system', 'category': 'software/application'}]","[{'source_entity': '""Kubernetes""', 'description': 'monitors', 'destination_entity': '""/health""'}, {'source_entity': '""Kubernetes""', 'description': 'executes', 'destination_entity': '""pods""'}, {'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""describe""'}, {'source_entity': '""kubectl""', 'description': 'runs', 'destination_entity': '""health check""'}, {'source_entity': '""container""', 'description': 'exposes', 'destination_entity': '""port""'}, {'source_entity': '""liveness probe""', 'description': 'checks', 'destination_entity': '""initialDelaySeconds""'}, {'source_entity': '""SIGTERM""', 'description': 'signals', 'destination_entity': '""container""'}, {'source_entity': '""SIGKILL""', 'description': 'terminates', 'destination_entity': '""container""'}, {'source_entity': '""exit code""', 'description': 'indicates', 'destination_entity': '""health check""'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""monitors"",\n    ""summary_er"": ""Kubernetes continuously monitors the health of its pods to ensure they are running smoothly and efficiently.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""Kubernetes executes pods, managing containerized applications and services.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubectl uses a pod to execute commands, such as describe, to manage and inspect Kubernetes resources.""\n  },\n  {\n    ""source"": ""describe"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""command"",\n    ""summary_er"": ""The describe command is used with kubectl to display detailed information about a specific pod in the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""Kubernetes command-line tool used to run and manage pods in a cluster.""\n  },\n  {\n    ""source"": ""health check"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""Process of verifying the health and status of running pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""A container exposes a port to allow communication with other containers or services within the pod.""\n  }\n]', '[\n  {\n    ""source"": ""Liveness Probe"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""checks"",\n    ""summary_er"": ""The Liveness Probe in Kubernetes checks the health of a Pod to ensure it\'s running correctly.""\n  },\n  {\n    ""source"": ""Initial Delay Seconds"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""delay before checking"",\n    ""summary_er"": ""InitialDelaySeconds is a parameter that specifies the delay time before the Liveness Probe starts checking the health of a Pod in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""SIGTERM"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""signals"",\n    ""summary_er"": ""The SIGTERM signal sent to a container terminates its execution, and the pod containing it will be deleted.""\n  }\n]', '[\n  {\n    ""source"": ""SIGKILL"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""terminates"",\n    ""summary_er"": ""SIGKILL signal terminates a running container within a pod.""\n  }\n]', '[\n  {\n    ""source"": ""Exit Code"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""indicates"",\n    ""summary_er"": ""The exit code of a process indicates its health status, which can be used to monitor and manage pods in Kubernetes.""\n  },\n  {\n    ""source"": ""Health Check"",\n    ""destination"": ""Pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""A health check is a mechanism to verify the status of a pod in Kubernetes, ensuring it\'s running correctly and ready for use.""\n  }\n]']","To keep pods healthy, it's essential to set an initial delay for liveness probes. This prevents probes from failing as soon as the app starts, leading to unnecessary restarts. A liveness probe should check if the server is responding and ideally perform internal status checks on vital components. It's crucial to ensure the /health endpoint doesn't require authentication and only checks internals of the app, not external factors.","[{'highlight': 'Always remember to set an initial delay to account for your app’s startup time.'}, {'highlight': 'Exit code 137 signals that the process was killed by an external signal (exit code is 128 + 9 (SIGKILL)). Likewise, exit code 143 corresponds to 128 + 15 (SIGTERM).'}, {'highlight': 'Your simplistic liveness probe simply checks if the server is responding. While this may seem overly simple, even a liveness probe like this does wonders, because it causes the container to be restarted if the web server running within the container stops responding to HTTP requests.'}, {'highlight': 'Make sure the /health HTTP endpoint doesn’t require authentication; otherwise the probe will always fail, causing your container to be restarted indefinitely.'}, {'highlight': 'Kubernetes will wait 15 seconds before executing the first probe.'}]"
+33,122,0,[],"90
+CHAPTER 4
+Replication and other controllers: deploying managed pods
+Because the liveness probe will fail again, you’ll end up with the container restarting
+repeatedly until the database becomes accessible again. 
+KEEPING PROBES LIGHT
+Liveness probes shouldn’t use too many computational resources and shouldn’t take
+too long to complete. By default, the probes are executed relatively often and are
+only allowed one second to complete. Having a probe that does heavy lifting can slow
+down your container considerably. Later in the book, you’ll also learn about how to
+limit CPU time available to a container. The probe’s CPU time is counted in the con-
+tainer’s CPU time quota, so having a heavyweight liveness probe will reduce the CPU
+time available to the main application processes.
+TIP
+If you’re running a Java app in your container, be sure to use an HTTP
+GET liveness probe instead of an Exec probe, where you spin up a whole new
+JVM to get the liveness information. The same goes for any JVM-based or sim-
+ilar applications, whose start-up procedure requires considerable computa-
+tional resources.
+DON’T BOTHER IMPLEMENTING RETRY LOOPS IN YOUR PROBES
+You’ve already seen that the failure threshold for the probe is configurable and usu-
+ally the probe must fail multiple times before the container is killed. But even if you
+set the failure threshold to 1, Kubernetes will retry the probe several times before con-
+sidering it a single failed attempt. Therefore, implementing your own retry loop into
+the probe is wasted effort.
+LIVENESS PROBE WRAP-UP
+You now understand that Kubernetes keeps your containers running by restarting
+them if they crash or if their liveness probes fail. This job is performed by the Kubelet
+on the node hosting the pod—the Kubernetes Control Plane components running on
+the master(s) have no part in this process. 
+ But if the node itself crashes, it’s the Control Plane that must create replacements for
+all the pods that went down with the node. It doesn’t do that for pods that you create
+directly. Those pods aren’t managed by anything except by the Kubelet, but because the
+Kubelet runs on the node itself, it can’t do anything if the node fails. 
+ To make sure your app is restarted on another node, you need to have the pod
+managed by a ReplicationController or similar mechanism, which we’ll discuss in the
+rest of this chapter. 
+4.2
+Introducing ReplicationControllers
+A ReplicationController is a Kubernetes resource that ensures its pods are always
+kept running. If the pod disappears for any reason, such as in the event of a node
+disappearing from the cluster or because the pod was evicted from the node, the
+ReplicationController notices the missing pod and creates a replacement pod. 
+ Figure 4.1 shows what happens when a node goes down and takes two pods with it.
+Pod A was created directly and is therefore an unmanaged pod, while pod B is managed
+ 
+",[],"[{'entity': 'Liveness Probe', 'description': 'A probe used to check if a container is running correctly', 'category': 'software'}, {'entity': 'Kubelet', 'description': 'The component responsible for restarting containers that crash or fail liveness probes', 'category': 'software'}, {'entity': 'ReplicationController', 'description': 'A Kubernetes resource that ensures its pods are always kept running', 'category': 'software'}, {'entity': 'Pod', 'description': 'A unit of execution in a containerized system', 'category': 'software'}, {'entity': 'Container', 'description': 'A lightweight and standalone executable package', 'category': 'software'}, {'entity': 'Node', 'description': 'A machine in a Kubernetes cluster that runs the Kubelet component', 'category': 'hardware'}, {'entity': 'Cluster', 'description': 'A group of machines (nodes) that run Kubernetes components', 'category': 'network'}, {'entity': 'Kubernetes Control Plane', 'description': 'The set of components responsible for managing a Kubernetes cluster', 'category': 'software'}, {'entity': 'Exec Probe', 'description': 'A type of liveness probe that executes a command to check if a container is running correctly', 'category': 'software'}, {'entity': 'HTTP GET Liveness Probe', 'description': 'A type of liveness probe that uses an HTTP GET request to check if a container is running correctly', 'category': 'software'}, {'entity': 'JVM', 'description': 'The Java Virtual Machine, used by Java applications', 'category': 'software'}]","[{'source_entity': '""HTTP GET Liveness Probe""', 'description': 'checks', 'destination_entity': '""Container""'}, {'source_entity': '""ReplicationController""', 'description': 'manages', 'destination_entity': '""Pod""'}, {'source_entity': '""Liveness Probe""', 'description': 'monitors', 'destination_entity': '""Container""'}, {'source_entity': '""Kubernetes Control Plane""', 'description': 'coordinates', 'destination_entity': '""Cluster""'}, {'source_entity': '""Kubelet""', 'description': 'communicates', 'destination_entity': '""Node""'}, {'source_entity': '""Exec Probe""', 'description': 'executes', 'destination_entity': '""Container""'}, {'source_entity': '""Pod""', 'description': 'runs', 'destination_entity': '""Container""'}, {'source_entity': '""Kubernetes Control Plane""', 'description': 'manages', 'destination_entity': '""ReplicationController""'}, {'source_entity': '""JVM""', 'description': 'executes', 'destination_entity': '""Container""'}]","['[\n  {\n    ""source"": ""HTTP GET Liveness Probe"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""checks"",\n    ""summary_er"": ""The HTTP GET liveness probe checks the health of a pod by sending an HTTP request to it.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A ReplicationController ensures a specified number of replicas (identical Pods) are running at any given time, managing the lifecycle of these Pods.""\n  }\n]', '[\n  {\n    ""source"": ""Liveness Probe"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""monitors"",\n    ""summary_er"": ""The Liveness Probe checks if a container is running and responding, ensuring the pod remains healthy.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes Control Plane"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""coordinates"",\n    ""summary_er"": ""The Kubernetes Control Plane is responsible for managing and coordinating pods within a cluster, ensuring they are properly deployed and functioning as expected.""\n  },\n  {\n    ""source"": ""Cluster"",\n    ""destination"": ""Kubernetes Control Plane"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""A cluster is a group of machines that work together to manage and run applications, with the Kubernetes Control Plane being responsible for its overall management and coordination.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""communicates"",\n    ""summary_er"": ""The Kubelet, a critical component of Kubernetes, communicates with pods to manage and orchestrate containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""Exec Probe"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""An Exec Probe in Kubernetes checks if a command executes successfully within a specified time limit, ensuring pod health and responsiveness.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""A Pod in Kubernetes runs one or more Containers, providing a shared environment and resources.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes Control Plane"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The Kubernetes Control Plane manages a Pod, ensuring its lifecycle and resource allocation.""\n  },\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""A ReplicationController is managed by the Kubernetes Control Plane to maintain desired pod replicas.""\n  }\n]', '[\n  {\n    ""source"": ""JVM"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""A JVM executes a container within a pod, utilizing the container\'s resources to run Java-based applications.""\n  }\n]']","A ReplicationController in Kubernetes ensures its pods are always kept running by creating replacement pods if one disappears. Liveness probes shouldn't use too many computational resources and should be executed relatively often to keep containers running. Kubernetes will retry a probe several times before considering it a failed attempt, so implementing a retry loop is unnecessary.","[{'highlight': ""Liveness probes shouldn't use too many computational resources and shouldn't take too long to complete. By default, the probes are executed relatively often and are only allowed one second to complete.""}, {'highlight': 'Implementing your own retry loop into the probe is wasted effort, as Kubernetes will retry the probe several times before considering it a single failed attempt.'}, {'highlight': 'To make sure your app is restarted on another node, you need to have the pod managed by a ReplicationController or similar mechanism.'}, {'highlight': 'A ReplicationController is a Kubernetes resource that ensures its pods are always kept running and creates a replacement pod if one disappears for any reason.'}, {'highlight': ""Unmanaged pods, such as those created directly, won't be restarted by the Control Plane if the node fails, but managed pods will be replaced by a ReplicationController or similar mechanism.""}]"
+34,123,0,[],"91
+Introducing ReplicationControllers
+by a ReplicationController. After the node fails, the ReplicationController creates a
+new pod (pod B2) to replace the missing pod B, whereas pod A is lost completely—
+nothing will ever recreate it.
+ The ReplicationController in the figure manages only a single pod, but Replication-
+Controllers, in general, are meant to create and manage multiple copies (replicas) of a
+pod. That’s where ReplicationControllers got their name from. 
+4.2.1
+The operation of a ReplicationController
+A ReplicationController constantly monitors the list of running pods and makes sure
+the actual number of pods of a “type” always matches the desired number. If too few
+such pods are running, it creates new replicas from a pod template. If too many such
+pods are running, it removes the excess replicas. 
+ You might be wondering how there can be more than the desired number of repli-
+cas. This can happen for a few reasons: 
+Someone creates a pod of the same type manually.
+Someone changes an existing pod’s “type.”
+Someone decreases the desired number of pods, and so on.
+Node 1
+Node 1 fails
+Pod A
+Pod B
+Node 2
+Various
+other pods
+Creates and
+manages
+Node 1
+Pod A
+Pod B
+Node 2
+Various
+other pods
+ReplicationController
+ReplicationController
+Pod A goes down with Node 1 and is
+not recreated, because there is no
+ReplicationController overseeing it.
+RC notices pod B is
+missing and creates
+a new pod instance.
+Pod B2
+Figure 4.1
+When a node fails, only pods backed by a ReplicationController are recreated.
+ 
+",[],"[{'entity': 'ReplicationController', 'description': 'Manages multiple copies (replicas) of a pod.', 'category': 'software'}, {'entity': 'pod', 'description': 'A container running an application or service.', 'category': 'container'}, {'entity': 'ReplicationController', 'description': 'Constantly monitors the list of running pods and ensures the actual number of pods matches the desired number.', 'category': 'software'}, {'entity': 'pod template', 'description': 'A template used to create new replicas of a pod.', 'category': 'container'}, {'entity': 'node', 'description': 'A machine or virtual machine running pods.', 'category': 'hardware'}, {'entity': 'RC', 'description': 'Abbreviation for ReplicationController.', 'category': 'software'}, {'entity': 'pod A', 'description': 'A pod instance that is lost when Node 1 fails.', 'category': 'container'}, {'entity': 'pod B', 'description': 'A pod instance recreated by the ReplicationController after Node 1 fails.', 'category': 'container'}, {'entity': 'pod B2', 'description': 'A new pod instance created by the ReplicationController to replace pod B.', 'category': 'container'}]","[{'source_entity': '""ReplicationController""', 'description': 'manages', 'destination_entity': '""pod""'}, {'source_entity': '""ReplicationController""', 'description': 'ensures', 'destination_entity': '""pod A""'}, {'source_entity': '""ReplicationController""', 'description': 'ensures', 'destination_entity': '""pod B""'}, {'source_entity': '""pod B""', 'description': 'communicates with', 'destination_entity': '""pod A""'}, {'source_entity': '""pod B""', 'description': 'shares resources with', 'destination_entity': '""node""'}, {'source_entity': '""RC""', 'description': 'manages', 'destination_entity': '""pod template""'}, {'source_entity': '""pod B2""', 'description': 'is a replica of', 'destination_entity': '""pod B""'}]","['[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A ReplicationController ensures a specified number of Pod replicas are running at any given time, managing their lifecycle.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""ensures"",\n    ""summary_er"": ""A ReplicationController ensures that a specified number of replicas (in this case, Pod A) are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""ensures"",\n    ""summary_er"": ""A ReplicationController ensures a specified number of replicas (identical Pods) are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""pod B"",\n    ""destination"": ""pod A"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""Pod B establishes communication with Pod A, enabling data exchange and coordination between them.""\n  }\n]', '[\n  {\n    ""source"": ""Pod B"",\n    ""destination"": ""Node"",\n    ""relation_description"": ""shares resources with"",\n    ""summary_er"": ""Pod B shares resources with a node, utilizing its computing power and storage capacity.""\n  }\n]', '[\n  {\n    ""source"": ""RC"",\n    ""destination"": ""pod template"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A Resource Configuration (RC) manages a Pod Template by defining its specifications, such as containers and volumes.""\n  }\n]', '[\n  {\n    ""source"": ""pod B2"",\n    ""destination"": ""pod B"",\n    ""relation_description"": ""is a replica of"",\n    ""summary_er"": ""Pod B2 is a replica of pod B, indicating that it is an identical copy or clone of the original pod.""\n  }\n]']","A ReplicationController monitors running pods and ensures the desired number of replicas matches the actual number. If too few, it creates new replicas; if too many, it removes excess replicas. It recreates lost pods when a node fails, but not manually created or changed pods.","[{'highlight': 'A ReplicationController constantly monitors the list of running pods and makes sure the actual number of pods of a “type” always matches the desired number.'}, {'highlight': 'If too few such pods are running, it creates new replicas from a pod template. If too many such pods are running, it removes the excess replicas.'}, {'highlight': 'When a node fails, only pods backed by a ReplicationController are recreated.'}, {'highlight': 'A ReplicationController in general is meant to create and manage multiple copies (replicas) of a pod.'}, {'highlight': 'The operation of a ReplicationController can be affected if someone creates a pod of the same type manually or changes an existing pod’s “type”.'}]"
+35,124,0,[],"92
+CHAPTER 4
+Replication and other controllers: deploying managed pods
+I’ve used the term pod “type” a few times. But no such thing exists. Replication-
+Controllers don’t operate on pod types, but on sets of pods that match a certain label
+selector (you learned about them in the previous chapter). 
+INTRODUCING THE CONTROLLER’S RECONCILIATION LOOP
+A ReplicationController’s job is to make sure that an exact number of pods always
+matches its label selector. If it doesn’t, the ReplicationController takes the appropriate
+action to reconcile the actual with the desired number. The operation of a Replication-
+Controller is shown in figure 4.2.
+UNDERSTANDING THE THREE PARTS OF A REPLICATIONCONTROLLER
+A ReplicationController has three essential parts (also shown in figure 4.3):
+A label selector, which determines what pods are in the ReplicationController’s scope
+A replica count, which specifies the desired number of pods that should be running
+A pod template, which is used when creating new pod replicas
+Start
+Compare
+matched vs.
+desired pod
+count
+Find pods
+matching the
+label selector
+Create additional
+pod(s) from
+current template
+Delete the
+excess pod(s)
+Too many
+Just enough
+Too few
+Figure 4.2
+A ReplicationController’s reconciliation loop
+app: kubia
+Pod
+Pod template
+ReplicationController: kubia
+Pod selector:
+app=kubia
+Replicas: 3
+Figure 4.3
+The three key parts of a 
+ReplicationController (pod selector, 
+replica count, and pod template)
+ 
+","[  ReplicationController: kubia\nPod selector: Pod template\napp=kubia\napp: kubia\nPod\nReplicas: 3  \
+0                                               None                                                  
+1                                               None                                                  
+
+   Col1  Col2 Col3  
+0    ub    ia       
+1  None  None       ]","[{'entity': 'Pod', 'description': 'A logical host in Kubernetes that can contain one or more containers.', 'category': 'container'}, {'entity': 'ReplicationController', 'description': 'A controller in Kubernetes that ensures a specified number of pods are running at any given time.', 'category': 'controller'}, {'entity': 'Label selector', 'description': 'A way to select pods based on labels attached to them.', 'category': 'selector'}, {'entity': 'Replica count', 'description': 'The desired number of pods that should be running at any given time.', 'category': 'count'}, {'entity': 'Pod template', 'description': 'A template used to create new pod replicas when needed.', 'category': 'template'}, {'entity': 'Kubernetes', 'description': 'An open-source container orchestration system.', 'category': 'system'}, {'entity': 'Pod selector', 'description': 'A way to select pods based on labels attached to them.', 'category': 'selector'}, {'entity': 'Replicas', 'description': 'The current number of running pods.', 'category': 'count'}]","[{'source_entity': 'Label selector', 'description': 'used to select Pods based on labels', 'destination_entity': 'Pod'}, {'source_entity': 'Replicas', 'description': 'specifies the number of replicas for a ReplicationController', 'destination_entity': 'ReplicationController'}, {'source_entity': 'Replica count', 'description': 'displays the current replica count for a Pod', 'destination_entity': 'Pod'}, {'source_entity': 'Kubernetes', 'description': 'manages and orchestrates Pods, including scaling and replication', 'destination_entity': 'Pod'}, {'source_entity': 'Pod selector', 'description': 'used to select specific Pods based on labels or other criteria', 'destination_entity': 'Pod'}, {'source_entity': 'Pod template', 'description': 'defines the configuration for a Pod, including containers and volumes', 'destination_entity': 'Pod'}]","['[\n  {\n    ""source"": ""Label selector"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""used to select Pods based on labels"",\n    ""summary_er"": ""A label selector is used to match pods with specific labels, allowing for targeted selection and management of pods.""\n  }\n]', '[\n  {\n    ""source"": ""Replicas"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the number of replicas for a ReplicationController"",\n    ""summary_er"": ""The Replicas field in a ReplicationController specifies the desired number of pod replicas.""\n  }\n]', '[\n  {\n    ""source"": ""Replica Count"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""displays the current replica count for a Pod"",\n    ""summary_er"": ""The Replica Count displays the number of replicas currently running for a given Pod, providing visibility into deployment scalability.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages and orchestrates"",\n    ""summary_er"": ""Kubernetes manages and orchestrates Pods, including scaling and replication.""\n  }\n]', '[\n  {\n    ""source"": ""Pod selector"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""used to select specific Pods based on labels or other criteria"",\n    ""summary_er"": ""A mechanism to filter and identify specific Pods in a Kubernetes cluster, utilizing labels and other attributes for selection.""\n  }\n]', '[\n  {\n    ""source"": ""Pod template"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the configuration for a Pod, including containers and volumes"",\n    ""summary_er"": ""The Pod template defines the configuration for a pod, specifying containers and volumes to be used.""\n  }\n]']","A ReplicationController's job is to maintain an exact number of pods that match its label selector by creating or deleting pods as needed, with three essential parts: a label selector, replica count, and pod template.","[{'highlight': ""A ReplicationController's job is to make sure that an exact number of pods always matches its label selector.""}, {'highlight': 'A ReplicationController has three essential parts: a label selector, a replica count, and a pod template.'}, {'highlight': 'The operation of a Replication-Controller is shown in figure 4.2.'}, {'highlight': ""A label selector determines what pods are in the ReplicationController's scope.""}, {'highlight': 'A pod template is used when creating new pod replicas.'}]"
+36,125,0,[],"93
+Introducing ReplicationControllers
+A ReplicationController’s replica count, the label selector, and even the pod tem-
+plate can all be modified at any time, but only changes to the replica count affect
+existing pods. 
+UNDERSTANDING THE EFFECT OF CHANGING THE CONTROLLER’S LABEL SELECTOR OR POD TEMPLATE
+Changes to the label selector and the pod template have no effect on existing pods.
+Changing the label selector makes the existing pods fall out of the scope of the
+ReplicationController, so the controller stops caring about them. ReplicationCon-
+trollers also don’t care about the actual “contents” of its pods (the container images,
+environment variables, and other things) after they create the pod. The template
+therefore only affects new pods created by this ReplicationController. You can think
+of it as a cookie cutter for cutting out new pods.
+UNDERSTANDING THE BENEFITS OF USING A REPLICATIONCONTROLLER
+Like many things in Kubernetes, a ReplicationController, although an incredibly sim-
+ple concept, provides or enables the following powerful features:
+It makes sure a pod (or multiple pod replicas) is always running by starting a
+new pod when an existing one goes missing.
+When a cluster node fails, it creates replacement replicas for all the pods that
+were running on the failed node (those that were under the Replication-
+Controller’s control).
+It enables easy horizontal scaling of pods—both manual and automatic (see
+horizontal pod auto-scaling in chapter 15).
+NOTE
+A pod instance is never relocated to another node. Instead, the
+ReplicationController creates a completely new pod instance that has no rela-
+tion to the instance it’s replacing. 
+4.2.2
+Creating a ReplicationController
+Let’s look at how to create a ReplicationController and then see how it keeps your
+pods running. Like pods and other Kubernetes resources, you create a Replication-
+Controller by posting a JSON or YAML descriptor to the Kubernetes API server.
+ You’re going to create a YAML file called kubia-rc.yaml for your Replication-
+Controller, as shown in the following listing.
+apiVersion: v1
+kind: ReplicationController     
+metadata:
+  name: kubia                      
+spec:
+  replicas: 3                     
+  selector:              
+    app: kubia           
+Listing 4.4
+A YAML definition of a ReplicationController: kubia-rc.yaml
+This manifest defines a 
+ReplicationController (RC)
+The name of this 
+ReplicationController
+The desired number 
+of pod instances
+The pod selector determining 
+what pods the RC is operating on
+ 
+",[],"[{'entity': 'ReplicationController', 'description': 'A Kubernetes resource that ensures a specified number of replicas (pods) are running at any given time.', 'category': 'software'}, {'entity': 'replica count', 'description': 'The desired number of pod instances to be maintained by the ReplicationController.', 'category': 'software'}, {'entity': 'label selector', 'description': 'A mechanism used by the ReplicationController to identify and select pods based on labels.', 'category': 'software'}, {'entity': 'pod template', 'description': 'A template that defines the configuration of new pods created by the ReplicationController.', 'category': 'software'}, {'entity': 'Kubernetes API server', 'description': 'The central component responsible for managing and controlling Kubernetes resources.', 'category': 'software'}, {'entity': 'JSON or YAML descriptor', 'description': 'A file format used to define and describe Kubernetes resources, such as ReplicationControllers.', 'category': 'software'}, {'entity': 'kubia-rc.yaml', 'description': 'A specific YAML file used to create a ReplicationController named kubia.', 'category': 'software'}, {'entity': 'apiVersion', 'description': 'A field in the YAML descriptor that specifies the API version of the Kubernetes resource being created.', 'category': 'software'}, {'entity': 'kind', 'description': 'A field in the YAML descriptor that specifies the type of Kubernetes resource being created (e.g., ReplicationController).', 'category': 'software'}, {'entity': 'metadata', 'description': 'A field in the YAML descriptor that provides metadata about the Kubernetes resource being created.', 'category': 'software'}, {'entity': 'name', 'description': 'A field in the YAML descriptor that specifies the name of the Kubernetes resource being created (e.g., kubia).', 'category': 'software'}, {'entity': 'spec', 'description': 'A field in the YAML descriptor that specifies the configuration and behavior of the Kubernetes resource being created.', 'category': 'software'}, {'entity': 'replicas', 'description': 'A field in the YAML descriptor that specifies the desired number of pod instances to be maintained by the ReplicationController.', 'category': 'software'}, {'entity': 'selector', 'description': 'A field in the YAML descriptor that specifies the label selector used by the ReplicationController to identify and select pods.', 'category': 'software'}, {'entity': 'app', 'description': 'A field in the YAML descriptor that specifies the label used by the ReplicationController to identify and select pods.', 'category': 'software'}]","[{'source_entity': '""ReplicationController""', 'description': 'defines', 'destination_entity': '""JSON or YAML descriptor""'}, {'source_entity': '""ReplicationController""', 'description': 'specifies', 'destination_entity': '""replica count""'}, {'source_entity': '""ReplicationController""', 'description': 'uses', 'destination_entity': '""selector""'}, {'source_entity': '""selector""', 'description': 'applies', 'destination_entity': '""label selector""'}, {'source_entity': '""selector""', 'description': 'matches', 'destination_entity': '""metadata""'}, {'source_entity': '""metadata""', 'description': 'contains', 'destination_entity': '""app""'}, {'source_entity': '""ReplicationController""', 'description': 'defines', 'destination_entity': '""spec""'}, {'source_entity': '""spec""', 'description': 'includes', 'destination_entity': '""replica count""'}, {'source_entity': '""apiVersion""', 'description': 'specifies', 'destination_entity': '""Kubernetes API server""'}, {'source_entity': '""kind""', 'description': 'indicates', 'destination_entity': '""ReplicationController""'}, {'source_entity': '""name""', 'description': 'names', 'destination_entity': '""kubia-rc.yaml""'}, {'source_entity': '""pod template""', 'description': 'specifies', 'destination_entity': '""ReplicationController""'}]","['[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A ReplicationController defines a desired state for a set of pods, ensuring a specified number of replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""A ReplicationController specifies the desired state of a pod, including its replica count.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A ReplicationController ensures a specified number of replicas (identical copies) of a pod are running at any given time, using labels to select the pods.""\n  }\n]', '[\n  {\n    ""source"": ""selector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies"",\n    ""summary_er"": ""A label selector is applied to a pod to match specific criteria and select it for further processing.""\n  }\n]', '[\n  {\n    ""source"": ""selector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""matches"",\n    ""summary_er"": ""A selector in Kubernetes that matches a pod based on its labels and annotations.""\n  }\n]', '[\n  {\n    ""source"": ""metadata"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""The metadata of a Kubernetes pod contains information about its configuration, such as labels and annotations.""\n  },\n  {\n    ""source"": ""app"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is"",\n    ""summary_er"": ""An application (app) is deployed as a container within a Kubernetes pod.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A ReplicationController defines a desired state for a set of pods, ensuring a specified number of replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""includes"",\n    ""summary_er"": ""In Kubernetes, a Pod is an entity that includes one or more containers. It provides a logical host for running applications.""\n  },\n  {\n    ""source"": ""Docker"",\n    ""destination"": ""Container"",\n    ""relation_description"": ""includes"",\n    ""summary_er"": ""A Docker container is a lightweight and portable package of software that includes everything needed to run an application.""\n  },\n  {\n    ""source"": ""Machine Learning"",\n    ""destination"": ""Artificial Intelligence"",\n    ""relation_description"": ""subset"",\n    ""summary_er"": ""Machine learning is a subset of Artificial Intelligence (AI) that focuses on developing algorithms and statistical models to enable computers to learn from data without being explicitly programmed.""\n  },\n  {\n    ""source"": ""Generative AI"",\n    ""destination"": ""Artificial Intelligence"",\n    ""relation_description"": ""subset"",\n    ""summary_er"": ""Generative AI is a subset of Artificial Intelligence (AI) that focuses on developing algorithms and models to generate new, synthetic data or content that resembles real-world data.""\n  },\n  {\n    ""source"": ""Natural Language Understanding"",\n    ""destination"": ""Artificial Intelligence"",\n    ""relation_description"": ""subset"",\n    ""summary_er"": ""Natural Language Understanding (NLU) is a subset of Artificial Intelligence (AI) that focuses on developing algorithms and models to enable computers to understand, interpret, and generate human language.""\n  },\n  {\n    ""source"": ""Computer Vision"",\n    ""destination"": ""Artificial Intelligence"",\n    ""relation_description"": ""subset"",\n    ""summary_er"": ""Computer vision is a subset of Artificial Intelligence (AI) that focuses on developing algorithms and models to enable computers to interpret and understand visual data from images and videos.""\n  },\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Replica Count"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""In Kubernetes, the replica count specifies the number of identical copies of a pod that should be running at any given time to ensure high availability and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""apiVersion"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""\\""apiVersion\\"" specifies a configuration for a Kubernetes pod.""\n  }\n]', '[{""source"": ""Kubernetes"", ""destination"": ""Pod"", ""relation_description"": ""indicates"", ""summary_er"": ""In Kubernetes, a ReplicationController ensures that a specified number of replicas (identical copies) of a pod are running.""}]', '[{\n    ""source"": ""name"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""names"",\n    ""summary_er"": ""\\""Names are used to identify and reference pods in Kubernetes, allowing for efficient management and organization of containerized applications.\\""""\n}]', '[\n  {\n    ""source"": ""Pod Template"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The Pod Template specifies the configuration for a pod in a Kubernetes cluster.""\n  }\n]']","A ReplicationController's replica count, label selector, and pod template can be modified at any time, but only changes to the replica count affect existing pods. Changes to the label selector or pod template have no effect on existing pods and are used as a 'cookie cutter' for new pods created by this ReplicationController. The controller ensures a pod is always running, creates replacement replicas when a cluster node fails, and enables easy horizontal scaling of pods.","[{'highlight': 'A ReplicationController’s replica count, label selector, and pod template can all be modified at any time, but only changes to the replica count affect existing pods.'}, {'highlight': 'Changes to the label selector and the pod template have no effect on existing pods. Changing the label selector makes the existing pods fall out of the scope of the ReplicationController, so the controller stops caring about them.'}, {'highlight': 'A ReplicationController provides or enables powerful features such as ensuring a pod is always running by starting a new pod when an existing one goes missing and creating replacement replicas for all the pods that were running on the failed node.'}, {'highlight': 'A pod instance is never relocated to another node. Instead, the ReplicationController creates a completely new pod instance that has no relation to the instance it’s replacing.'}, {'highlight': 'You can create a ReplicationController by posting a JSON or YAML descriptor to the Kubernetes API server and defining its replica count, label selector, and pod template in a YAML file called kubia-rc.yaml.'}]"
+37,126,0,[],"94
+CHAPTER 4
+Replication and other controllers: deploying managed pods
+  template:                        
+    metadata:                      
+      labels:                      
+        app: kubia                 
+    spec:                          
+      containers:                  
+      - name: kubia                
+        image: luksa/kubia         
+        ports:                     
+        - containerPort: 8080      
+When you post the file to the API server, Kubernetes creates a new Replication-
+Controller named kubia, which makes sure three pod instances always match the
+label selector app=kubia. When there aren’t enough pods, new pods will be created
+from the provided pod template. The contents of the template are almost identical to
+the pod definition you created in the previous chapter. 
+ The pod labels in the template must obviously match the label selector of the
+ReplicationController; otherwise the controller would create new pods indefinitely,
+because spinning up a new pod wouldn’t bring the actual replica count any closer to
+the desired number of replicas. To prevent such scenarios, the API server verifies the
+ReplicationController definition and will not accept it if it’s misconfigured.
+ Not specifying the selector at all is also an option. In that case, it will be configured
+automatically from the labels in the pod template. 
+TIP
+Don’t specify a pod selector when defining a ReplicationController. Let
+Kubernetes extract it from the pod template. This will keep your YAML
+shorter and simpler.
+To create the ReplicationController, use the kubectl create command, which you
+already know:
+$ kubectl create -f kubia-rc.yaml
+replicationcontroller ""kubia"" created
+As soon as the ReplicationController is created, it goes to work. Let’s see what
+it does.
+4.2.3
+Seeing the ReplicationController in action
+Because no pods exist with the app=kubia label, the ReplicationController should
+spin up three new pods from the pod template. List the pods to see if the Replication-
+Controller has done what it’s supposed to:
+$ kubectl get pods
+NAME          READY     STATUS              RESTARTS   AGE
+kubia-53thy   0/1       ContainerCreating   0          2s
+kubia-k0xz6   0/1       ContainerCreating   0          2s
+kubia-q3vkg   0/1       ContainerCreating   0          2s
+The pod template 
+for creating new 
+pods
+ 
+",[],"[{'entity': 'ReplicationController', 'description': 'A Kubernetes resource that ensures a specified number of replicas (pod instances) are running at any given time.', 'category': 'software'}, {'entity': 'kubia', 'description': 'The name of the ReplicationController and pod label selector.', 'category': 'software'}, {'entity': 'app=kubia', 'description': 'A label selector used to identify pods that belong to the kubia ReplicationController.', 'category': 'software'}, {'entity': 'pod template', 'description': 'A YAML or JSON file that defines the configuration for a pod, including its labels and containers.', 'category': 'software'}, {'entity': 'kubectl create', 'description': 'A Kubernetes command used to create a new resource, such as a ReplicationController.', 'category': 'command'}, {'entity': 'kubia-rc.yaml', 'description': 'A YAML file that defines the configuration for the kubia ReplicationController.', 'category': 'file'}, {'entity': 'pods', 'description': 'The output of the kubectl get command, showing a list of running pod instances.', 'category': 'output'}, {'entity': 'containerPort', 'description': 'A field in the pod template that specifies the port number for a container to listen on.', 'category': 'software'}, {'entity': 'image', 'description': 'A field in the pod template that specifies the Docker image to use for a container.', 'category': 'software'}, {'entity': 'containerCreating', 'description': 'The status of a pod, indicating that it is being created and its containers are still initializing.', 'category': 'status'}]","[{'source_entity': 'kubectl create', 'description': 'creates a new pod using the template defined in kubia-rc.yaml', 'destination_entity': 'kubia'}, {'source_entity': 'kubectl create', 'description': 'uses the pod template to create a new pod', 'destination_entity': 'pod template'}, {'source_entity': 'kubectl create', 'description': 'applies the configuration defined in kubia-rc.yaml', 'destination_entity': 'kubia-rc.yaml'}, {'source_entity': 'ReplicationController', 'description': 'manages the replication of pods with label app=kubia', 'destination_entity': 'pods'}, {'source_entity': 'ReplicationController', 'description': 'ensures that a specified number of replicas are running at any given time', 'destination_entity': 'kubia'}, {'source_entity': 'containerPort', 'description': 'exposes the port used by the kubia container for external access', 'destination_entity': 'image'}, {'source_entity': 'containerCreating', 'description': 'creates a new container from the specified image', 'destination_entity': 'image'}, {'source_entity': 'containerPort', 'description': 'maps the port used by the kubia container to a specific port on the host machine', 'destination_entity': 'kubia'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates a new"",\n    ""summary_er"": ""Using \'kubectl create\', a new pod is created based on the template defined in kubia-rc.yaml.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses the pod template to create a new pod"",\n    ""summary_er"": ""Kubectl uses a pod template to dynamically create a new pod, leveraging its configuration and settings.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""kubia-rc.yaml"",\n    ""relation_description"": ""applies the configuration defined in"",\n    ""summary_er"": ""Kubectl applies a configuration to Kubia RC YAML, defining pod settings.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages the replication of pods with label app=kubia"",\n    ""summary_er"": ""A ReplicationController ensures a specified number of replicas (pods) of an application are running, in this case, kubia.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""ensures that a specified number of replicas are running at any given time"",\n    ""summary_er"": ""The ReplicationController ensures a fixed number of pod replicas run at any given time, maintaining consistency and reliability.""\n  }\n]', '[\n  {\n    ""source"": ""containerPort"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes the port used by the kubia container for external access"",\n    ""summary_er"": ""The containerPort relation exposes a port from the kubia container to allow external access, which is utilized by a pod.""\n  },\n  {\n    ""source"": ""image"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""the image used to run the kubia container"",\n    ""summary_er"": ""The image relation specifies the Docker image used to run the kubia container within a pod, which is essential for its execution.""\n  }\n]', '[\n  {\n    ""source"": ""containerCreating"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates a new container from the specified image"",\n    ""summary_er"": ""A new container is created in a pod using a specified image.""\n  }\n]', '[\n  {\n    ""source"": ""containerPort"",\n    ""destination"": ""kubia"",\n    ""relation_description"": ""maps the port used by the kubia container to a specific port on the host machine"",\n    ""summary_er"": ""This relation maps a container port to a specific host port, allowing external access to the Kubia pod.""\n  }\n]']","Kubernetes creates a Replication-Controller named kubia that ensures three pod instances match the label selector app=kubia. When there aren't enough pods, it creates new ones from the provided pod template. The API server verifies the ReplicationController definition and will not accept it if misconfigured. To prevent such scenarios, let Kubernetes extract the selector from the pod template.","[{'highlight': 'When you post the file to the API server, Kubernetes creates a new Replication-Controller named kubia, which makes sure three pod instances always match the label selector app=kubia.'}, {'highlight': 'The pod labels in the template must obviously match the label selector of the ReplicationController; otherwise the controller would create new pods indefinitely,'}, {'highlight': 'Not specifying the selector at all is also an option. In that case, it will be configured automatically from the labels in the pod template.'}, {'highlight': 'To create the ReplicationController, use the kubectl create command: $ kubectl create -f kubia-rc.yaml replicationcontroller ""kubia"" created'}, {'highlight': 'Because no pods exist with the app=kubia label, the ReplicationController should spin up three new pods from the pod template.'}]"
+38,127,0,[],"95
+Introducing ReplicationControllers
+Indeed, it has! You wanted three pods, and it created three pods. It’s now managing
+those three pods. Next you’ll mess with them a little to see how the Replication-
+Controller responds. 
+SEEING THE REPLICATIONCONTROLLER RESPOND TO A DELETED POD
+First, you’ll delete one of the pods manually to see how the ReplicationController spins
+up a new one immediately, bringing the number of matching pods back to three:
+$ kubectl delete pod kubia-53thy
+pod ""kubia-53thy"" deleted
+Listing the pods again shows four of them, because the one you deleted is terminat-
+ing, and a new pod has already been created:
+$ kubectl get pods
+NAME          READY     STATUS              RESTARTS   AGE
+kubia-53thy   1/1       Terminating         0          3m
+kubia-oini2   0/1       ContainerCreating   0          2s
+kubia-k0xz6   1/1       Running             0          3m
+kubia-q3vkg   1/1       Running             0          3m
+The ReplicationController has done its job again. It’s a nice little helper, isn’t it?
+GETTING INFORMATION ABOUT A REPLICATIONCONTROLLER
+Now, let’s see what information the kubectl get command shows for Replication-
+Controllers:
+$ kubectl get rc
+NAME      DESIRED   CURRENT   READY     AGE
+kubia     3         3         2         3m
+NOTE
+We’re using rc as a shorthand for replicationcontroller.
+You see three columns showing the desired number of pods, the actual number of
+pods, and how many of them are ready (you’ll learn what that means in the next chap-
+ter, when we talk about readiness probes).
+ You can see additional information about your ReplicationController with the
+kubectl describe command, as shown in the following listing.
+$ kubectl describe rc kubia
+Name:           kubia
+Namespace:      default
+Selector:       app=kubia
+Labels:         app=kubia
+Annotations:    <none>
+Replicas:       3 current / 3 desired               
+Pods Status:    4 Running / 0 Waiting / 0 Succeeded / 0 Failed  
+Pod Template:
+  Labels:       app=kubia
+  Containers:   ...
+Listing 4.5
+Displaying details of a ReplicationController with kubectl describe
+The actual vs. the 
+desired number of 
+pod instances
+Number of 
+pod instances 
+per pod 
+status
+ 
+",[],"[{'entity': 'ReplicationControllers', 'description': 'A Kubernetes feature that ensures a specified number of replicas (pods) are running at any given time.', 'category': 'application'}, {'entity': 'kubectl', 'description': 'The command-line interface for interacting with Kubernetes clusters.', 'category': 'software'}, {'entity': 'pod', 'description': 'A lightweight and portable container that runs a single instance of an application.', 'category': 'container'}, {'entity': 'ReplicationController', 'description': 'A Kubernetes feature that ensures a specified number of replicas (pods) are running at any given time.', 'category': 'application'}, {'entity': '$ kubectl delete pod', 'description': 'The command used to manually delete a pod from the cluster.', 'category': 'command'}, {'entity': 'kubectl get pods', 'description': 'The command used to list all running pods in the cluster.', 'category': 'command'}, {'entity': 'ReplicationController spins up a new pod', 'description': 'The process by which a ReplicationController creates a new pod when one is deleted or fails.', 'category': 'process'}, {'entity': '$ kubectl get rc', 'description': 'The command used to list all running ReplicationControllers in the cluster.', 'category': 'command'}, {'entity': 'kubectl describe', 'description': 'The command used to display detailed information about a specific resource (such as a pod or ReplicationController).', 'category': 'command'}, {'entity': 'Replicas', 'description': 'A metric that shows the actual number of pods running in a cluster, compared to the desired number.', 'category': 'metric'}, {'entity': 'Ready', 'description': 'A status indicator that shows how many pods are currently running and ready to receive traffic.', 'category': 'status'}]","[{'source_entity': '""ReplicationController""', 'description': 'spins up', 'destination_entity': '""pod""'}, {'source_entity': '""kubectl get pods""', 'description': 'fetches information about', 'destination_entity': '""pods""'}, {'source_entity': '""$ kubectl delete pod""', 'description': 'deletes a', 'destination_entity': '""pod""'}, {'source_entity': '""kubectl describe""', 'description': 'provides detailed information about', 'destination_entity': '""ReplicationController""'}, {'source_entity': '""ReplicationControllers""', 'description': 'are managed by', 'destination_entity': '""ReplicationController""'}, {'source_entity': '""$ kubectl get rc""', 'description': 'fetches information about', 'destination_entity': '""ReplicaSets""'}, {'source_entity': '""kubectl get pods""', 'description': 'displays the status of', 'destination_entity': '""pods""'}, {'source_entity': '""ReplicationController spins up a new pod""', 'description': 'creates a new instance of', 'destination_entity': '""pod""'}]","['[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""spins up"",\n    ""summary_er"": ""A ReplicationController spins up a Pod to ensure a specified number of replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""fetches information about"",\n    ""summary_er"": ""Kubectl command fetches pod details, providing real-time status and metrics for each running container.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deletes a"",\n    ""summary_er"": ""The Kubernetes command-line tool (kubectl) deletes a pod from the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl describe"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides detailed information about"",\n    ""summary_er"": ""Kubectl describe command provides detailed info about a pod, its status, and configuration.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationControllers"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""are managed by"",\n    ""summary_er"": ""Replication Controllers manage and orchestrate Pods, ensuring desired replicas are running.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""fetches information about"",\n    ""summary_er"": ""The Kubernetes command-line tool fetches information about running pods in a cluster.""\n  },\n  {\n    ""source"": ""ReplicaSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""ReplicaSets manage the number of replicas (running instances) of a pod in a cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""displays the status of"",\n    ""summary_er"": ""The \'kubectl get pods\' command displays the current status of all running pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates a new instance of"",\n    ""summary_er"": ""A ReplicationController creates a new pod instance, ensuring multiple copies of the same pod are running.""\n  }\n]']","A ReplicationController is introduced, managing three pods and automatically spinning up new ones if any are deleted. The kubectl get command shows information about ReplicationControllers, including desired and actual pod numbers. Additional details can be obtained with the kubectl describe command, displaying the ReplicationController's name, namespace, selector, labels, annotations, replicas, and pod status.","[{'highlight': 'You can create three pods using a ReplicationController, and it will manage those pods.'}, {'highlight': 'The ReplicationController will spin up a new pod immediately if one of the existing pods is deleted, bringing the number of matching pods back to three.'}, {'highlight': 'You can get information about a ReplicationController using the kubectl get command, which shows the desired and actual number of pods, as well as how many are ready.'}, {'highlight': 'The kubectl describe command provides additional information about a ReplicationController, including its name, namespace, selector, labels, annotations, replicas, and pod status.'}, {'highlight': 'A ReplicationController can be used to manage the number of pods in a deployment, ensuring that there are always a certain number of pods running at any given time.'}]"
+39,128,0,[],"96
+CHAPTER 4
+Replication and other controllers: deploying managed pods
+  Volumes:      <none>
+Events:                                                   
+From                    Type      Reason           Message
+----                    -------  ------            -------
+replication-controller  Normal   SuccessfulCreate  Created pod: kubia-53thy
+replication-controller  Normal   SuccessfulCreate  Created pod: kubia-k0xz6
+replication-controller  Normal   SuccessfulCreate  Created pod: kubia-q3vkg
+replication-controller  Normal   SuccessfulCreate  Created pod: kubia-oini2
+The current number of replicas matches the desired number, because the controller
+has already created a new pod. It shows four running pods because a pod that’s termi-
+nating is still considered running, although it isn’t counted in the current replica count. 
+ The list of events at the bottom shows the actions taken by the Replication-
+Controller—it has created four pods so far.
+UNDERSTANDING EXACTLY WHAT CAUSED THE CONTROLLER TO CREATE A NEW POD
+The controller is responding to the deletion of a pod by creating a new replacement
+pod (see figure 4.4). Well, technically, it isn’t responding to the deletion itself, but the
+resulting state—the inadequate number of pods.
+ While a ReplicationController is immediately notified about a pod being deleted
+(the API server allows clients to watch for changes to resources and resource lists), that’s
+not what causes it to create a replacement pod. The notification triggers the controller
+to check the actual number of pods and take appropriate action.
+The events 
+related to this 
+ReplicationController
+Before deletion
+After deletion
+ReplicationController: kubia
+Replicas: 3
+Selector: app=kubia
+app: kubia
+Pod:
+kubia-q3vkg
+app: kubia
+Pod:
+kubia-oini2
+[ContainerCreating]
+[Terminating]
+app: kubia
+Pod:
+kubia-k0xz6
+app: kubia
+Pod:
+kubia-53thy
+ReplicationController: kubia
+Replicas: 3
+Selector: app=kubia
+app: kubia
+Pod:
+kubia-q3vkg
+app: kubia
+Pod:
+kubia-k0xz6
+app: kubia
+Pod:
+kubia-53thy
+Delete kubia-53thy
+Figure 4.4
+If a pod disappears, the ReplicationController sees too few pods and creates a new replacement pod.
+ 
+",[],"[{'entity': 'ReplicationController', 'description': 'A Kubernetes controller that ensures a specified number of replicas (pods) are running.', 'category': 'application'}, {'entity': 'pod', 'description': 'A lightweight and portable container runtime environment.', 'category': 'container'}, {'entity': 'replica', 'description': 'A copy of a pod, used to ensure high availability.', 'category': 'container'}, {'entity': 'kubernetes', 'description': 'An open-source container orchestration system.', 'category': 'application'}, {'entity': 'api server', 'description': 'The central component that manages access to the Kubernetes cluster.', 'category': 'application'}, {'entity': 'selector', 'description': 'A label used to identify and select pods.', 'category': 'label'}, {'entity': 'events', 'description': 'Notifications about changes to resources or resource lists.', 'category': 'process'}, {'entity': 'containercreating', 'description': 'An event indicating that a container is being created.', 'category': 'event'}, {'entity': 'terminating', 'description': 'An event indicating that a pod is terminating.', 'category': 'event'}]","[{'source_entity': 'ReplicationController', 'description': 'manages', 'destination_entity': 'pod'}, {'source_entity': 'selector', 'description': 'matches', 'destination_entity': 'pod'}, {'source_entity': 'api server', 'description': 'provides', 'destination_entity': 'events'}, {'source_entity': 'ReplicationController', 'description': 'terminates', 'destination_entity': 'replica'}, {'source_entity': 'containercreating', 'description': 'creates', 'destination_entity': 'pod'}]","['[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A ReplicationController ensures a specified number of replicas (identical copies) of a pod are running at any given time, managing the lifecycle and scaling of the pods.""\n  }\n]', '[\n  {\n    ""source"": ""selector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""matches"",\n    ""summary_er"": ""A label selector that matches a pod based on its labels.""\n  }\n]', '[\n  {\n    ""source"": ""api server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The API Server provides a RESTful interface to manage pods, including creating, updating, and deleting them.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""terminates"",\n    ""summary_er"": ""A ReplicationController ensures a specified number of replicas (in this case, pods) are running at any given time. When a pod terminates, the ReplicationController creates a new one to replace it.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates"",\n    ""summary_er"": ""A container is created to run an application or service within a pod, providing isolation and resource management.""\n  }\n]']","A ReplicationController in Kubernetes creates a new pod to replace one that has been deleted when it detects an inadequate number of running pods, triggered by events such as pod deletion or termination.","[{'highlight': 'The current number of replicas matches the desired number, because the controller has already created a new pod.'}, {'highlight': 'A ReplicationController is immediately notified about a pod being deleted (the API server allows clients to watch for changes to resources and resource lists), that’s not what causes it to create a replacement pod.'}, {'highlight': 'The notification triggers the controller to check the actual number of pods and take appropriate action.'}, {'highlight': 'If a pod disappears, the ReplicationController sees too few pods and creates a new replacement pod.'}, {'highlight': 'A pod that’s terminating is still considered running, although it isn’t counted in the current replica count.'}]"

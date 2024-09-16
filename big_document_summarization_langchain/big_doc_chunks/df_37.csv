@@ -1,0 +1,409 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+370,459,0,[],"427
+Limiting the total resources available in a namespace
+CREATING A LIMITRANGE ALONG WITH A RESOURCEQUOTA
+One caveat when creating a ResourceQuota is that you will also want to create a Limit-
+Range object alongside it. In your case, you have a LimitRange configured from the
+previous section, but if you didn’t have one, you couldn’t run the kubia-manual pod,
+because it doesn’t specify any resource requests or limits. Here’s what would happen
+in that case:
+$ kubectl create -f ../Chapter03/kubia-manual.yaml
+Error from server (Forbidden): error when creating ""../Chapter03/kubia-
+manual.yaml"": pods ""kubia-manual"" is forbidden: failed quota: cpu-and-
+mem: must specify limits.cpu,limits.memory,requests.cpu,requests.memory
+When a quota for a specific resource (CPU or memory) is configured (request or
+limit), pods need to have the request or limit (respectively) set for that same resource;
+otherwise the API server will not accept the pod. That’s why having a LimitRange with
+defaults for those resources can make life a bit easier for people creating pods.
+14.5.2 Specifying a quota for persistent storage
+A ResourceQuota object can also limit the amount of persistent storage that can be
+claimed in the namespace, as shown in the following listing.
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: storage
+spec:
+  hard:
+    requests.storage: 500Gi                               
+    ssd.storageclass.storage.k8s.io/requests.storage: 300Gi     
+    standard.storageclass.storage.k8s.io/requests.storage: 1Ti
+In this example, the amount of storage all PersistentVolumeClaims in a namespace
+can request is limited to 500 GiB (by the requests.storage entry in the Resource-
+Quota object). But as you’ll remember from chapter 6, PersistentVolumeClaims can
+request a dynamically provisioned PersistentVolume of a specific StorageClass. That’s
+why Kubernetes also makes it possible to define storage quotas for each StorageClass
+individually. The previous example limits the total amount of claimable SSD storage
+(designated by the ssd StorageClass) to 300 GiB. The less-performant HDD storage
+(StorageClass standard) is limited to 1 TiB.
+14.5.3 Limiting the number of objects that can be created
+A ResourceQuota can also be configured to limit the number of Pods, Replication-
+Controllers, Services, and other objects inside a single namespace. This allows the
+cluster admin to limit the number of objects users can create based on their payment
+Listing 14.15
+A ResourceQuota for storage: quota-storage.yaml
+The amount of 
+storage claimable 
+overall
+The amount 
+of claimable 
+storage in 
+StorageClass ssd
+ 
+",[],"[{'entity': 'ResourceQuota', 'description': 'An object that limits the total resources available in a namespace', 'category': 'software'}, {'entity': 'LimitRange', 'description': 'An object that configures default resource requests and limits for pods', 'category': 'software'}, {'entity': 'ResourceQuota', 'description': 'A quota for a specific resource (CPU or memory) configured in the namespace', 'category': 'software'}, {'entity': 'PersistentVolumeClaims', 'description': 'Objects that can request dynamically provisioned PersistentVolumes of a specific StorageClass', 'category': 'software'}, {'entity': 'StorageClass', 'description': 'A class of storage that can be used to limit the amount of claimable storage', 'category': 'software'}, {'entity': 'Pods', 'description': 'Objects that can be created in a namespace, limited by ResourceQuota', 'category': 'software'}, {'entity': 'Replication-Controllers', 'description': 'Objects that can be created in a namespace, limited by ResourceQuota', 'category': 'software'}, {'entity': 'Services', 'description': 'Objects that can be created in a namespace, limited by ResourceQuota', 'category': 'software'}, {'entity': 'kubia-manual.yaml', 'description': 'A YAML file used to create a pod with specific resource requests and limits', 'category': 'software'}, {'entity': 'kubectl', 'description': 'A command-line tool used to interact with the Kubernetes API server', 'category': 'software'}, {'entity': 'CPU', 'description': 'A resource that can be limited by ResourceQuota', 'category': 'hardware'}, {'entity': 'Memory', 'description': 'A resource that can be limited by ResourceQuota', 'category': 'hardware'}, {'entity': 'Storage', 'description': 'A resource that can be limited by ResourceQuota', 'category': 'hardware'}]","[{'source_entity': 'Kubernetes', 'description': 'manages', 'destination_entity': 'Services'}, {'source_entity': 'StorageClass', 'description': 'provides', 'destination_entity': 'Storage'}, {'source_entity': 'kubectl', 'description': 'deploys', 'destination_entity': 'kubia-manual.yaml'}, {'source_entity': 'Pods', 'description': 'requests', 'destination_entity': 'Memory'}, {'source_entity': 'LimitRange', 'description': 'limits', 'destination_entity': 'CPU'}, {'source_entity': 'Replication-Controllers', 'description': 'manages', 'destination_entity': 'Pods'}, {'source_entity': 'ResourceQuota', 'description': 'enforces', 'destination_entity': 'PersistentVolumeClaims'}, {'source_entity': 'kubectl', 'description': 'creates', 'destination_entity': 'Replication-Controllers'}, {'source_entity': 'StorageClass', 'description': 'provides', 'destination_entity': 'PersistentVolumes'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages pods, providing a layer of abstraction between containerized applications and infrastructure.""\n  }\n]', '[\n  {\n    ""source"": ""StorageClass"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""A StorageClass provides a way to manage storage resources for pods, ensuring efficient and reliable data storage.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""Kubectl command deploys a pod to the cluster, creating a new instance of the kubia-manual.yaml configuration.""\n  }\n]', '[\n  {\n    ""source"": ""Pods"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""A pod requests memory from the Kubernetes cluster to run its containers.""\n  }\n]', '[\n  {\n    ""source"": ""LimitRange"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits"",\n    ""summary_er"": ""A Kubernetes resource that defines the limits for a pod\'s CPU usage, ensuring efficient resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""Replication-Controllers"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Replication Controllers manage multiple instances of a Pod, ensuring consistent deployment and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""ResourceQuota"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""ResourceQuota ensures that a pod\'s resource usage does not exceed its allocated limits, preventing resource starvation and ensuring fair sharing of resources.""\n  },\n  {\n    ""source"": ""PersistentVolumeClaims"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides storage"",\n    ""summary_er"": ""PersistentVolumeClaims provide persistent storage for pods, allowing them to store data even after the pod is deleted or recreated.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates"",\n    ""summary_er"": ""Kubectl command-line tool creates a new pod in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""StorageClass"",\n    ""destination"": ""PersistentVolumes"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""A StorageClass provides persistent storage for a PersistentVolume, enabling data persistence and retrieval.""\n  }\n]']","A ResourceQuota object can limit resources available in a namespace, including CPU, memory, persistent storage, and the number of objects that can be created. A LimitRange object is required alongside ResourceQuota to specify resource requests or limits for pods.","[{'highlight': 'When creating a ResourceQuota, you must also create a LimitRange object alongside it to specify resource requests or limits for pods.'}, {'highlight': 'A ResourceQuota can limit the amount of persistent storage that can be claimed in a namespace, with separate quotas for different StorageClasses.'}, {'highlight': 'ResourceQuotas can also be configured to limit the number of Pods, Replication-Controllers, Services, and other objects inside a single namespace.'}, {'highlight': 'The amount of storage claimable by PersistentVolumeClaims in a namespace is limited to 500 GiB, with separate quotas for SSD (300 GiB) and HDD (1 TiB) StorageClasses.'}, {'highlight': 'Kubernetes requires pods to have resource requests or limits set when a quota for a specific resource (CPU or memory) is configured in the namespace.'}]"
+371,460,0,[],"428
+CHAPTER 14
+Managing pods’ computational resources
+plan, for example, and can also limit the number of public IPs or node ports Ser-
+vices can use. 
+ The following listing shows what a ResourceQuota object that limits the number of
+objects may look like.
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: objects
+spec:
+  hard:
+    pods: 10                        
+    replicationcontrollers: 5       
+    secrets: 10                     
+    configmaps: 10                  
+    persistentvolumeclaims: 4       
+    services: 5                      
+    services.loadbalancers: 1        
+    services.nodeports: 2            
+    ssd.storageclass.storage.k8s.io/persistentvolumeclaims: 2   
+The ResourceQuota in this listing allows users to create at most 10 Pods in the name-
+space, regardless if they’re created manually or by a ReplicationController, Replica-
+Set, DaemonSet, Job, and so on. It also limits the number of ReplicationControllers to
+five. A maximum of five Services can be created, of which only one can be a LoadBal-
+ancer-type Service, and only two can be NodePort Services. Similar to how the maxi-
+mum amount of requested storage can be specified per StorageClass, the number of
+PersistentVolumeClaims can also be limited per StorageClass.
+ Object count quotas can currently be set for the following objects: 
+Pods
+ReplicationControllers 
+Secrets
+ConfigMaps
+PersistentVolumeClaims
+Services (in general), and for two specific types of Services, such as Load-
+Balancer Services (services.loadbalancers) and NodePort Services (ser-
+vices.nodeports) 
+Finally, you can even set an object count quota for ResourceQuota objects themselves.
+The number of other objects, such as ReplicaSets, Jobs, Deployments, Ingresses, and
+so on, cannot be limited yet (but this may have changed since the book was published,
+so please check the documentation for up-to-date information).
+Listing 14.16
+A ResourceQuota for max number of resources: quota-object-count.yaml
+Only 10 Pods, 5 ReplicationControllers, 
+10 Secrets, 10 ConfigMaps, and 
+4 PersistentVolumeClaims can be 
+created in the namespace.
+Five Services overall can be created, 
+of which at most one can be a 
+LoadBalancer Service and at most 
+two can be NodePort Services.
+Only two PVCs can claim storage
+with the ssd StorageClass.
+ 
+",[],"[{'entity': 'ResourceQuota', 'description': 'An object that limits the number of resources in a namespace', 'category': 'software'}, {'entity': 'pods', 'description': 'A group of one or more containers executed together in a shared process space', 'category': 'container'}, {'entity': 'ReplicationControllers', 'description': 'A controller that ensures a specified number of replicas (identical Pods) are running at any given time', 'category': 'software'}, {'entity': 'secrets', 'description': 'An object that stores sensitive information, such as passwords or OAuth tokens', 'category': 'database'}, {'entity': 'configmaps', 'description': 'A resource that stores configuration data in key-value pairs', 'category': 'database'}, {'entity': 'persistentvolumeclaims', 'description': 'A request for storage resources, which can be fulfilled by a PersistentVolume', 'category': 'storage'}, {'entity': 'services', 'description': 'An abstraction that defines a set of access points to a service, such as HTTP or TCP services', 'category': 'networking'}, {'entity': 'loadbalancers', 'description': 'A Service that distributes incoming traffic across multiple Pods', 'category': 'software'}, {'entity': 'nodeports', 'description': ""A Service that exposes a single port on the node's IP address"", 'category': 'networking'}, {'entity': 'StorageClass', 'description': 'A resource that defines a storage class, which can be used to request PersistentVolumes', 'category': 'storage'}, {'entity': 'ResourceQuota objects', 'description': 'An object that limits the number of ResourceQuota objects in a namespace', 'category': 'software'}]","[{'source_entity': '""StorageClass""', 'description': 'provides', 'destination_entity': '""ResourceQuota objects""'}, {'source_entity': '""ReplicationControllers""', 'description': 'manages', 'destination_entity': '""pods""'}, {'source_entity': '""services""', 'description': 'exposes', 'destination_entity': '""nodeports""'}, {'source_entity': '""secrets""', 'description': 'secures', 'destination_entity': '""configmaps""'}, {'source_entity': '""ResourceQuota objects""', 'description': 'limits', 'destination_entity': '""pods""'}, {'source_entity': '""persistentvolumeclaims""', 'description': 'requests', 'destination_entity': '""StorageClass""'}, {'source_entity': '""loadbalancers""', 'description': 'balances', 'destination_entity': '""services""'}, {'source_entity': '""configmaps""', 'description': 'stores', 'destination_entity': '""secrets""'}]","['[\n  {\n    ""source"": ""StorageClass"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""A StorageClass provides persistent storage resources to a pod, allowing it to store and retrieve data.""\n  },\n  {\n    ""source"": ""ResourceQuota objects"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits"",\n    ""summary_er"": ""ResourceQuota objects limit the amount of resources (CPU, memory, etc.) that a pod can consume.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationControllers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A ReplicationController manages a Pod by ensuring it runs multiple copies, maintaining the desired number of replicas.""\n  }\n]', '[\n  {\n    ""source"": ""services"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""Services expose a port to access an application running in a pod.""\n  },\n  {\n    ""source"": ""nodeports"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""NodePorts expose a port on the host machine to access an application running in a pod.""\n  }\n]', '[\n  {\n    ""source"": ""secrets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""secures"",\n    ""summary_er"": ""Secrets secure sensitive data for pods, ensuring confidentiality and integrity.""\n  }\n]', '[\n  {\n    ""source"": ""ResourceQuota objects"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits"",\n    ""summary_er"": ""ResourceQuota objects enforce limits on resources used by pods, ensuring efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""PersistentVolumeClaim"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""A Persistent Volume Claim is requested by a Pod to access storage resources.""\n  }\n]', '[\n  {\n    ""source"": ""loadbalancers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""balances"",\n    ""summary_er"": ""Load balancers distribute incoming traffic across multiple pods to balance loads and ensure efficient resource utilization.""\n  },\n  {\n    ""source"": ""services"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""Services provide a stable network identity and load balancing for accessing pods, ensuring consistent communication with the application.""\n  }\n]', '[\n  {\n    ""source"": ""configmaps"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores"",\n    ""summary_er"": ""ConfigMaps store data in a key-value pair format, which can be used by pods to configure themselves.""\n  },\n  {\n    ""source"": ""secrets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores"",\n    ""summary_er"": ""Secrets store sensitive information such as passwords or API keys, which can be used by pods to authenticate or authorize access.""\n  }\n]']","A ResourceQuota in Kubernetes limits the number of objects that can be created in a namespace, such as pods, replication controllers, secrets, configmaps, persistent volume claims, and services. The quota specifies hard limits for each object type, e.g., 10 pods, 5 replication controllers, 10 secrets, etc. It also allows limiting specific types of services like load balancers and node ports.","[{'highlight': 'A ResourceQuota object that limits the number of objects may look like: apiVersion: v1, kind: ResourceQuota, metadata: name: objects, spec: hard: pods: 10, replicationcontrollers: 5, secrets: 10, configmaps: 10, persistentvolumeclaims: 4, services: 5, services.loadbalancers: 1, services.nodeports: 2'}, {'highlight': 'The ResourceQuota in this listing allows users to create at most 10 Pods in the namespace, regardless if they’re created manually or by a ReplicationController, Replica-Set, DaemonSet, Job, and so on.'}, {'highlight': 'Object count quotas can currently be set for the following objects: Pods, ReplicationControllers, Secrets, ConfigMaps, PersistentVolumeClaims, Services (in general), and for two specific types of Services, such as Load-Balancer Services and NodePort Services'}, {'highlight': 'Only 10 Pods, 5 ReplicationControllers, 10 Secrets, 10 ConfigMaps, and 4 PersistentVolumeClaims can be created in the namespace.'}, {'highlight': 'Five Services overall can be created, of which at most one can be a LoadBalancer Service and at most two can be NodePort Services.'}]"
+372,461,0,[],"429
+Limiting the total resources available in a namespace
+14.5.4 Specifying quotas for specific pod states and/or QoS classes
+The quotas you’ve created so far have applied to all pods, regardless of their current
+state and QoS class. But quotas can also be limited to a set of quota scopes. Four scopes are
+currently available: BestEffort, NotBestEffort, Terminating, and NotTerminating. 
+ The BestEffort and NotBestEffort scopes determine whether the quota applies
+to pods with the BestEffort QoS class or with one of the other two classes (that is,
+Burstable and Guaranteed). 
+ The other two scopes (Terminating and NotTerminating) don’t apply to pods
+that are (or aren’t) in the process of shutting down, as the name might lead you to
+believe. We haven’t talked about this, but you can specify how long each pod is
+allowed to run before it’s terminated and marked as Failed. This is done by setting
+the activeDeadlineSeconds field in the pod spec. This property defines the number
+of seconds a pod is allowed to be active on the node relative to its start time before it’s
+marked as Failed and then terminated. The Terminating quota scope applies to pods
+that have the activeDeadlineSeconds set, whereas the NotTerminating applies to
+those that don’t. 
+ When creating a ResourceQuota, you can specify the scopes that it applies to. A
+pod must match all the specified scopes for the quota to apply to it. Additionally, what
+a quota can limit depends on the quota’s scope. BestEffort scope can only limit the
+number of pods, whereas the other three scopes can limit the number of pods,
+CPU/memory requests, and CPU/memory limits. 
+ If, for example, you want the quota to apply only to BestEffort, NotTerminating
+pods, you can create the ResourceQuota object shown in the following listing.
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: besteffort-notterminating-pods
+spec:
+  scopes:                 
+  - BestEffort            
+  - NotTerminating        
+  hard: 
+    pods: 4          
+This quota ensures that at most four pods exist with the BestEffort QoS class,
+which don’t have an active deadline. If the quota was targeting NotBestEffort pods
+instead, you could also specify requests.cpu, requests.memory, limits.cpu, and
+limits.memory.
+NOTE
+Before you move on to the next section of this chapter, please delete
+all the ResourceQuota and LimitRange resources you created. You won’t
+Listing 14.17
+ResourceQuota for BestEffort/NotTerminating pods: 
+quota-scoped.yaml
+This quota only applies to pods 
+that have the BestEffort QoS and 
+don’t have an active deadline set.
+Only four such 
+pods can exist.
+ 
+",[],"[{'entity': 'ResourceQuota', 'description': 'A Kubernetes resource that limits the total resources available in a namespace.', 'category': 'software'}, {'entity': 'quota scopes', 'description': 'Four quota scopes available: BestEffort, NotBestEffort, Terminating, and NotTerminating.', 'category': 'software'}, {'entity': 'BestEffort scope', 'description': 'Applies to pods with the BestEffort QoS class or with one of the other two classes (Burstable and Guaranteed).', 'category': 'software'}, {'entity': 'NotBestEffort scope', 'description': 'Determines whether the quota applies to pods with the NotBestEffort QoS class.', 'category': 'software'}, {'entity': 'Terminating scope', 'description': 'Applies to pods that have the activeDeadlineSeconds set, marking them as Failed and then terminated.', 'category': 'software'}, {'entity': 'NotTerminating scope', 'description': ""Applies to pods that don't have an active deadline set."", 'category': 'software'}, {'entity': 'activeDeadlineSeconds', 'description': ""A field in the pod spec that defines the number of seconds a pod is allowed to be active on the node before it's marked as Failed and then terminated."", 'category': 'software'}, {'entity': 'ResourceQuota object', 'description': 'An API object used to create a ResourceQuota in Kubernetes.', 'category': 'software'}, {'entity': 'pods', 'description': 'A unit of execution in Kubernetes that can be created and managed.', 'category': 'software'}, {'entity': 'CPU/memory requests', 'description': 'Resource limits for pods, which can be limited by a ResourceQuota.', 'category': 'hardware'}, {'entity': 'CPU/memory limits', 'description': 'Resource limits for pods, which can be limited by a ResourceQuota.', 'category': 'hardware'}, {'entity': 'QoS class', 'description': 'A classification of pod resources, including BestEffort, NotBestEffort, Burstable, and Guaranteed.', 'category': 'software'}]","[{'source_entity': 'NotTerminating scope', 'description': 'allows pods to run indefinitely', 'destination_entity': 'pods'}, {'source_entity': 'BestEffort scope', 'description': 'provides a best-effort guarantee for pod execution', 'destination_entity': 'pods'}, {'source_entity': 'Terminating scope', 'description': 'terminates pods after a specified time or resource usage', 'destination_entity': 'pods'}, {'source_entity': 'activeDeadlineSeconds', 'description': 'specifies the maximum allowed execution time for a pod', 'destination_entity': 'pods'}, {'source_entity': '""CPU/memory requests""', 'description': 'requests a specific amount of CPU and memory resources for a pod', 'destination_entity': 'pods'}, {'source_entity': 'quota scopes', 'description': 'defines the scope of resource quotas applied to pods', 'destination_entity': 'pods'}, {'source_entity': 'NotBestEffort scope', 'description': 'provides a guarantee that pods will not be terminated due to lack of resources', 'destination_entity': 'pods'}, {'source_entity': '""CPU/memory limits""', 'description': 'specifies the maximum allowed usage of CPU and memory resources for a pod', 'destination_entity': 'pods'}, {'source_entity': 'ResourceQuota', 'description': 'manages resource quotas applied to pods', 'destination_entity': 'ResourceQuota object'}, {'source_entity': 'ResourceQuota', 'description': 'defines the scope of resource quotas applied to pods', 'destination_entity': 'pods'}, {'source_entity': 'QoS class', 'description': ""classifies a pod's quality of service based on its resource usage"", 'destination_entity': 'pods'}]","['[\n  {\n    ""source"": ""NotTerminating scope"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allows pods to run indefinitely"",\n    ""summary_er"": ""This scope allows a pod to continue running indefinitely, without being terminated.""\n  }\n]', '[\n  {\n    ""source"": ""BestEffort scope"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides a best-effort guarantee for pod execution"",\n    ""summary_er"": ""The BestEffort scope ensures that pods are executed with a best-effort guarantee, meaning they may not always run as expected.""\n  },\n  {\n    ""source"": ""BestEffort scope"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""provides a best-effort guarantee for pod execution"",\n    ""summary_er"": ""The BestEffort scope provides a best-effort guarantee for pods, ensuring they are executed with minimal guarantees.""\n  }\n]', '[\n  {\n    ""source"": ""terminating scope"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""terminates pods after a specified time or resource usage"",\n    ""summary_er"": ""The terminating scope determines when to terminate a pod based on time or resource usage limits.""\n  }\n]', '[\n  {\n    ""source"": ""activeDeadlineSeconds"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the maximum allowed execution time for a pod"",\n    ""summary_er"": ""Active deadline seconds limits the execution time of a pod to prevent resource hogging.""\n  }\n]', '[\n  {\n    ""source"": ""CPU/memory requests"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests a specific amount of CPU and memory resources"",\n    ""summary_er"": ""A pod requests a specified amount of CPU and memory resources, ensuring efficient resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""quota scopes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the scope of resource quotas applied to pods"",\n    ""summary_er"": ""Quota scopes determine the scope of resource quotas for pods, defining what resources are subject to quota limits.""\n  }\n]', '[\n  {\n    ""source"": ""NotBestEffort"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides a guarantee that pods will not be terminated due to lack of resources"",\n    ""summary_er"": ""The NotBestEffort scope ensures pod stability by preventing termination due to resource shortages, providing a stable environment for pods.""\n  }\n]', '[\n  {\n    ""source"": ""CPU/memory limits"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the maximum allowed usage of CPU and memory resources for a pod"",\n    ""summary_er"": ""This limit restricts the amount of CPU and memory a pod can use, ensuring efficient resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""ResourceQuota"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages resource quotas applied to"",\n    ""summary_er"": ""A ResourceQuota object manages resource quotas for a pod, ensuring it doesn\'t exceed allocated resources.""\n  },\n  {\n    ""source"": ""ResourceQuota"",\n    ""destination"": ""ResourceQuota object"",\n    ""relation_description"": ""the relation description: "",\n    ""summary_er"": ""A ResourceQuota is an object that defines resource quotas applied to pods, controlling their resource usage.""\n  }\n]', '[\n  {\n    ""source"": ""ResourceQuota"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the scope of resource quotas applied to"",\n    ""summary_er"": ""A ResourceQuota defines the scope of resource quotas applied to pods, limiting their resource usage.""\n  }\n]', '[\n  {\n    ""source"": ""QoS class"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""classifies a pod\'s quality of service based on its resource usage"",\n    ""summary_er"": ""The QoS class determines how a pod will be scheduled and managed, considering factors like CPU and memory usage.""\n  }\n]']","You can limit resources in a namespace by specifying quotas for specific pod states and/or QoS classes, using quota scopes like BestEffort, NotBestEffort, Terminating, and NotTerminating. These scopes apply to pods with certain QoS classes or active deadline seconds, and can be used to limit the number of pods, CPU/memory requests, and limits. For example, a ResourceQuota for BestEffort/NotTerminating pods can ensure that at most four such pods exist.","[{'highlight': 'You can specify quotas for specific pod states and/or QoS classes, including BestEffort, NotBestEffort, Terminating, and NotTerminating scopes.'}, {'highlight': 'The BestEffort and NotBestEffort scopes determine whether the quota applies to pods with the BestEffort QoS class or with one of the other two classes (that is, Burstable and Guaranteed).'}, {'highlight': ""You can specify how long each pod is allowed to run before it's terminated and marked as Failed by setting the activeDeadlineSeconds field in the pod spec.""}, {'highlight': ""A pod must match all the specified scopes for the quota to apply to it, and what a quota can limit depends on the quota's scope.""}, {'highlight': 'You can create a ResourceQuota object that applies only to BestEffort, NotTerminating pods by specifying the corresponding scopes in the spec section.'}]"
+373,462,0,[],"430
+CHAPTER 14
+Managing pods’ computational resources
+need them anymore and they may interfere with examples in the following
+chapters.
+14.6
+Monitoring pod resource usage
+Properly setting resource requests and limits is crucial for getting the most out of your
+Kubernetes cluster. If requests are set too high, your cluster nodes will be underuti-
+lized and you’ll be throwing money away. If you set them too low, your apps will be
+CPU-starved or even killed by the OOM Killer. How do you find the sweet spot for
+requests and limits?
+ You find it by monitoring the actual resource usage of your containers under the
+expected load levels. Once the application is exposed to the public, you should keep
+monitoring it and adjust the resource requests and limits if required.
+14.6.1 Collecting and retrieving actual resource usages
+How does one monitor apps running in Kubernetes? Luckily, the Kubelet itself
+already contains an agent called cAdvisor, which performs the basic collection of
+resource consumption data for both individual containers running on the node and
+the node as a whole. Gathering those statistics centrally for the whole cluster requires
+you to run an additional component called Heapster. 
+ Heapster runs as a pod on one of the nodes and is exposed through a regular
+Kubernetes Service, making it accessible at a stable IP address. It collects the data
+from all cAdvisors in the cluster and exposes it in a single location. Figure 14.8
+shows the flow of the metrics data from the pods, through cAdvisor and finally into
+Heapster.
+Kubelet
+cAdvisor
+Node 1
+Pod
+Pod
+Kubelet
+cAdvisor
+Node 2
+Pod
+Kubelet
+cAdvisor
+Node X
+Pod
+Heapster
+Each cAdvisor collects metrics from
+containers running on its node.
+Heapster runs on one of the nodes as a
+pod and collects metrics from all nodes.
+Figure 14.8
+The flow of metrics data into Heapster
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'Docker', 'description': 'Containerization platform', 'category': 'software'}, {'entity': 'cAdvisor', 'description': 'Agent for collecting resource consumption data', 'category': 'software'}, {'entity': 'Heapster', 'description': 'Component for gathering statistics centrally', 'category': 'software'}, {'entity': 'Kubelet', 'description': 'Agent that runs on each node and communicates with the API server', 'category': 'software'}, {'entity': 'Pod', 'description': 'Lightweight and portable executable container', 'category': 'container'}, {'entity': 'Node', 'description': 'Physical or virtual machine running Kubernetes', 'category': 'hardware'}, {'entity': 'OOM Killer', 'description': 'Process that kills processes consuming excessive resources', 'category': 'process'}, {'entity': 'Service', 'description': 'Abstraction for accessing a group of pods', 'category': 'application'}]","[{'source_entity': '""Kubernetes""', 'description': 'manages', 'destination_entity': '""Pod""'}, {'source_entity': '""Kubernetes""', 'description': 'orchestrates', 'destination_entity': '""Service""'}, {'source_entity': '""Docker""', 'description': 'containerizes', 'destination_entity': '""Node""'}, {'source_entity': '""Kubelet""', 'description': 'communicates with', 'destination_entity': '""cAdvisor""'}, {'source_entity': '""OOM Killer""', 'description': 'terminates', 'destination_entity': '""Pod""'}, {'source_entity': '""Heapster""', 'description': 'monitors', 'destination_entity': '""Node""'}, {'source_entity': '""Kubernetes""', 'description': 'deploys', 'destination_entity': '""Docker""'}, {'source_entity': '""Pod""', 'description': 'runs on', 'destination_entity': '""Node""'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages pods, which are the basic execution units in a containerized application.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""orchestrates"",\n    ""summary_er"": ""Kubernetes manages and schedules containerized applications, orchestrating them to run on multiple nodes in a cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Docker"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""containerizes"",\n    ""summary_er"": ""Docker containerizes applications into pods, enabling efficient deployment and management.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""Kubelet communicates with pods to manage and monitor them.""\n  }\n]', '[{\n  ""source"": ""OOM Killer"",\n  ""destination"": ""Pod"",\n  ""relation_description"": ""terminates"",\n  ""summary_er"": ""The OOM Killer is a process that terminates a Pod when it runs out of memory, preventing the system from crashing.""\n}]', '[\n  {\n    ""source"": ""Heapster"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""monitors"",\n    ""summary_er"": ""Heapster monitors pods to ensure efficient resource utilization and optimal performance.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""Kubernetes deploys applications to a managed environment, creating and managing containers for efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Node"",\n    ""relation_description"": ""runs on"",\n    ""summary_er"": ""A Pod runs on a Node, which provides the necessary resources and infrastructure for the Pod to execute.""\n  }\n]']","Properly setting resource requests and limits in Kubernetes is crucial for efficient cluster usage. Monitoring actual resource usage under expected load levels helps find the optimal spot. The Kubelet contains an agent called cAdvisor that collects basic resource consumption data, while Heapster collects and exposes metrics from all nodes in a single location.","[{'highlight': 'Properly setting resource requests and limits is crucial for getting the most out of your Kubernetes cluster.'}, {'highlight': 'Monitoring the actual resource usage of your containers under expected load levels helps find the sweet spot for requests and limits.'}, {'highlight': 'cAdvisor, an agent in Kubelet, collects basic resource consumption data for individual containers and nodes.'}, {'highlight': 'Heapster, a pod running on one node, collects metrics from all cAdvisors and exposes them in a single location.'}, {'highlight': 'Monitoring apps running in Kubernetes is essential to adjust resource requests and limits as required.'}]"
+374,463,0,[],"431
+Monitoring pod resource usage
+The arrows in the figure show how the metrics data flows. They don’t show which com-
+ponent connects to which to get the data. The pods (or the containers running
+therein) don’t know anything about cAdvisor, and cAdvisor doesn’t know anything
+about Heapster. It’s Heapster that connects to all the cAdvisors, and it’s the cAdvisors
+that collect the container and node usage data without having to talk to the processes
+running inside the pods’ containers.
+ENABLING HEAPSTER
+If you’re running a cluster in Google Kubernetes Engine, Heapster is enabled by
+default. If you’re using Minikube, it’s available as an add-on and can be enabled with
+the following command:
+$ minikube addons enable heapster
+heapster was successfully enabled
+To run Heapster manually in other types of Kubernetes clusters, you can refer to
+instructions located at https:/
+/github.com/kubernetes/heapster. 
+ After enabling Heapster, you’ll need to wait a few minutes for it to collect metrics
+before you can see resource usage statistics for your cluster, so be patient. 
+DISPLAYING CPU AND MEMORY USAGE FOR CLUSTER NODES
+Running Heapster in your cluster makes it possible to obtain resource usages for
+nodes and individual pods through the kubectl top command. To see how much
+CPU and memory is being used on your nodes, you can run the command shown in
+the following listing.
+$ kubectl top node
+NAME       CPU(cores)   CPU%      MEMORY(bytes)   MEMORY%
+minikube   170m         8%        556Mi           27%
+This shows the actual, current CPU and memory usage of all the pods running on the
+node, unlike the kubectl describe node command, which shows the amount of CPU
+and memory requests and limits instead of actual runtime usage data. 
+DISPLAYING CPU AND MEMORY USAGE FOR INDIVIDUAL PODS
+To see how much each individual pod is using, you can use the kubectl top pod com-
+mand, as shown in the following listing.
+$ kubectl top pod --all-namespaces
+NAMESPACE      NAME                             CPU(cores)   MEMORY(bytes)
+kube-system    influxdb-grafana-2r2w9           1m           32Mi
+kube-system    heapster-40j6d                   0m           18Mi
+Listing 14.18
+Actual CPU and memory usage of nodes
+Listing 14.19
+Actual CPU and memory usages of pods
+ 
+",[],"[{'entity': 'Heapster', 'description': ""A component that collects metrics data from cAdvisors without having to talk to processes running inside pods' containers."", 'category': 'software'}, {'entity': 'cAdvisor', 'description': 'A component that collects container and node usage data.', 'category': 'software'}, {'entity': 'Heapster', 'description': 'A component that connects to all cAdvisors to collect metrics data.', 'category': 'software'}, {'entity': 'kubectl top command', 'description': 'A command used to display resource usages for nodes and individual pods.', 'category': 'command'}, {'entity': 'Heapster', 'description': 'A component that needs to be enabled manually in Kubernetes clusters other than Google Kubernetes Engine or Minikube.', 'category': 'software'}, {'entity': 'minikube addons enable heapster command', 'description': 'A command used to enable Heapster as an add-on in Minikube.', 'category': 'command'}, {'entity': 'kubectl top node command', 'description': 'A command used to display actual CPU and memory usage of all pods running on a node.', 'category': 'command'}, {'entity': 'Heapster', 'description': 'A component that needs to be enabled manually in Kubernetes clusters other than Google Kubernetes Engine or Minikube.', 'category': 'software'}, {'entity': 'kubectl top pod command', 'description': 'A command used to display actual CPU and memory usage of individual pods.', 'category': 'command'}, {'entity': 'Heapster', 'description': ""A component that collects metrics data from cAdvisors without having to talk to processes running inside pods' containers."", 'category': 'software'}]","[{'source_entity': '""kubectl top command""', 'description': 'executes', 'destination_entity': '""cAdvisor""'}, {'source_entity': '""kubectl top node command""', 'description': 'fetches', 'destination_entity': '""node metrics from cAdvisor""'}, {'source_entity': '""kubectl top pod command""', 'description': 'displays', 'destination_entity': '""pod resource usage statistics""'}, {'source_entity': '""minikube addons enable heapster command""', 'description': 'enables', 'destination_entity': '""Heapster addon in minikube""'}, {'source_entity': '""kubectl top pod command""', 'description': 'uses', 'destination_entity': '""resource usage data from Heapster""'}]","['[\n  {\n    ""source"": ""kubectl top command"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""The kubectl top command executes on a specific pod, providing resource usage metrics.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl top node command"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""fetches"",\n    ""summary_er"": ""The kubectl top node command fetches node metrics from cAdvisor, which provides resource usage data for each pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays"",\n    ""summary_er"": ""The kubectl top command displays resource usage statistics for a pod, providing insights into its performance and efficiency.""\n  }\n]', '[\n  {\n    ""source"": ""Minikube"",\n    ""destination"": ""Heapster addon"",\n    ""relation_description"": ""enables"",\n    ""summary_er"": ""Enabling Heapster addon on Minikube allows monitoring and resource utilization tracking for pods.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubectl command retrieves resource usage data from Heapster to display pod metrics such as CPU and memory usage.""\n  }\n]']","Heapster is a component that collects container and node usage data without needing to connect to the processes running inside pods' containers. It can be enabled in Minikube using `minikube addons enable heapster`. Once enabled, you can use `kubectl top` commands to see actual CPU and memory usage for cluster nodes and individual pods.","[{'highlight': ""Heapster is a component that connects to all cAdvisors, which collect container and node usage data without having to talk to the processes running inside the pods' containers.""}, {'highlight': 'To run Heapster manually in other types of Kubernetes clusters, you can refer to instructions located at https://github.com/kubernetes/heapster.'}, {'highlight': 'Running Heapster in your cluster makes it possible to obtain resource usages for nodes and individual pods through the kubectl top command.'}, {'highlight': 'The kubectl top node command shows the actual, current CPU and memory usage of all the pods running on the node, unlike the kubectl describe node command which shows the amount of CPU and memory requests and limits instead of actual runtime usage data.'}, {'highlight': 'To see how much each individual pod is using, you can use the kubectl top pod command, as shown in the following listing: $ kubectl top pod --all-namespaces'}]"
+375,464,0,[],"432
+CHAPTER 14
+Managing pods’ computational resources
+default        kubia-3773182134-63bmb           0m           9Mi
+kube-system    kube-dns-v20-z0hq6               1m           11Mi
+kube-system    kubernetes-dashboard-r53mc       0m           14Mi
+kube-system    kube-addon-manager-minikube      7m           33Mi
+The outputs of both these commands are fairly simple, so you probably don’t need me
+to explain them, but I do need to warn you about one thing. Sometimes the top pod
+command will refuse to show any metrics and instead print out an error like this:
+$ kubectl top pod
+W0312 22:12:58.021885   15126 top_pod.go:186] Metrics not available for pod 
+default/kubia-3773182134-63bmb, age: 1h24m19.021873823s
+error: Metrics not available for pod default/kubia-3773182134-63bmb, age: 
+1h24m19.021873823s
+If this happens, don’t start looking for the cause of the error yet. Relax, wait a while,
+and rerun the command—it may take a few minutes, but the metrics should appear
+eventually. The kubectl top command gets the metrics from Heapster, which aggre-
+gates the data over a few minutes and doesn’t expose it immediately. 
+TIP
+To see resource usages across individual containers instead of pods, you
+can use the --containers option. 
+14.6.2 Storing and analyzing historical resource consumption statistics
+The top command only shows current resource usages—it doesn’t show you how
+much CPU or memory your pods consumed throughout the last hour, yesterday, or a
+week ago, for example. In fact, both cAdvisor and Heapster only hold resource usage
+data for a short window of time. If you want to analyze your pods’ resource consump-
+tion over longer time periods, you’ll need to run additional tools.
+ When using Google Kubernetes Engine, you can monitor your cluster with Google
+Cloud Monitoring, but when you’re running your own local Kubernetes cluster
+(either through Minikube or other means), people usually use InfluxDB for storing
+statistics data and Grafana for visualizing and analyzing them. 
+INTRODUCING INFLUXDB AND GRAFANA
+InfluxDB is an open source time-series database ideal for storing application metrics
+and other monitoring data. Grafana, also open source, is an analytics and visualization
+suite with a nice-looking web console that allows you to visualize the data stored in
+InfluxDB and discover how your application’s resource usage behaves over time (an
+example showing three Grafana charts is shown in figure 14.9).
+ 
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command to manage Kubernetes resources', 'category': 'software'}, {'entity': 'top_pod.go', 'description': 'file containing top pod command implementation', 'category': 'software'}, {'entity': 'Heapster', 'description': 'component that aggregates metrics data over a few minutes', 'category': 'software'}, {'entity': 'cAdvisor', 'description': 'component that holds resource usage data for a short window of time', 'category': 'software'}, {'entity': 'InfluxDB', 'description': 'open source time-series database for storing application metrics and monitoring data', 'category': 'database'}, {'entity': 'Grafana', 'description': 'analytics and visualization suite for visualizing InfluxDB data', 'category': 'application'}, {'entity': 'Minikube', 'description': 'local Kubernetes cluster running environment', 'category': 'software'}, {'entity': 'Google Cloud Monitoring', 'description': 'service for monitoring Google Kubernetes Engine clusters', 'category': 'cloud service'}, {'entity': 'pod', 'description': 'Kubernetes resource representing a containerized application', 'category': 'container'}, {'entity': 'container', 'description': 'lightweight and standalone execution environment for applications', 'category': 'container'}, {'entity': 'CPU', 'description': 'computational resource measured in units of processing power', 'category': 'hardware'}, {'entity': 'memory', 'description': 'computational resource measured in units of storage capacity', 'category': 'hardware'}, {'entity': 'metrics', 'description': 'data about system performance and behavior over time', 'category': 'software'}, {'entity': 'resource consumption statistics', 'description': 'data about how much CPU or memory pods consumed throughout a period', 'category': 'software'}]","[{'source_entity': '""InfluxDB""', 'description': 'collects', 'destination_entity': '""resource consumption statistics""'}, {'source_entity': '""Grafana""', 'description': 'displays', 'destination_entity': '""resource consumption statistics""'}, {'source_entity': '""Minikube""', 'description': 'provides', 'destination_entity': '""container""'}, {'source_entity': '""kubectl""', 'description': 'manages', 'destination_entity': '""pod""'}, {'source_entity': '""cAdvisor""', 'description': 'monitors', 'destination_entity': '""resource consumption statistics""'}, {'source_entity': '""Heapster""', 'description': 'collects', 'destination_entity': '""metrics""'}, {'source_entity': '""top_pod.go""', 'description': 'uses', 'destination_entity': '""cAdvisor""'}, {'source_entity': '""Google Cloud Monitoring""', 'description': 'integrates with', 'destination_entity': '""Heapster""'}, {'source_entity': '""Minikube""', 'description': 'allocates', 'destination_entity': '""memory""'}, {'source_entity': '""Grafana""', 'description': 'visualizes', 'destination_entity': '""CPU""'}]","['[\n  {\n    ""source"": ""InfluxDB"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""collects"",\n    ""summary_er"": ""InfluxDB collects resource consumption statistics from pods.""\n  }\n]', '[\n  {\n    ""source"": ""Grafana"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays"",\n    ""summary_er"": ""Grafana displays resource consumption statistics from a pod.""\n  }\n]', '[\n  {\n    ""source"": ""Minikube"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""Minikube provides a container to run pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubectl manages pods, which are the basic execution units in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""cAdvisor"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""monitors"",\n    ""summary_er"": ""cAdvisor monitors resource consumption statistics of a pod.""\n  }\n]', '[\n  {\n    ""source"": ""Heapster"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""collects"",\n    ""summary_er"": ""Heapster collects metrics from pods, enabling monitoring and resource utilization tracking.""\n  }\n]', '[\n  {\n    ""source"": ""top_pod.go"",\n    ""destination"": ""cAdvisor"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The top_pod.go file utilizes cAdvisor for monitoring and resource utilization metrics.""\n  }\n]', '[\n  {\n    ""source"": ""Google Cloud Monitoring"",\n    ""destination"": ""Heapster"",\n    ""relation_description"": ""integrates with"",\n    ""summary_er"": ""Google Cloud Monitoring integrates Heapster for monitoring and performance analysis.""\n  }\n]', '[\n  {\n    ""source"": ""Minikube"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allocates"",\n    ""summary_er"": ""Minikube allocates memory to a pod, providing resources for container execution.""\n  }\n]', '[\n  {\n    ""source"": ""Grafana"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""visualizes"",\n    ""summary_er"": ""Grafana visualizes CPU metrics from pods, providing real-time monitoring and analytics.""\n  }\n]']","The kubectl top command shows current pod metrics, but may not show metrics immediately due to Heapster aggregation. Historical resource consumption can be analyzed using tools like InfluxDB and Grafana for storing and visualizing data.","[{'highlight': 'The kubectl top command may refuse to show metrics for a pod, but waiting a few minutes and rerunning the command should resolve the issue.'}, {'highlight': 'To see resource usages across individual containers instead of pods, use the --containers option with the kubectl top command.'}, {'highlight': 'InfluxDB is an open source time-series database ideal for storing application metrics and other monitoring data.'}, {'highlight': 'Grafana is an analytics and visualization suite that allows you to visualize data stored in InfluxDB and discover how resource usage behaves over time.'}, {'highlight': 'Google Cloud Monitoring can be used to monitor Kubernetes clusters on Google Kubernetes Engine, but InfluxDB and Grafana are commonly used for local clusters.'}]"
+376,465,1,[],"433
+Monitoring pod resource usage
+RUNNING INFLUXDB AND GRAFANA IN YOUR CLUSTER
+Both InfluxDB and Grafana can run as pods. Deploying them is straightforward. All
+the necessary manifests are available in the Heapster Git repository at http:/
+/github
+.com/kubernetes/heapster/tree/master/deploy/kube-config/influxdb.
+ When using Minikube, you don’t even need to deploy them manually, because
+they’re deployed along with Heapster when you enable the Heapster add-on.
+ANALYZING RESOURCE USAGE WITH GRAFANA
+To discover how much of each resource your pod requires over time, open the
+Grafana web console and explore the predefined dashboards. Generally, you can find
+out the URL of Grafana’s web console with kubectl cluster-info:
+$ kubectl cluster-info
+...
+monitoring-grafana is running at 
+https://192.168.99.100:8443/api/v1/proxy/namespaces/kube-
+system/services/monitoring-grafana
+Figure 14.9
+Grafana dashboard showing CPU usage across the cluster
+ 
+",[],"[{'entity': 'InfluxDB', 'description': 'A database for storing and analyzing time-series data', 'category': 'database'}, {'entity': 'Grafana', 'description': 'An open-source platform for visualizing and monitoring metrics', 'category': 'application'}, {'entity': 'Heapster', 'description': 'A Kubernetes add-on for monitoring cluster resource usage', 'category': 'application'}, {'entity': 'Minikube', 'description': 'A tool for running a single-node Kubernetes cluster locally', 'category': 'software'}, {'entity': 'kubectl', 'description': 'The command-line interface for interacting with a Kubernetes cluster', 'category': 'command'}, {'entity': 'cluster-info', 'description': 'A command to display information about the Kubernetes cluster', 'category': 'command'}, {'entity': 'monitoring-grafana', 'description': 'The service name for accessing Grafana in the Kubernetes cluster', 'category': 'service'}, {'entity': 'CPU usage', 'description': 'A metric for measuring the utilization of CPU resources by pods', 'category': 'metric'}]","[{'source_entity': '""InfluxDB""', 'description': 'collects', 'destination_entity': '""CPU usage""'}, {'source_entity': '""Grafana""', 'description': 'displays', 'destination_entity': '""CPU usage""'}, {'source_entity': '""Minikube""', 'description': 'provides', 'destination_entity': '""cluster-info""'}, {'source_entity': '""kubectl""', 'description': 'manages', 'destination_entity': '""cluster-info""'}, {'source_entity': '""Heapster""', 'description': 'monitors', 'destination_entity': '""CPU usage""'}, {'source_entity': '""Grafana""', 'description': 'integrates with', 'destination_entity': '""monitoring-grafana""'}]","['[\n  {\n    ""source"": ""InfluxDB"",\n    ""destination"": ""CPU usage"",\n    ""relation_description"": ""collects"",\n    ""summary_er"": ""InfluxDB collects CPU usage metrics from containers.""\n  }\n]', '[\n  {\n    ""source"": ""Grafana"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays"",\n    ""summary_er"": ""Grafana displays CPU usage metrics from a pod, allowing users to monitor and visualize performance data.""\n  }\n]', '[\n  {\n    ""source"": ""Minikube"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""Minikube provides a single-node Kubernetes cluster, which includes a pod named \'cluster-info\'.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""\\""Kubectl\\"" manages \\""Pods\\"", which are the basic execution units in a Kubernetes cluster, providing a runtime environment for containers.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""cluster-info"",\n    ""relation_description"": """",\n    ""summary_er"": ""No relation found between \\""kubectl\\"" and \\""cluster-info\\""""\n  }\n]', '[\n  {\n    ""source"": ""Heapster"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""monitors"",\n    ""summary_er"": ""Heapster monitors CPU usage of pods to ensure efficient resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""Grafana"",\n    ""destination"": ""monitoring-grafana"",\n    ""relation_description"": ""integrates with"",\n    ""summary_er"": ""Grafana integrates monitoring data from \'monitoring-grafana\' pod to provide a unified view.""\n  }\n]']","InfluxDB and Grafana can be run as pods in a Kubernetes cluster, providing monitoring capabilities for resource usage. Deploying them is straightforward using manifests available in the Heapster Git repository or enabled with Minikube's Heapster add-on. To analyze pod resource usage, open the Grafana web console to explore predefined dashboards and discover CPU usage across the cluster.","[{'highlight': 'Both InfluxDB and Grafana can run as pods and necessary manifests are available in the Heapster Git repository at http://github.com/kubernetes/heapster/tree/master/deploy/kube-config/influxdb.'}, {'highlight': 'When using Minikube, you don’t even need to deploy them manually, because they’re deployed along with Heapster when you enable the Heapster add-on.'}, {'highlight': 'To discover how much of each resource your pod requires over time, open the Grafana web console and explore the predefined dashboards.'}, {'highlight': 'You can find out the URL of Grafana’s web console with kubectl cluster-info: $ kubectl cluster-info...'}, {'highlight': 'The Grafana dashboard showing CPU usage across the cluster is available at https://192.168.99.100:8443/api/v1/proxy/namespaces/kube-system/services/monitoring-grafana'}]"
+377,466,0,[],"434
+CHAPTER 14
+Managing pods’ computational resources
+When using Minikube, Grafana’s web console is exposed through a NodePort Service,
+so you can open it in your browser with the following command:
+$ minikube service monitoring-grafana -n kube-system
+Opening kubernetes service kube-system/monitoring-grafana in default 
+browser...
+A new browser window or tab will open and show the Grafana Home screen. On the
+right-hand side, you’ll see a list of dashboards containing two entries:
+Cluster
+Pods
+To see the resource usage statistics of the nodes, open the Cluster dashboard. There
+you’ll see several charts showing the overall cluster usage, usage by node, and the
+individual usage for CPU, memory, network, and filesystem. The charts will not only
+show the actual usage, but also the requests and limits for those resources (where
+they apply).
+ If you then switch over to the Pods dashboard, you can examine the resource
+usages for each individual pod, again with both requests and limits shown alongside
+the actual usage. 
+ Initially, the charts show the statistics for the last 30 minutes, but you can zoom out
+and see the data for much longer time periods: days, months, or even years.
+USING THE INFORMATION SHOWN IN THE CHARTS
+By looking at the charts, you can quickly see if the resource requests or limits you’ve
+set for your pods need to be raised or whether they can be lowered to allow more pods
+to fit on your nodes. Let’s look at an example. Figure 14.10 shows the CPU and mem-
+ory charts for a pod.
+ At the far right of the top chart, you can see the pod is using more CPU than was
+requested in the pod’s manifest. Although this isn’t problematic when this is the only
+pod running on the node, you should keep in mind that a pod is only guaranteed as
+much of a resource as it requests through resource requests. Your pod may be running
+fine now, but when other pods are deployed to the same node and start using the
+CPU, your pod’s CPU time may be throttled. Because of this, to ensure the pod can
+use as much CPU as it needs to at any time, you should raise the CPU resource request
+for the pod’s container.
+ The bottom chart shows the pod’s memory usage and request. Here the situation is
+the exact opposite. The amount of memory the pod is using is well below what was
+requested in the pod’s spec. The requested memory is reserved for the pod and won’t
+be available to other pods. The unused memory is therefore wasted. You should
+decrease the pod’s memory request to make the memory available to other pods run-
+ning on the node. 
+ 
+",[],"[{'entity': 'Minikube', 'description': 'A tool for running Kubernetes locally', 'category': 'software'}, {'entity': 'Grafana', 'description': 'An open-source analytics platform', 'category': 'software'}, {'entity': 'NodePort Service', 'description': 'A type of service in Kubernetes that exposes a port on the host machine', 'category': 'software'}, {'entity': 'kube-system', 'description': 'The namespace for system-level resources in Kubernetes', 'category': 'software'}, {'entity': 'monitoring-grafana', 'description': ""A service in the kube-system namespace that exposes Grafana's web console"", 'category': 'software'}, {'entity': 'pods', 'description': 'The smallest deployable unit of computing resources in Kubernetes', 'category': 'software'}, {'entity': 'CPU', 'description': 'A type of computational resource that measures processing power', 'category': 'hardware'}, {'entity': 'memory', 'description': 'A type of computational resource that measures storage capacity', 'category': 'hardware'}, {'entity': 'network', 'description': 'A type of computational resource that measures data transfer rate', 'category': 'hardware'}, {'entity': 'filesystem', 'description': 'A type of computational resource that measures storage capacity and access speed', 'category': 'hardware'}, {'entity': 'requests', 'description': 'The amount of a resource that a pod requests from the Kubernetes system', 'category': 'software'}, {'entity': 'limits', 'description': 'The maximum amount of a resource that a pod is allowed to use by the Kubernetes system', 'category': 'software'}, {'entity': 'manifest', 'description': 'A file that defines the configuration for a pod or other Kubernetes resource', 'category': 'software'}, {'entity': 'container', 'description': 'The smallest unit of deployment in Docker and Kubernetes', 'category': 'software'}]","[{'source_entity': '""Grafana""', 'description': 'monitors', 'destination_entity': '""pods""'}, {'source_entity': '""Grafana""', 'description': 'uses', 'destination_entity': '""memory""'}, {'source_entity': '""Grafana""', 'description': 'utilizes', 'destination_entity': '""container""'}, {'source_entity': '""Grafana""', 'description': 'deploys', 'destination_entity': '""manifest""'}, {'source_entity': '""Grafana""', 'description': 'manages', 'destination_entity': '""network""'}, {'source_entity': '""Minikube""', 'description': 'provides', 'destination_entity': '""requests""'}, {'source_entity': '""NodePort Service""', 'description': 'handles', 'destination_entity': '""requests""'}, {'source_entity': '""Grafana""', 'description': 'monitors', 'destination_entity': '""CPU""'}, {'source_entity': '""Grafana""', 'description': 'tracks', 'destination_entity': '""filesystem""'}, {'source_entity': '""monitoring-grafana""', 'description': 'enforces', 'destination_entity': '""limits""'}, {'source_entity': '""kube-system""', 'description': 'manages', 'destination_entity': '""pods""'}]","['[\n  {\n    ""source"": ""Grafana"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""monitors"",\n    ""summary_er"": ""Grafana monitors pods, providing real-time performance metrics and resource utilization data for containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""Grafana"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Grafana utilizes a pod to manage its memory usage.""\n  }\n]', '[\n  {\n    ""source"": ""Grafana"",\n    ""destination"": ""container"",\n    ""relation_description"": ""utilizes"",\n    ""summary_er"": ""Grafana utilizes a container to run its application.""\n  }\n]', '[\n  {\n    ""source"": ""Grafana"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""Grafana deploys its application to a Kubernetes pod, utilizing the pod\'s resources for execution.""\n  }\n]', '[\n  {\n    ""source"": ""Grafana"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Grafana manages a network pod, overseeing its operation and ensuring it runs smoothly.""\n  }\n]', '[\n  {\n    ""source"": ""Minikube"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""Minikube provides a pod to manage and deploy applications.""\n  }\n]', '[\n  {\n    ""source"": ""NodePort Service"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""handles"",\n    ""summary_er"": ""A NodePort Service exposes a port on each node in a cluster, allowing external requests to reach pods.""\n  }\n]', '[\n  {\n    ""source"": ""Grafana"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""monitors"",\n    ""summary_er"": ""Grafana monitors CPU usage of a pod, providing real-time metrics and alerts for optimal performance.""\n  }\n]', '[\n  {\n    ""source"": ""Grafana"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""tracks"",\n    ""summary_er"": ""Grafana tracks data from filesystems in a pod, providing real-time monitoring and analytics.""\n  }\n]', '[\n  {\n    ""source"": ""monitoring-grafana"",\n    ""destination"": ""pod limits"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""Grafana monitoring enforces resource limits on pods to ensure efficient resource utilization and prevent overutilization.""\n  }\n]', '[\n  {\n    ""source"": ""kube-system"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""\\""Kube-System\\"" manages \\""Pods\\"", ensuring efficient resource allocation and orchestration for containerized applications.""\n  }\n]']","When using Minikube, Grafana's web console can be opened in a browser to view resource usage statistics for nodes and pods. The Cluster dashboard shows overall cluster usage, while the Pods dashboard displays individual pod resource usages. By examining these charts, users can determine if resource requests or limits need to be adjusted to accommodate more pods on a node.","[{'highlight': ""When using Minikube, Grafana's web console is exposed through a NodePort Service, so you can open it in your browser with the following command: $ minikube service monitoring-grafana -n kube-system""}, {'highlight': 'To see the resource usage statistics of the nodes, open the Cluster dashboard. There you’ll see several charts showing the overall cluster usage, usage by node, and the individual usage for CPU, memory, network, and filesystem.'}, {'highlight': 'You can quickly see if the resource requests or limits you’ve set for your pods need to be raised or whether they can be lowered to allow more pods to fit on your nodes.'}, {'highlight': 'A pod is only guaranteed as much of a resource as it requests through resource requests. Your pod may be running fine now, but when other pods are deployed to the same node and start using the CPU, your pod’s CPU time may be throttled.'}, {'highlight': ""The unused memory is therefore wasted. You should decrease the pod's memory request to make the memory available to other pods running on the node.""}]"
+378,467,1,[],"435
+Summary
+14.7
+Summary
+This chapter has shown you that you need to consider your pod’s resource usage and
+configure both the resource requests and the limits for your pod to keep everything
+running smoothly. The key takeaways from this chapter are
+Specifying resource requests helps Kubernetes schedule pods across the cluster.
+Specifying resource limits keeps pods from starving other pods of resources.
+Unused CPU time is allocated based on containers’ CPU requests.
+Containers never get killed if they try to use too much CPU, but they are killed
+if they try to use too much memory.
+In an overcommitted system, containers also get killed to free memory for more
+important pods, based on the pods’ QoS classes and actual memory usage.
+Actual CPU usage is higher
+than what was requested.
+The application’s CPU time
+will be throttled when other
+apps demand more CPU.
+You should increase the
+CPU request.
+Actual memory usage is well
+below requested memory.
+You’ve reserved too much
+memory for this app. You’re
+wasting memory, because it
+won’t ever be used by this
+app and also can’t be used
+by other apps. You should
+decrease the memory
+request.
+CPU request
+CPU usage
+Memory request
+Memory usage
+Figure 14.10
+CPU and memory usage chart for a pod
+ 
+",[],"[{'entity': 'Pod', 'description': 'A container that can run multiple containers', 'category': 'container'}, {'entity': 'Kubernetes', 'description': 'An open-source container orchestration system', 'category': 'software'}, {'entity': 'Resource requests', 'description': 'The amount of resources a pod needs to run', 'category': 'process'}, {'entity': 'Resource limits', 'description': 'The maximum amount of resources a pod can use', 'category': 'process'}, {'entity': 'CPU time', 'description': 'The amount of processing power used by a container', 'category': 'resource'}, {'entity': 'Memory usage', 'description': 'The amount of memory used by a container', 'category': 'resource'}, {'entity': 'QoS classes', 'description': 'A way to prioritize pods based on their resource needs', 'category': 'process'}, {'entity': 'CPU request', 'description': 'The amount of processing power requested by a pod', 'category': 'resource'}, {'entity': 'Memory request', 'description': 'The amount of memory requested by a pod', 'category': 'resource'}, {'entity': 'Pods', 'description': 'A group of containers that can run together', 'category': 'container'}]","[{'source_entity': '""Pod""', 'description': 'requests', 'destination_entity': '""CPU request""'}, {'source_entity': '""Pod""', 'description': 'uses', 'destination_entity': '""Memory usage""'}, {'source_entity': '""Kubernetes""', 'description': 'manages', 'destination_entity': '""Pods""'}, {'source_entity': '""Pod""', 'description': 'has', 'destination_entity': '""QoS classes""'}, {'source_entity': '""Pod""', 'description': 'requests', 'destination_entity': '""Resource requests""'}, {'source_entity': '""Pod""', 'description': 'allocates', 'destination_entity': '""CPU time""'}, {'source_entity': '""Pod""', 'description': 'limits', 'destination_entity': '""Resource limits""'}, {'source_entity': '""Pod""', 'description': 'requests', 'destination_entity': '""Memory request""'}]","['[{""source"": ""Pod"", ""destination"": ""pod"", ""relation_description"": ""requests"", ""summary_er"": ""A Pod requests CPU resources from the Kubernetes cluster.""}, {""source"": ""Pod"", ""destination"": ""pod"", ""relation_description"": ""CPU request"", ""summary_er"": ""A Pod requests a specific amount of CPU resources to run its containers.""}]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A Pod in Kubernetes uses a container, which is an instance of an image, to run an application or service.""\n  },\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Memory usage"",\n    ""relation_description"": """",\n    ""summary_er"": ""The memory usage of a Pod in Kubernetes refers to the amount of RAM allocated to it, affecting its performance and resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages pods, ensuring efficient resource allocation and scalability for containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""has"",\n    ""summary_er"": ""A Pod is a logical host in Kubernetes, having one or more containers running within it.""\n  },\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""QoS classes"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""Kubernetes Pods can be assigned Quality of Service (QoS) classes to manage resource allocation and prioritization.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""A Pod requests resources from the Kubernetes cluster, specifying its resource requirements.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allocates"",\n    ""summary_er"": ""A Pod allocates resources to a container, ensuring efficient resource utilization and optimal performance.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits"",\n    ""summary_er"": ""A Pod\'s resource limits determine the maximum amount of CPU and memory it can use, ensuring efficient resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""A Pod requests resources from the Kubernetes cluster.""\n  },\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""Memory request"",\n    ""summary_er"": ""A Pod requests a specific amount of memory from the Kubernetes cluster.""\n  }\n]']","This chapter emphasizes considering a pod's resource usage, configuring requests and limits to keep everything running smoothly. Key takeaways include specifying resource requests to schedule pods across the cluster, setting resource limits to prevent pods from starving other resources, and managing CPU and memory usage to optimize application performance.","[{'highlight': 'Specifying resource requests helps Kubernetes schedule pods across the cluster.'}, {'highlight': 'Unused CPU time is allocated based on containers’ CPU requests.'}, {'highlight': 'You should increase the CPU request when actual CPU usage is higher than what was requested.'}, {'highlight': 'You’ve reserved too much memory for this app, wasting memory that won’t ever be used by this app or other apps. You should decrease the memory request.'}, {'highlight': 'Specifying resource limits keeps pods from starving other pods of resources and containers are killed if they try to use too much memory or CPU in an overcommitted system.'}]"
+379,468,0,[],"436
+CHAPTER 14
+Managing pods’ computational resources
+You can use LimitRange objects to define the minimum, maximum, and default
+resource requests and limits for individual pods.
+You can use ResourceQuota objects to limit the amount of resources available
+to all the pods in a namespace.
+To know how high to set a pod’s resource requests and limits, you need to mon-
+itor how the pod uses resources over a long-enough time period.
+In the next chapter, you’ll see how these metrics can be used by Kubernetes to auto-
+matically scale your pods.
+ 
+",[],"[{'entity': 'LimitRange', 'description': 'an object that defines resource requests and limits for individual pods', 'category': 'software'}, {'entity': 'ResourceQuota', 'description': 'an object that limits the amount of resources available to all pods in a namespace', 'category': 'software'}, {'entity': 'Kubernetes', 'description': 'a container orchestration system', 'category': 'software'}, {'entity': 'pods', 'description': 'the basic execution unit in Kubernetes', 'category': 'application'}, {'entity': 'namespace', 'description': 'a logical grouping of resources in Kubernetes', 'category': 'software'}, {'entity': 'resource requests', 'description': 'the amount of resources a pod requires to run', 'category': 'process'}, {'entity': 'resource limits', 'description': 'the maximum amount of resources a pod can use', 'category': 'process'}]","[{'source_entity': '""Kubernetes""', 'description': 'manages', 'destination_entity': '""pods""'}, {'source_entity': '""Kubernetes""', 'description': 'allocates', 'destination_entity': '""resource requests""'}, {'source_entity': '""namespace""', 'description': 'defines', 'destination_entity': '""resource limits""'}, {'source_entity': '""ResourceQuota""', 'description': 'enforces', 'destination_entity': '""resource limits""'}, {'source_entity': '""LimitRange""', 'description': 'sets', 'destination_entity': '""resource limits""'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages pods, ensuring efficient resource allocation and scaling for containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allocates"",\n    ""summary_er"": ""Kubernetes allocates resources to pods, ensuring efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""namespace"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A namespace defines a scope for a pod, allowing multiple pods to share resources and be managed together.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""resource limits"",\n    ""relation_description"": """",\n    ""summary_er"": ""Pods have resource limits that define the maximum amount of CPU and memory they can consume.""\n  }\n]', '[\n  {\n    ""source"": ""ResourceQuota"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""ResourceQuota enforces resource limits on pods, ensuring they don\'t exceed allocated resources.""\n  }\n]', '[\n  {\n    ""source"": ""LimitRange"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets"",\n    ""summary_er"": ""A LimitRange object sets resource limits for pods in a namespace, ensuring they do not exceed specified CPU and memory usage.""\n  }\n]']","To manage pods' computational resources, use LimitRange objects for individual resource requests and limits or ResourceQuota objects to limit namespace-wide resources. Monitor pod usage over time to determine optimal resource settings, with Kubernetes using these metrics for automatic scaling in the next chapter.","[{'highlight': 'You can use LimitRange objects to define the minimum, maximum, and default resource requests and limits for individual pods.'}, {'highlight': 'You can use ResourceQuota objects to limit the amount of resources available to all the pods in a namespace.'}, {'highlight': ""To know how high to set a pod's resource requests and limits, you need to monitor how the pod uses resources over a long-enough time period.""}, {'highlight': ""In the next chapter, you'll see how these metrics can be used by Kubernetes to automatically scale your pods.""}, {'highlight': ""You can use LimitRange and ResourceQuota objects together to manage pods' computational resources effectively.""}]"

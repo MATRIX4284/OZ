@@ -1,0 +1,534 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+110,199,0,[],"167
+Using volumes to share data between containers
+only drawback to this is that you need to delete the pod every time you push changes
+to the gitRepo and want to start serving the new version of the website. 
+ Let’s do this right now. It’s not that different from what you did before. 
+RUNNING A WEB SERVER POD SERVING FILES FROM A CLONED GIT REPOSITORY
+Before you create your pod, you’ll need an actual Git repository with HTML files in it.
+I’ve created a repo on GitHub at https:/
+/github.com/luksa/kubia-website-example.git.
+You’ll need to fork it (create your own copy of the repo on GitHub) so you can push
+changes to it later. 
+ Once you’ve created your fork, you can move on to creating the pod. This time,
+you’ll only need a single Nginx container and a single gitRepo volume in the pod (be
+sure to point the gitRepo volume to your own fork of my repository), as shown in the
+following listing.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gitrepo-volume-pod
+spec:
+  containers:
+  - image: nginx:alpine
+    name: web-server
+    volumeMounts:
+    - name: html
+      mountPath: /usr/share/nginx/html
+      readOnly: true
+    ports:
+    - containerPort: 80
+      protocol: TCP
+  volumes:
+  - name: html
+    gitRepo:                     
+      repository: https://github.com/luksa/kubia-website-example.git   
+      revision: master                     
+      directory: .      
+When you create the pod, the volume is first initialized as an empty directory and then
+the specified Git repository is cloned into it. If you hadn’t set the directory to . (dot),
+the repository would have been cloned into the kubia-website-example subdirectory,
+which isn’t what you want. You want the repo to be cloned into the root directory of
+your volume. Along with the repository, you also specified you want Kubernetes to
+check out whatever revision the master branch is pointing to at the time the volume
+is created. 
+ With the pod running, you can try hitting it through port forwarding, a service, or by
+executing the curl command from within the pod (or any other pod inside the cluster). 
+Listing 6.2
+A pod using a gitRepo volume: gitrepo-volume-pod.yaml
+You’re creating a 
+gitRepo volume.
+The volume will clone
+this Git repository.
+The master branch 
+will be checked out.
+You want the repo to 
+be cloned into the root 
+dir of the volume.
+ 
+",[],"[{'entity': 'volumes', 'description': 'a way to share data between containers', 'category': 'container'}, {'entity': 'pod', 'description': 'a group of one or more containers that share resources and networking', 'category': 'container'}, {'entity': 'gitRepo', 'description': 'a volume type that clones a Git repository into the container', 'category': 'volume'}, {'entity': 'repository', 'description': 'the URL of the Git repository to be cloned', 'category': 'database'}, {'entity': 'revision', 'description': 'the specific revision of the Git repository to be checked out', 'category': 'database'}, {'entity': 'directory', 'description': 'the directory within the volume where the repository will be cloned', 'category': 'process'}, {'entity': 'Nginx', 'description': 'a web server container image', 'category': 'container'}, {'entity': 'image', 'description': 'the Docker image used to create the container', 'category': 'container'}, {'entity': 'containerPort', 'description': 'the port number exposed by the container', 'category': 'process'}, {'entity': 'ports', 'description': 'a list of ports exposed by the container', 'category': 'process'}, {'entity': 'volumeMounts', 'description': 'a list of volumes mounted within the container', 'category': 'container'}, {'entity': 'volumes', 'description': 'a list of volumes used by the pod', 'category': 'container'}, {'entity': 'gitRepo volume', 'description': 'a type of volume that clones a Git repository into the container', 'category': 'volume'}]","[{'source_entity': 'Docker', 'description': 'uses', 'destination_entity': 'volumes'}, {'source_entity': 'Nginx', 'description': 'runs on', 'destination_entity': 'ports'}, {'source_entity': 'image', 'description': 'is stored in', 'destination_entity': 'repository'}, {'source_entity': 'gitRepo', 'description': 'is hosted at', 'destination_entity': 'gitRepo volume'}, {'source_entity': 'volumeMounts', 'description': 'are used by', 'destination_entity': 'pod'}, {'source_entity': 'containerPort', 'description': 'is exposed on', 'destination_entity': 'directory'}, {'source_entity': 'Docker', 'description': 'pulls from', 'destination_entity': 'image'}, {'source_entity': 'Nginx', 'description': 'uses', 'destination_entity': 'ports'}, {'source_entity': 'repository', 'description': 'stores', 'destination_entity': 'image'}]","['[\n  {\n    ""source"": ""Docker"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Docker containers use a pod\'s shared volume for persistent data storage.""\n  },\n  {\n    ""source"": ""Docker"",\n    ""destination"": ""volumes"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Docker containers utilize volumes to persist data across container restarts and updates.""\n  }\n]', '[\n  {\n    ""source"": ""Nginx"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs on"",\n    ""summary_er"": ""Nginx web server software runs on a pod in a Kubernetes cluster, utilizing ports for communication.""\n  },\n  {\n    ""source"": ""Nginx"",\n    ""destination"": ""ports"",\n    ""relation_description"": ""utilizes"",\n    ""summary_er"": ""Nginx web server utilizes specific ports to handle incoming requests and communicate with other services.""\n  }\n]', '[\n  {\n    ""source"": ""image"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is stored in"",\n    ""summary_er"": ""An image is stored within a pod, which is a containerized unit of deployment.""\n  }\n]', '[\n  {\n    ""source"": ""gitRepo"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is mounted as a volume"",\n    ""summary_er"": ""A Git repository is mounted as a volume in a Kubernetes pod, allowing for version control and collaboration.""\n  }\n]', '[\n  {\n    ""source"": ""volumeMounts"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used by"",\n    ""summary_er"": ""Volume mounts provide a way to attach persistent storage to a pod, allowing it to access and utilize data from external sources.""\n  }\n]', '[\n  {\n    ""source"": ""containerPort"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is exposed on"",\n    ""summary_er"": ""A container port is a network interface that allows communication between a container and its host or other containers, exposing it to the pod directory.""\n  }\n]', '[\n  {\n    ""source"": ""Docker"",\n    ""destination"": ""pod image"",\n    ""relation_description"": ""pulls from"",\n    ""summary_er"": ""Docker pulls an image from a registry, which is then used to create a pod in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""Nginx"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Nginx utilizes a pod to expose its services, leveraging the pod\'s networking capabilities.""\n  },\n  {\n    ""source"": ""Nginx"",\n    ""destination"": ""ports"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""Nginx exposes specific ports to allow incoming requests and communication with other services.""\n  }\n]', '[\n  {\n    ""source"": ""repository"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores"",\n    ""summary_er"": ""A Kubernetes repository stores a pod\'s image, which is used to deploy and manage containerized applications.""\n  }\n]']","Using volumes in Kubernetes, specifically gitRepo volumes, allows sharing data between containers. This is demonstrated by running a web server pod serving files from a cloned Git repository, where the pod is created with a single Nginx container and a single gitRepo volume that clones the repository into the root directory of the volume.","[{'highlight': 'To share data between containers, you can use volumes, but this approach has a drawback: you need to delete the pod every time you push changes to the Git repository and want to start serving the new version of the website.'}, {'highlight': ""You'll need an actual Git repository with HTML files in it before creating your pod, and you can fork my repository at https://github.com/luksa/kubia-website-example.git to make changes later.""}, {'highlight': 'When creating the pod, a single Nginx container and a single gitRepo volume are used, with the gitRepo volume pointing to your own fork of my repository, as shown in the following listing.'}, {'highlight': 'The gitRepo volume is initialized as an empty directory and then clones the specified Git repository into it, checking out the master branch revision at the time the volume is created.'}, {'highlight': 'You can try hitting the pod through port forwarding, a service, or by executing the curl command from within the pod to test its functionality.'}]"
+111,200,0,[],"168
+CHAPTER 6
+Volumes: attaching disk storage to containers
+CONFIRMING THE FILES AREN’T KEPT IN SYNC WITH THE GIT REPO
+Now you’ll make changes to the index.html file in your GitHub repository. If you
+don’t use Git locally, you can edit the file on GitHub directly—click on the file in your
+GitHub repository to open it and then click on the pencil icon to start editing it.
+Change the text and then commit the changes by clicking the button at the bottom.
+ The master branch of the Git repository now includes the changes you made to the
+HTML file. These changes will not be visible on your Nginx web server yet, because
+the gitRepo volume isn’t kept in sync with the Git repository. You can confirm this by
+hitting the pod again. 
+ To see the new version of the website, you need to delete the pod and create
+it again. Instead of having to delete the pod every time you make changes, you could
+run an additional process, which keeps your volume in sync with the Git repository.
+I won’t explain in detail how to do this. Instead, try doing this yourself as an exer-
+cise, but here are a few pointers.
+INTRODUCING SIDECAR CONTAINERS
+The Git sync process shouldn’t run in the same container as the Nginx web server, but
+in a second container: a sidecar container. A sidecar container is a container that aug-
+ments the operation of the main container of the pod. You add a sidecar to a pod so
+you can use an existing container image instead of cramming additional logic into the
+main app’s code, which would make it overly complex and less reusable. 
+ To find an existing container image, which keeps a local directory synchronized
+with a Git repository, go to Docker Hub and search for “git sync.” You’ll find many
+images that do that. Then use the image in a new container in the pod from the previ-
+ous example, mount the pod’s existing gitRepo volume in the new container, and
+configure the Git sync container to keep the files in sync with your Git repo. If you set
+everything up correctly, you should see that the files the web server is serving are kept
+in sync with your GitHub repo. 
+NOTE
+An example in chapter 18 includes using a Git sync container like the
+one explained here, so you can wait until you reach chapter 18 and follow the
+step-by-step instructions then instead of doing this exercise on your own now. 
+USING A GITREPO VOLUME WITH PRIVATE GIT REPOSITORIES
+There’s one other reason for having to resort to Git sync sidecar containers. We
+haven’t talked about whether you can use a gitRepo volume with a private Git repo. It
+turns out you can’t. The current consensus among Kubernetes developers is to keep
+the gitRepo volume simple and not add any support for cloning private repositories
+through the SSH protocol, because that would require adding additional config
+options to the gitRepo volume. 
+ If you want to clone a private Git repo into your container, you should use a git-
+sync sidecar or a similar method instead of a gitRepo volume.
+ 
+",[],"[{'entity': 'Git', 'description': 'a version control system', 'category': 'software'}, {'entity': 'GitHub', 'description': 'a web-based platform for version control and collaboration', 'category': 'application'}, {'entity': 'Nginx', 'description': 'a lightweight web server software', 'category': 'software'}, {'entity': 'pod', 'description': 'a basic execution unit in Kubernetes', 'category': 'container'}, {'entity': 'Docker Hub', 'description': 'a registry of Docker images', 'category': 'application'}, {'entity': 'gitRepo volume', 'description': 'a persistent storage for Git repositories', 'category': 'volume'}, {'entity': 'sidecar container', 'description': 'a secondary container that augments the operation of a main container', 'category': 'container'}, {'entity': 'Git sync process', 'description': 'a process that keeps a local directory synchronized with a Git repository', 'category': 'process'}, {'entity': 'SSH protocol', 'description': 'a secure communication protocol for secure shell access', 'category': 'protocol'}]","[{'source_entity': 'Nginx', 'description': 'uses', 'destination_entity': 'SSH protocol'}, {'source_entity': 'Git sync process', 'description': 'utilizes', 'destination_entity': 'Docker Hub'}, {'source_entity': 'sidecar container', 'description': 'communicates with', 'destination_entity': 'pod'}, {'source_entity': 'Nginx', 'description': 'serves', 'destination_entity': 'gitRepo volume'}, {'source_entity': 'Git sync process', 'description': 'pulls from', 'destination_entity': 'GitHub'}, {'source_entity': 'Git sync process', 'description': 'pushes to', 'destination_entity': 'GitHub'}, {'source_entity': 'Docker Hub', 'description': 'hosts', 'destination_entity': 'gitRepo volume'}]","['[\n  {\n    ""source"": ""Nginx"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Nginx utilizes a pod for its operation, leveraging containerization to provide a lightweight and efficient web server.""\n  },\n  {\n    ""source"": ""SSH protocol"",\n    ""destination"": ""Nginx"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The SSH protocol employs Nginx as a secure and reliable means of accessing remote servers, utilizing its robust features for authentication and data transfer.""\n  }\n]', '[\n  {\n    ""source"": ""Git sync process"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""utilizes"",\n    ""summary_er"": ""The Git sync process leverages a pod to execute its operations, utilizing its resources and capabilities.""\n  }\n]', '[\n  {\n    ""source"": ""sidecar container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""A sidecar container in Kubernetes communicates with a pod to provide additional functionality or services.""\n  }\n]', '[\n  {\n    ""source"": ""Nginx"",\n    ""destination"": ""gitRepo volume"",\n    ""relation_description"": ""serves"",\n    ""summary_er"": ""Nginx serves content from the gitRepo volume, which contains the application\'s source code.""\n  }\n]', '[\n  {\n    ""source"": ""Git sync process"",\n    ""destination"": ""GitHub"",\n    ""relation_description"": ""pulls from"",\n    ""summary_er"": ""The Git sync process retrieves data from GitHub by pulling updates.""\n  }\n]', '[\n  {\n    ""source"": ""Git sync process"",\n    ""destination"": ""GitHub"",\n    ""relation_description"": ""pushes to"",\n    ""summary_er"": ""The Git sync process pushes updates from a local repository to the remote GitHub repository.""\n  }\n]', '[\n  {\n    ""source"": ""Docker Hub"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""Docker Hub hosts a pod, which is a containerized application that can be deployed to any environment.""\n  },\n  {\n    ""source"": ""gitRepo volume"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""gitRepo volume"",\n    ""summary_er"": ""A gitRepo volume provides persistent storage for a pod, allowing it to store and retrieve data across restarts.""\n  }\n]']","To keep files in sync with a Git repository, you can create a sidecar container that runs a Git sync process. This process can be run in an existing container image from Docker Hub, such as 'git sync'. The sidecar container should mount the gitRepo volume and configure the Git sync process to keep the files in sync with the Git repo. This method is recommended instead of using a gitRepo volume for private Git repositories, which are not supported by Kubernetes.","[{'highlight': 'The master branch of the Git repository now includes the changes you made to the HTML file. These changes will not be visible on your Nginx web server yet, because the gitRepo volume isn’t kept in sync with the Git repository.'}, {'highlight': 'To see the new version of the website, you need to delete the pod and create it again. Instead of having to delete the pod every time you make changes, you could run an additional process, which keeps your volume in sync with the Git repository.'}, {'highlight': 'The Git sync process shouldn’t run in the same container as the Nginx web server, but in a second container: a sidecar container. A sidecar container is a container that augments the operation of the main container of the pod.'}, {'highlight': 'You can’t use a gitRepo volume with a private Git repo. The current consensus among Kubernetes developers is to keep the gitRepo volume simple and not add any support for cloning private repositories through the SSH protocol.'}, {'highlight': 'To clone a private Git repo into your container, you should use a git-sync sidecar or a similar method instead of a gitRepo volume.'}]"
+112,201,0,[],"169
+Accessing files on the worker node’s filesystem
+WRAPPING UP THE GITREPO VOLUME
+A gitRepo volume, like the emptyDir volume, is basically a dedicated directory cre-
+ated specifically for, and used exclusively by, the pod that contains the volume. When
+the pod is deleted, the volume and its contents are deleted. Other types of volumes,
+however, don’t create a new directory, but instead mount an existing external direc-
+tory into the pod’s container’s filesystem. The contents of that volume can survive
+multiple pod instantiations. We’ll learn about those types of volumes next.
+6.3
+Accessing files on the worker node’s filesystem
+Most  pods should be oblivious of their host node, so they shouldn’t access any files on
+the node’s filesystem. But certain system-level pods (remember, these will usually be
+managed by a DaemonSet) do need to either read the node’s files or use the node’s
+filesystem to access the node’s devices through the filesystem. Kubernetes makes this
+possible through a hostPath volume. 
+6.3.1
+Introducing the hostPath volume
+A hostPath volume points to a specific file or directory on the node’s filesystem (see
+figure 6.4). Pods running on the same node and using the same path in their host-
+Path volume see the same files.
+hostPath volumes are the first type of persistent storage we’re introducing, because
+both the gitRepo and emptyDir volumes’ contents get deleted when a pod is torn
+down, whereas a hostPath volume’s contents don’t. If a pod is deleted and the next
+pod uses a hostPath volume pointing to the same path on the host, the new pod will
+see whatever was left behind by the previous pod, but only if it’s scheduled to the same
+node as the first pod.
+Node 1
+Pod
+hostPath
+volume
+Pod
+hostPath
+volume
+Node 2
+Pod
+hostPath
+volume
+/some/path/on/host
+/some/path/on/host
+Figure 6.4
+A hostPath volume mounts a file or directory on the worker node into 
+the container’s filesystem.
+ 
+","[Empty DataFrame
+Columns: [Node 1
+Pod Pod
+hostPath hostPath
+volume volume
+/some/path/on/host, Col1, Node 2
+Pod
+hostPath
+volume
+/some/path/on/host]
+Index: []]","[{'entity': 'gitRepo', 'description': 'a dedicated directory created for and used exclusively by a pod', 'category': 'volume'}, {'entity': 'emptyDir', 'description': ""a type of volume that doesn't create a new directory, but instead mounts an existing external directory into the pod's container's filesystem"", 'category': 'volume'}, {'entity': 'hostPath', 'description': ""a type of persistent storage that points to a specific file or directory on the node's filesystem"", 'category': 'volume'}, {'entity': 'pod', 'description': 'a logical host in Kubernetes, which can contain one or more containers', 'category': 'application'}, {'entity': 'DaemonSet', 'description': ""a type of pod that is usually managed by a DaemonSet and needs to access the node's files or devices through the filesystem"", 'category': 'application'}, {'entity': 'node', 'description': 'the physical host on which pods are running', 'category': 'hardware'}, {'entity': 'filesystem', 'description': 'a system of organizing and storing data in a way that makes it easily accessible by computers', 'category': 'software'}, {'entity': 'volume', 'description': 'a directory or file system that is shared among containers within a pod', 'category': 'database'}]","[{'source_entity': 'DaemonSet', 'description': 'manages', 'destination_entity': 'pod'}, {'source_entity': 'gitRepo', 'description': 'stores', 'destination_entity': 'filesystem'}, {'source_entity': 'volume', 'description': 'provides', 'destination_entity': 'pod'}, {'source_entity': 'volume', 'description': 'mounted on', 'destination_entity': 'hostPath'}, {'source_entity': 'hostPath', 'description': 'used as', 'destination_entity': 'filesystem'}, {'source_entity': 'node', 'description': 'hosts', 'destination_entity': 'pod'}, {'source_entity': 'emptyDir', 'description': 'provides', 'destination_entity': 'volume'}]","['[\n  {\n    ""source"": ""DaemonSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A DaemonSet ensures a specified number of replicas (i.e., instances) of a pod are running at any given time, managing the lifecycle of these pods.""\n  }\n]', '[\n  {\n    ""source"": ""gitRepo"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores"",\n    ""summary_er"": ""A Git repository stores its data in a pod, utilizing the filesystem to manage and organize files.""\n  }\n]', '[\n  {\n    ""source"": ""volume"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""A volume provides a persistent storage for a pod, allowing it to store and retrieve data.""\n  }\n]', '[\n  {\n    ""source"": ""volume"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""mounted on"",\n    ""summary_er"": ""A volume is mounted onto a pod, providing persistent storage for the container.""\n  }\n]', '[\n  {\n    ""source"": ""hostPath"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used as filesystem"",\n    ""summary_er"": ""HostPath provides a way to mount a host directory into a container, allowing for shared file systems between the host and pod.""\n  }\n]', '[\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""A Kubernetes node provides a host environment for one or more pods, which are the basic execution units in a containerized application.""\n  }\n]', '[\n  {\n    ""source"": ""emptyDir"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""Empty Dir provides a temporary storage for a Pod\'s volume.""\n  }\n]']","A gitRepo volume is created for and used exclusively by a pod, but its contents can survive multiple pod instantiations if the volume type is different. hostPath volumes allow pods to access files on the node's filesystem, making it possible for system-level pods to read or use the node's devices through the filesystem.","[{'highlight': 'A gitRepo volume is a dedicated directory created for and used exclusively by the pod that contains the volume, and its contents are deleted when the pod is deleted.'}, {'highlight': ""HostPath volumes allow pods to access files on the node's filesystem, but most pods should be oblivious of their host node.""}, {'highlight': 'Pods running on the same node and using the same path in their hostPath volume see the same files.'}, {'highlight': ""A hostPath volume's contents don't get deleted when a pod is torn down, but the new pod will see whatever was left behind by the previous pod if it's scheduled to the same node.""}, {'highlight': ""HostPath volumes are the first type of persistent storage introduced, allowing pods to access files on the node's filesystem.""}]"
+113,202,0,[],"170
+CHAPTER 6
+Volumes: attaching disk storage to containers
+ If you’re thinking of using a hostPath volume as the place to store a database’s
+data directory, think again. Because the volume’s contents are stored on a specific
+node’s filesystem, when the database pod gets rescheduled to another node, it will no
+longer see the data. This explains why it’s not a good idea to use a hostPath volume
+for regular pods, because it makes the pod sensitive to what node it’s scheduled to.
+6.3.2
+Examining system pods that use hostPath volumes
+Let’s see how a hostPath volume can be used properly. Instead of creating a new pod,
+let’s see if any existing system-wide pods are already using this type of volume. As you
+may remember from one of the previous chapters, several such pods are running in
+the kube-system namespace. Let’s list them again:
+$ kubectl get pod s --namespace kube-system
+NAME                          READY     STATUS    RESTARTS   AGE
+fluentd-kubia-4ebc2f1e-9a3e   1/1       Running   1          4d
+fluentd-kubia-4ebc2f1e-e2vz   1/1       Running   1          31d
+...
+Pick the first one and see what kinds of volumes it uses (shown in the following listing).
+$ kubectl describe po fluentd-kubia-4ebc2f1e-9a3e --namespace kube-system
+Name:           fluentd-cloud-logging-gke-kubia-default-pool-4ebc2f1e-9a3e
+Namespace:      kube-system
+...
+Volumes:
+  varlog:
+    Type:       HostPath (bare host directory volume)
+    Path:       /var/log
+  varlibdockercontainers:
+    Type:       HostPath (bare host directory volume)
+    Path:       /var/lib/docker/containers
+TIP
+If you’re using Minikube, try the kube-addon-manager-minikube pod.
+Aha! The pod uses two hostPath volumes to gain access to the node’s /var/log and
+the /var/lib/docker/containers directories. You’d think you were lucky to find a pod
+using a hostPath volume on the first try, but not really (at least not on GKE). Check
+the other pods, and you’ll see most use this type of volume either to access the node’s
+log files, kubeconfig (the Kubernetes config file), or the CA certificates.
+ If you inspect the other pods, you’ll see none of them uses the hostPath volume
+for storing their own data. They all use it to get access to the node’s data. But as we’ll
+see later in the chapter, hostPath volumes are often used for trying out persistent stor-
+age in single-node clusters, such as the one created by Minikube. Read on to learn
+about the types of volumes you should use for storing persistent data properly even in
+a multi-node cluster.
+Listing 6.3
+ A pod using hostPath volumes to access the node’s logs
+ 
+",[],"[{'entity': 'hostPath volume', 'description': ""a type of volume that uses a specific node's filesystem"", 'category': 'volume'}, {'entity': 'database pod', 'description': 'a pod that stores data in a hostPath volume', 'category': 'pod'}, {'entity': 'kube-system namespace', 'description': 'a namespace where system-wide pods are running', 'category': 'namespace'}, {'entity': 'fluentd-kubia-4ebc2f1e-9a3e pod', 'description': ""a pod that uses hostPath volumes to access node's data"", 'category': 'pod'}, {'entity': 'varlog volume', 'description': ""a hostPath volume that accesses the node's /var/log directory"", 'category': 'volume'}, {'entity': 'varlibdockercontainers volume', 'description': ""a hostPath volume that accesses the node's /var/lib/docker/containers directory"", 'category': 'volume'}, {'entity': 'Minikube pod', 'description': 'a pod used for testing persistent storage in single-node clusters', 'category': 'pod'}, {'entity': 'kubeconfig file', 'description': 'the Kubernetes config file accessed by hostPath volumes', 'category': 'file'}, {'entity': 'CA certificates', 'description': ""the node's CA certificates accessed by hostPath volumes"", 'category': 'file'}, {'entity': 'kubectl get pod command', 'description': 'a command used to list pods in a namespace', 'category': 'command'}, {'entity': 'kubectl describe po command', 'description': ""a command used to describe a pod's details"", 'category': 'command'}]","[{'source_entity': '""kubectl get pod command""', 'description': 'Used to retrieve information about a specific pod.', 'destination_entity': '""fluentd-kubia-4ebc2f1e-9a3e pod""'}, {'source_entity': '""hostPath volume""', 'description': 'Mounted as a persistent storage for the Minikube pod.', 'destination_entity': '""Minikube pod""'}, {'source_entity': '""varlibdockercontainers volume""', 'description': 'Used to store Docker containers and their associated data.', 'destination_entity': '""Minikube pod""'}, {'source_entity': '""kubectl describe po command""', 'description': 'Used to display detailed information about a specific pod.', 'destination_entity': '""fluentd-kubia-4ebc2f1e-9a3e pod""'}, {'source_entity': '""kubeconfig file""', 'description': 'Configures access to the Kubernetes cluster.', 'destination_entity': '""Minikube pod""'}, {'source_entity': '""varlog volume""', 'description': 'Used for logging purposes within the Minikube environment.', 'destination_entity': '""Minikube pod""'}, {'source_entity': '""database pod""', 'description': 'Hosts a database service within the Kubernetes cluster.', 'destination_entity': '""kube-system namespace""'}, {'source_entity': '""CA certificates""', 'description': 'Used for secure communication between components of the Kubernetes cluster.', 'destination_entity': '""Minikube pod""'}, {'source_entity': '""kube-system namespace""', 'description': 'Manages and configures various system-level services within the Kubernetes cluster.', 'destination_entity': '""database pod""'}, {'source_entity': '""kubectl get pod command""', 'description': 'Used to retrieve information about a specific pod.', 'destination_entity': '""varlog volume""'}, {'source_entity': '""fluentd-kubia-4ebc2f1e-9a3e pod""', 'description': 'Logs and monitors the activities of other pods within the Kubernetes cluster.', 'destination_entity': '""varlog volume""'}]","['[\n  {\n    ""source"": ""kubectl get pod command"",\n    ""destination"": ""fluentd-kubia-4ebc2f1e-9a3e pod"",\n    ""relation_description"": ""Used to retrieve information about a specific pod."",\n    ""summary_er"": ""The \'kubectl get pod\' command is used to fetch details of the \'fluentd-kubia-4ebc2f1e-9a3e pod\', providing real-time information on its status and performance.""\n  }\n]', '[\n  {\n    ""source"": ""hostPath volume"",\n    ""destination"": ""Minikube pod"",\n    ""relation_description"": ""Mounted as a persistent storage"",\n    ""summary_er"": ""A hostPath volume provides persistent storage for a Minikube pod, allowing data to be retained across restarts and updates.""\n  }\n]', '[\n  {\n    ""source"": ""varlibdockercontainers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""Used to store Docker containers and their associated data."",\n    ""summary_er"": ""The varlibdockercontainers volume stores Docker container data for Minikube pods.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl describe po command"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""Used to display detailed information about a specific pod."",\n    ""summary_er"": ""This command displays detailed info about a specific Kubernetes pod, including its status and configuration.""\n  }\n]', '[\n  {\n    ""source"": ""Kubeconfig file"",\n    ""destination"": ""Minikube pod"",\n    ""relation_description"": ""Configures access to the Kubernetes cluster"",\n    ""summary_er"": ""The Kubeconfig file sets up access to a Minikube pod, allowing interaction with the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""varlog volume"",\n    ""destination"": ""Minikube pod"",\n    ""relation_description"": ""Used for logging purposes within the Minikube environment."",\n    ""summary_er"": ""The varlog volume provides logging capabilities to the Minikube pod, facilitating monitoring and debugging within the Kubernetes environment.""\n  }\n]', '[\n  {\n    ""source"": ""database pod"",\n    ""destination"": ""kube-system namespace"",\n    ""relation_description"": ""Hosts a database service within the Kubernetes cluster."",\n    ""summary_er"": ""The \'database pod\' resides within the \'kube-system namespace\', providing a database service to the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""CA certificates"",\n    ""destination"": ""Minikube pod"",\n    ""relation_description"": ""Used for secure communication between components of the Kubernetes cluster."",\n    ""summary_er"": ""CA certificates enable secure communication within Minikube pods, ensuring encrypted data exchange.""\n  }\n]', '[\n  {\n    ""source"": ""kube-system namespace"",\n    ""destination"": ""database pod"",\n    ""relation_description"": ""Manages and configures various system-level services within the Kubernetes cluster."",\n    ""summary_er"": ""The kube-system namespace manages and configures the database pod\'s system-level services, ensuring proper configuration and operation within the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl get pod command"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""Used to retrieve information about a specific pod."",\n    ""summary_er"": ""This command retrieves details of a particular pod, providing its status and other relevant information.""\n  },\n  {\n    ""source"": ""varlog volume"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""Used to mount a varlog volume for a pod."",\n    ""summary_er"": ""A varlog volume is mounted within the pod to store log data, ensuring persistence across restarts and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""fluentd-kubia-4ebc2f1e-9a3e pod"",\n    ""destination"": ""varlog volume"",\n    ""relation_description"": ""Logs and monitors the activities of other pods within the Kubernetes cluster."",\n    ""summary_er"": ""The fluentd-kubia-4ebc2f1e-9a3e pod logs and monitors activities of other pods in the Kubernetes cluster, utilizing the varlog volume.""\n  }\n]']","HostPath volumes are not suitable for storing a database's data directory as they store contents on a specific node's filesystem, making it sensitive to scheduling. Instead, use them to access the node's log files, kubeconfig, or CA certificates. System-wide pods like fluentd-kubia use hostPath volumes to access node's data.","[{'highlight': ""hostPath volumes are not suitable for regular pods because they make the pod sensitive to what node it's scheduled to.""}, {'highlight': ""system-wide pods in the kube-system namespace use hostPath volumes to access the node's data directories, such as /var/log and /var/lib/docker/containers.""}, {'highlight': ""most system-wide pods on GKE use hostPath volumes to access the node's log files, kubeconfig, or CA certificates, but not for storing their own data.""}, {'highlight': 'hostPath volumes are often used in single-node clusters, such as Minikube, for trying out persistent storage.'}, {'highlight': ""it's recommended to use other types of volumes for storing persistent data properly even in a multi-node cluster.""}]"
+114,203,0,[],"171
+Using persistent storage
+TIP
+Remember to use hostPath volumes only if you need to read or write sys-
+tem files on the node. Never use them to persist data across pods. 
+6.4
+Using persistent storage
+When an application running in a pod needs to persist data to disk and have that
+same data available even when the pod is rescheduled to another node, you can’t use
+any of the volume types we’ve mentioned so far. Because this data needs to be accessi-
+ble from any cluster node, it must be stored on some type of network-attached stor-
+age (NAS).
+ To learn about volumes that allow persisting data, you’ll create a pod that will run
+the MongoDB document-oriented NoSQL database. Running a database pod without
+a volume or with a non-persistent volume doesn’t make sense, except for testing
+purposes, so you’ll add an appropriate type of volume to the pod and mount it in the
+MongoDB container. 
+6.4.1
+Using a GCE Persistent Disk in a pod volume
+If you’ve been running these examples on Google Kubernetes Engine, which runs
+your cluster nodes on Google Compute Engine (GCE), you’ll use a GCE Persistent
+Disk as your underlying storage mechanism. 
+ In the early versions, Kubernetes didn’t provision the underlying storage automati-
+cally—you had to do that manually. Automatic provisioning is now possible, and you’ll
+learn about it later in the chapter, but first, you’ll start by provisioning the storage
+manually. It will give you a chance to learn exactly what’s going on underneath. 
+CREATING A GCE PERSISTENT DISK
+You’ll start by creating the GCE persistent disk first. You need to create it in the same
+zone as your Kubernetes cluster. If you don’t remember what zone you created the
+cluster in, you can see it by listing your Kubernetes clusters with the gcloud command
+like this:
+$ gcloud container clusters list
+NAME   ZONE            MASTER_VERSION  MASTER_IP       ...
+kubia  europe-west1-b  1.2.5           104.155.84.137  ...
+This shows you’ve created your cluster in zone europe-west1-b, so you need to create
+the GCE persistent disk in the same zone as well. You create the disk like this:
+$ gcloud compute disks create --size=1GiB --zone=europe-west1-b mongodb
+WARNING: You have selected a disk size of under [200GB]. This may result in 
+poor I/O performance. For more information, see: 
+https://developers.google.com/compute/docs/disks#pdperformance.
+Created [https://www.googleapis.com/compute/v1/projects/rapid-pivot-
+136513/zones/europe-west1-b/disks/mongodb].
+NAME     ZONE            SIZE_GB  TYPE         STATUS
+mongodb  europe-west1-b  1        pd-standard  READY
+ 
+",[],"[{'entity': 'persistent storage', 'description': 'A type of storage that allows data to be persisted across pods and nodes.', 'category': 'storage'}, {'entity': 'hostPath volumes', 'description': 'A type of volume that allows reading or writing system files on a node.', 'category': 'volume'}, {'entity': 'MongoDB', 'description': 'A document-oriented NoSQL database.', 'category': 'database'}, {'entity': 'GCE Persistent Disk', 'description': 'A type of network-attached storage (NAS) used in Google Kubernetes Engine.', 'category': 'storage'}, {'entity': 'gcloud command', 'description': 'A command-line tool for managing Google Cloud resources.', 'category': 'command'}, {'entity': 'Kubernetes cluster', 'description': 'A group of nodes that run containerized applications.', 'category': 'cluster'}, {'entity': 'pod volume', 'description': 'A type of storage that allows data to be persisted within a pod.', 'category': 'volume'}, {'entity': 'container', 'description': 'A lightweight and standalone executable package.', 'category': 'container'}, {'entity': 'zone', 'description': 'A geographic location in Google Cloud where resources are deployed.', 'category': 'location'}]","[{'source_entity': 'Kubernetes cluster', 'description': 'uses', 'destination_entity': 'GCE Persistent Disk'}, {'source_entity': 'gcloud command', 'description': 'creates', 'destination_entity': 'Kubernetes cluster'}, {'source_entity': 'container', 'description': 'utilizes', 'destination_entity': 'hostPath volumes'}, {'source_entity': 'MongoDB', 'description': 'requires', 'destination_entity': 'persistent storage'}, {'source_entity': 'Kubernetes cluster', 'description': 'manages', 'destination_entity': 'pod volume'}, {'source_entity': 'gcloud command', 'description': 'configures', 'destination_entity': 'zone'}]","['[\n  {\n    ""source"": ""Kubernetes cluster"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A Kubernetes cluster utilizes one or more pods to execute containerized applications.""\n  },\n  {\n    ""source"": ""Kubernetes cluster"",\n    ""destination"": ""GCE Persistent Disk"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A Kubernetes cluster leverages GCE Persistent Disks for persistent storage and data management.""\n  }\n]', '[\n  {\n    ""source"": ""gcloud command"",\n    ""destination"": ""Kubernetes cluster"",\n    ""relation_description"": ""creates"",\n    ""summary_er"": ""The gcloud command is used to create a Kubernetes cluster, setting up the infrastructure for containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""utilizes"",\n    ""summary_er"": ""A container utilizes a pod to run its application, leveraging shared resources and networking.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""hostPath volumes"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A pod uses hostPath volumes to persist data, providing persistent storage for applications.""\n  }\n]', '[\n  {\n    ""source"": ""MongoDB"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requires"",\n    ""summary_er"": ""MongoDB requires a pod to utilize persistent storage, ensuring data persistence and availability.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes cluster"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The Kubernetes cluster manages a pod, ensuring its lifecycle and resource allocation.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pod volume"",\n    ""relation_description"": ""has"",\n    ""summary_er"": ""A pod has a pod volume, which provides storage for the container\'s files and data.""\n  }\n]', '[\n  {\n    ""source"": ""gcloud command"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures"",\n    ""summary_er"": ""The gcloud command configures a pod in a specified zone.""\n  }\n]']","To persist data across pods, a network-attached storage (NAS) is needed. A GCE Persistent Disk can be used as underlying storage mechanism on Google Kubernetes Engine. The disk must be created in the same zone as the Kubernetes cluster and its size should be at least 200GB for optimal I/O performance.","[{'highlight': ""To persist data across pods, you can't use hostPath volumes. Instead, you need to store data on network-attached storage (NAS) or a type of persistent volume.""}, {'highlight': ""You'll create a pod with the MongoDB database and add an appropriate type of volume to it, which will be used to persist data across pods.""}, {'highlight': 'To use a GCE Persistent Disk in a pod volume, you need to create the disk manually first and provision the underlying storage automatically later on.'}, {'highlight': 'You can list your Kubernetes clusters using the gcloud command to find out which zone your cluster was created in, so you can create the GCE persistent disk in the same zone.'}, {'highlight': 'When creating a GCE Persistent Disk, make sure to select a size of 200GB or more to avoid poor I/O performance, as recommended by Google Cloud documentation.'}]"
+115,204,0,[],"172
+CHAPTER 6
+Volumes: attaching disk storage to containers
+This command creates a 1 GiB large GCE persistent disk called mongodb. You can
+ignore the warning about the disk size, because you don’t care about the disk’s perfor-
+mance for the tests you’re about to run.
+CREATING A POD USING A GCEPERSISTENTDISK VOLUME
+Now that you have your physical storage properly set up, you can use it in a volume
+inside your MongoDB pod. You’re going to prepare the YAML for the pod, which is
+shown in the following listing.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mongodb 
+spec:
+  volumes:
+  - name: mongodb-data          
+    gcePersistentDisk:           
+      pdName: mongodb            
+      fsType: ext4             
+  containers:
+  - image: mongo
+    name: mongodb
+    volumeMounts:                
+    - name: mongodb-data         
+      mountPath: /data/db      
+    ports:
+    - containerPort: 27017
+      protocol: TCP
+NOTE
+If you’re using Minikube, you can’t use a GCE Persistent Disk, but you
+can deploy mongodb-pod-hostpath.yaml, which uses a hostPath volume
+instead of a GCE PD.
+The pod contains a single container and a single volume backed by the GCE Per-
+sistent Disk you’ve created (as shown in figure 6.5). You’re mounting the volume
+inside the container at /data/db, because that’s where MongoDB stores its data.
+Listing 6.4
+A pod using a gcePersistentDisk volume: mongodb-pod-gcepd.yaml
+The name
+of the
+volume
+(also
+referenced
+when
+mounting
+the volume)
+The type of the volume 
+is a GCE Persistent Disk.
+The name of the persistent 
+disk must match the actual 
+PD you created earlier.
+The filesystem type is EXT4 
+(a type of Linux filesystem).
+The path where MongoDB 
+stores its data
+Pod: mongodb
+Container: mongodb
+volumeMounts:
+name: mongodb-data
+mountPath: /data/db
+gcePersistentDisk:
+pdName: mongodb
+GCE
+Persistent Disk:
+mongodb
+Volume:
+mongodb
+Figure 6.5
+A pod with a single container running MongoDB, which mounts a volume referencing an 
+external GCE Persistent Disk
+ 
+",[],"[{'entity': 'gce persistent disk', 'description': 'a type of persistent storage used by Google Cloud Engine', 'category': 'hardware'}, {'entity': 'mongodb', 'description': 'a database management system', 'category': 'software'}, {'entity': 'pod', 'description': 'a logical host in a Kubernetes cluster', 'category': 'application'}, {'entity': 'container', 'description': 'a lightweight and portable execution environment', 'category': 'application'}, {'entity': 'volume', 'description': 'a persistent storage resource used by containers', 'category': 'hardware'}, {'entity': 'gce persistent disk volume', 'description': 'a type of persistent storage used by Google Cloud Engine, attached to a container', 'category': 'hardware'}, {'entity': 'mongodb-data', 'description': 'the name of the volume used by the MongoDB pod', 'category': 'application'}, {'entity': 'ext4', 'description': 'a type of Linux filesystem', 'category': 'software'}, {'entity': '/data/db', 'description': 'the path where MongoDB stores its data', 'category': 'hardware'}, {'entity': 'minikube', 'description': 'a tool for running a Kubernetes cluster on a local machine', 'category': 'software'}, {'entity': 'hostPath volume', 'description': 'a type of persistent storage used by containers, attached to the host machine', 'category': 'hardware'}, {'entity': 'mongodb-pod-hostpath.yaml', 'description': 'the YAML file for a pod using a hostPath volume', 'category': 'application'}, {'entity': 'gcepd.yaml', 'description': 'the YAML file for a pod using a GCE Persistent Disk volume', 'category': 'application'}]","[{'source_entity': '""container""', 'description': 'uses', 'destination_entity': '""/data/db""'}, {'source_entity': '""minikube""', 'description': 'provides', 'destination_entity': '""gce persistent disk""'}, {'source_entity': '""hostPath volume""', 'description': 'mounts', 'destination_entity': '""/data/db""'}, {'source_entity': '""mongodb-pod-hostpath.yaml""', 'description': 'configures', 'destination_entity': '""pod""'}, {'source_entity': '""pod""', 'description': 'hosts', 'destination_entity': '""mongodb-data""'}, {'source_entity': '""gce persistent disk volume""', 'description': 'provides', 'destination_entity': '""mongodb-data""'}, {'source_entity': '""mongodb""', 'description': 'uses', 'destination_entity': '""gcepd.yaml""'}]","['[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A container utilizes a pod to access shared resources, such as storage at /data/db.""\n  }\n]', '[\n  {\n    ""source"": ""minikube"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""Minikube provides a lightweight, self-contained Kubernetes cluster for development and testing purposes.""\n  },\n  {\n    ""source"": ""gce persistent disk"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A GCE Persistent Disk is used to store data for a pod in a Kubernetes cluster, providing persistent storage.""\n  }\n]', '[\n  {\n    ""source"": ""hostPath volume"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""mounts"",\n    ""summary_er"": ""A hostPath volume is mounted to a pod, allowing it to access files from the host system.""\n  }\n]', '[\n  {\n    ""source"": ""mongodb-pod-hostpath.yaml"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures"",\n    ""summary_er"": ""The YAML file configures a MongoDB pod to use host paths for storage.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""A Kubernetes pod serves as a host for other pods, providing resources and infrastructure.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""mongodb-data"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""A MongoDB data container is hosted within a Kubernetes pod, utilizing its resources and infrastructure.""\n  }\n]', '[\n  {\n    ""source"": ""GCE Persistent Disk Volume"",\n    ""destination"": ""MongoDB Data Pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The GCE Persistent Disk Volume provides storage to the MongoDB Data Pod.""\n  }\n]', '[\n  {\n    ""source"": ""mongodb"",\n    ""destination"": ""gcepd.yaml"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""MongoDB uses a YAML configuration file to manage its deployment.""\n  }\n]']","This chapter explains how to attach disk storage to containers using Kubernetes volumes. It provides an example of creating a 1 GiB GCE persistent disk called 'mongodb' and configuring a pod to use it as a volume, mounting it at '/data/db'. The YAML for the pod is provided, specifying the gcePersistentDisk type, fsType as ext4, and mountPath as /data/db. A note is also given for using Minikube, where you can't use a GCE Persistent Disk, but instead deploy mongodb-pod-hostpath.yaml using a hostPath volume.","[{'highlight': 'You can create a 1 GiB large GCE persistent disk called mongodb using the command `gcloud compute disks create mongodb --size=1GB`.'}, {'highlight': 'To use a GCE Persistent Disk in a pod, you need to prepare a YAML file with the correct configuration, including the volume name, type, and filesystem type.'}, {'highlight': 'The MongoDB container mounts the volume at /data/db, which is where MongoDB stores its data.'}, {'highlight': ""If using Minikube, you can't use a GCE Persistent Disk, but you can deploy a pod with a hostPath volume instead.""}, {'highlight': 'A pod using a gcePersistentDisk volume must have the correct configuration, including the volume name, type, and filesystem type, to match the actual PD created earlier.'}]"
+116,205,0,[],"173
+Using persistent storage
+WRITING DATA TO THE PERSISTENT STORAGE BY ADDING DOCUMENTS TO YOUR MONGODB DATABASE
+Now that you’ve created the pod and the container has been started, you can run the
+MongoDB shell inside the container and use it to write some data to the data store.
+ You’ll run the shell as shown in the following listing.
+$ kubectl exec -it mongodb mongo
+MongoDB shell version: 3.2.8
+connecting to: mongodb://127.0.0.1:27017
+Welcome to the MongoDB shell.
+For interactive help, type ""help"".
+For more comprehensive documentation, see
+    http://docs.mongodb.org/
+Questions? Try the support group
+    http://groups.google.com/group/mongodb-user
+...
+> 
+MongoDB allows storing JSON documents, so you’ll store one to see if it’s stored per-
+sistently and can be retrieved after the pod is re-created. Insert a new JSON document
+with the following commands: 
+> use mystore
+switched to db mystore
+> db.foo.insert({name:'foo'})
+WriteResult({ ""nInserted"" : 1 })
+You’ve inserted a simple JSON document with a single property (name: ’foo’). Now,
+use the find() command to see the document you inserted:
+> db.foo.find()
+{ ""_id"" : ObjectId(""57a61eb9de0cfd512374cc75""), ""name"" : ""foo"" }
+There it is. The document should be stored in your GCE persistent disk now. 
+RE-CREATING THE POD AND VERIFYING THAT IT CAN READ THE DATA PERSISTED BY THE PREVIOUS POD
+You can now exit the mongodb shell (type exit and press Enter), and then delete the
+pod and recreate it:
+$ kubectl delete pod mongodb
+pod ""mongodb"" deleted
+$ kubectl create -f mongodb-pod-gcepd.yaml
+pod ""mongodb"" created
+The new pod uses the exact same GCE persistent disk as the previous pod, so the
+MongoDB container running inside it should see the exact same data, even if the pod
+is scheduled to a different node.
+TIP
+You can see what node a pod is scheduled to by running kubectl get po
+-o wide.
+Listing 6.5
+Entering the MongoDB shell inside the mongodb pod
+ 
+",[],"[{'entity': 'persistent storage', 'description': 'A type of storage that persists data even after a pod is deleted or recreated.', 'category': 'database'}, {'entity': 'MongoDB', 'description': 'A NoSQL database that allows storing JSON documents.', 'category': 'database'}, {'entity': 'kubectl', 'description': 'A command-line tool for managing Kubernetes resources, such as pods and persistent disks.', 'category': 'software'}, {'entity': 'exec', 'description': 'A command used to execute a command inside a running container.', 'category': 'command'}, {'entity': 'mongo', 'description': 'The MongoDB shell command.', 'category': 'command'}, {'entity': 'MongoDB shell', 'description': 'An interactive interface for interacting with a MongoDB database.', 'category': 'application'}, {'entity': 'JSON document', 'description': 'A type of data that can be stored in a MongoDB database.', 'category': 'data format'}, {'entity': 'find() command', 'description': 'A MongoDB command used to retrieve documents from a collection.', 'category': 'command'}, {'entity': 'insert() command', 'description': 'A MongoDB command used to insert a new document into a collection.', 'category': 'command'}, {'entity': 'GCE persistent disk', 'description': 'A type of storage that persists data even after a pod is deleted or recreated, provided by Google Cloud Engine.', 'category': 'hardware'}, {'entity': 'pod', 'description': 'A basic execution unit in Kubernetes, consisting of one or more containers.', 'category': 'container'}, {'entity': 'node', 'description': 'A physical or virtual machine that runs a pod in Kubernetes.', 'category': 'hardware'}]","[{'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""find() command""'}, {'source_entity': '""kubectl""', 'description': 'manages', 'destination_entity': '""GCE persistent disk""'}, {'source_entity': '""kubectl""', 'description': 'configures', 'destination_entity': '""persistent storage""'}, {'source_entity': '""mongo""', 'description': 'uses', 'destination_entity': '""insert() command""'}, {'source_entity': '""mongo""', 'description': 'interacts with', 'destination_entity': '""MongoDB shell""'}, {'source_entity': '""node""', 'description': 'hosts', 'destination_entity': '""pod""'}, {'source_entity': '""kubectl""', 'description': 'deploys', 'destination_entity': '""pod""'}, {'source_entity': '""mongo""', 'description': 'connects to', 'destination_entity': '""MongoDB""'}, {'source_entity': '""node""', 'description': 'runs', 'destination_entity': '""JSON document""'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubectl commands interact with pods to execute various operations such as deployment, scaling, and monitoring.""\n  },\n  {\n    ""source"": ""find() command"",\n    ""destination"": ""files or directories"",\n    ""relation_description"": ""searches for"",\n    ""summary_er"": ""The find() command searches for files or directories based on specific criteria like name, size, and permissions.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""\\""Kubectl\\"" manages a \\""Pod\\"", which is a containerized application running on a cluster.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""GCE persistent disk"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""\\""Kubectl\\"" uses a \\""GCE Persistent Disk\\"" to store data for applications running on a cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures"",\n    ""summary_er"": ""Kubernetes command-line tool configures a pod for persistent storage.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""persistent storage"",\n    ""relation_description"": ""configures"",\n    ""summary_er"": ""Kubernetes command-line tool configures persistent storage for pods.""\n  }\n]', '[\n  {\n    ""source"": ""mongo"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""MongoDB database management system utilizes a containerized pod for efficient deployment and scaling.""\n  },\n  {\n    ""source"": ""insert() command"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The insert() command in MongoDB is executed within the context of a containerized pod, ensuring data consistency and integrity.""\n  }\n]', '[\n  {\n    ""source"": ""mongo"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""interacts with"",\n    ""summary_er"": ""The MongoDB database interacts with a Kubernetes pod to manage data.""\n  },\n  {\n    ""source"": ""MongoDB shell"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""interacts with"",\n    ""summary_er"": ""The MongoDB shell interacts with a Kubernetes pod to execute commands and queries.""\n  }\n]', '[\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""A node in a Kubernetes cluster hosts one or more pods, providing them with resources and infrastructure.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""Kubectl command deploys a containerized application as a pod in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""mongo"",\n    ""destination"": ""MongoDB"",\n    ""relation_description"": ""connects to"",\n    ""summary_er"": ""The MongoDB pod is connected to the mongo container, enabling data storage and retrieval.""\n  }\n]', '[\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""A node in a Kubernetes cluster runs a pod, which is a container that contains an application.""\n  }\n]']","To use persistent storage, write data to the MongoDB database by running the MongoDB shell inside the container and inserting JSON documents. The data will be stored on a GCE persistent disk. After deleting and re-creating the pod, the new pod can read the persisted data from the previous pod, using the same GCE persistent disk.","[{'highlight': 'You can store JSON documents in MongoDB, which allows you to write data to a persistent storage by adding documents to your MongoDB database.'}]"
+117,206,0,[],"174
+CHAPTER 6
+Volumes: attaching disk storage to containers
+Once the container is up, you can again run the MongoDB shell and check to see if the
+document you stored earlier can still be retrieved, as shown in the following listing.
+$ kubectl exec -it mongodb mongo
+MongoDB shell version: 3.2.8
+connecting to: mongodb://127.0.0.1:27017
+Welcome to the MongoDB shell.
+...
+> use mystore
+switched to db mystore
+> db.foo.find()
+{ ""_id"" : ObjectId(""57a61eb9de0cfd512374cc75""), ""name"" : ""foo"" }
+As expected, the data is still there, even though you deleted the pod and re-created it.
+This confirms you can use a GCE persistent disk to persist data across multiple pod
+instances. 
+ You’re done playing with the MongoDB pod, so go ahead and delete it again, but
+hold off on deleting the underlying GCE persistent disk. You’ll use it again later in
+the chapter.
+6.4.2
+Using other types of volumes with underlying persistent storage
+The reason you created the GCE Persistent Disk volume is because your Kubernetes
+cluster runs on Google Kubernetes Engine. When you run your cluster elsewhere, you
+should use other types of volumes, depending on the underlying infrastructure.
+ If your Kubernetes cluster is running on Amazon’s AWS EC2, for example, you can
+use an awsElasticBlockStore volume to provide persistent storage for your pods. If
+your cluster runs on Microsoft Azure, you can use the azureFile or the azureDisk
+volume. We won’t go into detail on how to do that here, but it’s virtually the same as in
+the previous example. First, you need to create the actual underlying storage, and
+then set the appropriate properties in the volume definition.
+USING AN AWS ELASTIC BLOCK STORE VOLUME
+For example, to use an AWS elastic block store instead of the GCE Persistent Disk,
+you’d only need to change the volume definition as shown in the following listing (see
+those lines printed in bold).
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mongodb 
+spec:
+  volumes:                       
+  - name: mongodb-data           
+    awsElasticBlockStore:          
+Listing 6.6
+Retrieving MongoDB’s persisted data in a new pod
+Listing 6.7
+A pod using an awsElasticBlockStore volume: mongodb-pod-aws.yaml
+Using awsElasticBlockStore 
+instead of gcePersistentDisk
+ 
+",[],"[{'entity': 'kubectl', 'description': 'Command to execute a command inside a container', 'category': 'command'}, {'entity': 'MongoDB shell', 'description': 'Interactive shell for MongoDB database', 'category': 'database'}, {'entity': 'mongo', 'description': 'Command to start the MongoDB shell', 'category': 'command'}, {'entity': 'mongodb://127.0.0.1:27017', 'description': 'MongoDB connection string', 'category': 'database'}, {'entity': 'ObjectId', 'description': 'Data type in MongoDB for object IDs', 'category': 'database'}, {'entity': 'gcePersistentDisk', 'description': 'Type of volume used for persistent storage on Google Kubernetes Engine', 'category': 'volume'}, {'entity': 'awsElasticBlockStore', 'description': 'Type of volume used for persistent storage on Amazon AWS EC2', 'category': 'volume'}, {'entity': 'azureFile', 'description': 'Type of volume used for persistent storage on Microsoft Azure', 'category': 'volume'}, {'entity': 'azureDisk', 'description': 'Type of volume used for persistent storage on Microsoft Azure', 'category': 'volume'}, {'entity': 'apiVersion', 'description': 'Field in Kubernetes configuration file to specify API version', 'category': 'field'}, {'entity': 'kind', 'description': 'Field in Kubernetes configuration file to specify resource type', 'category': 'field'}, {'entity': 'metadata', 'description': 'Section in Kubernetes configuration file to store metadata', 'category': 'section'}, {'entity': 'spec', 'description': 'Section in Kubernetes configuration file to specify resource specifications', 'category': 'section'}, {'entity': 'volumes', 'description': 'Field in Kubernetes configuration file to specify volumes used by a pod', 'category': 'field'}, {'entity': 'awsElasticBlockStore', 'description': 'Type of volume used for persistent storage on Amazon AWS EC2', 'category': 'volume'}]","[{'source_entity': 'kubectl', 'description': 'executes commands on', 'destination_entity': 'apiVersion'}, {'source_entity': 'volumes', 'description': 'contains', 'destination_entity': 'metadata'}, {'source_entity': 'metadata', 'description': 'provides information about', 'destination_entity': 'spec'}, {'source_entity': 'kubectl', 'description': 'manages', 'destination_entity': 'azureFile'}, {'source_entity': 'awsElasticBlockStore', 'description': 'stores data for', 'destination_entity': 'mongo'}, {'source_entity': 'azureDisk', 'description': 'provides storage for', 'destination_entity': 'mongodb://127.0.0.1:27017'}, {'source_entity': 'MongoDB shell', 'description': 'interacts with', 'destination_entity': 'ObjectId'}, {'source_entity': 'kind', 'description': 'defines the type of', 'destination_entity': 'gcePersistentDisk'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes commands on"",\n    ""summary_er"": ""Kubectl executes commands directly on a running Pod, bypassing the need for a container runtime.""\n  },\n  {\n    ""source"": ""apiVersion"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the version of the Kubernetes API used to define the Pod"",\n    ""summary_er"": ""ApiVersion specifies the version of the Kubernetes API used to define a Pod, ensuring compatibility and consistency.""\n  }\n]', '[\n  {\n    ""source"": ""volumes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A Kubernetes volume contains data that can be accessed by a pod, providing persistent storage for applications.""\n  }\n]', '[\n  {\n    ""source"": ""metadata"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides information about"",\n    ""summary_er"": ""The metadata of a pod contains details such as name, namespace, and labels.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) manages and controls pods in a cluster.""\n  }\n]', '[\n  {\n    ""source"": ""awsElasticBlockStore"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores data for"",\n    ""summary_er"": ""AWS Elastic Block Store provides persistent storage for pods, allowing them to store and retrieve data.""\n  }\n]', '[\n  {\n    ""source"": ""azureDisk"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides storage for"",\n    ""summary_er"": ""Azure Disk provides persistent storage for a pod, allowing it to store and retrieve data.""\n  }\n]', '[\n  {\n    ""source"": ""MongoDB shell"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""interacts with"",\n    ""summary_er"": ""The MongoDB shell interacts with a pod to manage data storage and retrieval.""\n  }\n]', '[\n  {\n    ""source"": ""kind"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the type of"",\n    ""summary_er"": ""The kind field defines the type of a Kubernetes Pod, which is a containerized application.""\n  },\n  {\n    ""source"": ""gcePersistentDisk"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""persistent disk for"",\n    ""summary_er"": ""A gcePersistentDisk is a persistent disk for a Kubernetes Pod, providing storage persistence across restarts and terminations.""\n  }\n]']","You can attach disk storage to containers using Kubernetes volumes, such as GCE Persistent Disk, awsElasticBlockStore, azureFile, or azureDisk. These volumes provide persistent storage for pods, allowing data to be retained across pod instances. To use a different volume type, create the underlying storage and set properties in the volume definition.","[{'highlight': 'You can use a GCE persistent disk to persist data across multiple pod instances.'}, {'highlight': 'Other types of volumes, such as awsElasticBlockStore, azureFile, or azureDisk, should be used depending on the underlying infrastructure.'}, {'highlight': ""To use an AWS elastic block store instead of a GCE Persistent Disk, you'd only need to change the volume definition.""}, {'highlight': ""You can retrieve MongoDB's persisted data in a new pod using the 'kubectl exec' command.""}, {'highlight': ""The 'awsElasticBlockStore' volume should be used with Amazon's AWS EC2 infrastructure.""}]"
+118,207,0,[],"175
+Using persistent storage
+      volumeId: my-volume          
+      fsType: ext4       
+  containers:
+  - ...
+USING AN NFS VOLUME
+If your cluster is running on your own set of servers, you have a vast array of other sup-
+ported options for mounting external storage inside your volume. For example, to
+mount a simple NFS share, you only need to specify the NFS server and the path
+exported by the server, as shown in the following listing.
+  volumes:                       
+  - name: mongodb-data           
+    nfs:                     
+      server: 1.2.3.4         
+      path: /some/path     
+USING OTHER STORAGE TECHNOLOGIES
+Other supported options include iscsi for mounting an ISCSI disk resource, glusterfs
+for a GlusterFS mount, rbd for a RADOS Block Device, flexVolume, cinder, cephfs,
+flocker, fc (Fibre Channel), and others. You don’t need to know all of them if you’re
+not using them. They’re mentioned here to show you that Kubernetes supports a
+broad range of storage technologies and you can use whichever you prefer and are
+used to.
+ To see details on what properties you need to set for each of these volume types,
+you can either turn to the Kubernetes API definitions in the Kubernetes API refer-
+ence or look up the information through kubectl explain, as shown in chapter 3. If
+you’re already familiar with a particular storage technology, using the explain com-
+mand should allow you to easily figure out how to mount a volume of the proper type
+and use it in your pods.
+ But does a developer need to know all this stuff? Should a developer, when creat-
+ing a pod, have to deal with infrastructure-related storage details, or should that be
+left to the cluster administrator? 
+ Having a pod’s volumes refer to the actual underlying infrastructure isn’t what
+Kubernetes is about, is it? For example, for a developer to have to specify the host-
+name of the NFS server feels wrong. And that’s not even the worst thing about it. 
+ Including this type of infrastructure-related information into a pod definition
+means the pod definition is pretty much tied to a specific Kubernetes cluster. You
+can’t use the same pod definition in another one. That’s why using volumes like this
+isn’t the best way to attach persistent storage to your pods. You’ll learn how to improve
+on this in the next section.
+Listing 6.8
+A pod using an nfs volume: mongodb-pod-nfs.yaml
+Specify the ID of the EBS 
+volume you created.
+The filesystem type 
+is EXT4 as before.
+This volume is backed 
+by an NFS share.
+The IP of the 
+NFS server
+The path exported 
+by the server
+ 
+",[],"[{'entity': 'persistent storage', 'description': 'storage option for Kubernetes', 'category': 'database'}, {'entity': 'volumeId', 'description': 'unique identifier for a volume', 'category': 'process'}, {'entity': 'fsType', 'description': 'file system type (e.g. ext4)', 'category': 'software'}, {'entity': 'containers', 'description': 'isolated environment for running an application', 'category': 'application'}, {'entity': 'NFS volume', 'description': 'network file system storage option', 'category': 'database'}, {'entity': 'volumes', 'description': 'list of available volumes for a pod', 'category': 'process'}, {'entity': 'name', 'description': 'unique identifier for a volume', 'category': 'software'}, {'entity': 'nfs', 'description': 'network file system storage option', 'category': 'database'}, {'entity': 'server', 'description': 'IP address of the NFS server', 'category': 'hardware'}, {'entity': 'path', 'description': 'exported path on the NFS server', 'category': 'software'}, {'entity': 'iscsi', 'description': 'storage option for iSCSI disks', 'category': 'database'}, {'entity': 'glusterfs', 'description': 'storage option for GlusterFS mounts', 'category': 'database'}, {'entity': 'rbd', 'description': 'storage option for RADOS Block Devices', 'category': 'database'}, {'entity': 'flexVolume', 'description': 'storage option for flexible volumes', 'category': 'database'}, {'entity': 'cinder', 'description': 'storage option for Cinder volumes', 'category': 'database'}, {'entity': 'cephfs', 'description': 'storage option for CephFS mounts', 'category': 'database'}, {'entity': 'flocker', 'description': 'storage option for Flocker volumes', 'category': 'database'}, {'entity': 'fc', 'description': 'storage option for Fibre Channel connections', 'category': 'hardware'}]","[{'source_entity': 'cinder', 'description': 'provides persistent storage', 'destination_entity': 'volumes'}, {'source_entity': 'iscsi', 'description': 'uses to access storage devices', 'destination_entity': 'path'}, {'source_entity': 'glusterfs', 'description': 'provides distributed file system', 'destination_entity': 'containers'}, {'source_entity': 'fc', 'description': 'uses to connect servers to storage devices', 'destination_entity': 'server'}, {'source_entity': 'cephfs', 'description': 'provides distributed file system', 'destination_entity': 'containers'}, {'source_entity': 'flocker', 'description': 'manages persistent storage for containers', 'destination_entity': 'containers'}, {'source_entity': 'nfs', 'description': 'provides network file system access', 'destination_entity': 'NFS volume'}, {'source_entity': 'rbd', 'description': 'uses to access Ceph block device', 'destination_entity': 'volumeId'}]","['[\n  {\n    ""source"": ""cinder"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides persistent storage"",\n    ""summary_er"": ""Cinder provides persistent storage to pods, enabling them to store and retrieve data reliably.""\n  }\n]', '[\n  {\n    ""source"": ""iscsi"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to access storage devices"",\n    ""summary_er"": ""ISCSI protocol allows a pod to access storage devices, enabling data transfer and management.""\n  }\n]', '[\n  {\n    ""source"": ""glusterfs"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides distributed file system"",\n    ""summary_er"": ""GlusterFS provides a scalable, shared storage solution for pods, enabling them to access and share files across multiple containers.""\n  }\n]', '[\n  {\n    ""source"": ""fc"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to connect servers to storage devices"",\n    ""summary_er"": ""FC connects a server pod to storage devices, enabling data transfer and access.""\n  },\n  {\n    ""source"": ""server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""instance of a running process"",\n    ""summary_er"": ""A server pod is an instance of a running process that provides services to users.""\n  }\n]', '[\n  {\n    ""source"": ""cephfs"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides distributed file system"",\n    ""summary_er"": ""CephFS provides a scalable, distributed file system for pods to store and manage data.""\n  }\n]', '[\n  {\n    ""source"": ""flocker"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages persistent storage for containers"",\n    ""summary_er"": ""Flocker manages persistent storage for pods, ensuring data durability and availability.""\n  }\n]', '[\n  {\n    ""source"": ""nfs"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides network file system access"",\n    ""summary_er"": ""The nfs entity provides NFS volume access to a pod, enabling shared storage and file system management.""\n  }\n]', '[\n  {\n    ""source"": ""rbd"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to access Ceph block device"",\n    ""summary_er"": ""RBD (Red Hat Block Device) allows pods to use Ceph block devices for persistent storage.""\n  },\n  {\n    ""source"": ""volumeId"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""accesses"",\n    ""summary_er"": ""A volume ID is used by a pod to access and utilize a specific block device from the Ceph cluster.""\n  }\n]']","Kubernetes supports various storage technologies, including NFS, ISCSI, GlusterFS, and others. However, it's recommended to use volumes in a way that decouples pod definitions from specific clusters, avoiding infrastructure-related details in pod specifications.","[{'highlight': 'You can use whichever storage technology you prefer and are used to, such as NFS, ISCSI, GlusterFS, RBD, FlexVolume, Cinder, CephFS, Flocker, FC, and others.'}, {'highlight': 'Kubernetes supports a broad range of storage technologies, but including infrastructure-related information in pod definitions is not recommended.'}, {'highlight': 'Using volumes like NFS or EBS can tie the pod definition to a specific Kubernetes cluster, making it difficult to use the same pod definition in another cluster.'}, {'highlight': ""To attach persistent storage to pods, it's better to use other methods that are not tied to a specific cluster, which will be covered in the next section.""}, {'highlight': 'The filesystem type for NFS volumes is EXT4 by default, but you can specify other types if needed.'}]"
+119,208,0,[],"176
+CHAPTER 6
+Volumes: attaching disk storage to containers
+6.5
+Decoupling pods from the underlying storage technology
+All the persistent volume types we’ve explored so far have required the developer of the
+pod to have knowledge of the actual network storage infrastructure available in the clus-
+ter. For example, to create a NFS-backed volume, the developer has to know the actual
+server the NFS export is located on. This is against the basic idea of Kubernetes, which
+aims to hide the actual infrastructure from both the application and its developer, leav-
+ing them free from worrying about the specifics of the infrastructure and making apps
+portable across a wide array of cloud providers and on-premises datacenters.
+ Ideally, a developer deploying their apps on Kubernetes should never have to
+know what kind of storage technology is used underneath, the same way they don’t
+have to know what type of physical servers are being used to run their pods. Infrastruc-
+ture-related dealings should be the sole domain of the cluster administrator.
+ When a developer needs a certain amount of persistent storage for their applica-
+tion, they can request it from Kubernetes, the same way they can request CPU, mem-
+ory, and other resources when creating a pod. The system administrator can configure
+the cluster so it can give the apps what they request.
+6.5.1
+Introducing PersistentVolumes and PersistentVolumeClaims
+To enable apps to request storage in a Kubernetes cluster without having to deal with
+infrastructure specifics, two new resources were introduced. They are Persistent-
+Volumes and PersistentVolumeClaims. The names may be a bit misleading, because as
+you’ve seen in the previous few sections, even regular Kubernetes volumes can be
+used to store persistent data. 
+ Using a PersistentVolume inside a pod is a little more complex than using a regular
+pod volume, so let’s illustrate how pods, PersistentVolumeClaims, PersistentVolumes,
+and the actual underlying storage relate to each other in figure 6.6.
+Pod
+Admin
+Volume
+1. Cluster admin sets up some type of
+network storage (NFS export or similar)
+2. Admin then creates a PersistentVolume (PV)
+by posting a PV descriptor to the Kubernetes API
+NFS
+export
+Persistent
+Volume
+User
+Persistent
+VolumeClaim
+3. User creates a
+PersistentVolumeClaim (PVC)
+4. Kubernetes ﬁnds a PV of
+adequate size and access
+mode and binds the PVC
+to the PV
+5. User creates a
+pod with a volume
+referencing the PVC
+Figure 6.6
+PersistentVolumes are provisioned by cluster admins and consumed by pods 
+through PersistentVolumeClaims.
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'Persistent Volume', 'description': 'Provisioned storage resource', 'category': 'database'}, {'entity': 'PersistentVolumeClaim', 'description': 'Request for persistent storage', 'category': 'database'}, {'entity': 'Pod', 'description': 'Lightweight and portable container', 'category': 'container'}, {'entity': 'Cluster admin', 'description': 'System administrator responsible for cluster setup', 'category': 'process'}, {'entity': 'User', 'description': 'Developer requesting persistent storage', 'category': 'application'}, {'entity': 'NFS export', 'description': 'Network File System export', 'category': 'database'}, {'entity': 'PersistentVolumeClaim (PVC)', 'description': 'Request for persistent storage', 'category': 'database'}, {'entity': 'PersistentVolume (PV)', 'description': 'Provisioned storage resource', 'category': 'database'}]","[{'source_entity': '""PersistentVolumeClaim (PVC)""', 'description': 'requests access to', 'destination_entity': '""Persistent Volume""'}, {'source_entity': '""PersistentVolumeClaim (PVC)""', 'description': 'is created from', 'destination_entity': '""Persistent Volume""'}, {'source_entity': '""Pod""', 'description': 'uses', 'destination_entity': '""PersistentVolumeClaim (PVC)""'}, {'source_entity': '""Kubernetes""', 'description': 'manages', 'destination_entity': '""Persistent Volume""'}, {'source_entity': '""Cluster admin""', 'description': 'configures', 'destination_entity': '""NFS export""'}, {'source_entity': '""User""', 'description': 'requests access to', 'destination_entity': '""PersistentVolumeClaim (PVC)""'}, {'source_entity': '""Pod""', 'description': 'is scheduled on', 'destination_entity': '""Kubernetes""'}, {'source_entity': '""Persistent Volume""', 'description': 'is provisioned by', 'destination_entity': '""Cluster admin""'}, {'source_entity': '""PersistentVolumeClaim (PVC)""', 'description': 'binds to', 'destination_entity': '""Persistent Volume""'}]","['[\n  {\n    ""source"": ""PersistentVolumeClaim (PVC)"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests access to"",\n    ""summary_er"": ""A Persistent Volume Claim requests access to a pod\'s storage resources.""\n  }\n]', '[\n  {\n    ""source"": ""PersistentVolumeClaim (PVC)"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is created from"",\n    ""summary_er"": ""A Persistent Volume Claim is dynamically provisioned and created from a Persistent Volume, providing storage resources to a Pod.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A Pod uses a pod to run its containers, sharing resources and dependencies.""\n  },\n  {\n    ""source"": ""PersistentVolumeClaim (PVC)"",\n    ""destination"": ""persistent volume"",\n    ""relation_description"": ""requests access to"",\n    ""summary_er"": ""A PVC requests access to a persistent volume for storage needs, ensuring data persistence across pod restarts or deletion.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages pods, providing a runtime environment for containerized applications.""\n  },\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Persistent Volume"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages Persistent Volumes, providing persistent storage for containers.""\n  }\n]', '[\n  {\n    ""source"": ""Cluster admin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures"",\n    ""summary_er"": ""The cluster administrator sets up configurations for a pod, ensuring it runs smoothly and efficiently.""\n  },\n  {\n    ""source"": ""NFS export"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""An NFS export provides shared storage access to a pod, enabling data sharing and collaboration.""\n  }\n]', '[\n  {\n    ""source"": ""User"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""requests access to"",\n    ""summary_er"": ""A user requests access to a running pod, which may involve authentication and authorization checks.""\n  },\n  {\n    ""source"": ""PersistentVolumeClaim (PVC)"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""requests access to"",\n    ""summary_er"": ""A Persistent Volume Claim (PVC) requests access to a pod\'s storage resources, ensuring data persistence across restarts and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Kubernetes"",\n    ""relation_description"": ""is scheduled on"",\n    ""summary_er"": ""A Pod is a logical host in Kubernetes, where one or more containers run. It\'s scheduled on a Node, which provides resources such as CPU and memory.""\n  }\n]', '[\n  {\n    ""source"": ""Persistent Volume"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is provisioned by"",\n    ""summary_er"": ""A Persistent Volume is a storage resource that provides data persistence to a Pod, and is provisioned by the cluster administrator.""\n  },\n  {\n    ""source"": ""Cluster admin"",\n    ""destination"": ""Persistent Volume"",\n    ""relation_description"": ""provisions"",\n    ""summary_er"": ""The Cluster Admin is responsible for provisioning Persistent Volumes to provide storage resources to Pods in the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""PersistentVolumeClaim (PVC)"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""binds to"",\n    ""summary_er"": ""A Persistent Volume Claim (PVC) binds a Pod to a Persistent Volume, allowing it to use storage resources.""\n  }\n]']","Kubernetes aims to hide infrastructure from developers, allowing them to request persistent storage without knowing specific details. Cluster admins configure the cluster to provide what apps request, using PersistentVolumes and PersistentVolumeClaims to decouple pods from underlying storage technology.","[{'highlight': 'Decoupling pods from the underlying storage technology is against the basic idea of Kubernetes, which aims to hide the actual infrastructure from both the application and its developer.'}, {'highlight': 'Persistent Volumes and Persistent Volume Claims were introduced to enable apps to request storage in a Kubernetes cluster without having to deal with infrastructure specifics.'}, {'highlight': 'Cluster admins set up network storage, create Persistent Volumes, and then users create Persistent Volume Claims which are bound to the PVs by Kubernetes.'}, {'highlight': 'Persistent Volumes are provisioned by cluster admins and consumed by pods through Persistent Volume Claims.'}, {'highlight': 'The system administrator can configure the cluster so it can give apps what they request in terms of persistent storage, CPU, memory, and other resources.'}]"

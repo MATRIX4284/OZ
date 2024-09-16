@@ -1,0 +1,515 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+140,229,0,[],"197
+Setting environment variables for a container
+MAKING THE INTERVAL IN YOUR FORTUNE IMAGE CONFIGURABLE THROUGH AN ENVIRONMENT VARIABLE
+Let’s see how to modify your fortuneloop.sh script once again to allow it to be config-
+ured from an environment variable, as shown in the following listing.
+#!/bin/bash
+trap ""exit"" SIGINT
+echo Configured to generate new fortune every $INTERVAL seconds
+mkdir -p /var/htdocs
+while :
+do
+  echo $(date) Writing fortune to /var/htdocs/index.html
+  /usr/games/fortune > /var/htdocs/index.html
+  sleep $INTERVAL
+done
+All you had to do was remove the row where the INTERVAL variable is initialized. Because
+your “app” is a simple bash script, you didn’t need to do anything else. If the app was
+written in Java you’d use System.getenv(""INTERVAL""), whereas in Node.JS you’d use
+process.env.INTERVAL, and in Python you’d use os.environ['INTERVAL'].
+7.3.1
+Specifying environment variables in a container definition
+After building the new image (I’ve tagged it as luksa/fortune:env this time) and
+pushing it to Docker Hub, you can run it by creating a new pod, in which you pass the
+environment variable to the script by including it in your container definition, as
+shown in the following listing.
+kind: Pod
+spec:
+ containers:
+ - image: luksa/fortune:env
+   env:                        
+   - name: INTERVAL            
+     value: ""30""               
+   name: html-generator
+...
+As mentioned previously, you set the environment variable inside the container defini-
+tion, not at the pod level. 
+NOTE
+Don’t forget that in each container, Kubernetes also automatically
+exposes environment variables for each service in the same namespace. These
+environment variables are basically auto-injected configuration.
+Listing 7.5
+Fortune script with interval configurable through env var: fortune-env/
+fortuneloop.sh
+Listing 7.6
+Defining an environment variable in a pod: fortune-pod-env.yaml
+Adding a single variable to 
+the environment variable list
+ 
+",[],"[{'entity': 'environment variables', 'description': 'Variables that can be set outside of a container to configure its behavior', 'category': 'software'}, {'entity': 'INTERVAL', 'description': 'Environment variable used to specify the interval between fortune generation', 'category': 'software'}, {'entity': 'bash', 'description': 'Unix shell scripting language used in the fortuneloop.sh script', 'category': 'software'}, {'entity': 'trap', 'description': 'Bash command used to catch and handle signals (e.g. SIGINT)', 'category': 'software'}, {'entity': 'SIGINT', 'description': 'Signal sent when the user presses Ctrl+C', 'category': 'hardware'}, {'entity': 'mkdir', 'description': 'Bash command used to create a new directory', 'category': 'software'}, {'entity': '/var/htdocs', 'description': 'Directory where the fortune index.html file is written', 'category': 'hardware'}, {'entity': 'while', 'description': 'Bash command used to create a loop that runs indefinitely', 'category': 'software'}, {'entity': 'sleep', 'description': 'Bash command used to pause execution for a specified interval', 'category': 'software'}, {'entity': '/usr/games/fortune', 'description': 'Command used to generate a new fortune', 'category': 'software'}, {'entity': 'System.getenv', 'description': 'Java method used to retrieve an environment variable', 'category': 'software'}, {'entity': 'process.env', 'description': 'Node.js property used to access environment variables', 'category': 'software'}, {'entity': 'os.environ', 'description': 'Python dictionary used to store environment variables', 'category': 'software'}, {'entity': 'Kubernetes', 'description': 'Container orchestration system used to run the fortune container', 'category': 'software'}, {'entity': 'Pod', 'description': 'Kubernetes object used to define a running instance of a container', 'category': 'software'}, {'entity': 'container definition', 'description': 'YAML file used to specify the configuration for a container', 'category': 'hardware'}, {'entity': 'env', 'description': 'Key in the container definition YAML file used to specify environment variables', 'category': 'software'}, {'entity': 'name', 'description': 'Key in the env list used to specify the name of an environment variable', 'category': 'hardware'}, {'entity': 'value', 'description': 'Key in the env list used to specify the value of an environment variable', 'category': 'software'}]","[{'source_entity': 'bash', 'description': 'executes a command to create a new directory', 'destination_entity': 'mkdir'}, {'source_entity': 'os.environ', 'description': 'sets environment variables for the container', 'destination_entity': 'environment variables'}, {'source_entity': 'System.getenv', 'description': 'retrieves an environment variable value', 'destination_entity': 'value'}, {'source_entity': 'process.env', 'description': 'sets an environment variable for the process', 'destination_entity': 'environment variables'}, {'source_entity': 'Kubernetes', 'description': 'manages and orchestrates containerized applications', 'destination_entity': 'Pod'}, {'source_entity': '/usr/games/fortune', 'description': 'executes a command to display a random message', 'destination_entity': 'SIGINT'}, {'source_entity': 'while', 'description': ""loops through a condition until it's met"", 'destination_entity': 'container definition'}, {'source_entity': '/var/htdocs', 'description': 'specifies the directory for the container to run in', 'destination_entity': 'container definition'}, {'source_entity': 'INTERVAL', 'description': 'sets a time interval for the loop to execute', 'destination_entity': 'while'}, {'source_entity': 'trap', 'description': 'catches and handles signals sent to the container', 'destination_entity': 'SIGINT'}, {'source_entity': 'name', 'description': 'sets a name for the container or process', 'destination_entity': 'container definition'}]","['[\n  {\n    ""source"": ""bash"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes a command to create a new directory"",\n    ""summary_er"": ""Bash executes a command in a pod to create a new directory named \'mkdir\'.""\n  }\n]', '[\n  {\n    ""source"": ""os.environ"",\n    ""destination"": ""container"",\n    ""relation_description"": ""sets environment variables"",\n    ""summary_er"": ""The os.environ module sets environment variables for a container, allowing it to access and modify its own environment.""\n  },\n  {\n    ""source"": ""os.environ"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""environment variables"",\n    ""summary_er"": ""A pod\'s environment variables are set by the os.environ module, enabling communication between containers within the pod.""\n  }\n]', '[\n  {\n    ""source"": ""System.getenv"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""retrieves an environment variable value"",\n    ""summary_er"": ""Retrieves the value of a specific environment variable from the pod\'s configuration.""\n  }\n]', '[\n  {\n    ""source"": ""process.env"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets an environment variable for the process"",\n    ""summary_er"": ""The process sets an environment variable, which is used by a pod to configure its execution environment.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages and orchestrates containerized applications"",\n    ""summary_er"": ""Kubernetes manages and orchestrates containerized applications, specifically pods, to ensure efficient resource utilization and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""/usr/games/fortune"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes a command to display a random message"",\n    ""summary_er"": ""/usr/games/fortune executes a command in the pod to display a random message, utilizing SIGINT signal.""\n  }\n]', '[\n  {\n    ""source"": ""while"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""loops through a condition until it\'s met"",\n    ""summary_er"": ""A while loop in Kubernetes ensures that a pod continues to run until a specified condition is met, allowing for efficient resource utilization and application execution.""\n  },\n  {\n    ""source"": ""while"",\n    ""destination"": ""container definition"",\n    ""relation_description"": ""loops through a condition until it\'s met"",\n    ""summary_er"": ""A while loop in Docker container definitions enables the repetition of tasks based on specific conditions, ensuring that containers execute as intended and resources are utilized effectively.""\n  }\n]', '[\n  {\n    ""source"": ""/var/htdocs"",\n    ""destination"": ""container"",\n    ""relation_description"": ""specifies the directory for the container to run in"",\n    ""summary_er"": ""/var/htdocs specifies the root directory for the container, where it will read and write files.""\n  },\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""definition"",\n    ""summary_er"": ""Container definition is used to create a pod in Kubernetes, which provides isolation and resource management for the container.""\n  }\n]', '[\n  {\n    ""source"": ""INTERVAL"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets a time interval for the loop to execute"",\n    ""summary_er"": ""The INTERVAL relation sets a time limit for a loop to run, ensuring efficient execution of tasks within a pod.""\n  },\n  {\n    ""source"": ""while"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes while condition is met"",\n    ""summary_er"": ""The WHILE relation executes a block of code repeatedly until a specified condition is met, allowing for dynamic task execution within a pod.""\n  }\n]', '[\n  {\n    ""source"": ""trap"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""catches and handles signals sent to the container"",\n    ""summary_er"": ""Trap catches and handles SIGINT signals sent to a pod\'s container, ensuring proper signal handling.""\n  }\n]', '[\n  {\n    ""source"": ""name"",\n    ""destination"": ""container definition"",\n    ""relation_description"": ""sets a name for the container or process"",\n    ""summary_er"": ""The \'name\' field in Kubernetes sets a unique identifier for a container, which can be used to reference it within a pod.""\n  }\n]']","To make the interval in your fortuneloop.sh script configurable through an environment variable, remove the row where the INTERVAL variable is initialized. This allows the script to be configured from an environment variable, and can be used with Docker containers. To specify environment variables in a container definition, set them inside the container definition, not at the pod level. This can be done using YAML files like fortune-pod-env.yaml.","[{'highlight': 'To make the interval in your fortuneloop.sh script configurable through an environment variable, remove the row where the INTERVAL variable is initialized.'}]"
+141,230,0,[],"198
+CHAPTER 7
+ConfigMaps and Secrets: configuring applications
+7.3.2
+Referring to other environment variables in a variable’s value
+In the previous example, you set a fixed value for the environment variable, but you
+can also reference previously defined environment variables or any other existing vari-
+ables by using the $(VAR) syntax. If you define two environment variables, the second
+one can include the value of the first one as shown in the following listing.
+env:
+- name: FIRST_VAR
+  value: ""foo""
+- name: SECOND_VAR
+  value: ""$(FIRST_VAR)bar""
+In this case, the SECOND_VAR’s value will be ""foobar"". Similarly, both the command and
+args attributes you learned about in section 7.2 can also refer to environment vari-
+ables like this. You’ll use this method in section 7.4.5.
+7.3.3
+Understanding the drawback of hardcoding environment 
+variables
+Having values effectively hardcoded in the pod definition means you need to have
+separate pod definitions for your production and your development pods. To reuse
+the same pod definition in multiple environments, it makes sense to decouple the
+configuration from the pod descriptor. Luckily, you can do that using a ConfigMap
+resource and using it as a source for environment variable values using the valueFrom
+instead of the value field. You’ll learn about this next. 
+7.4
+Decoupling configuration with a ConfigMap
+The whole point of an app’s configuration is to keep the config options that vary
+between environments, or change frequently, separate from the application’s source
+code. If you think of a pod descriptor as source code for your app (and in microservices
+architectures that’s what it really is, because it defines how to compose the individual
+components into a functioning system), it’s clear you should move the configuration
+out of the pod description.
+7.4.1
+Introducing ConfigMaps
+Kubernetes allows separating configuration options into a separate object called a
+ConfigMap, which is a map containing key/value pairs with the values ranging from
+short literals to full config files. 
+ An application doesn’t need to read the ConfigMap directly or even know that it
+exists. The contents of the map are instead passed to containers as either environ-
+ment variables or as files in a volume (see figure 7.2). And because environment
+Listing 7.7
+Referring to an environment variable inside another one
+ 
+",[],"[{'entity': 'ConfigMaps', 'description': 'a map containing key/value pairs with the values ranging from short literals to full config files', 'category': 'database'}, {'entity': 'Secrets', 'description': 'configuring applications', 'category': 'application'}, {'entity': 'environment variables', 'description': 'variables used by containers to configure their behavior', 'category': 'process'}, {'entity': 'ConfigMap resource', 'description': 'a source for environment variable values using the valueFrom instead of the value field', 'category': 'database'}, {'entity': 'pod definition', 'description': 'a descriptor that defines how to compose individual components into a functioning system', 'category': 'application'}, {'entity': '$(VAR) syntax', 'description': 'referencing previously defined environment variables or any other existing variables', 'category': 'process'}, {'entity': 'FIRST_VAR', 'description': ""an environment variable with value 'foo'"", 'category': 'process'}, {'entity': 'SECOND_VAR', 'description': ""an environment variable with value '$(FIRST_VAR)bar'"", 'category': 'process'}, {'entity': 'valueFrom', 'description': 'a field used to pass the contents of a ConfigMap as environment variables', 'category': 'database'}, {'entity': 'value', 'description': 'a field used to set a fixed value for an environment variable', 'category': 'process'}, {'entity': 'name', 'description': 'a key in a ConfigMap or Secret', 'category': 'database'}, {'entity': 'args', 'description': 'attributes used to configure the behavior of containers', 'category': 'process'}, {'entity': 'command', 'description': 'attributes used to configure the behavior of containers', 'category': 'process'}]","[{'source_entity': 'Kubernetes', 'description': 'provides a way to manage environment variables for pods.', 'destination_entity': 'environment variables'}, {'source_entity': 'FIRST_VAR', 'description': 'can be used in $(VAR) syntax to access its value.', 'destination_entity': '$(VAR) syntax'}, {'source_entity': 'command', 'description': 'can be used to execute a command and retrieve its output as an environment variable.', 'destination_entity': 'valueFrom'}, {'source_entity': 'valueFrom', 'description': 'allows you to specify the source of an environment variable.', 'destination_entity': 'value'}, {'source_entity': 'ConfigMap resource', 'description': 'can be used to provide configuration data for pods.', 'destination_entity': 'pod definition'}, {'source_entity': 'Secrets', 'description': 'can be used to provide sensitive information to pods.', 'destination_entity': 'pod definition'}, {'source_entity': 'args', 'description': 'can be used to pass arguments to a command executed in a pod.', 'destination_entity': 'command'}, {'source_entity': 'ConfigMaps', 'description': 'can be used to provide configuration data for pods.', 'destination_entity': 'pod definition'}, {'source_entity': 'SECOND_VAR', 'description': 'can be used in $(VAR) syntax to access its value.', 'destination_entity': '$(VAR) syntax'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides a way to manage environment variables"",\n    ""summary_er"": ""Kubernetes manages environment variables for pods, allowing for flexible configuration and deployment.""\n  }\n]', '[\n  {\n    ""source"": ""FIRST_VAR"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be used in $(VAR) syntax to access its value."",\n    ""summary_er"": ""FIRST_VAR allows accessing its value within a pod using $(VAR) syntax.""\n  },\n  {\n    ""source"": ""FIRST_VAR"",\n    ""destination"": ""$(VAR)"",\n    ""relation_description"": ""syntax"",\n    ""summary_er"": ""FIRST_VAR uses $(VAR) syntax to access its value within the pod.""\n  }\n]', '[\n  {\n    ""source"": ""command"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be used to execute a command and retrieve its output as an environment variable."",\n    ""summary_er"": ""The `command` field in Kubernetes can run a command and store its output in an environment variable, making it useful for retrieving data from external sources.""\n  }\n]', '[\n  {\n    ""source"": ""valueFrom"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allows you to specify the source of an environment variable."",\n    ""summary_er"": ""This field allows specifying the source of an environment variable for a pod.""\n  }\n]', '[\n  {\n    ""source"": ""ConfigMap resource"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be used to provide configuration data"",\n    ""summary_er"": ""A ConfigMap resource can be used to provide configuration data for a pod, allowing it to access and use external configuration settings.""\n  }\n]', '[\n  {\n    ""source"": ""Secrets"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""can be used to provide sensitive information"",\n    ""summary_er"": ""Secrets can be used to securely pass sensitive information, such as API keys or credentials, to pods for use within the container.""\n  }\n]', '[\n  {\n    ""source"": ""args"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be used to pass arguments to a command executed in a pod."",\n    ""summary_er"": ""Arguments can be passed to commands running within pods for execution.""\n  }\n]', '[\n  {\n    ""source"": ""ConfigMaps"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be used to provide configuration data"",\n    ""summary_er"": ""ConfigMaps can provide configuration data for pods, allowing them to access and use external configuration settings.""\n  }\n]', '[\n  {\n    ""source"": ""SECOND_VAR"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""$(VAR) syntax"",\n    ""summary_er"": ""SECOND_VAR can be used to access its value in a pod using $(VAR) syntax.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""SECOND_VAR"",\n    ""relation_description"": ""$(VAR) syntax"",\n    ""summary_er"": ""A pod can use SECOND_VAR in $(VAR) syntax to access its value.""\n  }\n]']","You can reference previously defined environment variables by using the $(VAR) syntax, decoupling configuration from pod descriptors using ConfigMaps, and passing values as environment variables or files in a volume.","[{'highlight': 'You can reference previously defined environment variables or any other existing variables by using the $(VAR) syntax.'}, {'highlight': 'Using a ConfigMap resource and valueFrom instead of value field allows you to decouple configuration from pod descriptor, making it reusable across multiple environments.'}, {'highlight': 'A ConfigMap is a map containing key/value pairs with values ranging from short literals to full config files, which can be passed to containers as environment variables or files in a volume.'}, {'highlight': 'Environment variables can refer to other environment variables using the $(VAR) syntax, allowing for nested variable references.'}, {'highlight': 'Decoupling configuration from pod descriptor with a ConfigMap allows you to keep config options separate from application source code and reuse the same pod definition across multiple environments.'}]"
+142,231,0,[],"199
+Decoupling configuration with a ConfigMap
+variables can be referenced in command-line arguments using the $(ENV_VAR) syn-
+tax, you can also pass ConfigMap entries to processes as command-line arguments.
+Sure, the application can also read the contents of a ConfigMap directly through the
+Kubernetes REST API endpoint if needed, but unless you have a real need for this,
+you should keep your app Kubernetes-agnostic as much as possible.
+ Regardless of how an app consumes a ConfigMap, having the config in a separate
+standalone object like this allows you to keep multiple manifests for ConfigMaps with
+the same name, each for a different environment (development, testing, QA, produc-
+tion, and so on). Because pods reference the ConfigMap by name, you can use a dif-
+ferent config in each environment while using the same pod specification across all of
+them (see figure 7.3).
+Pod
+Environment variables
+ConﬁgMap
+key1=value1
+key2=value2
+...
+conﬁgMap
+volume
+Figure 7.2
+Pods use ConfigMaps 
+through environment variables and 
+configMap volumes.
+ConﬁgMap:
+app-conﬁg
+Namespace: development
+(contains
+development
+values)
+Pod(s)
+ConﬁgMaps created
+from different manifests
+Pods created from the
+same pod manifests
+Namespace: production
+ConﬁgMap:
+app-conﬁg
+(contains
+production
+values)
+Pod(s)
+Figure 7.3
+Two different ConfigMaps with the same name used in different 
+environments
+ 
+",[],"[{'entity': 'ConfigMap', 'description': 'a standalone object to store configuration data', 'category': 'software'}, {'entity': 'environment variables', 'description': 'variables that can be referenced in command-line arguments', 'category': 'process'}, {'entity': 'Kubernetes REST API endpoint', 'description': 'an API endpoint for accessing ConfigMap data', 'category': 'network'}, {'entity': 'ConfigMap entries', 'description': 'entries within a ConfigMap that can be passed to processes as command-line arguments', 'category': 'software'}, {'entity': 'pod specification', 'description': 'a specification for creating pods that reference a ConfigMap', 'category': 'application'}, {'entity': 'pods', 'description': 'containers that use a ConfigMap through environment variables and config volumes', 'category': 'container'}, {'entity': 'configMap volume', 'description': ""a volume that provides access to a ConfigMap's data"", 'category': 'hardware'}, {'entity': 'key1=value1', 'description': 'an example key-value pair within a ConfigMap', 'category': 'software'}, {'entity': 'key2=value2', 'description': 'another example key-value pair within a ConfigMap', 'category': 'software'}, {'entity': 'app-config', 'description': 'a ConfigMap with a specific name and namespace', 'category': 'software'}, {'entity': 'development values', 'description': 'example configuration data for the development environment', 'category': 'software'}, {'entity': 'production values', 'description': 'example configuration data for the production environment', 'category': 'software'}]","[{'source_entity': 'Kubernetes REST API endpoint', 'description': 'fetches production values from', 'destination_entity': 'production values'}, {'source_entity': 'Kubernetes REST API endpoint', 'description': 'serves ConfigMap entries to', 'destination_entity': 'ConfigMap entries'}, {'source_entity': 'pods', 'description': 'contains environment variables for', 'destination_entity': 'environment variables'}, {'source_entity': 'pod specification', 'description': 'specifies configMap volume for', 'destination_entity': 'configMap volume'}, {'source_entity': 'ConfigMap', 'description': 'stores key1=value1 and key2=value2 as', 'destination_entity': 'key1=value1, key2=value2'}, {'source_entity': 'Kubernetes REST API endpoint', 'description': 'exposes pod specification to', 'destination_entity': 'pod specification'}, {'source_entity': 'pods', 'description': 'uses development values from', 'destination_entity': 'development values'}]","['[\n  {\n    ""source"": ""Kubernetes REST API endpoint"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""fetches production values from"",\n    ""summary_er"": ""The Kubernetes REST API endpoint retrieves production values from a pod, allowing for efficient data retrieval and management.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes REST API endpoint"",\n    ""destination"": ""ConfigMap entries"",\n    ""relation_description"": ""serves"",\n    ""summary_er"": ""The Kubernetes REST API endpoint serves ConfigMap entries to pods.""\n  },\n  {\n    ""source"": ""ConfigMap entries"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""entries"",\n    ""summary_er"": ""ConfigMap entries are served to a pod for configuration purposes.""\n  }\n]', '[\n  {\n    ""source"": ""pods"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains environment variables for"",\n    ""summary_er"": ""A pod contains environment variables that define its execution context.""\n  }\n]', '[\n  {\n    ""source"": ""pod specification"",\n    ""destination"": ""configMap volume"",\n    ""relation_description"": ""specifies configMap volume for"",\n    ""summary_er"": ""The pod specification defines a configMap volume, which allows the pod to access and use configuration data from a ConfigMap resource.""\n  }\n]', '[\n  {\n    ""source"": ""ConfigMap"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""stores key-value pairs"",\n    ""summary_er"": ""A ConfigMap stores key-value pairs that can be used by a Pod to configure its environment.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes REST API endpoint"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes pod specification to"",\n    ""summary_er"": ""The Kubernetes REST API endpoint provides access to a pod\'s specification, allowing for configuration and management of the pod.""\n  }\n]', '[\n  {\n    ""source"": ""pods"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses development values from"",\n    ""summary_er"": ""A pod uses development values from another pod, inheriting its configuration and settings.""\n  }\n]']","ConfigMaps allow you to keep configuration separate from your app, making it easy to switch between environments by using different config values in each environment without changing the pod specification.","[{'highlight': 'variables can be referenced in command-line arguments using the $(ENV_VAR) syntax,'}, {'highlight': 'having the config in a separate standalone object like this allows you to keep multiple manifests for ConfigMaps with the same name, each for a different environment'}, {'highlight': 'pods reference the ConfigMap by name, you can use a different config in each environment while using the same pod specification across all of them'}, {'highlight': 'configmaps created from different manifests can be used in different environments'}, {'highlight': 'pods created from the same pod manifests can use different configmaps'}]"
+143,232,0,[],"200
+CHAPTER 7
+ConfigMaps and Secrets: configuring applications
+7.4.2
+Creating a ConfigMap
+Let’s see how to use a ConfigMap in one of your pods. To start with the simplest exam-
+ple, you’ll first create a map with a single key and use it to fill the INTERVAL environment
+variable from your previous example. You’ll create the ConfigMap with the special
+kubectl create configmap command instead of posting a YAML with the generic
+kubectl create -f command. 
+USING THE KUBECTL CREATE CONFIGMAP COMMAND
+You can define the map’s entries by passing literals to the kubectl command or you
+can create the ConfigMap from files stored on your disk. Use a simple literal first:
+$ kubectl create configmap fortune-config --from-literal=sleep-interval=25
+configmap ""fortune-config"" created
+NOTE
+ConfigMap keys must be a valid DNS subdomain (they may only con-
+tain alphanumeric characters, dashes, underscores, and dots). They may
+optionally include a leading dot.
+This creates a ConfigMap called fortune-config with the single-entry sleep-interval
+=25 (figure 7.4).
+ConfigMaps usually contain more than one entry. To create a ConfigMap with multi-
+ple literal entries, you add multiple --from-literal arguments:
+$ kubectl create configmap myconfigmap
+➥  --from-literal=foo=bar --from-literal=bar=baz --from-literal=one=two
+Let’s inspect the YAML descriptor of the ConfigMap you created by using the kubectl
+get command, as shown in the following listing.
+$ kubectl get configmap fortune-config -o yaml
+apiVersion: v1
+data:
+  sleep-interval: ""25""                      
+kind: ConfigMap                              
+metadata:
+  creationTimestamp: 2016-08-11T20:31:08Z
+  name: fortune-config                      
+  namespace: default
+  resourceVersion: ""910025""
+  selfLink: /api/v1/namespaces/default/configmaps/fortune-config
+  uid: 88c4167e-6002-11e6-a50d-42010af00237
+Listing 7.8
+A ConfigMap definition
+sleep-interval
+25
+ConﬁgMap: fortune-conﬁg
+Figure 7.4
+The fortune-config 
+ConfigMap containing a single entry
+The single entry 
+in this map
+This descriptor 
+describes a ConfigMap.
+The name of this map 
+(you’re referencing it 
+by this name)
+ 
+","[Empty DataFrame
+Columns: [sleep-interval, 25]
+Index: []]","[{'entity': 'ConfigMaps', 'description': 'a way to store and manage configuration data in Kubernetes', 'category': 'software'}, {'entity': 'kubectl', 'description': 'the command-line tool for interacting with a Kubernetes cluster', 'category': 'software'}, {'entity': 'create configmap command', 'description': 'a special command for creating ConfigMaps', 'category': 'software'}, {'entity': 'ConfigMap keys', 'description': 'must be valid DNS subdomains and can contain alphanumeric characters, dashes, underscores, and dots', 'category': 'hardware'}, {'entity': 'DNS subdomain', 'description': 'a subset of a domain name that is used to identify a specific resource or service', 'category': 'network'}, {'entity': 'ConfigMap entries', 'description': 'can be defined using literals or by creating the ConfigMap from files stored on disk', 'category': 'software'}, {'entity': 'literal', 'description': 'a value that is specified directly in a command or configuration file', 'category': 'hardware'}, {'entity': 'ConfigMap name', 'description': 'the unique identifier for a ConfigMap, used to reference it in other commands and configurations', 'category': 'software'}, {'entity': 'metadata', 'description': 'information about the creation of a ConfigMap, including its timestamp, namespace, and resource version', 'category': 'hardware'}, {'entity': 'apiVersion', 'description': 'the version of the Kubernetes API being used to interact with a ConfigMap', 'category': 'software'}, {'entity': 'data', 'description': 'the actual configuration data stored in a ConfigMap', 'category': 'software'}, {'entity': 'sleep-interval', 'description': 'a specific key-value pair stored in the fortune-config ConfigMap', 'category': 'hardware'}, {'entity': 'fortune-config', 'description': 'the name of the ConfigMap being created and referenced throughout the example', 'category': 'software'}]","[{'source_entity': '""kubectl""', 'description': 'create', 'destination_entity': '""configmap""'}, {'source_entity': '""kubectl""', 'description': 'use', 'destination_entity': '""create configmap command""'}, {'source_entity': '""ConfigMap entries""', 'description': 'contain', 'destination_entity': '""fortune-config""'}, {'source_entity': '""fortune-config""', 'description': 'have', 'destination_entity': '""sleep-interval""'}, {'source_entity': '""sleep-interval""', 'description': 'be', 'destination_entity': '""ConfigMap key""'}, {'source_entity': '""ConfigMap keys""', 'description': 'include', 'destination_entity': '""literal""'}, {'source_entity': '""literal""', 'description': 'be', 'destination_entity': '""DNS subdomain""'}, {'source_entity': '""ConfigMap name""', 'description': 'have', 'destination_entity': '""fortune-config""'}, {'source_entity': '""data""', 'description': 'store', 'destination_entity': '""ConfigMap entries""'}, {'source_entity': '""kubectl""', 'description': 'use', 'destination_entity': '""create configmap command""'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""create"",\n    ""summary_er"": ""Kubectl command used to create a new pod in Kubernetes cluster.""\n  },\n  {\n    ""source"": ""configmap"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""apply"",\n    ""summary_er"": ""Configmap applied to a pod to provide configuration data.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""use"",\n    ""summary_er"": ""Use kubectl to create a configuration file for a pod.""\n  },\n  {\n    ""source"": ""configmap command"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""create"",\n    ""summary_er"": ""Create a configmap using the command and apply it to a pod.""\n  }\n]', '[\n  {\n    ""source"": ""ConfigMap entries"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contain"",\n    ""summary_er"": ""A ConfigMap entry is contained within a pod, providing configuration data to the container.""\n  }\n]', '[\n  {\n    ""source"": ""fortune-config"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""have"",\n    ""summary_er"": ""The fortune-config has a pod that it manages.""\n  },\n  {\n    ""source"": ""fortune-config"",\n    ""destination"": ""sleep-interval"",\n    ""relation_description"": ""have"",\n    ""summary_er"": ""The fortune-config has a sleep interval setting that it uses to manage the pod\'s sleep schedule.""\n  }\n]', '[{\n    ""source"": ""sleep-interval"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""be"",\n    ""summary_er"": ""The sleep interval is a configuration value that determines how long a pod should run before being restarted or terminated.""\n}]', '[\n  {\n    ""source"": ""ConfigMap keys"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""include"",\n    ""summary_er"": ""ConfigMap keys are used to include specific configuration settings in a pod.""\n  }\n]', '[{\n    ""source"": ""Literal"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""Be"",\n    ""summary_er"": ""A literal is an entity that represents a value or a string, and it can be used as a pod in Kubernetes.""\n}]', '[\n  {\n    ""source"": ""ConfigMap"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""have"",\n    ""summary_er"": ""A ConfigMap provides configuration data to a Pod, which uses it to configure its environment.""\n  }\n]', '[\n  {\n    ""source"": ""data"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""store"",\n    ""summary_er"": ""Data is stored in a pod, which is a container that holds an application and its dependencies.""\n  },\n  {\n    ""source"": ""ConfigMap entries"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""store"",\n    ""summary_er"": ""ConfigMap entries are stored in a pod, providing configuration data to the application.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""use"",\n    ""summary_er"": ""Kubectl uses a pod to execute commands, such as creating a configmap.""\n  }\n]']","A ConfigMap is used to store and manage configuration data for applications. It can be created using the kubectl create configmap command, which allows defining entries by passing literals or creating from files. A ConfigMap named fortune-config was created with a single entry sleep-interval=25, and its YAML descriptor was inspected using kubectl get command.","[{'highlight': 'You can define the map’s entries by passing literals to the kubectl command or you can create the ConfigMap from files stored on your disk.'}, {'highlight': 'ConfigMaps usually contain more than one entry. To create a ConfigMap with multiple literal entries, you add multiple --from-literal arguments:'}, {'highlight': 'The name of this map (you’re referencing it by this name) is used to reference the ConfigMap.'}, {'highlight': 'ConfigMap keys must be a valid DNS subdomain (they may only contain alphanumeric characters, dashes, underscores, and dots).'}, {'highlight': 'You can create a ConfigMap with multiple entries using the kubectl create configmap command with multiple --from-literal arguments.'}]"
+144,233,0,[],"201
+Decoupling configuration with a ConfigMap
+Nothing extraordinary. You could easily have written this YAML yourself (you wouldn’t
+need to specify anything but the name in the metadata section, of course) and posted
+it to the Kubernetes API with the well-known
+$ kubectl create -f fortune-config.yaml
+CREATING A CONFIGMAP ENTRY FROM THE CONTENTS OF A FILE
+ConfigMaps can also store coarse-grained config data, such as complete config files.
+To do this, the kubectl create configmap command also supports reading files from
+disk and storing them as individual entries in the ConfigMap:
+$ kubectl create configmap my-config --from-file=config-file.conf
+When you run the previous command, kubectl looks for the file config-file.conf in
+the directory you run kubectl in. It will then store the contents of the file under the
+key config-file.conf in the ConfigMap (the filename is used as the map key), but
+you can also specify a key manually like this:
+$ kubectl create configmap my-config --from-file=customkey=config-file.conf
+This command will store the file’s contents under the key customkey. As with literals,
+you can add multiple files by using the --from-file argument multiple times. 
+CREATING A CONFIGMAP FROM FILES IN A DIRECTORY
+Instead of importing each file individually, you can even import all files from a file
+directory:
+$ kubectl create configmap my-config --from-file=/path/to/dir
+In this case, kubectl will create an individual map entry for each file in the specified
+directory, but only for files whose name is a valid ConfigMap key. 
+COMBINING DIFFERENT OPTIONS
+When creating ConfigMaps, you can use a combination of all the options mentioned
+here (note that these files aren’t included in the book’s code archive—you can create
+them yourself if you’d like to try out the command):
+$ kubectl create configmap my-config  
+➥  --from-file=foo.json                  
+➥  --from-file=bar=foobar.conf              
+➥  --from-file=config-opts/               
+➥  --from-literal=some=thing    
+Here, you’ve created the ConfigMap from multiple sources: a whole directory, a file,
+another file (but stored under a custom key instead of using the filename as the key),
+and a literal value. Figure 7.5 shows all these sources and the resulting ConfigMap.
+A single file
+A file stored under 
+a custom key
+A whole directory
+A literal value
+ 
+",[],"[{'entity': 'ConfigMap', 'description': 'A Kubernetes object that stores configuration data', 'category': 'software'}, {'entity': 'kubectl', 'description': 'The Kubernetes command-line tool', 'category': 'software'}, {'entity': 'YAML', 'description': 'A human-readable serialization format', 'category': 'software'}, {'entity': '$ kubectl create -f fortune-config.yaml', 'description': 'A command to create a ConfigMap from a YAML file', 'category': 'command'}, {'entity': 'ConfigMaps', 'description': 'A type of Kubernetes object that stores configuration data', 'category': 'software'}, {'entity': '--from-file=config-file.conf', 'description': 'An option to create a ConfigMap from a file', 'category': 'option'}, {'entity': '--from-literal=some=thing', 'description': 'An option to create a ConfigMap from a literal value', 'category': 'option'}, {'entity': '/path/to/dir', 'description': 'A directory path used to import files into a ConfigMap', 'category': 'directory'}, {'entity': 'foo.json', 'description': 'A JSON file used to create a ConfigMap', 'category': 'file'}, {'entity': 'bar=foobar.conf', 'description': 'A file stored under a custom key in a ConfigMap', 'category': 'file'}, {'entity': 'config-opts/', 'description': 'A directory used to import files into a ConfigMap', 'category': 'directory'}, {'entity': 'some=thing', 'description': 'A literal value used to create a ConfigMap', 'category': 'value'}]","[{'source_entity': '""kubectl""', 'description': 'create', 'destination_entity': '""fortune-config.yaml""'}, {'source_entity': '""kubectl""', 'description': 'create', 'destination_entity': '""ConfigMap""'}, {'source_entity': '""kubectl""', 'description': 'create', 'destination_entity': '""config-opts/""'}, {'source_entity': '""kubectl""', 'description': 'read', 'destination_entity': '""foo.json""'}, {'source_entity': '""kubectl""', 'description': 'read', 'destination_entity': '""bar=foobar.conf""'}, {'source_entity': '""kubectl""', 'description': 'read', 'destination_entity': '""some=thing""'}, {'source_entity': '""kubectl""', 'description': 'write', 'destination_entity': '""config-file.conf""'}, {'source_entity': '""kubectl""', 'description': 'write', 'destination_entity': '""YAML""'}, {'source_entity': '""kubectl""', 'description': 'write', 'destination_entity': '""/path/to/dir""'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""create"",\n    ""summary_er"": ""Kubernetes command used to create a new pod in the cluster, specifying configuration from fortune-config.yaml file.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""create"",\n    ""summary_er"": ""Kubectl creates a new pod instance with specified configuration.""\n  },\n  {\n    ""source"": ""ConfigMap"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""use"",\n    ""summary_er"": ""A ConfigMap is used to provide configuration data to a pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""create"",\n    ""summary_er"": ""Kubernetes command-line tool creates a new pod with specified configuration options.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""read"",\n    ""summary_er"": ""Kubectl reads configuration from foo.json to manage a Kubernetes pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""read"",\n    ""summary_er"": ""Kubernetes command reads configuration from a pod.""\n  },\n  {\n    ""source"": ""bar=foobar.conf"",\n    ""destination"": ""configuration file"",\n    ""relation_description"": ""equals"",\n    ""summary_er"": ""Configuration variable bar is set to foobar.conf.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""read"",\n    ""summary_er"": ""\\""kubectl\\"" reads configuration from a \\""pod\\"", allowing for dynamic updates and management of containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""write"",\n    ""summary_er"": ""\\""kubectl\\"" is used to write configurations for a \\""pod\\"", which is an application running on a container.""\n  },\n  {\n    ""source"": ""config-file.conf"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""A configuration file named \\""config-file.conf\\"" is associated with a \\""pod\\"", providing settings for the application.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""config-file.conf"",\n    ""relation_description"": """",\n    ""summary_er"": ""\\""kubectl\\"" is used to manage and configure files like \\""config-file.conf\\"", which are essential for pod operation.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""write"",\n    ""summary_er"": ""Kubectl is used to write configuration files for pods in YAML format.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""write"",\n    ""summary_er"": ""Kubernetes command used to write data to a pod\'s directory at /path/to/dir.""\n  }\n]']","ConfigMaps in Kubernetes can store configuration data, including complete config files, which can be created using the `kubectl create configmap` command. Files can be added individually or from a directory, and keys can be specified manually. ConfigMaps can also combine different options, such as literal values, files, and directories, to create a single map entry.","[{'highlight': 'You can create a ConfigMap from a YAML file using the command $ kubectl create -f fortune-config.yaml'}, {'highlight': 'The kubectl create configmap command supports reading files from disk and storing them as individual entries in the ConfigMap'}, {'highlight': 'You can import all files from a directory into a ConfigMap using the command $ kubectl create configmap my-config --from-file=/path/to/dir'}, {'highlight': 'You can combine different options when creating a ConfigMap, such as importing files and literals, using commands like $ kubectl create configmap my-config --from-file=foo.json --from-literal=some=thing'}, {'highlight': 'A ConfigMap can store coarse-grained config data, such as complete config files, in addition to fine-grained config data like individual key-value pairs'}]"
+145,234,0,[],"202
+CHAPTER 7
+ConfigMaps and Secrets: configuring applications
+7.4.3
+Passing a ConfigMap entry to a container as an environment 
+variable
+How do you now get the values from this map into a pod’s container? You have three
+options. Let’s start with the simplest—setting an environment variable. You’ll use the
+valueFrom field I mentioned in section 7.3.3. The pod descriptor should look like
+the following listing.
+apiVersion: v1
+kind: Pod
+Listing 7.9
+Pod with env var from a config map: fortune-pod-env-configmap.yaml
+ConﬁgMap: my-conﬁg
+Key
+foo.json
+foo.json
+Value
+bar
+abc
+debug
+true
+repeat
+100
+some
+thing
+{
+foo: bar
+baz: 5
+}
+conﬁg-opts directory
+Literal
+some=thing
+{
+foo: bar
+baz: 5
+}
+--from-ﬁle=foo.json
+--from-ﬁle=conﬁg-opts/
+--from-literal=some=thing
+foobar.conf
+abc
+debug
+true
+repeat
+100
+--from-ﬁle=bar=foobar.conf
+Figure 7.5
+Creating a ConfigMap from individual files, a directory, and a literal value
+ 
+","[        Key                   Value
+0  foo.json  {\nfoo: bar\nbaz: 5\n}
+1       bar                     abc
+2     debug                    true
+3    repeat                     100
+4      some                   thing]","[{'entity': 'ConfigMaps', 'description': 'a way to store configuration data as key-value pairs', 'category': 'software'}, {'entity': 'Secrets', 'description': 'a way to store sensitive information such as passwords or API keys', 'category': 'software'}, {'entity': 'Pod', 'description': 'the basic execution unit in Kubernetes, a container running an application', 'category': 'container'}, {'entity': 'apiVersion', 'description': 'a field in the pod descriptor that specifies the API version', 'category': 'software'}, {'entity': 'kind', 'description': 'a field in the pod descriptor that specifies the type of resource (in this case, a Pod)', 'category': 'software'}, {'entity': 'valueFrom', 'description': 'a field used to specify the source of an environment variable', 'category': 'software'}, {'entity': 'ConfigMap', 'description': 'a way to store configuration data as key-value pairs', 'category': 'software'}, {'entity': 'my-conﬁg', 'description': 'the name of a ConfigMap', 'category': 'software'}, {'entity': 'foo.json', 'description': 'a file containing configuration data in JSON format', 'category': 'file'}, {'entity': 'bar', 'description': 'a value stored in the ConfigMap', 'category': 'string'}, {'entity': 'abc', 'description': 'a value stored in the ConfigMap', 'category': 'string'}, {'entity': 'debug', 'description': 'a key-value pair stored in the ConfigMap', 'category': 'software'}, {'entity': 'true', 'description': 'the value of a boolean variable stored in the ConfigMap', 'category': 'boolean'}, {'entity': 'repeat', 'description': 'a key-value pair stored in the ConfigMap', 'category': 'software'}, {'entity': '100', 'description': 'the value of an integer variable stored in the ConfigMap', 'category': 'integer'}, {'entity': 'some thing', 'description': 'a key-value pair stored in the ConfigMap', 'category': 'string'}, {'entity': 'foobar.conf', 'description': 'a file containing configuration data in JSON format', 'category': 'file'}]","[{'source_entity': '""apiVersion""', 'description': 'specifies the API version for Kubernetes configuration', 'destination_entity': '""debug""'}, {'source_entity': '""foo.json""', 'description': 'is a JSON file used in Kubernetes configuration', 'destination_entity': '""apiVersion""'}, {'source_entity': '""Pod""', 'description': 'is a containerized application running in Kubernetes', 'destination_entity': '""foo.json""'}, {'source_entity': '""valueFrom""', 'description': 'specifies the value to use from a ConfigMap or Secret', 'destination_entity': '""foobar.conf""'}, {'source_entity': '""foobar.conf""', 'description': 'is a configuration file used in Kubernetes', 'destination_entity': '""repeat""'}, {'source_entity': '""true""', 'description': 'indicates that the configuration should be repeated', 'destination_entity': '""foobar.conf""'}, {'source_entity': '""bar""', 'description': 'is a key used in Kubernetes configuration', 'destination_entity': '""Secrets""'}, {'source_entity': '""Secrets""', 'description': 'are stored securely in Kubernetes', 'destination_entity': '""ConfigMaps""'}, {'source_entity': '""kind""', 'description': 'specifies the type of resource (e.g., Pod, ConfigMap)', 'destination_entity': '""100""'}, {'source_entity': '""ConfigMap""', 'description': 'is a configuration file used in Kubernetes', 'destination_entity': '""my-conﬁg""'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the API version for Kubernetes configuration"",\n    ""summary_er"": ""The Kubernetes API version specifies the configuration format for a pod, ensuring compatibility and consistency.""\n  },\n  {\n    ""source"": ""Docker"",\n    ""destination"": ""container"",\n    ""relation_description"": ""debug"",\n    ""summary_er"": ""Debugging Docker containers involves identifying and resolving issues within the container environment to ensure smooth execution.""\n  }\n]', '[\n  {\n    ""source"": ""foo.json"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a JSON file used in Kubernetes configuration"",\n    ""summary_er"": ""The foo.json file is used to configure pods in Kubernetes, providing essential details for container deployment.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a containerized application running in Kubernetes"",\n    ""summary_er"": ""A Pod is a basic execution unit in Kubernetes, containing one or more containers that run as a single process.""\n  },\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""foo.json"",\n    ""relation_description"": ""file associated with the pod"",\n    ""summary_er"": ""The foo.json file contains configuration data for the Pod, defining its containerized application and Kubernetes settings.""\n  }\n]', '[\n  {\n    ""source"": ""ConfigMap/Secret"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""valueFrom"",\n    ""summary_er"": ""Specifies value to use from ConfigMap or Secret for Pod configuration.""\n  }\n]', '[\n  {\n    ""source"": ""foobar.conf"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a configuration file used in Kubernetes"",\n    ""summary_er"": ""Foobar.conf is a Kubernetes config file that defines pod settings.""\n  },\n  {\n    ""source"": ""foobar.conf"",\n    ""destination"": ""repeat"",\n    ""relation_description"": ""is a configuration file used in Kubernetes"",\n    ""summary_er"": ""Foobar.conf repeats Kubernetes pod configurations for efficiency.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""configuration file"",\n    ""summary_er"": ""In Kubernetes, a configuration file named foobar.conf is used to configure a pod.""\n  },\n  {\n    ""source"": ""Docker"",\n    ""destination"": ""Container"",\n    ""relation_description"": ""containerization technology"",\n    ""summary_er"": ""Docker is a containerization technology that allows for the creation and deployment of containers, which are lightweight and portable.""\n  },\n  {\n    ""source"": ""Machine Learning"",\n    ""destination"": ""Model"",\n    ""relation_description"": ""training data"",\n    ""summary_er"": ""In machine learning, models are trained using large datasets to enable accurate predictions and decision-making.""\n  },\n  {\n    ""source"": ""Generative AI"",\n    ""destination"": ""Data"",\n    ""relation_description"": ""synthetic generation"",\n    ""summary_er"": ""Generative AI uses algorithms to generate synthetic data that mimics real-world patterns, enabling more realistic simulations and predictions.""\n  },\n  {\n    ""source"": ""Natural Language Understanding"",\n    ""destination"": ""Text"",\n    ""relation_description"": ""text analysis"",\n    ""summary_er"": ""NLU enables computers to analyze and understand human language, allowing for more accurate text classification and sentiment analysis.""\n  },\n  {\n    ""source"": ""Computer Vision"",\n    ""destination"": ""Image"",\n    ""relation_description"": ""image processing"",\n    ""summary_er"": ""CV uses algorithms to interpret and understand visual data from images and videos, enabling applications such as object detection and facial recognition.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a container running an application"",\n    ""summary_er"": ""In Kubernetes, a pod is a logical host for one or more containers, providing shared resources and networking.""\n  },\n  {\n    ""source"": ""Docker"",\n    ""destination"": ""container"",\n    ""relation_description"": ""is a lightweight and portable executable package"",\n    ""summary_er"": ""A Docker container is a self-contained application environment that includes everything needed to run an app, including code, libraries, and settings.""\n  },\n  {\n    ""source"": ""Machine Learning"",\n    ""destination"": ""algorithm"",\n    ""relation_description"": ""is a set of rules for making predictions or decisions"",\n    ""summary_er"": ""In Machine Learning, an algorithm is a mathematical formula used to analyze data, identify patterns, and make predictions or classify inputs.""\n  },\n  {\n    ""source"": ""Generative AI"",\n    ""destination"": ""model"",\n    ""relation_description"": ""is a type of artificial intelligence that generates new content"",\n    ""summary_er"": ""A Generative AI model is an algorithmic system that creates new data, such as images or text, based on patterns and structures learned from existing data.""\n  },\n  {\n    ""source"": ""Natural Language Understanding"",\n    ""destination"": ""language model"",\n    ""relation_description"": ""is a type of artificial intelligence that analyzes and interprets human language"",\n    ""summary_er"": ""A Natural Language Understanding (NLU) model is an algorithmic system that processes, understands, and generates human language, enabling applications like chatbots and virtual assistants.""\n  },\n  {\n    ""source"": ""Computer Vision"",\n    ""destination"": ""image"",\n    ""relation_description"": ""is a type of artificial intelligence that interprets visual data from images or videos"",\n    ""summary_er"": ""In Computer Vision, an image is a digital representation of a visual scene or object, which can be analyzed and interpreted by algorithms to extract information or make decisions.""\n  },\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Secrets"",\n    ""relation_description"": ""is a key used in Kubernetes configuration"",\n    ""summary_er"": ""In Kubernetes, Secrets are sensitive data, such as passwords or API keys, that can be stored and referenced within the cluster for secure access to external services.""\n  }\n]', '[\n  {\n    ""source"": ""Secrets"",\n    ""destination"": ""Kubernetes"",\n    ""relation_description"": ""are stored securely in"",\n    ""summary_er"": ""Sensitive data, such as API keys and passwords, are stored securely within Kubernetes to prevent unauthorized access.""\n  },\n  {\n    ""source"": ""Secrets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""and the destination"",\n    ""summary_er"": ""Secrets are used to configure and authenticate pods in a Kubernetes cluster, ensuring secure communication between components.""\n  },\n  {\n    ""source"": ""ConfigMaps"",\n    ""destination"": ""Kubernetes"",\n    ""relation_description"": ""are stored securely in"",\n    ""summary_er"": ""Configuration data, such as environment variables and application settings, are stored securely within Kubernetes to ensure consistency across deployments.""\n  }\n]', '[\n  {\n    ""source"": ""kind"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""specifies the type of resource"",\n    ""summary_er"": ""The kind field specifies the type of Kubernetes resource, such as a Pod or ConfigMap.""\n  },\n  {\n    ""source"": ""100"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""integer value"",\n    ""summary_er"": ""A numeric value representing the pod\'s identifier.""\n  }\n]', '[\n  {\n    ""source"": ""ConfigMap"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a configuration file used in Kubernetes"",\n    ""summary_er"": ""A ConfigMap is a Kubernetes object that provides configuration data to pods, allowing them to access and use external configuration files.""\n  }\n]']","You can pass ConfigMap entries to a container as environment variables using the valueFrom field in the pod descriptor. The pod descriptor should have an apiVersion of v1 and kind of Pod, with a ConfigMap named my-config. You can specify the key-value pairs from the ConfigMap as environment variables using --from-file or --from-literal flags, allowing you to pass JSON data and literal values to the container.","[{'highlight': ""You have three options to get values from a ConfigMap into a pod's container.""}, {'highlight': 'The simplest option is setting an environment variable using the valueFrom field.'}, {'highlight': 'A ConfigMap can be created from individual files, a directory, and a literal value.'}, {'highlight': 'The --from-file and --from-literal options are used to specify the source of the ConfigMap values.'}, {'highlight': ""Literal values can be specified using the --from-literal option with a key-value pair in the format 'key=value'.""}]"
+146,235,0,[],"203
+Decoupling configuration with a ConfigMap
+metadata:
+  name: fortune-env-from-configmap
+spec:
+  containers:
+  - image: luksa/fortune:env
+    env:                             
+    - name: INTERVAL                 
+      valueFrom:                       
+        configMapKeyRef:               
+          name: fortune-config      
+          key: sleep-interval    
+...
+You defined an environment variable called INTERVAL and set its value to whatever is
+stored in the fortune-config ConfigMap under the key sleep-interval. When the
+process running in the html-generator container reads the INTERVAL environment
+variable, it will see the value 25 (shown in figure 7.6).
+REFERENCING NON-EXISTING CONFIGMAPS IN A POD
+You might wonder what happens if the referenced ConfigMap doesn’t exist when you
+create the pod. Kubernetes schedules the pod normally and tries to run its containers.
+The container referencing the non-existing ConfigMap will fail to start, but the other
+container will start normally. If you then create the missing ConfigMap, the failed con-
+tainer is started without requiring you to recreate the pod.
+NOTE
+You can also mark a reference to a ConfigMap as optional (by setting
+configMapKeyRef.optional: true). In that case, the container starts even if
+the ConfigMap doesn’t exist.
+This example shows you how to decouple the configuration from the pod specifica-
+tion. This allows you to keep all the configuration options closely together (even for
+multiple pods) instead of having them splattered around the pod definition (or dupli-
+cated across multiple pod manifests). 
+You’re setting the environment 
+variable called INTERVAL.
+Instead of setting a fixed value, you're 
+initializing it from a ConfigMap key.
+The name of the ConfigMap 
+you're referencing
+You're setting the variable to whatever is
+stored under this key in the ConfigMap.
+ConﬁgMap: fortune-conﬁg
+sleep-interval
+25
+Pod
+Container: web-server
+Container: html-generator
+Environment variables
+INTERVAL=25
+fortuneloop.sh
+process
+Figure 7.6
+Passing a ConfigMap entry as 
+an environment variable to a container
+ 
+","[Empty DataFrame
+Columns: [sleep-interval, 25]
+Index: []]","[{'entity': 'ConfigMap', 'description': 'A Kubernetes resource that stores configuration data as key-value pairs.', 'category': 'software'}, {'entity': 'Pod', 'description': 'The basic execution unit in a Kubernetes cluster, representing a running instance of an application.', 'category': 'application'}, {'entity': 'Container', 'description': 'A lightweight and standalone executable package that includes everything needed to run an application.', 'category': 'container'}, {'entity': 'ConfigMapKeyRef', 'description': 'A reference to a ConfigMap key, used to initialize environment variables in containers.', 'category': 'software'}, {'entity': 'environment variable', 'description': 'A variable that can be set and accessed by processes within a container.', 'category': 'process'}, {'entity': 'INTERVAL', 'description': 'An environment variable used to store the sleep interval value.', 'category': 'environment variable'}, {'entity': 'fortune-config', 'description': 'A ConfigMap that stores configuration data for the fortune application.', 'category': 'ConfigMap'}, {'entity': 'sleep-interval', 'description': 'The key in the fortune-config ConfigMap that stores the sleep interval value.', 'category': 'ConfigMapKeyRef'}, {'entity': 'html-generator', 'description': 'A container that generates HTML content for the fortune application.', 'category': 'Container'}, {'entity': 'web-server', 'description': 'A container that serves web content for the fortune application.', 'category': 'Container'}, {'entity': 'fortuneloop.sh', 'description': 'A process that runs a loop to generate fortune messages.', 'category': 'process'}]","[{'source_entity': '""fortune-config""', 'description': 'defines', 'destination_entity': '""fortuneloop.sh""'}, {'source_entity': '""Container""', 'description': 'runs', 'destination_entity': '""fortuneloop.sh""'}, {'source_entity': '""sleep-interval""', 'description': 'sets', 'destination_entity': '""Pod""'}, {'source_entity': '""html-generator""', 'description': 'generates', 'destination_entity': '""web-server""'}, {'source_entity': '""environment variable""', 'description': 'defines', 'destination_entity': '""INTERVAL""'}, {'source_entity': '""ConfigMapKeyRef""', 'description': 'references', 'destination_entity': '""ConfigMap""'}]","['[\n  {\n    ""source"": ""fortune-config"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""The fortune-config defines a configuration for the pod, likely specifying settings and parameters for the containerized application.""\n  }\n]', '[\n  {\n    ""source"": ""Container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""A container runs within a pod in Kubernetes, providing isolation and resource sharing.""\n  }\n]', '[\n  {\n    ""source"": ""sleep-interval"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets"",\n    ""summary_er"": ""The sleep interval setting determines how often a pod will be restarted or scaled.""\n  }\n]', '[\n  {\n    ""source"": ""html-generator"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""generates"",\n    ""summary_er"": ""The html-generator entity produces output that is consumed by a web-server pod, enabling dynamic content generation.""\n  }\n]', '[{""source"": ""environment variable"", ""destination"": ""pod"", ""relation_description"": ""defines"", ""summary_er"": ""Environment variables are used to configure a pod by defining key-value pairs that can be accessed within the container.""}]', '[\n  {\n    ""source"": ""ConfigMapKeyRef"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""references"",\n    ""summary_er"": ""A ConfigMapKeyRef references a key from a ConfigMap, which can be used to populate environment variables or other fields within a pod.""\n  },\n  {\n    ""source"": ""ConfigMap"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A ConfigMap provides configuration data for a pod, such as environment variables or files that are mounted into the container\'s filesystem.""\n  }\n]']","This section shows how to decouple configuration from pod specification using a ConfigMap. A ConfigMap is referenced in the pod definition, allowing configuration options to be kept together and avoiding duplication across multiple pod manifests. If a referenced ConfigMap doesn't exist, the container referencing it will fail to start, but other containers will start normally. Optional references can also be marked, enabling containers to start even if the ConfigMap doesn't exist.","[{'highlight': 'You defined an environment variable called INTERVAL and set its value to whatever is stored in the fortune-config ConfigMap under the key sleep-interval.'}, {'highlight': 'Kubernetes schedules the pod normally and tries to run its containers. The container referencing the non-existing ConfigMap will fail to start, but the other container will start normally.'}, {'highlight': 'You can also mark a reference to a ConfigMap as optional (by setting configMapKeyRef.optional: true). In that case, the container starts even if the ConfigMap doesn’t exist.'}, {'highlight': 'This example shows you how to decouple the configuration from the pod specification. This allows you to keep all the configuration options closely together instead of having them splattered around the pod definition (or duplicated across multiple pod manifests).'}, {'highlight': ""You're setting the variable to whatever is stored under this key in the ConfigMap.""}]"
+147,236,0,[],"204
+CHAPTER 7
+ConfigMaps and Secrets: configuring applications
+7.4.4
+Passing all entries of a ConfigMap as environment variables 
+at once
+When your ConfigMap contains more than just a few entries, it becomes tedious and
+error-prone to create environment variables from each entry individually. Luckily,
+Kubernetes version 1.6 provides a way to expose all entries of a ConfigMap as environ-
+ment variables. 
+ Imagine having a ConfigMap with three keys called FOO, BAR, and FOO-BAR. You can
+expose them all as environment variables by using the envFrom attribute, instead of
+env the way you did in previous examples. The following listing shows an example.
+spec:
+  containers:
+  - image: some-image
+    envFrom:                
+    - prefix: CONFIG_             
+      configMapRef:              
+        name: my-config-map      
+...
+As you can see, you can also specify a prefix for the environment variables (CONFIG_ in
+this case). This results in the following two environment variables being present inside
+the container: CONFIG_FOO and CONFIG_BAR. 
+NOTE
+The prefix is optional, so if you omit it the environment variables will
+have the same name as the keys. 
+Did you notice I said two variables, but earlier, I said the ConfigMap has three entries
+(FOO, BAR, and FOO-BAR)? Why is there no environment variable for the FOO-BAR
+ConfigMap entry?
+ The reason is that CONFIG_FOO-BAR isn’t a valid environment variable name
+because it contains a dash. Kubernetes doesn’t convert the keys in any way (it doesn’t
+convert dashes to underscores, for example). If a ConfigMap key isn’t in the proper
+format, it skips the entry (but it does record an event informing you it skipped it).
+7.4.5
+Passing a ConfigMap entry as a command-line argument
+Now, let’s also look at how to pass values from a ConfigMap as arguments to the main
+process running in the container. You can’t reference ConfigMap entries directly in
+the pod.spec.containers.args field, but you can first initialize an environment vari-
+able from the ConfigMap entry and then refer to the variable inside the arguments as
+shown in figure 7.7.
+ Listing 7.11 shows an example of how to do this in the YAML.
+ 
+Listing 7.10
+Pod with env vars from all entries of a ConfigMap
+Using envFrom instead of env
+All environment variables will 
+be prefixed with CONFIG_.
+Referencing the ConfigMap 
+called my-config-map
+ 
+",[],"[{'entity': 'ConfigMaps', 'description': 'A way to expose all entries of a ConfigMap as environment variables at once.', 'category': 'software'}, {'entity': 'Kubernetes', 'description': 'An open-source container orchestration system.', 'category': 'software'}, {'entity': 'ConfigMap', 'description': 'A Kubernetes resource that stores configuration data as key-value pairs.', 'category': 'software'}, {'entity': 'envFrom', 'description': 'An attribute used to expose all entries of a ConfigMap as environment variables.', 'category': 'software'}, {'entity': 'env', 'description': 'A way to set environment variables in a container.', 'category': 'software'}, {'entity': 'prefix', 'description': 'An optional attribute used to specify a prefix for environment variables.', 'category': 'software'}, {'entity': 'CONFIG_FOO', 'description': 'An example environment variable created by using the envFrom attribute.', 'category': 'software'}, {'entity': 'CONFIG_BAR', 'description': 'Another example environment variable created by using the envFrom attribute.', 'category': 'software'}, {'entity': 'FOO-BAR', 'description': 'A ConfigMap key that is not converted to a valid environment variable name.', 'category': 'software'}, {'entity': 'my-config-map', 'description': 'An example ConfigMap used in the listing.', 'category': 'software'}, {'entity': 'some-image', 'description': 'The image used in the container.', 'category': 'software'}]","[{'source_entity': '""some-image""', 'description': 'is used to create', 'destination_entity': '""prefix""'}, {'source_entity': '""CONFIG_FOO""', 'description': 'defines a configuration variable', 'destination_entity': '""FOO-BAR""'}, {'source_entity': '""Kubernetes""', 'description': 'manages and orchestrates', 'destination_entity': '""my-config-map""'}, {'source_entity': '""env""', 'description': 'is used to set environment variables', 'destination_entity': '""ConfigMaps""'}, {'source_entity': '""ConfigMap""', 'description': 'is a resource that stores configuration data', 'destination_entity': '""envFrom""'}, {'source_entity': '""CONFIG_BAR""', 'description': 'defines another configuration variable', 'destination_entity': '""FOO-BAR""'}]","['[\n  {\n    ""source"": ""some-image"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to create"",\n    ""summary_er"": ""The Docker image \'some-image\' is utilized to generate a Kubernetes pod named \'prefix\'.""\n  }\n]', '[\n  {\n    ""source"": ""CONFIG_FOO"",\n    ""destination"": ""FOO-BAR"",\n    ""relation_description"": ""defines a configuration variable"",\n    ""summary_er"": ""The CONFIG_FOO entity defines a configuration variable for the FOO-BAR pod.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages and orchestrates"",\n    ""summary_er"": ""Kubernetes manages and orchestrates pods, ensuring efficient resource utilization and scalability.""\n  }\n]', '[\n    {\n        ""source"": ""env"",\n        ""destination"": ""pod"",\n        ""relation_description"": ""is used to set environment variables"",\n        ""summary_er"": ""Environment variables are set using env, which is then applied to the pod for configuration purposes.""\n    }\n]', '[\n  {\n    ""source"": ""ConfigMap"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a resource that stores configuration data"",\n    ""summary_er"": ""A ConfigMap is used to store configuration data for pods, providing them with environment variables and files.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""ConfigMap"",\n    ""relation_description"": ""envFrom"",\n    ""summary_er"": ""Pods can consume ConfigMaps using the envFrom field, injecting environment variables from the ConfigMap into the pod\'s container.""\n  }\n]', '[\n  {\n    ""source"": ""CONFIG_BAR"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines another configuration variable"",\n    ""summary_er"": ""The CONFIG_BAR configuration variable defines a configuration for a pod in Kubernetes.""\n  }\n]']","Kubernetes version 1.6 allows exposing all entries of a ConfigMap as environment variables using the envFrom attribute, instead of individual env variables. This can be done by specifying a prefix for the environment variables, which will result in environment variables with the same name as the keys. However, if a ConfigMap key is not in the proper format (e.g., contains a dash), it will skip the entry and record an event. Additionally, ConfigMap entries cannot be referenced directly in the pod.spec.containers.args field, but can be passed as command-line arguments by first initializing an environment variable from the ConfigMap entry.","[{'highlight': 'Kubernetes version 1.6 provides a way to expose all entries of a ConfigMap as environment variables.'}, {'highlight': 'You can expose all entries of a ConfigMap as environment variables by using the envFrom attribute, instead of env.'}, {'highlight': 'The prefix is optional, so if you omit it the environment variables will have the same name as the keys.'}, {'highlight': 'Kubernetes doesn’t convert the keys in any way (it doesn’t convert dashes to underscores, for example).'}, {'highlight': 'You can first initialize an environment variable from the ConfigMap entry and then refer to the variable inside the arguments.'}]"
+148,237,0,[],"205
+Decoupling configuration with a ConfigMap
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fortune-args-from-configmap
+spec:
+  containers:
+  - image: luksa/fortune:args         
+    env:                               
+    - name: INTERVAL                   
+      valueFrom:                       
+        configMapKeyRef:               
+          name: fortune-config         
+          key: sleep-interval          
+    args: [""$(INTERVAL)""]      
+...
+You defined the environment variable exactly as you did before, but then you used the
+$(ENV_VARIABLE_NAME) syntax to have Kubernetes inject the value of the variable into
+the argument. 
+7.4.6
+Using a configMap volume to expose ConfigMap entries as files
+Passing configuration options as environment variables or command-line arguments
+is usually used for short variable values. A ConfigMap, as you’ve seen, can also con-
+tain whole config files. When you want to expose those to the container, you can use
+one of the special volume types I mentioned in the previous chapter, namely a
+configMap volume.
+ A configMap volume will expose each entry of the ConfigMap as a file. The pro-
+cess running in the container can obtain the entry’s value by reading the contents of
+the file.
+Listing 7.11
+Using ConfigMap entries as arguments: fortune-pod-args-configmap.yaml
+ConﬁgMap: fortune-conﬁg
+sleep-interval
+25
+Pod
+Container: web-server
+Container: html-generator
+Environment variables
+INTERVAL=25
+fortuneloop.sh $(INTERVAL)
+Figure 7.7
+Passing a ConfigMap entry as a command-line argument
+Using the image that takes the 
+interval from the first argument, 
+not from an environment variable
+Defining the 
+environment variable 
+exactly as before
+Referencing the environment 
+variable in the argument
+ 
+","[Empty DataFrame
+Columns: [sleep-interval, 25]
+Index: []]","[{'entity': 'ConfigMap', 'description': 'a Kubernetes resource that stores configuration data', 'category': 'software'}, {'entity': 'Pod', 'description': 'the basic execution unit in a Kubernetes cluster', 'category': 'software'}, {'entity': 'configMapKeyRef', 'description': 'a reference to a key in a ConfigMap', 'category': 'software'}, {'entity': 'env', 'description': 'an environment variable in a container', 'category': 'software'}, {'entity': 'INTERVAL', 'description': 'an environment variable that stores an integer value', 'category': 'software'}, {'entity': 'configMapVolume', 'description': 'a special volume type that exposes ConfigMap entries as files', 'category': 'software'}, {'entity': 'volume', 'description': 'a storage resource in a container', 'category': 'software'}, {'entity': 'file', 'description': 'a file that stores the value of a ConfigMap entry', 'category': 'software'}, {'entity': 'process', 'description': 'the running program in a container', 'category': 'software'}, {'entity': 'container', 'description': 'a lightweight and standalone execution environment', 'category': 'software'}, {'entity': 'web-server', 'description': 'a container that runs a web server', 'category': 'software'}, {'entity': 'html-generator', 'description': 'a container that generates HTML content', 'category': 'software'}, {'entity': 'fortuneloop.sh', 'description': 'a script that runs the fortune program with arguments', 'category': 'software'}, {'entity': 'image', 'description': 'the base image for a container', 'category': 'software'}, {'entity': 'luksa/fortune:args', 'description': 'the Docker image that takes an integer argument', 'category': 'software'}]","[{'source_entity': 'container', 'description': 'runs on', 'destination_entity': 'Pod'}, {'source_entity': 'configMapKeyRef', 'description': 'references a key from', 'destination_entity': 'ConfigMap'}, {'source_entity': 'file', 'description': 'is used by', 'destination_entity': 'container'}, {'source_entity': 'fortuneloop.sh', 'description': 'is executed by', 'destination_entity': 'process'}, {'source_entity': 'image', 'description': 'is based on', 'destination_entity': 'luksa/fortune:args'}, {'source_entity': 'Pod', 'description': 'uses a volume from', 'destination_entity': 'volume'}, {'source_entity': 'html-generator', 'description': 'runs on', 'destination_entity': 'web-server'}, {'source_entity': 'volume', 'description': 'is used by', 'destination_entity': 'Pod'}, {'source_entity': 'web-server', 'description': 'uses a configMap from', 'destination_entity': 'configMapVolume'}, {'source_entity': 'process', 'description': 'reads an environment variable from', 'destination_entity': 'env'}, {'source_entity': 'INTERVAL', 'description': 'is used to schedule', 'destination_entity': 'process'}, {'source_entity': 'configMapVolume', 'description': 'is mounted from', 'destination_entity': 'ConfigMap'}]","['[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs on"",\n    ""summary_er"": ""A container executes within a pod, utilizing its resources.""\n  }\n]', '[\n  {\n    ""source"": ""ConfigMap"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""references a key from"",\n    ""summary_er"": ""A ConfigMap references a key from a Pod, allowing it to access configuration data stored in the ConfigMap.""\n  }\n]', '[\n  {\n    ""source"": ""file"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used by"",\n    ""summary_er"": ""A file is utilized by a pod in Kubernetes, indicating that the file serves as an input or resource for the pod\'s execution.""\n  },\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used by"",\n    ""summary_er"": ""A container is utilized by a pod in Docker, signifying that the container runs within the pod and provides its functionality.""\n  }\n]', '[\n  {\n    ""source"": ""fortuneloop.sh"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is executed by"",\n    ""summary_er"": ""Fortune Loop shell script is executed within a pod, utilizing the pod\'s process to run its commands.""\n  }\n]', '[\n  {\n    ""source"": ""image"",\n    ""destination"": ""luksa/fortune:args"",\n    ""relation_description"": ""is based on"",\n    ""summary_er"": ""The image \'luksa/fortune:args\' is based on a Docker image, which provides a pre-built environment for running the Fortune API.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Volume"",\n    ""relation_description"": ""uses a volume from"",\n    ""summary_er"": ""A Pod uses a Volume to access shared data.""\n  }\n]', '[\n  {\n    ""source"": ""html-generator"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs on"",\n    ""summary_er"": ""The html-generator runs on a pod, which is a containerized environment for running applications.""\n  }\n]', '[\n  {\n    ""source"": ""volume"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used by"",\n    ""summary_er"": ""A volume provides persistent storage for a pod, allowing it to retain data even after restarts or terminations.""\n  }\n]', '[\n  {\n    ""source"": ""web-server"",\n    ""destination"": ""configMapVolume"",\n    ""relation_description"": ""uses a configMap from"",\n    ""summary_er"": ""Web server utilizes a configuration map from a designated source, ensuring secure and efficient deployment.""\n  }\n]', '[\n  {\n    ""source"": ""process"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""reads an environment variable from"",\n    ""summary_er"": ""A process in a container reads an environment variable set by the pod.""\n  }\n]', '[\n  {\n    ""source"": ""INTERVAL"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to schedule"",\n    ""summary_er"": ""The INTERVAL relation schedules a pod for processing.""\n  }\n]', '[\n  {\n    ""source"": ""ConfigMap"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is mounted from"",\n    ""summary_er"": ""A ConfigMap is mounted as a volume into a Pod, providing configuration data to the container.""\n  }\n]']","A ConfigMap can be used to expose entries as files or to pass configuration options as environment variables. A special volume type, configMap volume, can expose each entry of a ConfigMap as a file, allowing the container process to obtain the value by reading the contents of the file. This approach is suitable for exposing whole config files contained in a ConfigMap.","[{'highlight': 'Decoupling configuration with a ConfigMap can be achieved by referencing the ConfigMap entry as a file using a configMap volume.'}, {'highlight': 'ConfigMaps are useful for exposing whole config files to containers, especially when variable values are long.'}, {'highlight': 'A configMap volume exposes each entry of the ConfigMap as a file that can be read by the container process.'}, {'highlight': 'Environment variables and command-line arguments are suitable for short variable values, while ConfigMaps are better suited for longer configuration options.'}, {'highlight': 'ConfigMap entries can be used directly in commands using the $(ENV_VARIABLE_NAME) syntax to inject the value into the argument.'}]"
+149,238,0,[],"206
+CHAPTER 7
+ConfigMaps and Secrets: configuring applications
+ Although this method is mostly meant for passing large config files to the con-
+tainer, nothing prevents you from passing short single values this way. 
+CREATING THE CONFIGMAP
+Instead of modifying your fortuneloop.sh script once again, you’ll now try a different
+example. You’ll use a config file to configure the Nginx web server running inside the
+fortune pod’s web-server container. Let’s say you want your Nginx server to compress
+responses it sends to the client. To enable compression, the config file for Nginx
+needs to look like the following listing.
+server {
+  listen              80;
+  server_name         www.kubia-example.com;
+  gzip on;                                       
+  gzip_types text/plain application/xml;         
+  location / {
+    root   /usr/share/nginx/html;
+    index  index.html index.htm;
+  }
+}
+Now delete your existing fortune-config ConfigMap with kubectl delete config-
+map fortune-config, so that you can replace it with a new one, which will include the
+Nginx config file. You’ll create the ConfigMap from files stored on your local disk. 
+ Create a new directory called configmap-files and store the Nginx config from the
+previous listing into configmap-files/my-nginx-config.conf. To make the ConfigMap
+also contain the sleep-interval entry, add a plain text file called sleep-interval to the
+same directory and store the number 25 in it (see figure 7.8).
+Now create a ConfigMap from all the files in the directory like this:
+$ kubectl create configmap fortune-config --from-file=configmap-files
+configmap ""fortune-config"" created
+Listing 7.12
+An Nginx config with enabled gzip compression: my-nginx-config.conf
+This enables gzip compression 
+for plain text and XML files.
+conﬁgmap-ﬁles/
+my-nginx-conﬁg.conf
+server {
+listen 80;
+server_name www.kubia...
+...
+}
+sleep-interval
+25
+Figure 7.8
+The contents of the 
+configmap-files directory and its files
+ 
+",[],"[{'entity': 'ConfigMaps', 'description': 'a way to pass large config files to a container', 'category': 'software'}, {'entity': 'kubectl', 'description': 'command-line tool for managing Kubernetes resources', 'category': 'software'}, {'entity': 'ConfigMap', 'description': 'a resource in Kubernetes that stores configuration data', 'category': 'software'}, {'entity': 'fortune-config', 'description': 'name of the ConfigMap created in the example', 'category': 'software'}, {'entity': 'Nginx web server', 'description': 'web server software used in the example', 'category': 'software'}, {'entity': 'fortuneloop.sh script', 'description': 'script used to configure the Nginx web server', 'category': 'software'}, {'entity': 'Config file', 'description': 'file containing configuration data for an application', 'category': 'software'}, {'entity': 'gzip compression', 'description': 'feature of Nginx that compresses responses sent to clients', 'category': 'software'}, {'entity': 'server_name', 'description': 'directive in Nginx config file specifying the server name', 'category': 'software'}, {'entity': 'listen directive', 'description': 'directive in Nginx config file specifying the port number to listen on', 'category': 'software'}, {'entity': 'gzip_types', 'description': 'directive in Nginx config file specifying the types of files to compress', 'category': 'software'}, {'entity': 'location directive', 'description': 'directive in Nginx config file specifying the location of a resource', 'category': 'software'}, {'entity': 'root directive', 'description': 'directive in Nginx config file specifying the root directory for a resource', 'category': 'software'}, {'entity': 'index directive', 'description': 'directive in Nginx config file specifying the index files to serve', 'category': 'software'}, {'entity': 'configmap-files', 'description': 'directory containing configuration files used to create a ConfigMap', 'category': 'hardware'}, {'entity': 'my-nginx-config.conf', 'description': 'Nginx config file created in the example', 'category': 'software'}, {'entity': 'sleep-interval', 'description': 'file containing the sleep interval value used in the example', 'category': 'software'}]","[{'source_entity': '""location directive""', 'description': 'specifies the location of a file', 'destination_entity': '""ConfigMap""'}, {'source_entity': '""fortuneloop.sh script""', 'description': 'executes a series of commands in a loop', 'destination_entity': '""fortune-config""'}, {'source_entity': '""kubectl""', 'description': 'manages Kubernetes resources', 'destination_entity': '""ConfigMap""'}, {'source_entity': '""root directive""', 'description': 'specifies the root directory for a ConfigMap', 'destination_entity': '""configmap-files""'}, {'source_entity': '""fortune-config""', 'description': 'configures the fortune loop script', 'destination_entity': '""fortuneloop.sh script""'}, {'source_entity': '""kubectl""', 'description': 'applies a ConfigMap to a Kubernetes resource', 'destination_entity': '""ConfigMaps""'}, {'source_entity': '""sleep-interval""', 'description': 'specifies the interval between iterations of a loop', 'destination_entity': '""fortuneloop.sh script""'}, {'source_entity': '""server_name""', 'description': 'specifies the server name for an Nginx configuration', 'destination_entity': '""Nginx web server""'}, {'source_entity': '""gzip_types""', 'description': 'specifies the types of files to compress with gzip', 'destination_entity': '""Config file""'}, {'source_entity': '""gzip compression""', 'description': 'compresses a Config file using gzip', 'destination_entity': '""Config file""'}, {'source_entity': '""index directive""', 'description': 'specifies the index for an Nginx configuration', 'destination_entity': '""Nginx web server""'}, {'source_entity': '""listen directive""', 'description': 'specifies the port to listen on for an Nginx configuration', 'destination_entity': '""Nginx web server""'}]","['[\n  {\n    ""source"": ""location directive"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the location of a file"",\n    ""summary_er"": ""The location directive specifies the path to a file within a pod, allowing for configuration and data storage.""\n  },\n  {\n    ""source"": ""ConfigMap"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures a pod with key-value pairs"",\n    ""summary_er"": ""A ConfigMap is used to configure a pod by providing key-value pairs that can be accessed within the container, enabling customization and flexibility.""\n  }\n]', '[\n  {\n    ""source"": ""fortuneloop.sh script"",\n    ""destination"": ""pod/fortune-config"",\n    ""relation_description"": ""executes a series of commands in a loop"",\n    ""summary_er"": ""The fortuneloop.sh script executes a loop of commands within the fortune-config pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages Kubernetes resources"",\n    ""summary_er"": ""Kubectl manages pods, which are the basic execution units in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""ConfigMap"",\n    ""relation_description"": ""manages Kubernetes resources"",\n    ""summary_er"": ""Kubectl can also manage ConfigMaps, which store configuration data for applications.""\n  }\n]', '[\n  {\n    ""source"": ""ConfigMap"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""specifies the root directory for a ConfigMap"",\n    ""summary_er"": ""A ConfigMap provides a root directory for its files to be mounted in a Pod.""\n  }\n]', '[\n  {\n    ""source"": ""fortune-config"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures"",\n    ""summary_er"": ""The fortune-config entity configures the pod, which runs the fortuneloop.sh script.""\n  },\n  {\n    ""source"": ""fortuneloop.sh script"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""The fortuneloop.sh script is executed within the pod, as configured by fortune-config.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies a ConfigMap to a Kubernetes resource"",\n    ""summary_er"": ""Kubectl applies a ConfigMap to a pod, making its configuration available to the container.""\n  },\n  {\n    ""source"": ""ConfigMaps"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""makes its configuration available to a container"",\n    ""summary_er"": ""A ConfigMap makes its configuration available to a pod\'s container, providing environment variables and files.""\n  }\n]', '[\n  {\n    ""source"": ""sleep-interval"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the interval between iterations of a loop"",\n    ""summary_er"": ""The sleep-interval specifies the time gap between loop iterations in a pod.""\n  }\n]', '[\n  {\n    ""source"": ""server_name"",\n    ""destination"": ""Nginx web server"",\n    ""relation_description"": ""specifies the server name for an Nginx configuration"",\n    ""summary_er"": ""The \'server_name\' relation specifies the server name for an Nginx configuration, which is essential for identifying and serving the correct web content.""\n  }\n]', '[\n  {\n    ""source"": ""gzip_types"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the types of files to compress with gzip"",\n    ""summary_er"": ""This configuration specifies the types of files that will be compressed using gzip, which is a compression algorithm used in Docker containers.""\n  },\n  {\n    ""source"": ""Config file"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures the pod"",\n    ""summary_er"": ""A Config file is used to configure the pod, providing essential settings and parameters for the containerized application.""\n  }\n]', '[\n  {\n    ""source"": ""gzip compression"",\n    ""destination"": ""Config file"",\n    ""relation_description"": ""compresses a Config file using gzip"",\n    ""summary_er"": ""Gzip compression optimizes Config file storage by reducing its size, making it more efficient for Kubernetes pod deployment.""\n  }\n]', '[\n  {\n    ""source"": ""index directive"",\n    ""destination"": ""Nginx web server"",\n    ""relation_description"": ""specifies the index for an Nginx configuration"",\n    ""summary_er"": ""The index directive in Nginx config specifies the default page to serve.""\n  }\n]', '[\n  {\n    ""source"": ""listen directive"",\n    ""destination"": ""Nginx web server"",\n    ""relation_description"": ""specifies the port to listen on for an Nginx configuration"",\n    ""summary_er"": ""The listen directive in Nginx config specifies the port to listen on, enabling the server to receive incoming requests.""\n  }\n]']","A ConfigMap is created to pass a config file to an Nginx web server running inside a pod's web-server container, enabling gzip compression for plain text and XML files. A new directory is created on the local disk with two files: my-nginx-config.conf containing the Nginx config and sleep-interval with the number 25. The ConfigMap is then created from these files using kubectl.","[{'highlight': 'ConfigMaps can be used to pass large config files or short single values to containers.'}, {'highlight': 'A ConfigMap can be created from files stored on a local disk using kubectl create configmap.'}, {'highlight': 'The ConfigMap command takes the --from-file option to specify the directory containing the configuration files.'}, {'highlight': 'ConfigMaps can contain multiple files, including config files and plain text files like sleep-interval entries.'}, {'highlight': 'A ConfigMap can be used to configure an application running inside a container, such as Nginx in this example.'}]"

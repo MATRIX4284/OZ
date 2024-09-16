@@ -1,0 +1,471 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+400,489,0,[],"457
+Advanced scheduling
+Kubernetes allows you to affect where pods are scheduled. Initially, this was only
+done by specifying a node selector in the pod specification, but additional mech-
+anisms were later added that expanded this functionality. They’re covered in this
+chapter.
+16.1
+Using taints and tolerations to repel pods from 
+certain nodes
+The first two features related to advanced scheduling that we’ll explore here are
+the node taints and pods’ tolerations of those taints. They’re used for restricting
+This chapter covers
+Using node taints and pod tolerations to keep 
+pods away from certain nodes
+Defining node affinity rules as an alternative to 
+node selectors
+Co-locating pods using pod affinity 
+Keeping pods away from each other using pod 
+anti-affinity
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'pods', 'description': 'Units of execution in Kubernetes', 'category': 'container'}, {'entity': 'node selector', 'description': 'Mechanism to specify a node for pod scheduling', 'category': 'process'}, {'entity': 'taints', 'description': 'Marking nodes with restrictions', 'category': 'process'}, {'entity': 'tolerations', 'description': ""Pods' ability to ignore taints on nodes"", 'category': 'process'}, {'entity': 'node affinity rules', 'description': 'Alternative to node selectors for pod scheduling', 'category': 'process'}, {'entity': 'pod affinity', 'description': 'Co-locating pods based on labels and fields selectors', 'category': 'process'}, {'entity': 'pod anti-affinity', 'description': 'Keeping pods away from each other based on labels and fields selectors', 'category': 'process'}]","[{'source_entity': '""Kubernetes""', 'description': 'manages', 'destination_entity': '""pods""'}, {'source_entity': '""Kubernetes""', 'description': 'uses', 'destination_entity': '""node selector""'}, {'source_entity': '""Kubernetes""', 'description': 'enforces', 'destination_entity': '""pod anti-affinity""'}, {'source_entity': '""Kubernetes""', 'description': 'applies', 'destination_entity': '""tolerations""'}, {'source_entity': '""Kubernetes""', 'description': 'manages', 'destination_entity': '""taints""'}, {'source_entity': '""Kubernetes""', 'description': 'uses', 'destination_entity': '""pod affinity""'}, {'source_entity': '""Kubernetes""', 'description': 'enforces', 'destination_entity': '""node affinity rules""'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages pods, ensuring efficient resource allocation and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubernetes manages and orchestrates containerized applications, utilizing pods as the basic execution unit.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""Kubernetes enforces pod anti-affinity, ensuring that pods are not deployed on the same node to prevent resource competition and improve overall cluster utilization.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies"",\n    ""summary_er"": ""Kubernetes applies tolerances to pods, allowing them to run on nodes with specific conditions.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages pods, ensuring they run smoothly and efficiently.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubernetes utilizes pods to manage containerized applications, leveraging their shared resources and dependencies.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""Kubernetes enforces node affinity rules for pods, ensuring they run on specific nodes based on resource requirements and constraints.""\n  }\n]']","Kubernetes allows for advanced scheduling by specifying a node selector in the pod specification, or using taints and tolerations to keep pods away from certain nodes. Additional features include defining node affinity rules, co-locating pods, and keeping pods away from each other using pod anti-affinity.","[{'highlight': 'Kubernetes allows you to affect where pods are scheduled.'}, {'highlight': 'Using node taints and pod tolerations to keep pods away from certain nodes'}, {'highlight': 'Defining node affinity rules as an alternative to node selectors'}, {'highlight': 'Co-locating pods using pod affinity'}, {'highlight': 'Keeping pods away from each other using pod anti-affinity'}]"
+401,490,0,[],"458
+CHAPTER 16
+Advanced scheduling
+which pods can use a certain node. A pod can only be scheduled to a node if it toler-
+ates the node’s taints.
+ This is somewhat different from using node selectors and node affinity, which
+you’ll learn about later in this chapter. Node selectors and node affinity rules make
+it possible to select which nodes a pod can or can’t be scheduled to by specifically
+adding that information to the pod, whereas taints allow rejecting deployment of
+pods to certain nodes by only adding taints to the node without having to modify
+existing pods. Pods that you want deployed on a tainted node need to opt in to use
+the node, whereas with node selectors, pods explicitly specify which node(s) they
+want to be deployed to.
+16.1.1 Introducing taints and tolerations
+The best path to learn about node taints is to see an existing taint. Appendix B shows
+how to set up a multi-node cluster with the kubeadm tool. By default, the master node
+in such a cluster is tainted, so only Control Plane pods can be deployed on it. 
+DISPLAYING A NODE’S TAINTS
+You can see the node’s taints using kubectl describe node, as shown in the follow-
+ing listing.
+$ kubectl describe node master.k8s
+Name:         master.k8s
+Role:
+Labels:       beta.kubernetes.io/arch=amd64
+              beta.kubernetes.io/os=linux
+              kubernetes.io/hostname=master.k8s
+              node-role.kubernetes.io/master=
+Annotations:  node.alpha.kubernetes.io/ttl=0
+              volumes.kubernetes.io/controller-managed-attach-detach=true
+Taints:       node-role.kubernetes.io/master:NoSchedule      
+...
+The master node has a single taint. Taints have a key, value, and an effect, and are repre-
+sented as <key>=<value>:<effect>. The master node’s taint shown in the previous
+listing has the key node-role.kubernetes.io/master, a null value (not shown in the
+taint), and the effect of NoSchedule. 
+ This taint prevents pods from being scheduled to the master node, unless those pods
+tolerate this taint. The pods that tolerate it are usually system pods (see figure 16.1).
+ 
+ 
+ 
+ 
+Listing 16.1
+Describing the master node in a cluster created with kubeadm
+The master node 
+has one taint.
+ 
+",[],"[{'entity': 'node', 'description': 'A node in a Kubernetes cluster', 'category': 'hardware'}, {'entity': 'pod', 'description': 'A pod in a Kubernetes cluster', 'category': 'application'}, {'entity': 'taints', 'description': 'A way to reject deployment of pods to certain nodes', 'category': 'software'}, {'entity': 'tolerations', 'description': 'A way for pods to opt in to use a tainted node', 'category': 'software'}, {'entity': 'node selectors', 'description': ""A way to select which nodes a pod can or can't be scheduled to"", 'category': 'software'}, {'entity': 'node affinity', 'description': ""A way to make it possible to select which nodes a pod can or can't be scheduled to"", 'category': 'software'}, {'entity': 'kubectl', 'description': 'A command-line tool for interacting with Kubernetes clusters', 'category': 'software'}, {'entity': 'describe node', 'description': 'A command used to display information about a node in a Kubernetes cluster', 'category': 'software'}, {'entity': 'kubeadm', 'description': 'A tool for setting up and managing Kubernetes clusters', 'category': 'software'}, {'entity': 'Control Plane pods', 'description': 'Pods that run the control plane components of a Kubernetes cluster', 'category': 'application'}, {'entity': 'master node', 'description': 'The master node in a Kubernetes cluster', 'category': 'hardware'}, {'entity': 'NoSchedule', 'description': 'An effect that prevents pods from being scheduled to a node', 'category': 'software'}]","[{'source_entity': '""node selectors""', 'description': 'are used to select nodes for pod placement', 'destination_entity': '""pod""'}, {'source_entity': '""describe node""', 'description': 'provides detailed information about a node', 'destination_entity': '""node""'}, {'source_entity': '""kubeadm""', 'description': 'is used to initialize and join nodes to a cluster', 'destination_entity': '""node""'}, {'source_entity': '""node affinity""', 'description': 'defines the node preferences for pod placement', 'destination_entity': '""pod""'}, {'source_entity': '""tolerations""', 'description': 'are used to specify which nodes a pod can be scheduled on', 'destination_entity': '""pod""'}, {'source_entity': '""NoSchedule""', 'description': 'indicates that a node should not be considered for scheduling', 'destination_entity': '""node""'}, {'source_entity': '""taints""', 'description': 'are used to mark nodes with specific characteristics', 'destination_entity': '""node""'}, {'source_entity': '""Control Plane pods""', 'description': 'are scheduled on master nodes by default', 'destination_entity': '""master node""'}, {'source_entity': '""kubectl""', 'description': 'is used to interact with the cluster and manage resources', 'destination_entity': '""node""'}]","['[\n  {\n    ""source"": ""node selectors"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to select nodes for pod placement"",\n    ""summary_er"": ""Node selectors are used to place pods on specific nodes in a Kubernetes cluster, ensuring efficient resource utilization and deployment.""\n  }\n]', '[\n  {\n    ""source"": ""describe node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides detailed information about a node"",\n    ""summary_er"": ""The \'describe node\' command provides detailed info about a pod, including its properties and characteristics.""\n  }\n]', '[\n  {\n    ""source"": ""kubeadm"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to initialize and join nodes to a cluster"",\n    ""summary_er"": ""Kubeadm is used to create and manage Kubernetes clusters, initializing and joining nodes to the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""node affinity"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the node preferences for pod placement"",\n    ""summary_er"": ""Node affinity specifies the preferred nodes for a pod\'s placement, ensuring efficient resource allocation and utilization.""\n  }\n]', '[\n  {\n    ""source"": ""tolerations"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to specify which nodes a pod can be scheduled on"",\n    ""summary_er"": ""Tolerations are node-specific labels that allow pods to run on specific nodes, enabling flexible scheduling and resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Node"",\n    ""relation_description"": ""NoSchedule"",\n    ""summary_er"": ""A pod should not be scheduled on a node that has this label, indicating it cannot handle scheduling.""\n  }\n]', '[\n  {\n    ""source"": ""Taints"",\n    ""destination"": ""Node"",\n    ""relation_description"": ""are used to mark nodes with specific characteristics"",\n    ""summary_er"": ""Taints are labels that identify a node\'s characteristics, allowing for targeted scheduling and management of pods.""\n  }\n]', '[\n  {\n    ""source"": ""Control Plane pods"",\n    ""destination"": ""master node"",\n    ""relation_description"": ""scheduled on"",\n    ""summary_er"": ""By default, Control Plane pods are scheduled to run on master nodes in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to interact with the cluster and manage resources"",\n    ""summary_er"": ""Kubectl is a command-line tool that interacts with Kubernetes clusters, managing resources such as pods.""\n  }\n]']","Node taints allow rejecting deployment of pods to certain nodes by adding taints without modifying existing pods, while tolerations enable pods to opt-in and use tainted nodes. A node's taints can be displayed using kubectl describe node, showing a key-value pair with an effect, such as NoSchedule preventing pod scheduling unless tolerated.","[{'highlight': ""A pod can only be scheduled to a node if it tolerates the node's taints.""}, {'highlight': ""Node selectors and node affinity rules make it possible to select which nodes a pod can or can't be scheduled to by specifically adding that information to the pod, whereas taints allow rejecting deployment of pods to certain nodes by only adding taints to the node without having to modify existing pods.""}, {'highlight': 'The master node in a cluster created with kubeadm tool is tainted, so only Control Plane pods can be deployed on it.'}, {'highlight': 'Taints have a key, value, and an effect, and are represented as <key>=<value>:<effect>.'}, {'highlight': 'This taint prevents pods from being scheduled to the master node, unless those pods tolerate this taint.'}]"
+402,491,0,[],"459
+Using taints and tolerations to repel pods from certain nodes
+DISPLAYING A POD’S TOLERATIONS
+In a cluster installed with kubeadm, the kube-proxy cluster component runs as a pod
+on every node, including the master node, because master components that run as
+pods may also need to access Kubernetes Services. To make sure the kube-proxy pod
+also runs on the master node, it includes the appropriate toleration. In total, the pod
+has three tolerations, which are shown in the following listing.
+$ kubectl describe po kube-proxy-80wqm -n kube-system
+...
+Tolerations:    node-role.kubernetes.io/master=:NoSchedule
+                node.alpha.kubernetes.io/notReady=:Exists:NoExecute
+                node.alpha.kubernetes.io/unreachable=:Exists:NoExecute
+...
+As you can see, the first toleration matches the master node’s taint, allowing this kube-
+proxy pod to be scheduled to the master node. 
+NOTE
+Disregard the equal sign, which is shown in the pod’s tolerations, but
+not in the node’s taints. Kubectl apparently displays taints and tolerations dif-
+ferently when the taint’s/toleration’s value is null.
+UNDERSTANDING TAINT EFFECTS
+The two other tolerations on the kube-proxy pod define how long the pod is allowed
+to run on nodes that aren’t ready or are unreachable (the time in seconds isn’t shown,
+Listing 16.2
+A pod’s tolerations
+System pod may be
+scheduled to master
+node because its
+toleration matches
+the node’s taint.
+System pod
+Master node
+Taint:
+node-role.kubernetes.io
+/master:NoSchedule
+Toleration:
+node-role.kubernetes.io
+/master:NoSchedule
+Regular pod
+Regular node
+No taints
+No tolerations
+Pods with no tolerations
+may only be scheduled
+to nodes without taints.
+Figure 16.1
+A pod is only scheduled to a node if it tolerates the node’s taints.
+ 
+",[],"[{'entity': 'taints', 'description': 'a way to mark nodes with certain conditions', 'category': 'kubernetes'}, {'entity': 'tolerations', 'description': 'a way for pods to ignore node taints', 'category': 'kubernetes'}, {'entity': 'kube-proxy', 'description': 'a cluster component that runs as a pod on every node', 'category': 'application'}, {'entity': 'node-role.kubernetes.io/master', 'description': 'a taint applied to the master node', 'category': 'kubernetes'}, {'entity': 'NoSchedule', 'description': 'a taint effect that prevents pods from being scheduled on a node', 'category': 'kubernetes'}, {'entity': 'node.alpha.kubernetes.io/notReady', 'description': 'a taint applied to nodes that are not ready', 'category': 'kubernetes'}, {'entity': 'Exists:NoExecute', 'description': 'a toleration effect that prevents pods from running on a node if it is unreachable or not ready', 'category': 'kubernetes'}, {'entity': 'kubectl', 'description': 'a command-line tool for interacting with Kubernetes clusters', 'category': 'command'}, {'entity': 'describe', 'description': 'a kubectl command to display detailed information about a pod', 'category': 'command'}, {'entity': 'po', 'description': 'the name of the kube-proxy pod', 'category': 'process'}, {'entity': 'kube-system', 'description': 'the namespace where the kube-proxy pod is running', 'category': 'namespace'}]","[{'source_entity': 'kubectl', 'description': 'uses to describe a pod', 'destination_entity': 'po'}, {'source_entity': 'kubectl', 'description': 'displays information about a pod', 'destination_entity': 'kube-proxy'}, {'source_entity': 'kubectl', 'description': 'displays taints of a node', 'destination_entity': 'node.alpha.kubernetes.io/notReady'}, {'source_entity': 'kubectl', 'description': 'applies tolerations to a node', 'destination_entity': 'tolerations'}, {'source_entity': 'kube-system', 'description': 'contains the kube-proxy pod', 'destination_entity': 'po'}, {'source_entity': 'node-role.kubernetes.io/master', 'description': 'is the role of the master node', 'destination_entity': 'node.alpha.kubernetes.io/notReady'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to describe a pod"",\n    ""summary_er"": ""Kubectl is used to describe a pod, providing detailed information about its configuration and status.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays information about"",\n    ""summary_er"": ""kubectl displays pod information, allowing users to view details about running pods.""\n  },\n  {\n    ""source"": ""kube-proxy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages traffic for"",\n    ""summary_er"": ""kube-proxy manages traffic for pods, ensuring that incoming requests are routed correctly.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays taints of a node"",\n    ""summary_er"": ""Kubectl displays taint information for pods, specifically \'node.alpha.kubernetes.io/notReady\' indicating a node is not ready.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies tolerations to a node"",\n    ""summary_er"": ""Kubectl applies tolerations to a pod, allowing it to run on nodes with specific conditions.""\n  }\n]', '[\n  {\n    ""source"": ""kube-system"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""The Kubernetes system (kube-system) contains a pod, which is a container running an application.""\n  }\n]', '[\n  {\n    ""source"": ""node-role.kubernetes.io/master"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is the role of the master node"",\n    ""summary_er"": ""The master node has a specific role in Kubernetes, responsible for managing and controlling other nodes.""\n  },\n  {\n    ""source"": ""node.alpha.kubernetes.io/notReady"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""indicates that the pod is not ready"",\n    ""summary_er"": ""A pod with this label indicates it\'s not yet ready to receive traffic or perform tasks, requiring further initialization.""\n  }\n]']","In Kubernetes, a pod can be scheduled to a tainted node by adding a toleration that matches the node's taint. This allows system pods like kube-proxy to run on master nodes. A pod with no tolerations can only be scheduled to nodes without taints, and tolerations define how long a pod is allowed to run on nodes that aren't ready or are unreachable.","[{'highlight': 'In a cluster installed with kubeadm, the kube-proxy cluster component runs as a pod on every node, including the master node.'}, {'highlight': ""A pod's tolerations define how long the pod is allowed to run on nodes that aren't ready or are unreachable.""}, {'highlight': 'Pods with no tolerations may only be scheduled to nodes without taints.'}, {'highlight': ""The first toleration matches the master node's taint, allowing this kube-proxy pod to be scheduled to the master node.""}, {'highlight': ""A pod is only scheduled to a node if it tolerates the node's taints.""}]"
+403,492,0,[],"460
+CHAPTER 16
+Advanced scheduling
+but can be seen in the pod’s YAML). Those two tolerations refer to the NoExecute
+instead of the NoSchedule effect. 
+ Each taint has an effect associated with it. Three possible effects exist:
+
+NoSchedule, which means pods won’t be scheduled to the node if they don’t tol-
+erate the taint.
+
+PreferNoSchedule is a soft version of NoSchedule, meaning the scheduler will
+try to avoid scheduling the pod to the node, but will schedule it to the node if it
+can’t schedule it somewhere else. 
+
+NoExecute, unlike NoSchedule and PreferNoSchedule that only affect schedul-
+ing, also affects pods already running on the node. If you add a NoExecute taint
+to a node, pods that are already running on that node and don’t tolerate the
+NoExecute taint will be evicted from the node. 
+16.1.2 Adding custom taints to a node
+Imagine having a single Kubernetes cluster where you run both production and non-
+production workloads. It’s of the utmost importance that non-production pods never
+run on the production nodes. This can be achieved by adding a taint to your produc-
+tion nodes. To add a taint, you use the kubectl taint command:
+$ kubectl taint node node1.k8s node-type=production:NoSchedule
+node ""node1.k8s"" tainted
+This adds a taint with key node-type, value production and the NoSchedule effect. If
+you now deploy multiple replicas of a regular pod, you’ll see none of them are sched-
+uled to the node you tainted, as shown in the following listing.
+$ kubectl run test --image busybox --replicas 5 -- sleep 99999
+deployment ""test"" created
+$ kubectl get po -o wide
+NAME                READY  STATUS    RESTARTS   AGE   IP          NODE
+test-196686-46ngl   1/1    Running   0          12s   10.47.0.1   node2.k8s
+test-196686-73p89   1/1    Running   0          12s   10.47.0.7   node2.k8s
+test-196686-77280   1/1    Running   0          12s   10.47.0.6   node2.k8s
+test-196686-h9m8f   1/1    Running   0          12s   10.47.0.5   node2.k8s
+test-196686-p85ll   1/1    Running   0          12s   10.47.0.4   node2.k8s
+Now, no one can inadvertently deploy pods onto the production nodes. 
+16.1.3 Adding tolerations to pods
+To deploy production pods to the production nodes, they need to tolerate the taint
+you added to the nodes. The manifests of your production pods need to include the
+YAML snippet shown in the following listing.
+ 
+Listing 16.3
+Deploying pods without a toleration
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'Pods', 'description': 'Lightweight and portable container', 'category': 'container'}, {'entity': 'Tolerations', 'description': 'Allow pods to run on tainted nodes', 'category': 'process'}, {'entity': 'NoExecute', 'description': 'Effect that evicts running pods from a node', 'category': 'effect'}, {'entity': 'NoSchedule', 'description': 'Effect that prevents pod scheduling on a node', 'category': 'effect'}, {'entity': 'PreferNoSchedule', 'description': 'Soft version of NoSchedule effect', 'category': 'effect'}, {'entity': 'Taints', 'description': 'Mark nodes with specific conditions', 'category': 'process'}, {'entity': 'kubectl taint command', 'description': 'Command to add custom taints to a node', 'category': 'command'}, {'entity': 'node-type', 'description': 'Key for adding custom taints to a node', 'category': 'key'}, {'entity': 'production', 'description': 'Value for adding custom taints to production nodes', 'category': 'value'}, {'entity': 'NoSchedule effect', 'description': 'Effect that prevents pod scheduling on a node', 'category': 'effect'}, {'entity': 'kubectl run command', 'description': 'Command to deploy pods', 'category': 'command'}, {'entity': 'busybox image', 'description': 'Image used for deploying pods', 'category': 'image'}, {'entity': 'deployment', 'description': 'Deployment of multiple replicas of a pod', 'category': 'process'}, {'entity': 'kubectl get command', 'description': 'Command to retrieve pod information', 'category': 'command'}, {'entity': 'pod YAML', 'description': 'YAML snippet for adding tolerations to pods', 'category': 'yaml'}]","[{'source_entity': 'Kubernetes', 'description': 'applies', 'destination_entity': 'PreferNoSchedule'}, {'source_entity': 'kubectl run command', 'description': 'uses', 'destination_entity': 'busybox image'}, {'source_entity': 'kubectl run command', 'description': 'specifies', 'destination_entity': 'NoSchedule effect'}, {'source_entity': 'Kubernetes', 'description': 'assigns', 'destination_entity': 'Taints'}, {'source_entity': 'node-type', 'description': 'applies', 'destination_entity': 'NoSchedule'}, {'source_entity': 'Kubernetes', 'description': 'manages', 'destination_entity': 'Pods'}, {'source_entity': 'kubectl taint command', 'description': 'applies', 'destination_entity': 'Taints'}, {'source_entity': 'deployment', 'description': 'specifies', 'destination_entity': 'Tolerations'}, {'source_entity': 'pod YAML', 'description': 'defines', 'destination_entity': 'Pods'}, {'source_entity': 'kubectl get command', 'description': 'displays', 'destination_entity': 'production'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies"",\n    ""summary_er"": ""Kubernetes applies a scheduling preference to a pod, ensuring it does not schedule the pod on a node unless absolutely necessary.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl run command"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The kubectl run command creates a new pod using the specified image, in this case busybox.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl run command"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The kubectl run command specifies a pod to be created with a specific configuration.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assigns"",\n    ""summary_er"": ""Kubernetes assigns a pod to manage resources and run applications.""\n  }\n]', '[\n  {\n    ""source"": ""node-type"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies"",\n    ""summary_er"": ""A node type in Kubernetes that determines the scheduling of a pod, ensuring it does not run on a node with insufficient resources.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""node-type"",\n    ""relation_description"": ""NoSchedule"",\n    ""summary_er"": ""A pod in Kubernetes is scheduled to run on a node that has sufficient resources, as determined by the NoSchedule policy of the node type.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages a collection of containers called pods, providing a flexible and scalable way to deploy applications.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""taints"",\n    ""summary_er"": ""The kubectl command applies a taint to a pod, marking it with a specific characteristic that can affect its scheduling and management.""\n  }\n]', '[\n  {\n    ""source"": ""deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""A deployment specifies a pod template, which defines the container(s) to run in a pod.""\n  }\n]', '[\n  {\n    ""source"": ""pod YAML"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A pod YAML file defines a set of containerized applications, services, and infrastructure for a Kubernetes Pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays"",\n    ""summary_er"": ""The kubectl command displays information about a specific pod in the Kubernetes cluster, providing details such as its status and configuration.""\n  }\n]']","Kubernetes taints and tolerations allow you to label nodes with effects that can be tolerated by pods. Taints have three possible effects: NoSchedule, PreferNoSchedule, and NoExecute. Adding a NoExecute taint to a node will evict running pods that don't tolerate it. To deploy production pods to tainted nodes, they must include tolerations in their manifests matching the key, value, and effect of the taint.","[{'highlight': 'Three possible effects exist for each taint: NoSchedule, PreferNoSchedule, and NoExecute.'}, {'highlight': ""Adding a NoExecute taint to a node will evict pods that are already running on the node and don't tolerate the taint.""}, {'highlight': 'To deploy production pods to production nodes, they need to tolerate the taint added to the nodes by including a YAML snippet in their manifests.'}, {'highlight': 'The kubectl taint command is used to add a taint to a node with a specific key, value, and effect.'}, {'highlight': 'Tolerations are required for pods to be scheduled on nodes that have been tainted with a NoSchedule or NoExecute effect.'}]"
+404,493,0,[],"461
+Using taints and tolerations to repel pods from certain nodes
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: prod
+spec:
+  replicas: 5
+  template:
+    spec:
+      ...
+      tolerations:
+      - key: node-type         
+        Operator: Equal        
+        value: production      
+        effect: NoSchedule     
+If you deploy this Deployment, you’ll see its pods get deployed to the production
+node, as shown in the next listing.
+$ kubectl get po -o wide
+NAME                READY  STATUS    RESTARTS   AGE   IP          NODE
+prod-350605-1ph5h   0/1    Running   0          16s   10.44.0.3   node1.k8s
+prod-350605-ctqcr   1/1    Running   0          16s   10.47.0.4   node2.k8s
+prod-350605-f7pcc   0/1    Running   0          17s   10.44.0.6   node1.k8s
+prod-350605-k7c8g   1/1    Running   0          17s   10.47.0.9   node2.k8s
+prod-350605-rp1nv   0/1    Running   0          17s   10.44.0.4   node1.k8s
+As you can see in the listing, production pods were also deployed to node2, which isn’t
+a production node. To prevent that from happening, you’d also need to taint the non-
+production nodes with a taint such as node-type=non-production:NoSchedule. Then
+you’d also need to add the matching toleration to all your non-production pods.
+16.1.4 Understanding what taints and tolerations can be used for
+Nodes can have more than one taint and pods can have more than one toleration. As
+you’ve seen, taints can only have a key and an effect and don’t require a value. Tolera-
+tions can tolerate a specific value by specifying the Equal operator (that’s also the
+default operator if you don’t specify one), or they can tolerate any value for a specific
+taint key if you use the Exists operator.
+USING TAINTS AND TOLERATIONS DURING SCHEDULING
+Taints can be used to prevent scheduling of new pods (NoSchedule effect) and to
+define unpreferred nodes (PreferNoSchedule effect) and even evict existing pods
+from a node (NoExecute).
+ You can set up taints and tolerations any way you see fit. For example, you could
+partition your cluster into multiple partitions, allowing your development teams to
+schedule pods only to their respective nodes. You can also use taints and tolerations
+Listing 16.4
+A production Deployment with a toleration: production-deployment.yaml
+Listing 16.5
+Pods with the toleration are deployed on production node1
+This toleration allows the 
+pod to be scheduled to 
+production nodes.
+ 
+",[],"[{'entity': 'taints', 'description': 'a way to prevent scheduling of new pods and define unpreferred nodes', 'category': 'kubernetes'}, {'entity': 'tolerations', 'description': 'allows pods to be scheduled on specific nodes despite taints', 'category': 'kubernetes'}, {'entity': 'node-type', 'description': 'key for taints and tolerations to specify node type', 'category': 'kubernetes'}, {'entity': 'production', 'description': 'type of node, used as value in taints and tolerations', 'category': 'kubernetes'}, {'entity': 'NoSchedule', 'description': 'effect of taint that prevents scheduling of new pods', 'category': 'kubernetes'}, {'entity': 'PreferNoSchedule', 'description': 'effect of taint that defines unpreferred nodes', 'category': 'kubernetes'}, {'entity': 'NoExecute', 'description': 'effect of taint that evicts existing pods from a node', 'category': 'kubernetes'}, {'entity': 'kubectl', 'description': 'command-line tool for managing Kubernetes clusters', 'category': 'kubernetes'}, {'entity': 'get', 'description': 'command to retrieve information about pods, services, and other resources', 'category': 'kubernetes'}, {'entity': 'po', 'description': 'short form of pod', 'category': 'kubernetes'}, {'entity': 'wide', 'description': 'option for get command to display additional information about pods', 'category': 'kubernetes'}, {'entity': 'replicas', 'description': 'specification in Deployment object that determines the number of replicas to run', 'category': 'kubernetes'}, {'entity': 'template', 'description': 'specification in Deployment object that defines the pod template', 'category': 'kubernetes'}, {'entity': 'spec', 'description': 'specification in Deployment object that defines the deployment configuration', 'category': 'kubernetes'}]","[{'source_entity': '""spec""', 'description': 'defines', 'destination_entity': '""PreferNoSchedule""'}, {'source_entity': '""spec""', 'description': 'sets to true', 'destination_entity': '""wide""'}, {'source_entity': '""tolerations""', 'description': 'contains', 'destination_entity': '""node-type""'}, {'source_entity': '""taints""', 'description': 'includes', 'destination_entity': '""NoSchedule""'}, {'source_entity': '""kubectl""', 'description': 'sets', 'destination_entity': '""NoExecute""'}, {'source_entity': '""template""', 'description': 'specifies', 'destination_entity': '""po""'}, {'source_entity': '""get""', 'description': 'fetches', 'destination_entity': '""production""'}]","['[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""node"",\n    ""relation_description"": ""assigns"",\n    ""summary_er"": ""A pod can be assigned to a specific node in a cluster, allowing for more control over resource allocation and scheduling.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""spec"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""The pod spec defines the configuration and settings of a pod, including its containers, volumes, and other attributes.""\n  },\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assigns"",\n    ""summary_er"": ""A node can be assigned to a specific pod, allowing for more control over resource allocation and scheduling within the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets to true"",\n    ""summary_er"": ""The spec field in a Kubernetes configuration sets the pod\'s configuration to true, enabling its execution.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""wide"",\n    ""relation_description"": ""format"",\n    ""summary_er"": ""A wide format is used for displaying information about a pod in Kubernetes, providing detailed insights into its configuration and status.""\n  }\n]', '[\n  {\n    ""source"": ""Tolerations"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A Pod\'s Tolerations specify conditions under which it can be scheduled on a Node, such as running on specific hardware or with certain security settings.""\n  },\n  {\n    ""source"": ""Node-type"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""A Node\'s type determines the characteristics of the Pod that can run on it, including CPU and memory resources.""\n  }\n]', '[\n  {\n    ""source"": ""Taint"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""includes"",\n    ""summary_er"": ""A Taint is a mark that can be applied to a Pod, indicating it should not be scheduled on certain nodes. The \'NoSchedule\' taint prevents a Pod from being scheduled on a node.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) sets configuration for a running Pod, specifying execution policies and constraints.""\n  },\n  {\n    ""source"": ""NoExecute"",\n    ""destination"": ""policy"",\n    ""relation_description"": ""taints"",\n    ""summary_er"": ""NoExecute taint is applied to a Node or Pod, preventing certain Pods from scheduling on it due to specific conditions or requirements.""\n  }\n]', '[\n  {\n    ""source"": ""template"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""A template in Kubernetes specifies the configuration for a pod, defining its characteristics and behavior.""\n  }\n]', '[\n  {\n    ""source"": ""get"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""fetches"",\n    ""summary_er"": ""The \'get\' command fetches a production-ready pod, likely from a container registry or a Kubernetes cluster.""\n  }\n]']","Taints and tolerations can be used to control pod scheduling in Kubernetes. A taint is added to a node, and a matching toleration is added to a pod to allow it to run on that node. Tolerations can tolerate specific values or any value for a specific taint key. Taints can prevent new pods from running (NoSchedule), define unpreferred nodes (PreferNoSchedule), or evict existing pods (NoExecute). This allows for partitioning a cluster into separate partitions, controlling pod scheduling based on node type.","[{'highlight': 'You can use taints and tolerations to prevent pods from being deployed to certain nodes in a Kubernetes cluster.'}, {'highlight': 'Tolerations can tolerate specific values for a taint key using the Equal operator, or any value for a specific taint key using the Exists operator.'}, {'highlight': 'Taints can be used to prevent scheduling of new pods (NoSchedule effect), define unpreferred nodes (PreferNoSchedule effect), and evict existing pods from a node (NoExecute).'}, {'highlight': 'You can set up taints and tolerations to partition your cluster into multiple partitions, allowing different teams to schedule pods only to their respective nodes.'}, {'highlight': 'Tolerations can be used in pods to allow them to be scheduled on specific types of nodes, such as production or non-production nodes.'}]"
+405,494,0,[],"462
+CHAPTER 16
+Advanced scheduling
+when several of your nodes provide special hardware and only part of your pods need
+to use it.
+CONFIGURING HOW LONG AFTER A NODE FAILURE A POD IS RESCHEDULED
+You can also use a toleration to specify how long Kubernetes should wait before
+rescheduling a pod to another node if the node the pod is running on becomes
+unready or unreachable. If you look at the tolerations of one of your pods, you’ll see
+two tolerations, which are shown in the following listing.
+$ kubectl get po prod-350605-1ph5h -o yaml
+...
+  tolerations:
+  - effect: NoExecute                            
+    key: node.alpha.kubernetes.io/notReady       
+    operator: Exists                             
+    tolerationSeconds: 300                       
+  - effect: NoExecute                              
+    key: node.alpha.kubernetes.io/unreachable      
+    operator: Exists                               
+    tolerationSeconds: 300                         
+These two tolerations say that this pod tolerates a node being notReady or unreach-
+able for 300 seconds. The Kubernetes Control Plane, when it detects that a node is no
+longer ready or no longer reachable, will wait for 300 seconds before it deletes the
+pod and reschedules it to another node.
+ These two tolerations are automatically added to pods that don’t define them. If
+that five-minute delay is too long for your pods, you can make the delay shorter by
+adding those two tolerations to the pod’s spec.
+NOTE
+This is currently an alpha feature, so it may change in future versions
+of Kubernetes. Taint-based evictions also aren’t enabled by default. You enable
+them by running the Controller Manager with the --feature-gates=Taint-
+BasedEvictions=true option.
+16.2
+Using node affinity to attract pods to certain nodes
+As you’ve learned, taints are used to keep pods away from certain nodes. Now you’ll
+learn about a newer mechanism called node affinity, which allows you to tell Kuberne-
+tes to schedule pods only to specific subsets of nodes.
+COMPARING NODE AFFINITY TO NODE SELECTORS
+The initial node affinity mechanism in early versions of Kubernetes was the node-
+Selector field in the pod specification. The node had to include all the labels speci-
+fied in that field to be eligible to become the target for the pod. 
+ Node selectors get the job done and are simple, but they don’t offer everything
+that you may need. Because of that, a more powerful mechanism was introduced.
+Listing 16.6
+Pod with default tolerations
+The pod tolerates the node being 
+notReady for 300 seconds, before 
+it needs to be rescheduled.
+The same applies to the 
+node being unreachable.
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'toleration', 'description': 'Mechanism to specify how long Kubernetes should wait before rescheduling a pod', 'category': 'process'}, {'entity': '$ kubectl get po prod-350605-1ph5h -o yaml', 'description': 'Command to retrieve pod information in YAML format', 'category': 'command'}, {'entity': 'node.alpha.kubernetes.io/notReady', 'description': 'Label for a node that is not ready', 'category': 'label'}, {'entity': 'node.alpha.kubernetes.io/unreachable', 'description': 'Label for a node that is unreachable', 'category': 'label'}, {'entity': 'tolerationSeconds', 'description': 'Field to specify how long Kubernetes should wait before rescheduling a pod', 'category': 'field'}, {'entity': 'Controller Manager', 'description': 'Component responsible for managing the control plane', 'category': 'software'}, {'entity': '--feature-gates=Taint-BasedEvictions=true', 'description': 'Option to enable taint-based evictions in the Controller Manager', 'category': 'option'}, {'entity': 'node affinity', 'description': 'Mechanism to attract pods to certain nodes', 'category': 'process'}, {'entity': 'node selectors', 'description': 'Initial mechanism for node affinity in early versions of Kubernetes', 'category': 'process'}, {'entity': 'pod specification', 'description': 'Field in the pod specification to specify node labels', 'category': 'field'}, {'entity': 'Listing 16.6', 'description': 'Reference to a listing in the chapter', 'category': 'reference'}]","[{'source_entity': 'Kubernetes', 'description': 'manages', 'destination_entity': 'toleration'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages pods, ensuring efficient resource allocation and scaling.""\n  }\n]']","Kubernetes can wait up to 300 seconds (5 minutes) after a node failure before rescheduling a pod. This delay can be adjusted by adding tolerations to the pod's spec, and is currently an alpha feature. Node affinity allows scheduling pods only to specific subsets of nodes, replacing the initial node-selector mechanism which was simpler but didn't offer everything needed.","[{'highlight': 'You can use a toleration to specify how long Kubernetes should wait before rescheduling a pod to another node if the node the pod is running on becomes unready or unreachable.'}, {'highlight': 'Tolerations say that this pod tolerates a node being notReady or unreachable for 300 seconds, and the Kubernetes Control Plane will wait for 300 seconds before deleting the pod and rescheduling it to another node.'}, {'highlight': 'Node affinity allows you to tell Kubernetes to schedule pods only to specific subsets of nodes, which is more powerful than node selectors that require all labels specified in the field to be eligible to become the target for the pod.'}, {'highlight': 'Taint-based evictions are currently an alpha feature and may change in future versions of Kubernetes, but can be enabled by running the Controller Manager with the --feature-gates=Taint-BasedEvictions=true option.'}, {'highlight': 'The tolerationsSeconds value specifies how long a node must be notReady or unreachable before a pod is rescheduled to another node.'}]"
+406,495,0,[],"463
+Using node affinity to attract pods to certain nodes
+Node selectors will eventually be deprecated, so it’s important you understand the
+new node affinity rules.
+ Similar to node selectors, each pod can define its own node affinity rules. These
+allow you to specify either hard requirements or preferences. By specifying a prefer-
+ence, you tell Kubernetes which nodes you prefer for a specific pod, and Kubernetes
+will try to schedule the pod to one of those nodes. If that’s not possible, it will choose
+one of the other nodes. 
+EXAMINING THE DEFAULT NODE LABELS
+Node affinity selects nodes based on their labels, the same way node selectors do.
+Before you see how to use node affinity, let’s examine the labels of one of the nodes in
+a Google Kubernetes Engine cluster (GKE) to see what the default node labels are.
+They’re shown in the following listing.
+$ kubectl describe node gke-kubia-default-pool-db274c5a-mjnf
+Name:     gke-kubia-default-pool-db274c5a-mjnf
+Role:
+Labels:   beta.kubernetes.io/arch=amd64
+          beta.kubernetes.io/fluentd-ds-ready=true
+          beta.kubernetes.io/instance-type=f1-micro
+          beta.kubernetes.io/os=linux
+          cloud.google.com/gke-nodepool=default-pool
+          failure-domain.beta.kubernetes.io/region=europe-west1         
+          failure-domain.beta.kubernetes.io/zone=europe-west1-d         
+          kubernetes.io/hostname=gke-kubia-default-pool-db274c5a-mjnf   
+The node has many labels, but the last three are the most important when it comes to
+node affinity and pod affinity, which you’ll learn about later. The meaning of those
+three labels is as follows:
+
+failure-domain.beta.kubernetes.io/region specifies the geographical region
+the node is located in.
+
+failure-domain.beta.kubernetes.io/zone specifies the availability zone the
+node is in.
+
+kubernetes.io/hostname is obviously the node’s hostname.
+These and other labels can be used in pod affinity rules. In chapter 3, you already
+learned how you can add a custom label to nodes and use it in a pod’s node selector.
+You used the custom label to deploy pods only to nodes with that label by adding a node
+selector to the pods. Now, you’ll see how to do the same using node affinity rules.
+16.2.1 Specifying hard node affinity rules
+In the example in chapter 3, you used the node selector to deploy a pod that requires
+a GPU only to nodes that have a GPU. The pod spec included the nodeSelector field
+shown in the following listing.
+Listing 16.7
+Default labels of a node in GKE
+These three
+labels are the
+most important
+ones related to
+node affinity.
+ 
+",[],"[{'entity': 'Node Affinity', 'description': ""A feature that allows you to specify hard requirements or preferences for a pod's node selection."", 'category': 'Software/Application'}, {'entity': 'Kubernetes', 'description': 'An open-source container orchestration system.', 'category': 'Software/Application'}, {'entity': 'Node Selectors', 'description': 'A feature that allows you to specify which nodes a pod can be scheduled on.', 'category': 'Software/Application'}, {'entity': 'Pods', 'description': 'The basic execution unit in Kubernetes, similar to a container.', 'category': 'Software/Application'}, {'entity': 'Node Labels', 'description': 'Metadata that can be attached to nodes, used for node affinity and pod affinity rules.', 'category': 'Software/Application'}, {'entity': 'kubectl', 'description': 'A command-line tool for interacting with Kubernetes clusters.', 'category': 'Software/Application'}, {'entity': 'GKE (Google Kubernetes Engine)', 'description': 'A managed container orchestration service provided by Google Cloud Platform.', 'category': 'Cloud Service'}, {'entity': 'Node Pools', 'description': 'A group of nodes that can be used for scheduling pods.', 'category': 'Software/Application'}, {'entity': 'Region', 'description': 'The geographical region where a node is located.', 'category': 'Hardware/Location'}, {'entity': 'Zone', 'description': 'The availability zone where a node is located.', 'category': 'Hardware/Location'}, {'entity': 'Hostname', 'description': 'The unique identifier of a node.', 'category': 'Software/Application'}]","[{'source_entity': '""Hostname""', 'description': 'is assigned to', 'destination_entity': '""Zone""'}, {'source_entity': '""Kubernetes""', 'description': 'manages', 'destination_entity': '""Pods""'}, {'source_entity': '""kubectl""', 'description': 'interacts with', 'destination_entity': '""Kubernetes""'}, {'source_entity': '""GKE (Google Kubernetes Engine)""', 'description': 'provides a managed environment for', 'destination_entity': '""Kubernetes""'}, {'source_entity': '""Node Selectors""', 'description': 'are used to select', 'destination_entity': '""Nodes""'}, {'source_entity': '""Node Pools""', 'description': 'are used to manage a group of', 'destination_entity': '""Nodes""'}, {'source_entity': '""Node Affinity""', 'description': 'is used to schedule', 'destination_entity': '""Pods""'}, {'source_entity': '""Node Labels""', 'description': 'are used to identify and select', 'destination_entity': '""Nodes""'}]","['[\n  {\n    ""source"": ""Hostname"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is assigned to"",\n    ""summary_er"": ""A hostname is a unique identifier for a pod, assigning it to a specific namespace or zone.""\n  },\n  {\n    ""source"": ""Zone"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is assigned to"",\n    ""summary_er"": ""A zone is a logical grouping of pods, assigning them to a specific network and storage resources.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages pods, ensuring efficient resource allocation and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""interacts with"",\n    ""summary_er"": ""kubectl, a command-line tool, interacts with pods in Kubernetes to manage and deploy containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""GKE"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides a managed environment for"",\n    ""summary_er"": ""GKE provides a managed environment for pods, enabling efficient deployment and management of containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""Node Selectors"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""are used to select"",\n    ""summary_er"": ""Node selectors are labels that allow a pod to be scheduled on specific nodes in a cluster, enabling targeted resource allocation and deployment.""\n  }\n]', '[\n  {\n    ""source"": ""Node Pools"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""are used to manage a group of"",\n    ""summary_er"": ""Node pools are used to manage multiple pods, providing scalability and efficiency.""\n  }\n]', '[\n  {\n    ""source"": ""Node Affinity"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""is used to schedule"",\n    ""summary_er"": ""Node Affinity is a scheduling mechanism that ensures pods are placed on suitable nodes, considering factors like CPU and memory requirements.""\n  }\n]', '[\n  {\n    ""source"": ""Node Labels"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""are used to identify and select"",\n    ""summary_er"": ""Node labels are key-value pairs that help identify and select specific pods in a Kubernetes cluster.""\n  }\n]']","Node affinity allows specifying hard requirements or preferences for pods to run on certain nodes, based on their labels. Kubernetes uses these labels to select nodes, and by understanding default node labels, you can create rules that attract pods to specific nodes.","[{'highlight': 'Node selectors will eventually be deprecated, so it’s important you understand the new node affinity rules.'}, {'highlight': 'You can specify either hard requirements or preferences in node affinity rules, allowing Kubernetes to schedule pods accordingly.'}, {'highlight': 'The default node labels include beta.kubernetes.io/arch=amd64, beta.kubernetes.io/fluentd-ds-ready=true, and cloud.google.com/gke-nodepool=default-pool, among others.'}, {'highlight': 'Node affinity selects nodes based on their labels, the same way node selectors do, using the failure-domain.beta.kubernetes.io/region, failure-domain.beta.kubernetes.io/zone, and kubernetes.io/hostname labels as key criteria.'}, {'highlight': 'You can use custom labels in pod affinity rules, similar to how you used a custom label to deploy pods only to nodes with that label using node selectors in chapter 3.'}]"
+407,496,0,[],"464
+CHAPTER 16
+Advanced scheduling
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kubia-gpu
+spec:
+  nodeSelector:          
+    gpu: ""true""          
+  ...
+The nodeSelector field specifies that the pod should only be deployed on nodes that
+include the gpu=true label. If you replace the node selector with a node affinity rule,
+the pod definition will look like the following listing.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kubia-gpu
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: gpu
+            operator: In
+            values:
+            - ""true""
+The first thing you’ll notice is that this is much more complicated than a simple node
+selector. But that’s because it’s much more expressive. Let’s examine the rule in detail. 
+MAKING SENSE OF THE LONG NODEAFFINITY ATTRIBUTE NAME
+As you can see, the pod’s spec section contains an affinity field that contains a node-
+Affinity field, which contains a field with an extremely long name, so let’s focus on
+that first.
+ Let’s break it down into two parts and examine what they mean:
+
+requiredDuringScheduling... means the rules defined under this field spec-
+ify the labels the node must have for the pod to be scheduled to the node.
+
+...IgnoredDuringExecution means the rules defined under the field don’t
+affect pods already executing on the node. 
+At this point, let me make things easier for you by letting you know that affinity cur-
+rently only affects pod scheduling and never causes a pod to be evicted from a node.
+That’s why all the rules right now always end with IgnoredDuringExecution. Eventu-
+ally, Kubernetes will also support RequiredDuringExecution, which means that if you
+Listing 16.8
+A pod using a node selector: kubia-gpu-nodeselector.yaml
+Listing 16.9
+A pod using a nodeAffinity rule: kubia-gpu-nodeaffinity.yaml
+This pod is only scheduled 
+to nodes that have the 
+gpu=true label.
+ 
+",[],"[{'entity': 'nodeSelector', 'description': 'a field in the Pod spec that specifies the labels a node must have for the pod to be scheduled to it', 'category': 'software,application'}, {'entity': 'Pod', 'description': 'a Kubernetes object that represents a running application', 'category': 'application'}, {'entity': 'nodeAffinity', 'description': 'a field in the Pod spec that specifies the labels a node must have for the pod to be scheduled to it, with more expressive rules than nodeSelector', 'category': 'software,application'}, {'entity': 'gpu=true label', 'description': 'a label that a node must have for a pod to be scheduled to it', 'category': 'hardware,label'}, {'entity': 'requiredDuringSchedulingIgnoredDuringExecution', 'description': 'a field in the nodeAffinity rule that specifies the labels a node must have for the pod to be scheduled to it, and ignores existing pods on the node', 'category': 'software,application'}, {'entity': 'nodeSelectorTerms', 'description': 'a field in the nodeAffinity rule that specifies the terms of the node selector', 'category': 'software,application'}, {'entity': 'matchExpressions', 'description': 'a field in the nodeSelectorTerms that specifies the expressions to match for the node selector', 'category': 'software,application'}, {'entity': 'key: gpu', 'description': 'a key-value pair in the matchExpressions that specifies the label to match for the node selector', 'category': 'hardware,label'}, {'entity': 'operator: In', 'description': 'an operator in the matchExpressions that specifies how to match the label for the node selector', 'category': 'software,application'}, {'entity': 'values: - true', 'description': 'a list of values in the matchExpressions that specifies the value to match for the node selector', 'category': 'hardware,label'}]","[{'source_entity': 'Pod', 'description': 'is assigned to', 'destination_entity': 'gpu=true label'}, {'source_entity': 'Pod', 'description': 'has a value of', 'destination_entity': 'values: - true'}, {'source_entity': 'operator', 'description': 'checks if the value is equal to', 'destination_entity': 'true'}, {'source_entity': 'nodeSelector', 'description': 'is used to select', 'destination_entity': 'nodeAffinity'}, {'source_entity': 'key', 'description': 'specifies the key for', 'destination_entity': 'gpu'}, {'source_entity': 'requiredDuringSchedulingIgnoredDuringExecution', 'description': 'ensures that the node has', 'destination_entity': 'gpu'}, {'source_entity': 'nodeSelectorTerms', 'description': 'defines the terms for', 'destination_entity': 'matchExpressions'}]","['[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is assigned to"",\n    ""summary_er"": ""A Pod is a logical host for one or more application containers, and is assigned to a node in the Kubernetes cluster.""\n  },\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""gpu=true label"",\n    ""relation_description"": ""has"",\n    ""summary_er"": ""A Pod can have labels, including gpu=true, which indicates that it requires a GPU to run.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""has a value of"",\n    ""summary_er"": ""A Pod has a specific value, which is represented by another pod.""\n  }\n]', '[\n  {\n    ""source"": ""operator"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""checks if the value is equal to"",\n    ""summary_er"": ""The operator checks if a condition is met by comparing a value with a specified value in a pod.""\n  }\n]', '[\n  {\n    ""source"": ""nodeSelector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to select"",\n    ""summary_er"": ""Node selector is a key-value pair that selects nodes based on specific criteria, ensuring pods are deployed on suitable nodes.""\n  },\n  {\n    ""source"": ""nodeAffinity"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to schedule"",\n    ""summary_er"": ""Node affinity specifies preferred or required node characteristics for pod scheduling, allowing for more efficient resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""key"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the key for"",\n    ""summary_er"": ""The key is a unique identifier for a Kubernetes pod, used to specify resources and settings.""\n  },\n  {\n    ""source"": ""key"",\n    ""destination"": ""gpu"",\n    ""relation_description"": ""and the destination pod"",\n    ""summary_er"": ""A GPU (Graphics Processing Unit) is a type of hardware resource that can be allocated to a pod for accelerated computing.""\n  }\n]', '[\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""gpu"",\n    ""summary_er"": ""The node must have a GPU to ensure the pod can utilize it for execution.""\n  }\n]', '[\n  {\n    ""source"": ""nodeSelectorTerms"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the terms for matching"",\n    ""summary_er"": ""Node selector terms define conditions for a node to be considered a match, used to filter pods that can run on specific nodes.""\n  }\n]']","The document discusses advanced scheduling in Kubernetes, specifically the use of node selectors and affinity rules to deploy pods on nodes with specific labels. The nodeSelector field specifies a simple rule for deployment, while the nodeAffinity field provides more expressive and detailed rules, including requiredDuringSchedulingIgnoredDuringExecution, which ensures the pod is scheduled only on nodes meeting specified criteria during scheduling but ignores execution.","[{'highlight': 'The nodeSelector field specifies that the pod should only be deployed on nodes that include the gpu=true label.'}, {'highlight': 'If you replace the node selector with a node affinity rule, the pod definition will look like the following listing.'}, {'highlight': 'requiredDuringSchedulingIgnoredDuringExecution means the rules defined under this field specify the labels the node must have for the pod to be scheduled to the node.'}, {'highlight': 'IgnoredDuringExecution means the rules defined under the field don’t affect pods already executing on the node.'}, {'highlight': 'That’s why all the rules right now always end with IgnoredDuringExecution.'}]"
+408,497,0,[],"465
+Using node affinity to attract pods to certain nodes
+remove a label from a node, pods that require the node to have that label will be
+evicted from such a node. As I’ve said, that’s not yet supported in Kubernetes, so let’s
+not concern ourselves with the second part of that long field any longer.
+UNDERSTANDING NODESELECTORTERMS
+By keeping what was explained in the previous section in mind, it’s easy to understand
+that the nodeSelectorTerms field and the matchExpressions field define which
+expressions the node’s labels must match for the pod to be scheduled to the node.
+The single expression in the example is simple to understand. The node must have a
+gpu label whose value is set to true. 
+ This pod will therefore only be scheduled to nodes that have the gpu=true label, as
+shown in figure 16.2.
+Now comes the more interesting part. Node also affinity allows you to prioritize nodes
+during scheduling. We’ll look at that next.
+16.2.2 Prioritizing nodes when scheduling a pod
+The biggest benefit of the newly introduced node affinity feature is the ability to spec-
+ify which nodes the Scheduler should prefer when scheduling a specific pod. This is
+done through the preferredDuringSchedulingIgnoredDuringExecution field.
+ Imagine having multiple datacenters across different countries. Each datacenter
+represents a separate availability zone. In each zone, you have certain machines meant
+only for your own use and others that your partner companies can use. You now want
+to deploy a few pods and you’d prefer them to be scheduled to zone1 and to the
+Node with a GPU
+Pod
+Node afﬁnity
+Required label:
+gpu=true
+Pod
+No node afﬁnity
+gpu: true
+Node with a GPU
+Node without a GPU
+Node without a GPU
+gpu: true
+This pod may be scheduled only
+to nodes with gpu=true label
+This pod may be
+scheduled to any node
+Figure 16.2
+A pod’s node affinity specifies which labels a node must have for the pod to be 
+scheduled to it.
+ 
+",[],"[{'entity': 'node affinity', 'description': 'a feature in Kubernetes that allows prioritizing nodes during scheduling', 'category': 'software'}, {'entity': 'nodeSelectorTerms', 'description': ""a field in node affinity that defines which expressions the node's labels must match for a pod to be scheduled"", 'category': 'software'}, {'entity': 'matchExpressions', 'description': ""a field in nodeSelectorTerms that defines which expressions the node's labels must match"", 'category': 'software'}, {'entity': 'node labels', 'description': 'labels on a node that can be used for scheduling pods', 'category': 'hardware'}, {'entity': 'gpu label', 'description': 'a specific label on a node that indicates it has a GPU', 'category': 'hardware'}, {'entity': 'preferredDuringSchedulingIgnoredDuringExecution', 'description': 'a field in node affinity that specifies which nodes the Scheduler should prefer during scheduling', 'category': 'software'}, {'entity': 'availability zone', 'description': 'a separate availability zone, such as a datacenter across different countries', 'category': 'hardware'}, {'entity': 'pod', 'description': 'an application running on one or more containers', 'category': 'application'}]","[{'source_entity': '""pod""', 'description': 'is assigned to', 'destination_entity': '""node affinity""'}, {'source_entity': '""pod""', 'description': 'uses', 'destination_entity': '""gpu label""'}, {'source_entity': '""pod""', 'description': 'matches', 'destination_entity': '""nodeSelectorTerms""'}, {'source_entity': '""nodeSelectorTerms""', 'description': 'contains', 'destination_entity': '""preferredDuringSchedulingIgnoredDuringExecution""'}, {'source_entity': '""nodeSelectorTerms""', 'description': 'evaluates', 'destination_entity': '""matchExpressions""'}, {'source_entity': '""matchExpressions""', 'description': 'applies to', 'destination_entity': '""availability zone""'}, {'source_entity': '""pod""', 'description': 'is scheduled on', 'destination_entity': '""node labels""'}]","['[{""source"": ""Pod"", ""destination"": ""Node"", ""relation_description"": ""is assigned to"", ""summary_er"": ""A Pod is assigned to a Node, which provides resources such as CPU and memory.""}, {""source"": ""Pod"", ""destination"": ""Docker Container"", ""relation_description"": ""runs inside"", ""summary_er"": ""A Pod runs one or more Docker Containers, providing isolation and resource management.""}, {""source"": ""Node"", ""destination"": ""Cluster"", ""relation_description"": ""is a part of"", ""summary_er"": ""A Node is a physical or virtual machine that is part of a Kubernetes Cluster, providing resources for Pods.""}, {""source"": ""Pod"", ""destination"": ""Service"", ""relation_description"": ""can communicate with"", ""summary_er"": ""A Pod can communicate with a Service, which provides a network identity and load balancing for accessing the Pod.""}, {""source"": ""Node"", ""destination"": ""Machine Learning Model"", ""relation_description"": ""can run on"", ""summary_er"": ""A Node can run Machine Learning Models, providing resources such as CPU and memory for training and inference.""}, {""source"": ""Pod"", ""destination"": ""Generative AI Model"", ""relation_description"": ""can run on"", ""summary_er"": ""A Pod can run Generative AI Models, providing resources such as CPU and memory for generating synthetic data.""}, {""source"": ""Node"", ""destination"": ""Natural Language Understanding Model"", ""relation_description"": ""can run on"", ""summary_er"": ""A Node can run Natural Language Understanding Models, providing resources such as CPU and memory for text analysis and processing.""}, {""source"": ""Pod"", ""destination"": ""Computer Vision Model"", ""relation_description"": ""can run on"", ""summary_er"": ""A Pod can run Computer Vision Models, providing resources such as CPU and memory for image analysis and processing.""}]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A containerized application instance in Kubernetes, utilizing resources from a pod.""\n  },\n  {\n    ""source"": ""gpu label"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""A label assigned to a GPU resource, associated with a specific pod for allocation and management.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""matches"",\n    ""summary_er"": ""A Kubernetes pod is matched to a specific pod based on its label selectors.""\n  },\n  {\n    ""source"": ""nodeSelectorTerms"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""selector"",\n    ""summary_er"": ""Node selector terms are used to select nodes for a pod based on their labels and attributes.""\n  }\n]', '[\n  {\n    ""source"": ""nodeSelectorTerms"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""Node selector terms define a set of node labels that must match for a pod to be scheduled on that node.""\n  },\n  {\n    ""source"": ""preferredDuringSchedulingIgnoredDuringExecution"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""scheduling preference"",\n    ""summary_er"": ""Preferred during scheduling ignored during execution specifies a set of nodes that the scheduler will preferentially schedule pods on, but may still ignore if no suitable node is available.""\n  }\n]', '[\n  {\n    ""source"": ""nodeSelectorTerms"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""evaluates"",\n    ""summary_er"": ""The node selector terms evaluate a set of match expressions to determine if a pod can be scheduled on a node.""\n  }\n]', '[\n  {\n    ""source"": ""matchExpressions"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies to"",\n    ""summary_er"": ""Match expressions are applied to pods, ensuring they meet specific criteria before being scheduled.""\n  },\n  {\n    ""source"": ""availability zone"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""availability zone"",\n    ""summary_er"": ""Availability zones ensure pod placement in a specific geographic region for high availability and redundancy.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Node"",\n    ""relation_description"": ""is scheduled on"",\n    ""summary_er"": ""A Pod is scheduled to run on a specific Node in the Kubernetes cluster, utilizing its resources and labels.""\n  },\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is related to"",\n    ""summary_er"": ""Two or more Pods can be related to each other through their shared characteristics, such as labels or affinity rules.""\n  },\n  {\n    ""source"": ""Node"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""has a pod running on it"",\n    ""summary_er"": ""A Node in the Kubernetes cluster has one or more Pods running on it, utilizing its resources and capabilities.""\n  },\n  {\n    ""source"": ""Node"",\n    ""destination"": ""Node labels"",\n    ""relation_description"": ""has"",\n    ""summary_er"": ""A Node in the Kubernetes cluster has a set of labels associated with it, which can be used for scheduling and management purposes.""\n  }\n]']","Node affinity in Kubernetes allows pods to be scheduled to nodes with specific labels, such as gpu=true. The nodeSelectorTerms field defines expressions that a node's labels must match for the pod to be scheduled. Node affinity also enables prioritizing nodes during scheduling through the preferredDuringSchedulingIgnoredDuringExecution field, allowing for preference of certain zones or machines over others.","[{'highlight': 'Node affinity allows pods to be scheduled to specific nodes based on labels.'}, {'highlight': ""The nodeSelectorTerms field and matchExpressions define which expressions a node's labels must match for a pod to be scheduled.""}, {'highlight': 'Prioritizing nodes during scheduling is done through the preferredDuringSchedulingIgnoredDuringExecution field.'}, {'highlight': 'Node affinity can specify which nodes the Scheduler should prefer when scheduling a specific pod.'}, {'highlight': 'The ability to prioritize nodes during scheduling is a benefit of the newly introduced node affinity feature.'}]"
+409,498,0,[],"466
+CHAPTER 16
+Advanced scheduling
+machines reserved for your company’s deployments. If those machines don’t have
+enough room for the pods or if other important reasons exist that prevent them from
+being scheduled there, you’re okay with them being scheduled to the machines your
+partners use and to the other zones. Node affinity allows you to do that.
+LABELING NODES
+First, the nodes need to be labeled appropriately. Each node needs to have a label that
+designates the availability zone the node belongs to and a label marking it as either a
+dedicated or a shared node.
+ Appendix B explains how to set up a three-node cluster (one master and two
+worker nodes) in VMs running locally. In the following examples, I’ll use the two worker
+nodes in that cluster, but you can also use Google Kubernetes Engine or any other
+multi-node cluster. 
+NOTE
+Minikube isn’t the best choice for running these examples, because it
+runs only one node.
+First, label the nodes, as shown in the next listing.
+$ kubectl label node node1.k8s availability-zone=zone1
+node ""node1.k8s"" labeled
+$ kubectl label node node1.k8s share-type=dedicated
+node ""node1.k8s"" labeled
+$ kubectl label node node2.k8s availability-zone=zone2
+node ""node2.k8s"" labeled
+$ kubectl label node node2.k8s share-type=shared
+node ""node2.k8s"" labeled
+$ kubectl get node -L availability-zone -L share-type
+NAME         STATUS    AGE       VERSION   AVAILABILITY-ZONE   SHARE-TYPE
+master.k8s   Ready     4d        v1.6.4    <none>              <none>
+node1.k8s    Ready     4d        v1.6.4    zone1               dedicated
+node2.k8s    Ready     4d        v1.6.4    zone2               shared
+SPECIFYING PREFERENTIAL NODE AFFINITY RULES
+With the node labels set up, you can now create a Deployment that prefers dedicated
+nodes in zone1. The following listing shows the Deployment manifest.
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: pref
+spec:
+  template:
+    ...
+    spec:
+      affinity:
+        nodeAffinity:
+Listing 16.10
+Labeling nodes
+Listing 16.11
+Deployment with preferred node affinity: preferred-deployment.yaml
+ 
+",[],"[{'entity': 'Node Affinity', 'description': 'Allows you to specify preferential rules for scheduling machines', 'category': 'Software'}, {'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'Software'}, {'entity': 'Docker', 'description': 'Container runtime engine', 'category': 'Software'}, {'entity': 'Minikube', 'description': 'Single-node Kubernetes cluster', 'category': 'Software'}, {'entity': 'Google Kubernetes Engine', 'description': 'Managed Kubernetes service', 'category': 'Cloud Service'}, {'entity': 'kubectl', 'description': 'Kubernetes command-line tool', 'category': 'Software'}, {'entity': 'node1.k8s', 'description': 'Worker node in a Kubernetes cluster', 'category': 'Hardware'}, {'entity': 'node2.k8s', 'description': 'Worker node in a Kubernetes cluster', 'category': 'Hardware'}, {'entity': 'availability-zone', 'description': 'Label for specifying the availability zone of a node', 'category': 'Software'}, {'entity': 'share-type', 'description': 'Label for specifying whether a node is dedicated or shared', 'category': 'Software'}, {'entity': 'Deployment', 'description': 'Kubernetes resource for managing replicas of an application', 'category': 'Software'}, {'entity': 'pref', 'description': 'Name of a Deployment with preferred node affinity', 'category': 'Software'}, {'entity': 'preferred-deployment.yaml', 'description': 'Deployment manifest for specifying preferential node affinity rules', 'category': 'Software'}]","[{'source_entity': '""Kubernetes""', 'description': 'manages', 'destination_entity': '""Deployment""'}, {'source_entity': '""Kubernetes""', 'description': 'deploys', 'destination_entity': '""Docker""'}, {'source_entity': '""node2.k8s""', 'description': 'runs', 'destination_entity': '""Deployment""'}, {'source_entity': '""kubectl""', 'description': 'configures', 'destination_entity': '""Deployment""'}, {'source_entity': '""pref""', 'description': 'specifies', 'destination_entity': '""share-type""'}, {'source_entity': '""node1.k8s""', 'description': 'hosts', 'destination_entity': '""Deployment""'}, {'source_entity': '""Google Kubernetes Engine""', 'description': 'provides', 'destination_entity': '""Kubernetes""'}, {'source_entity': '""Minikube""', 'description': 'offers', 'destination_entity': '""Kubernetes""'}, {'source_entity': '""Node Affinity""', 'description': 'ensures', 'destination_entity': '""Deployment""'}, {'source_entity': '""node2.k8s""', 'description': 'shares', 'destination_entity': '""preferred-deployment.yaml""'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages and orchestrates containerized applications, including pods, which are the basic execution unit in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""Kubernetes deploys pods, managing containerized applications with ease and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""node2.k8s"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""A Kubernetes node (node2.k8s) runs a pod, which is a containerized application.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures"",\n    ""summary_er"": ""Kubectl configures a pod by defining its configuration, such as container images and environment variables.""\n  }\n]', '[{\n    ""source"": ""pref"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""share-type"",\n    ""summary_er"": ""\\""Pref is a type of pod that shares resources in Kubernetes. It allows multiple containers to run on the same host.\\""""\n}]', '[\n  {\n    ""source"": ""node1.k8s"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""Node node1 in Kubernetes cluster hosts a Pod, which is an application container running on top of the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Google Kubernetes Engine"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""Google Kubernetes Engine provides a managed environment for running Kubernetes pods.""\n  }\n]', '[\n  {\n    ""source"": ""Minikube"",\n    ""destination"": ""Kubernetes"",\n    ""relation_description"": ""offers"",\n    ""summary_er"": ""Minikube provides a lightweight, self-contained Kubernetes cluster for local development and testing.""\n  }\n]', '[\n  {\n    ""source"": ""Node Affinity"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""ensures"",\n    ""summary_er"": ""Node Affinity ensures that a pod is scheduled on a node with specific characteristics, such as CPU or memory requirements.""\n  }\n]', '[\n  {\n    ""source"": ""node2.k8s"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""shares"",\n    ""summary_er"": ""Node node2.k8s shares a pod with preferred-deployment.yaml, indicating a deployment configuration.""\n  }\n]']","Node affinity allows scheduling of pods to machines reserved for deployments, and can be specified by labeling nodes with availability zone and share type labels. This can be demonstrated using kubectl label command to label nodes as dedicated or shared within specific zones. A Deployment can then be created that prefers dedicated nodes in a particular zone.","[{'highlight': 'Node affinity allows you to schedule machines reserved for your company’s deployments to other zones if they don’t have enough room or due to other important reasons.'}, {'highlight': 'To set up node affinity, first label each node with a label designating the availability zone and a label marking it as dedicated or shared.'}, {'highlight': 'The command `kubectl label node <node_name> availability-zone=<zone_name>` is used to label nodes with their respective zones.'}, {'highlight': 'You can create a Deployment that prefers dedicated nodes in a specific zone by specifying preferential node affinity rules in the Deployment manifest.'}, {'highlight': 'The `nodeAffinity` field in the Deployment manifest allows you to specify preferred node labels, such as availability-zone and share-type.'}]"

@@ -1,0 +1,499 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+200,289,0,[],"257
+Performing an automatic rolling update with a ReplicationController
+Keep the curl loop running and open another terminal, where you’ll get the rolling
+update started. To perform the update, you’ll run the kubectl rolling-update com-
+mand. All you need to do is tell it which ReplicationController you’re replacing, give a
+name for the new ReplicationController, and specify the new image you’d like to
+replace the original one with. The following listing shows the full command for per-
+forming the rolling update.
+$ kubectl rolling-update kubia-v1 kubia-v2 --image=luksa/kubia:v2
+Created kubia-v2
+Scaling up kubia-v2 from 0 to 3, scaling down kubia-v1 from 3 to 0 (keep 3 
+pods available, don't exceed 4 pods)
+...
+Because you’re replacing ReplicationController kubia-v1 with one running version 2
+of your kubia app, you’d like the new ReplicationController to be called kubia-v2
+and use the luksa/kubia:v2 container image. 
+ When you run the command, a new ReplicationController called kubia-v2 is cre-
+ated immediately. The state of the system at this point is shown in figure 9.5.
+The new ReplicationController’s pod template references the luksa/kubia:v2 image
+and its initial desired replica count is set to 0, as you can see in the following listing.
+$ kubectl describe rc kubia-v2
+Name:       kubia-v2
+Namespace:  default
+Image(s):   luksa/kubia:v2          
+Selector:   app=kubia,deployment=757d16a0f02f6a5c387f2b5edb62b155
+Labels:     app=kubia            
+Replicas:   0 current / 0 desired    
+...
+Listing 9.4
+Initiating a rolling-update of a ReplicationController using kubectl
+Listing 9.5
+Describing the new ReplicationController created by the rolling update
+Pod: v1
+Pod: v1
+No v2 pods yet
+Pod: v1
+ReplicationController: kubia-v1
+Image: kubia/v1
+Replicas: 3
+ReplicationController: kubia-v2
+Image: kubia/v2
+Replicas: 0
+Figure 9.5
+The state of the system immediately after starting the rolling update
+The new 
+ReplicationController 
+refers to the v2 image.
+Initially, the desired 
+number of replicas is zero.
+ 
+",[],"[{'entity': 'ReplicationController', 'description': 'A Kubernetes resource that manages a set of replicas (identical pods) to ensure a specified number of copies are running at any given time.', 'category': 'software'}, {'entity': 'kubectl', 'description': 'The command-line tool for interacting with Kubernetes clusters.', 'category': 'software'}, {'entity': 'ReplicationController kubia-v1', 'description': 'A specific instance of a ReplicationController that manages replicas of the kubia app version 1.', 'category': 'software'}, {'entity': 'ReplicationController kubia-v2', 'description': 'A specific instance of a ReplicationController that manages replicas of the kubia app version 2.', 'category': 'software'}, {'entity': 'kubia-v1', 'description': 'The image name for the kubia app version 1.', 'category': 'software'}, {'entity': 'kubia-v2', 'description': 'The image name for the kubia app version 2.', 'category': 'software'}, {'entity': 'luksa/kubia:v2', 'description': 'The container image name for the kubia app version 2.', 'category': 'software'}, {'entity': 'rolling-update', 'description': 'A Kubernetes command that performs an automatic rolling update of a ReplicationController.', 'category': 'software'}]","[{'source_entity': '""kubia-v2""', 'description': 'is deployed by', 'destination_entity': '""luksa/kubia:v2""'}, {'source_entity': '""ReplicationController kubia-v1""', 'description': 'is updated to', 'destination_entity': '""ReplicationController kubia-v2""'}, {'source_entity': '""kubectl""', 'description': 'performs a rolling update on', 'destination_entity': '""ReplicationController kubia-v1""'}, {'source_entity': '""kubia-v1""', 'description': 'is replaced by', 'destination_entity': '""kubia-v2""'}]","['[\n  {\n    ""source"": ""kubia-v2"",\n    ""destination"": ""luksa/kubia:v2"",\n    ""relation_description"": ""is deployed by"",\n    ""summary_er"": ""Kubernetes deployment \'kubia-v2\' is managed by Docker image \'luksa/kubia:v2\'.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController kubia-v1"",\n    ""destination"": ""ReplicationController kubia-v2"",\n    ""relation_description"": ""is updated to"",\n    ""summary_er"": ""ReplicationController kubia-v1 is updated to ReplicationController kubia-v2, indicating a new version of the pod has been deployed.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""ReplicationController kubia-v1"",\n    ""relation_description"": ""performs a rolling update on"",\n    ""summary_er"": ""Kubectl updates Replication Controller kubia-v1 by performing a rolling update, ensuring minimal downtime and maintaining application availability.""\n  }\n]', '[\n  {\n    ""source"": ""kubia-v1"",\n    ""destination"": ""kubia-v2"",\n    ""relation_description"": ""and"",\n    ""summary_er"": ""Kubia v1 is replaced by Kubia v2, indicating a version upgrade in the pod.""\n  }\n]']","To perform an automatic rolling update with a ReplicationController in Kubernetes, run the kubectl rolling-update command and specify the old RC, new RC name, and new image. A new RC will be created immediately, referencing the new image and initially having a desired replica count of 0. The system will then scale up the new RC while scaling down the old one, keeping the total number of pods at 3.","[{'highlight': 'Performing an automatic rolling update with a ReplicationController can be done using the kubectl rolling-update command.'}, {'highlight': 'The new ReplicationController created by the rolling update refers to the v2 image and initially has a desired replica count of 0.'}, {'highlight': 'To perform the rolling update, you need to specify the old ReplicationController, give a name for the new one, and specify the new image.'}, {'highlight': 'The kubectl rolling-update command creates a new ReplicationController with the specified image and desired replica count of 0.'}, {'highlight': 'A rolling update replaces the old ReplicationController with a new one running a newer version of the app, maintaining availability.'}]"
+201,290,0,[],"258
+CHAPTER 9
+Deployments: updating applications declaratively
+UNDERSTANDING THE STEPS PERFORMED BY KUBECTL BEFORE THE ROLLING UPDATE COMMENCES
+kubectl created this ReplicationController by copying the kubia-v1 controller and
+changing the image in its pod template. If you look closely at the controller’s label
+selector, you’ll notice it has been modified, too. It includes not only a simple
+app=kubia label, but also an additional deployment label which the pods must have in
+order to be managed by this ReplicationController.
+ You probably know this already, but this is necessary to avoid having both the new
+and the old ReplicationControllers operating on the same set of pods. But even if pods
+created by the new controller have the additional deployment label in addition to the
+app=kubia label, doesn’t this mean they’ll be selected by the first ReplicationControl-
+ler’s selector, because it’s set to app=kubia? 
+ Yes, that’s exactly what would happen, but there’s a catch. The rolling-update pro-
+cess has modified the selector of the first ReplicationController, as well:
+$ kubectl describe rc kubia-v1
+Name:       kubia-v1
+Namespace:  default
+Image(s):   luksa/kubia:v1
+Selector:   app=kubia,deployment=3ddd307978b502a5b975ed4045ae4964-orig 
+Okay, but doesn’t this mean the first controller now sees zero pods matching its selec-
+tor, because the three pods previously created by it contain only the app=kubia label?
+No, because kubectl had also modified the labels of the live pods just before modify-
+ing the ReplicationController’s selector:
+$ kubectl get po --show-labels
+NAME            READY  STATUS   RESTARTS  AGE  LABELS
+kubia-v1-m33mv  1/1    Running  0         2m   app=kubia,deployment=3ddd...
+kubia-v1-nmzw9  1/1    Running  0         2m   app=kubia,deployment=3ddd...
+kubia-v1-cdtey  1/1    Running  0         2m   app=kubia,deployment=3ddd...
+If this is getting too complicated, examine figure 9.6, which shows the pods, their
+labels, and the two ReplicationControllers, along with their pod selectors.
+ReplicationController: kubia-v1
+Replicas: 3
+Selector: app=kubia,
+deployment=3ddd…
+ReplicationController: kubia-v2
+Replicas: 0
+Selector: app=kubia,
+deployment=757d...
+deployment: 3ddd...
+app: kubia
+Pod: v1
+deployment: 3ddd...
+app: kubia
+Pod: v1
+deployment: 3ddd...
+app: kubia
+Pod: v1
+Figure 9.6
+Detailed state of the old and new ReplicationControllers and pods at the start of a rolling 
+update
+ 
+",[],"[{'entity': 'ReplicationController', 'description': 'A Kubernetes resource that manages replicas of a pod.', 'category': 'software'}, {'entity': 'kubectl', 'description': 'The command-line tool for interacting with Kubernetes clusters.', 'category': 'software'}, {'entity': 'ReplicaSet', 'description': 'A Kubernetes resource that ensures a specified number of replicas are running at any given time.', 'category': 'software'}, {'entity': 'Pod', 'description': 'The basic execution unit in Kubernetes, representing a single instance of an application.', 'category': 'software'}, {'entity': 'Image', 'description': ""A snapshot of a container's file system and configuration."", 'category': 'software'}, {'entity': 'Label', 'description': 'A key-value pair used to identify and select pods or other resources in Kubernetes.', 'category': 'software'}, {'entity': 'Selector', 'description': 'A string that matches one or more labels, used to select pods or other resources in Kubernetes.', 'category': 'software'}, {'entity': 'deployment', 'description': 'A Kubernetes resource that manages the rollout of new versions of an application.', 'category': 'software'}, {'entity': 'rc', 'description': 'The abbreviation for ReplicationController, a Kubernetes resource that manages replicas of a pod.', 'category': 'software'}, {'entity': 'kubectl describe', 'description': 'A command used to display detailed information about a Kubernetes resource.', 'category': 'software'}, {'entity': 'get po', 'description': 'A command used to retrieve information about pods in a Kubernetes cluster.', 'category': 'software'}]","[{'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""Selector""'}, {'source_entity': '""kubectl describe""', 'description': 'displays information about', 'destination_entity': '""ReplicationController""'}, {'source_entity': '""kubectl""', 'description': 'manages', 'destination_entity': '""Pod""'}, {'source_entity': '""get po""', 'description': 'fetches details of', 'destination_entity': '""Pod""'}, {'source_entity': '""Label""', 'description': 'applies to', 'destination_entity': '""Pod""'}, {'source_entity': '""ReplicaSet""', 'description': 'ensures a minimum number of', 'destination_entity': '""Pod""'}, {'source_entity': '""deployment""', 'description': 'manages updates to', 'destination_entity': '""ReplicationController""'}, {'source_entity': '""kubectl""', 'description': 'deploys', 'destination_entity': '""Image""'}, {'source_entity': '""rc""', 'description': 'refers to a', 'destination_entity': '""ReplicationController""'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubectl uses a selector to identify and manage pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""describes information about"",\n    ""summary_er"": ""Displays detailed info about a Kubernetes pod using kubectl describe command.""\n  },\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""represents"",\n    ""summary_er"": ""A ReplicationController in Kubernetes ensures a specified number of replicas (identical pods) are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubectl manages and controls pods in a Kubernetes cluster, ensuring they run smoothly and efficiently.""\n  }\n]', '[\n  {\n    ""source"": ""get po"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""fetches details of"",\n    ""summary_er"": ""The \'get po\' command fetches detailed information about a specific pod in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""Label"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""applies to"",\n    ""summary_er"": ""A label is applied to a pod, providing metadata for identification and management.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""ensures a minimum number of"",\n    ""summary_er"": ""A ReplicaSet ensures that a specified minimum number of Pod instances are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages updates to"",\n    ""summary_er"": ""A deployment manages updates to a pod, ensuring it runs with the desired configuration and version.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""Kubernetes command-line tool deploys a containerized application to a pod.""\n  },\n  {\n    ""source"": ""Image"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""A Docker image runs as a process inside a pod, providing the application\'s functionality.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""ReplicationController"",\n    ""relation_description"": ""refers to a"",\n    ""summary_er"": ""A ReplicationController ensures that a specified number of replicas (identical Pod instances) are running at any given time.""\n  }\n]']","Before performing a rolling update, kubectl modifies the ReplicationController's selector and adds an additional deployment label to its pod template, ensuring that only pods managed by the new controller are selected. The old controller is also modified with a new selector, allowing it to see zero matching pods, but the live pods' labels have been updated to include the new deployment label, preventing them from being seen by the old controller.","[{'highlight': 'kubectl created this ReplicationController by copying the kubia-v1 controller and changing the image in its pod template.'}, {'highlight': 'The rolling-update process has modified the selector of the first ReplicationController, as well: app=kubia,deployment=3ddd307978b502a5b975ed4045ae4964-orig'}, {'highlight': ""kubectl had also modified the labels of the live pods just before modifying the ReplicationController's selector:""}, {'highlight': 'ReplicationController: kubia-v2, Selector: app=kubia, deployment=757d... deployment: 3ddd...'}, {'highlight': 'The rolling-update process involves creating a new ReplicationController and modifying the selector of the old one to avoid selecting pods created by both controllers.'}]"
+202,291,0,[],"259
+Performing an automatic rolling update with a ReplicationController
+kubectl had to do all this before even starting to scale anything up or down. Now
+imagine doing the rolling update manually. It’s easy to see yourself making a mistake
+here and possibly having the ReplicationController kill off all your pods—pods that
+are actively serving your production clients!
+REPLACING OLD PODS WITH NEW ONES BY SCALING THE TWO REPLICATIONCONTROLLERS
+After setting up all this, kubectl starts replacing pods by first scaling up the new
+controller to 1. The controller thus creates the first v2 pod. kubectl then scales
+down the old ReplicationController by 1. This is shown in the next two lines printed
+by kubectl:
+Scaling kubia-v2 up to 1
+Scaling kubia-v1 down to 2
+Because the Service is targeting all pods with the app=kubia label, you should start see-
+ing your curl requests redirected to the new v2 pod every few loop iterations:
+This is v2 running in pod kubia-v2-nmzw9      
+This is v1 running in pod kubia-v1-kbtsk
+This is v1 running in pod kubia-v1-2321o
+This is v2 running in pod kubia-v2-nmzw9      
+...
+Figure 9.7 shows the current state of the system.
+As kubectl continues with the rolling update, you start seeing a progressively bigger
+percentage of requests hitting v2 pods, as the update process deletes more of the v1
+pods and replaces them with those running your new image. Eventually, the original
+Requests hitting the pod 
+running the new version
+ReplicationController: kubia-v1
+Replicas: 2
+Selector: app=kubia,
+deployment=3ddd…
+ReplicationController: kubia-v2
+Replicas: 1
+Selector: app=kubia,
+deployment=757d…
+deployment: 3ddd...
+app: kubia
+Pod: v1
+deployment: 3ddd...
+app: kubia
+Pod: v1
+deployment: 757d...
+app: kubia
+Pod: v2
+curl
+Service
+Selector: app=kubia
+Figure 9.7
+The Service is redirecting requests to both the old and new pods during the 
+rolling update.
+ 
+",[],"[{'entity': 'ReplicationController', 'description': 'A Kubernetes object that manages a set of replicas (pods) based on a specified number of desired replicas.', 'category': 'software,application'}]","[{'source_entity': '""ReplicationController""', 'description': 'ensures that a specified number of replicas are running at any given time.', 'destination_entity': '""Pods""'}, {'source_entity': '""ReplicationController""', 'description': 'automatically restarts the Pods if they fail or exit.', 'destination_entity': '""Pods""'}, {'source_entity': '""ReplicationController""', 'description': 'manages the scaling of the number of replicas based on resource utilization.', 'destination_entity': '""Cluster""'}]","['[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""ensures that a specified number of replicas are running at any given time."",\n    ""summary_er"": ""The Replication Controller ensures a fixed number of Pod replicas run simultaneously.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""automatically restarts the Pods if they fail or exit."",\n    ""summary_er"": ""A ReplicationController ensures Pod availability by automatically restarting failed or exited Pods.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages the scaling of the number of replicas based on resource utilization"",\n    ""summary_er"": ""A ReplicationController manages the number of Pod replicas in a Cluster, scaling up or down based on resource usage.""\n  },\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""Cluster"",\n    ""relation_description"": ""manages the scaling of the number of replicas based on resource utilization"",\n    ""summary_er"": ""A ReplicationController is used to manage the scaling of Pods within a Cluster, ensuring efficient resource utilization.""\n  }\n]']","Performing a rolling update with a ReplicationController using kubectl involves scaling up a new controller while scaling down an old one, replacing old pods with new ones. This process deletes v1 pods and replaces them with v2 pods, eventually directing all requests to the new version. The Service redirects requests to both old and new pods during the rolling update, progressively increasing the percentage of requests hitting v2 pods.","[{'highlight': 'Performing an automatic rolling update with a ReplicationController using kubectl allows for seamless scaling without manual intervention.'}, {'highlight': 'kubectl replaces old pods with new ones by scaling up the new controller to 1 and then scaling down the old one, targeting all pods with the app=kubia label.'}, {'highlight': 'The Service redirects requests to both old and new pods during the rolling update process.'}, {'highlight': 'ReplicationController: kubia-v1 has 2 replicas, while ReplicationController: kubia-v2 has 1 replica.'}, {'highlight': ""The deployment is identified by 'deployment=3ddd...' for v1 and 'deployment=757d...' for v2.""}]"
+203,292,0,[],"260
+CHAPTER 9
+Deployments: updating applications declaratively
+ReplicationController is scaled to zero, causing the last v1 pod to be deleted, which
+means the Service will now be backed by v2 pods only. At that point, kubectl will
+delete the original ReplicationController and the update process will be finished, as
+shown in the following listing.
+...
+Scaling kubia-v2 up to 2
+Scaling kubia-v1 down to 1
+Scaling kubia-v2 up to 3
+Scaling kubia-v1 down to 0
+Update succeeded. Deleting kubia-v1
+replicationcontroller ""kubia-v1"" rolling updated to ""kubia-v2""
+You’re now left with only the kubia-v2 ReplicationController and three v2 pods. All
+throughout this update process, you’ve hit your service and gotten a response every
+time. You have, in fact, performed a rolling update with zero downtime. 
+9.2.3
+Understanding why kubectl rolling-update is now obsolete
+At the beginning of this section, I mentioned an even better way of doing updates
+than through kubectl rolling-update. What’s so wrong with this process that a bet-
+ter one had to be introduced? 
+ Well, for starters, I, for one, don’t like Kubernetes modifying objects I’ve created.
+Okay, it’s perfectly fine for the scheduler to assign a node to my pods after I create
+them, but Kubernetes modifying the labels of my pods and the label selectors of my
+ReplicationControllers is something that I don’t expect and could cause me to go
+around the office yelling at my colleagues, “Who’s been messing with my controllers!?!?” 
+ But even more importantly, if you’ve paid close attention to the words I’ve used,
+you probably noticed that all this time I said explicitly that the kubectl client was the
+one performing all these steps of the rolling update. 
+ You can see this by turning on verbose logging with the --v option when triggering
+the rolling update:
+$ kubectl rolling-update kubia-v1 kubia-v2 --image=luksa/kubia:v2 --v 6
+TIP
+Using the --v 6 option increases the logging level enough to let you see
+the requests kubectl is sending to the API server.
+Using this option, kubectl will print out each HTTP request it sends to the Kuberne-
+tes API server. You’ll see PUT requests to
+/api/v1/namespaces/default/replicationcontrollers/kubia-v1
+which is the RESTful URL representing your kubia-v1 ReplicationController resource.
+These requests are the ones scaling down your ReplicationController, which shows
+Listing 9.6
+The final steps performed by kubectl rolling-update
+ 
+",[],"[{'entity': 'ReplicationController', 'description': 'A Kubernetes resource that manages a set of replicas (pods)', 'category': 'software'}, {'entity': 'Service', 'description': 'A Kubernetes resource that provides a network identity and load balancing for accessing applications', 'category': 'software'}, {'entity': 'kubectl', 'description': 'The command-line tool used to interact with the Kubernetes API server', 'category': 'command'}, {'entity': 'rolling-update', 'description': 'A kubectl command that performs a rolling update of a ReplicationController', 'category': 'command'}, {'entity': 'ReplicaSet', 'description': 'A Kubernetes resource that manages a set of replicas (pods)', 'category': 'software'}, {'entity': 'Pod', 'description': 'The basic execution unit in Kubernetes, representing an application instance', 'category': 'software'}, {'entity': '--v option', 'description': 'A kubectl flag that enables verbose logging', 'category': 'command'}, {'entity': 'API server', 'description': 'The central component of the Kubernetes control plane, responsible for managing resources and handling requests', 'category': 'software'}, {'entity': 'ReplicationController kubia-v1', 'description': 'A specific instance of a ReplicationController resource', 'category': 'software'}, {'entity': 'ReplicationController kubia-v2', 'description': 'A specific instance of a ReplicationController resource', 'category': 'software'}]","[{'source_entity': '""Service""', 'description': 'is managed by', 'destination_entity': '""ReplicationController kubia-v1""'}, {'source_entity': '""kubectl""', 'description': 'deploys', 'destination_entity': '""Pod""'}, {'source_entity': '""ReplicationController kubia-v2""', 'description': 'is updated by', 'destination_entity': '""rolling-update""'}, {'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""--v option""'}, {'source_entity': '""ReplicationController kubia-v1""', 'description': 'is scaled by', 'destination_entity': '""ReplicaSet""'}, {'source_entity': '""API server""', 'description': 'communicates with', 'destination_entity': '""ReplicationController kubia-v2""'}]","['[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""ReplicationController kubia-v1"",\n    ""relation_description"": ""is managed by"",\n    ""summary_er"": ""A Service is managed by a ReplicationController, which ensures a specified number of replicas are running.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) deploys a containerized application or service as a pod in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController kubia-v2"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is updated by"",\n    ""summary_er"": ""The ReplicationController \'kubia-v2\' updates a pod through rolling-update.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The Kubernetes command-line tool (kubectl) uses a pod to execute commands, leveraging the pod\'s resources and environment.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController kubia-v1"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is scaled by"",\n    ""summary_er"": ""A ReplicationController scales a Pod to meet demand, ensuring consistent resource utilization.""\n  },\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A ReplicaSet manages multiple Pods to ensure desired replicas are running and available.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The API server interacts with a pod to manage incoming requests and responses.""\n  },\n  {\n    ""source"": ""ReplicationController kubia-v2"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A ReplicationController ensures the desired number of pods are running, managing their lifecycle.""\n  }\n]']","Kubernetes' ReplicationController can be updated declaratively using `kubectl` commands, allowing for zero-downtime updates. However, the deprecated `kubectl rolling-update` command modifies existing objects and is not recommended. Instead, use explicit `kubectl` commands to scale and update resources, which provides greater control and avoids unexpected modifications.","[{'highlight': 'ReplicationController is scaled to zero, causing the last v1 pod to be deleted, which means the Service will now be backed by v2 pods only.'}, {'highlight': 'kubectl rolling-update is now obsolete due to Kubernetes modifying objects created by users without their consent.'}, {'highlight': 'The kubectl client sends HTTP requests to the API server to perform rolling updates, which can be seen with verbose logging enabled using the --v option.'}, {'highlight': 'A rolling update with zero downtime was performed by scaling down v1 pods and scaling up v2 pods without interrupting service availability.'}, {'highlight': 'The kubectl client modifies ReplicationController labels and selectors, which can cause unexpected behavior and is a reason for the deprecation of kubectl rolling-update.'}]"
+204,293,0,[],"261
+Using Deployments for updating apps declaratively
+that the kubectl client is the one doing the scaling, instead of it being performed by
+the Kubernetes master. 
+TIP
+Use the verbose logging option when running other kubectl commands,
+to learn more about the communication between kubectl and the API server. 
+But why is it such a bad thing that the update process is being performed by the client
+instead of on the server? Well, in your case, the update went smoothly, but what if you
+lost network connectivity while kubectl was performing the update? The update pro-
+cess would be interrupted mid-way. Pods and ReplicationControllers would end up in
+an intermediate state.
+ Another reason why performing an update like this isn’t as good as it could be is
+because it’s imperative. Throughout this book, I’ve stressed how Kubernetes is about
+you telling it the desired state of the system and having Kubernetes achieve that
+state on its own, by figuring out the best way to do it. This is how pods are deployed
+and how pods are scaled up and down. You never tell Kubernetes to add an addi-
+tional pod or remove an excess one—you change the number of desired replicas
+and that’s it.
+ Similarly, you will also want to change the desired image tag in your pod defini-
+tions and have Kubernetes replace the pods with new ones running the new image.
+This is exactly what drove the introduction of a new resource called a Deployment,
+which is now the preferred way of deploying applications in Kubernetes. 
+9.3
+Using Deployments for updating apps declaratively
+A Deployment is a higher-level resource meant for deploying applications and
+updating them declaratively, instead of doing it through a ReplicationController or
+a ReplicaSet, which are both considered lower-level concepts.
+ When you create a Deployment, a ReplicaSet resource is created underneath
+(eventually more of them). As you may remember from chapter 4, ReplicaSets are a
+new generation of ReplicationControllers, and should be used instead of them. Replica-
+Sets replicate and manage pods, as well. When using a Deployment, the actual pods
+are created and managed by the Deployment’s ReplicaSets, not by the Deployment
+directly (the relationship is shown in figure 9.8).
+You might wonder why you’d want to complicate things by introducing another object
+on top of a ReplicationController or ReplicaSet, when they’re what suffices to keep a set
+of pod instances running. As the rolling update example in section 9.2 demonstrates,
+when updating the app, you need to introduce an additional ReplicationController and
+Pods
+ReplicaSet
+Deployment
+Figure 9.8
+A Deployment is backed 
+by a ReplicaSet, which supervises the 
+deployment’s pods.
+ 
+",[],"[{'entity': 'kubectl', 'description': 'the kubernetes client command', 'category': 'software'}, {'entity': 'Kubernetes master', 'description': 'the central component of a Kubernetes cluster', 'category': 'hardware'}, {'entity': 'ReplicationController', 'description': 'a lower-level resource for deploying and managing pods', 'category': 'software'}, {'entity': 'ReplicaSet', 'description': 'a new generation of ReplicationControllers, used to replicate and manage pods', 'category': 'software'}, {'entity': 'Deployment', 'description': 'a higher-level resource for deploying applications and updating them declaratively', 'category': 'software'}, {'entity': 'Pods', 'description': 'the basic execution unit in Kubernetes', 'category': 'hardware'}, {'entity': 'ReplicaSet', 'description': 'a new generation of ReplicationControllers, used to replicate and manage pods', 'category': 'software'}, {'entity': 'API server', 'description': 'the central component of a Kubernetes cluster that manages the API', 'category': 'hardware'}, {'entity': 'verbose logging option', 'description': 'an option for running kubectl commands with detailed logging', 'category': 'software'}]","[{'source_entity': 'Kubernetes master', 'description': 'manages and controls', 'destination_entity': 'ReplicationController'}, {'source_entity': 'Kubernetes master', 'description': 'monitors and updates', 'destination_entity': 'Pods'}, {'source_entity': 'kubectl', 'description': 'interacts with', 'destination_entity': 'API server'}, {'source_entity': 'kubectl', 'description': 'configures and manages', 'destination_entity': 'Deployment'}, {'source_entity': 'kubectl', 'description': 'deploys and scales', 'destination_entity': 'ReplicaSet'}, {'source_entity': 'Kubernetes master', 'description': 'enables verbose logging for', 'destination_entity': 'verbose logging option'}]","['[\n  {\n    ""source"": ""Kubernetes Master"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages and controls"",\n    ""summary_er"": ""The Kubernetes master node manages and controls the execution of pods, ensuring they run as expected.""\n  },\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""A ReplicationController is responsible for managing and maintaining a specified number of pod replicas running at any given time.""\n  }\n]', '[{\n  ""source"": ""Kubernetes Master"",\n  ""destination"": ""Pods"",\n  ""relation_description"": ""monitors and updates"",\n  ""summary_er"": ""The Kubernetes master node continuously monitors and updates the status of pods, ensuring efficient resource allocation and management.""\n}]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""API server"",\n    ""relation_description"": ""interacts with"",\n    ""summary_er"": ""Kubectl interacts with the API server to manage and control containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures and manages"",\n    ""summary_er"": ""Kubectl configures and manages pods, ensuring they run smoothly and efficiently.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys and scales"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) is used to deploy and scale pods, ensuring efficient resource utilization and high availability.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes master"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enables verbose logging for"",\n    ""summary_er"": ""The Kubernetes master enables verbose logging for pods, allowing for detailed logging of pod activities.""\n  }\n]']","Deployments in Kubernetes provide a declarative way to update applications by introducing a ReplicaSet that creates and manages pods, providing a more scalable and efficient way of updating applications compared to using ReplicationControllers or ReplicaSets directly.",[{'highlight': 'Using Deployments for updating apps declaratively'}]
+205,294,0,[],"262
+CHAPTER 9
+Deployments: updating applications declaratively
+coordinate the two controllers to dance around each other without stepping on each
+other’s toes. You need something coordinating this dance. A Deployment resource
+takes care of that (it’s not the Deployment resource itself, but the controller process
+running in the Kubernetes control plane that does that; but we’ll get to that in chap-
+ter 11).
+ Using a Deployment instead of the lower-level constructs makes updating an app
+much easier, because you’re defining the desired state through the single Deployment
+resource and letting Kubernetes take care of the rest, as you’ll see in the next few pages.
+9.3.1
+Creating a Deployment
+Creating a Deployment isn’t that different from creating a ReplicationController. A
+Deployment is also composed of a label selector, a desired replica count, and a pod
+template. In addition to that, it also contains a field, which specifies a deployment
+strategy that defines how an update should be performed when the Deployment
+resource is modified.  
+CREATING A DEPLOYMENT MANIFEST
+Let’s see how to use the kubia-v1 ReplicationController example from earlier in this
+chapter and modify it so it describes a Deployment instead of a ReplicationController.
+As you’ll see, this requires only three trivial changes. The following listing shows the
+modified YAML.
+apiVersion: apps/v1beta1          
+kind: Deployment                  
+metadata:
+  name: kubia          
+spec:
+  replicas: 3
+  template:
+    metadata:
+      name: kubia
+      labels:
+        app: kubia
+    spec:
+      containers:
+      - image: luksa/kubia:v1
+        name: nodejs
+NOTE
+You’ll find an older version of the Deployment resource in extensions/
+v1beta1, and a newer one in apps/v1beta2 with different required fields and
+different defaults. Be aware that kubectl explain shows the older version.
+Because the ReplicationController from before was managing a specific version of the
+pods, you called it kubia-v1. A Deployment, on the other hand, is above that version
+stuff. At a given point in time, the Deployment can have multiple pod versions run-
+ning under its wing, so its name shouldn’t reference the app version.
+Listing 9.7
+A Deployment definition: kubia-deployment-v1.yaml
+Deployments are in the apps 
+API group, version v1beta1.
+You’ve changed the kind 
+from ReplicationController 
+to Deployment.
+There’s no need to include 
+the version in the name of 
+the Deployment.
+ 
+",[],"[{'entity': 'Deployment', 'description': 'A resource that coordinates two controllers to update an application declaratively.', 'category': 'application'}, {'entity': 'ReplicationController', 'description': 'A lower-level construct used for managing a specific version of pods.', 'category': 'application'}, {'entity': 'Kubernetes', 'description': 'An orchestration system that manages containerized applications.', 'category': 'software'}, {'entity': 'apiVersion', 'description': 'A field in a YAML manifest that specifies the API version of a resource.', 'category': 'command'}, {'entity': 'kind', 'description': 'A field in a YAML manifest that specifies the type of a resource.', 'category': 'command'}, {'entity': 'metadata', 'description': 'A field in a YAML manifest that contains metadata about a resource.', 'category': 'field'}, {'entity': 'spec', 'description': 'A field in a YAML manifest that specifies the desired state of a resource.', 'category': 'field'}, {'entity': 'replicas', 'description': 'A field in a Deployment resource that specifies the number of replicas to run.', 'category': 'field'}, {'entity': 'template', 'description': 'A field in a Deployment resource that specifies a pod template.', 'category': 'field'}, {'entity': 'metadata.name', 'description': 'A field in a YAML manifest that specifies the name of a resource.', 'category': 'field'}, {'entity': 'labels', 'description': 'A field in a YAML manifest that specifies labels for a resource.', 'category': 'field'}, {'entity': 'app', 'description': 'A label key used to identify an application.', 'category': 'label'}, {'entity': 'kubia-v1', 'description': 'An older version of a pod running under the management of a ReplicationController.', 'category': 'application'}, {'entity': 'kubia-deployment-v1.yaml', 'description': 'A YAML manifest that defines a Deployment resource.', 'category': 'file'}]","[{'source_entity': '""apiVersion""', 'description': 'specifies the API version for the Kubernetes deployment', 'destination_entity': '""Kubernetes""'}, {'source_entity': '""template""', 'description': 'defines a template for the Kubernetes deployment', 'destination_entity': '""Deployment""'}, {'source_entity': '""labels""', 'description': 'assigns labels to the Kubernetes deployment', 'destination_entity': '""metadata""'}, {'source_entity': '""metadata.name""', 'description': 'specifies the name of the Kubernetes metadata', 'destination_entity': '""Kubernetes""'}, {'source_entity': '""ReplicationController""', 'description': 'defines a replication controller for the Kubernetes deployment', 'destination_entity': '""kubia-v1""'}, {'source_entity': '""kubia-deployment-v1.yaml""', 'description': 'specifies the YAML file for the Kubernetes deployment', 'destination_entity': '""Deployment""'}, {'source_entity': '""spec""', 'description': 'defines the specification for the Kubernetes deployment', 'destination_entity': '""metadata.name""'}, {'source_entity': '""kind""', 'description': 'specifies the kind of resource in the Kubernetes deployment', 'destination_entity': '""app""'}, {'source_entity': '""replicas""', 'description': 'defines the number of replicas for the Kubernetes deployment', 'destination_entity': '""Deployment""'}]","['[\n  {\n    ""source"": ""apiVersion"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the API version for the Kubernetes deployment"",\n    ""summary_er"": ""The apiVersion specifies the API version used by a Kubernetes pod, ensuring compatibility with the cluster\'s configuration.""\n  }\n]', '[\n  {\n    ""source"": ""template"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines a template for the Kubernetes deployment"",\n    ""summary_er"": ""A template in Kubernetes defines a configuration for deploying an application, which is then used to create a pod.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes deployment"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""assigns labels"",\n    ""summary_er"": ""The Kubernetes deployment assigns labels to a Pod, enabling identification and management of the containerized application.""\n  },\n  {\n    ""source"": ""Kubernetes deployment"",\n    ""destination"": ""metadata"",\n    ""relation_description"": ""metadata"",\n    ""summary_er"": ""A Kubernetes deployment has metadata associated with it, providing additional information about the deployment\'s configuration and state.""\n  }\n]', '[\n  {\n    ""source"": ""metadata.name"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the name of the Kubernetes metadata"",\n    ""summary_er"": ""The Kubernetes metadata name is used to identify a pod in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines a replication controller for the Kubernetes deployment"",\n    ""summary_er"": ""A ReplicationController defines a pod template and specifies how many replicas of that pod to run, ensuring consistent deployment in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""kubia-deployment-v1.yaml"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the YAML file for the Kubernetes deployment"",\n    ""summary_er"": ""The kubia-deployment-v1.yaml file defines a Kubernetes deployment, which is used to create a pod.""\n  }\n]', '[\n  {\n    ""source"": ""spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the specification for the Kubernetes deployment"",\n    ""summary_er"": ""The spec entity defines the configuration and requirements for a pod in a Kubernetes deployment, ensuring proper setup and execution.""\n  },\n  {\n    ""source"": ""metadata.name"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the name of the pod"",\n    ""summary_er"": ""The metadata.name attribute assigns a unique identifier to a pod, facilitating easy reference and management within the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes deployment"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""specifies the kind of resource"",\n    ""summary_er"": ""The Kubernetes deployment specifies the type of resource, such as a pod, that it manages.""\n  },\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""Application"",\n    ""relation_description"": ""labels the application"",\n    ""summary_er"": ""A deployment labels an application to identify its purpose and functionality.""\n  }\n]', '[\n  {\n    ""source"": ""Replica"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""Defines the number of replicas for the Kubernetes deployment"",\n    ""summary_er"": ""The Replica entity controls the number of Pod instances in a Kubernetes deployment, ensuring scalability and reliability.""\n  }\n]']","A Deployment resource in Kubernetes is used to update applications declaratively by defining the desired state and letting Kubernetes handle the rest. A Deployment can have multiple pod versions running under its wing, so its name shouldn't reference the app version. Creating a Deployment requires specifying a deployment strategy and only three trivial changes are needed to modify a ReplicationController YAML file to describe a Deployment.","[{'highlight': ""A Deployment resource takes care of coordinating the two controllers to dance around each other without stepping on each other's toes.""}, {'highlight': ""Using a Deployment instead of lower-level constructs makes updating an app much easier, because you're defining the desired state through the single Deployment resource and letting Kubernetes take care of the rest.""}, {'highlight': 'A Deployment is composed of a label selector, a desired replica count, and a pod template, in addition to a field that specifies a deployment strategy.'}, {'highlight': 'The only three trivial changes required to modify a ReplicationController example into a Deployment are changing the kind from ReplicationController to Deployment, removing version reference from the name, and updating the API group.'}, {'highlight': ""Deployments are in the apps API group, version v1beta1, and their names shouldn't reference app versions since they can have multiple pod versions running under them at a given point in time.""}]"
+206,295,0,[],"263
+Using Deployments for updating apps declaratively
+CREATING THE DEPLOYMENT RESOURCE
+Before you create this Deployment, make sure you delete any ReplicationControllers
+and pods that are still running, but keep the kubia Service for now. You can use the
+--all switch to delete all those ReplicationControllers like this:
+$ kubectl delete rc --all
+You’re now ready to create the Deployment: 
+$ kubectl create -f kubia-deployment-v1.yaml --record
+deployment ""kubia"" created
+TIP
+Be sure to include the --record command-line option when creating it.
+This records the command in the revision history, which will be useful later.
+DISPLAYING THE STATUS OF THE DEPLOYMENT ROLLOUT
+You can use the usual kubectl get deployment and the kubectl describe deployment
+commands to see details of the Deployment, but let me point you to an additional
+command, which is made specifically for checking a Deployment’s status:
+$ kubectl rollout status deployment kubia
+deployment kubia successfully rolled out
+According to this, the Deployment has been successfully rolled out, so you should see
+the three pod replicas up and running. Let’s see:
+$ kubectl get po
+NAME                     READY     STATUS    RESTARTS   AGE
+kubia-1506449474-otnnh   1/1       Running   0          14s
+kubia-1506449474-vmn7s   1/1       Running   0          14s
+kubia-1506449474-xis6m   1/1       Running   0          14s
+UNDERSTANDING HOW DEPLOYMENTS CREATE REPLICASETS, WHICH THEN CREATE THE PODS
+Take note of the names of these pods. Earlier, when you used a ReplicationController
+to create pods, their names were composed of the name of the controller plus a ran-
+domly generated string (for example, kubia-v1-m33mv). The three pods created by
+the Deployment include an additional numeric value in the middle of their names.
+What is that exactly?
+ The number corresponds to the hashed value of the pod template in the Deploy-
+ment and the ReplicaSet managing these pods. As we said earlier, a Deployment
+doesn’t manage pods directly. Instead, it creates ReplicaSets and leaves the managing
+to them, so let’s look at the ReplicaSet created by your Deployment:
+$ kubectl get replicasets
+NAME               DESIRED   CURRENT   AGE
+kubia-1506449474   3         3         10s
+The ReplicaSet’s name also contains the hash value of its pod template. As you’ll see
+later, a Deployment creates multiple ReplicaSets—one for each version of the pod
+ 
+",[],"[{'entity': 'Deployments', 'description': 'A way to update apps declaratively', 'category': 'software'}, {'entity': 'ReplicationControllers', 'description': 'Used to create pods, but not recommended for updating apps', 'category': 'software'}, {'entity': 'kubectl', 'description': 'The command-line tool used to interact with Kubernetes', 'category': 'software'}, {'entity': '--all', 'description': 'A switch used to delete all ReplicationControllers and pods', 'category': 'command'}, {'entity': 'kubia Service', 'description': 'A service that provides access to the kubia app', 'category': 'application'}, {'entity': 'deployment', 'description': 'The resource created by a Deployment', 'category': 'software'}, {'entity': '--record', 'description': 'An option used to record the command in the revision history', 'category': 'command'}, {'entity': 'kubectl get deployment', 'description': 'A command used to see details of the Deployment', 'category': 'command'}, {'entity': 'kubectl describe deployment', 'description': 'A command used to see detailed information about the Deployment', 'category': 'command'}, {'entity': 'kubectl rollout status deployment kubia', 'description': ""A command used to check the status of a Deployment's rollout"", 'category': 'command'}, {'entity': 'ReplicaSets', 'description': 'Resources created by Deployments to manage pods', 'category': 'software'}, {'entity': 'pods', 'description': 'The smallest deployable units in Kubernetes', 'category': 'software'}, {'entity': 'kubia-1506449474-otnnh', 'description': 'A pod created by the Deployment', 'category': 'software'}, {'entity': 'kubia-1506449474-vmn7s', 'description': 'A pod created by the Deployment', 'category': 'software'}, {'entity': 'kubia-1506449474-xis6m', 'description': 'A pod created by the Deployment', 'category': 'software'}, {'entity': 'ReplicationController', 'description': 'An older way to create pods, not recommended for updating apps', 'category': 'software'}]","[{'source_entity': 'kubectl', 'description': 'used to deploy a new version of the application', 'destination_entity': 'kubia-1506449474-vmn7s'}, {'source_entity': 'kubectl', 'description': 'used to get information about a deployment', 'destination_entity': 'deployment kubia'}, {'source_entity': 'kubectl', 'description': 'used to describe the details of a deployment', 'destination_entity': 'kubia-1506449474-otnnh'}, {'source_entity': 'ReplicationController', 'description': 'managed the number of replicas for a pod', 'destination_entity': 'pods'}, {'source_entity': 'ReplicaSets', 'description': 'managed the number of replicas for a pod', 'destination_entity': 'pods'}, {'source_entity': 'kubia Service', 'description': 'exposed the application to the outside world', 'destination_entity': 'deployment kubia'}, {'source_entity': 'kubectl', 'description': 'used to get information about a pod', 'destination_entity': 'pods'}, {'source_entity': 'kubectl', 'description': 'used to rollout a new version of the application', 'destination_entity': 'deployment kubia'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to deploy a new version of the application"",\n    ""summary_er"": ""Kubectl deploys a new pod version, updating the application.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to get information about a deployment"",\n    ""summary_er"": ""kubectl is used to retrieve information about a pod, specifically its deployment details.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to describe the details of a deployment"",\n    ""summary_er"": ""kubectl is used to display detailed information about a pod, including its configuration and status.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managed the number of replicas"",\n    ""summary_er"": ""ReplicationController ensures a specified number of pod replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSets"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""managed the number of replicas for a pod"",\n    ""summary_er"": ""ReplicaSets manage the number of running copies (replicas) of a pod, ensuring the desired count is maintained.""\n  }\n]', '[\n  {\n    ""source"": ""kubia Service"",\n    ""destination"": ""deployment kubia"",\n    ""relation_description"": ""exposed the application to the outside world"",\n    ""summary_er"": ""The kubia Service exposes the deployment kubia to the outside world, making it accessible from outside the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to get information about a pod"",\n    ""summary_er"": ""Get pod info using kubectl command, retrieving details such as status and logs.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used to rollout a new version of the application"",\n    ""summary_er"": ""Kubectl command used to deploy or update a pod, ensuring a smooth rollout of a new application version.""\n  }\n]']","Creating a Deployment in Kubernetes involves deleting any existing ReplicationControllers and pods, then running `kubectl create -f kubia-deployment-v1.yaml --record` to create a new Deployment. The `--record` option records the command in the revision history. To check the status of the Deployment rollout, use `kubectl rollout status deployment kubia`. A Deployment creates ReplicaSets, which then create pods with unique names that include a numeric value corresponding to the hashed value of the pod template and ReplicaSet managing them.","[{'highlight': 'To create a Deployment, delete any existing ReplicationControllers and pods using `kubectl delete rc --all` before running `kubectl create -f kubia-deployment-v1.yaml --record`.'}]"
+207,296,0,[],"264
+CHAPTER 9
+Deployments: updating applications declaratively
+template. Using the hash value of the pod template like this allows the Deployment
+to always use the same (possibly existing) ReplicaSet for a given version of the pod
+template.
+ACCESSING THE PODS THROUGH THE SERVICE
+With the three replicas created by this ReplicaSet now running, you can use the Ser-
+vice you created a while ago to access them, because you made the new pods’ labels
+match the Service’s label selector. 
+ Up until this point, you probably haven’t seen a good-enough reason why you should
+use Deployments over ReplicationControllers. Luckily, creating a Deployment also hasn’t
+been any harder than creating a ReplicationController. Now, you’ll start doing things
+with this Deployment, which will make it clear why Deployments are superior. This will
+become clear in the next few moments, when you see how updating the app through
+a Deployment resource compares to updating it through a ReplicationController.
+9.3.2
+Updating a Deployment
+Previously, when you ran your app using a ReplicationController, you had to explicitly
+tell Kubernetes to perform the update by running kubectl rolling-update. You even
+had to specify the name for the new ReplicationController that should replace the old
+one. Kubernetes replaced all the original pods with new ones and deleted the original
+ReplicationController at the end of the process. During the process, you basically had
+to stay around, keeping your terminal open and waiting for kubectl to finish the roll-
+ing update. 
+ Now compare this to how you’re about to update a Deployment. The only thing
+you need to do is modify the pod template defined in the Deployment resource and
+Kubernetes will take all the steps necessary to get the actual system state to what’s
+defined in the resource. Similar to scaling a ReplicationController or ReplicaSet up or
+down, all you need to do is reference a new image tag in the Deployment’s pod tem-
+plate and leave it to Kubernetes to transform your system so it matches the new
+desired state.
+UNDERSTANDING THE AVAILABLE DEPLOYMENT STRATEGIES
+How this new state should be achieved is governed by the deployment strategy config-
+ured on the Deployment itself. The default strategy is to perform a rolling update (the
+strategy is called RollingUpdate). The alternative is the Recreate strategy, which
+deletes all the old pods at once and then creates new ones, similar to modifying a
+ReplicationController’s pod template and then deleting all the pods (we talked about
+this in section 9.1.1).
+ The Recreate strategy causes all old pods to be deleted before the new ones are
+created. Use this strategy when your application doesn’t support running multiple ver-
+sions in parallel and requires the old version to be stopped completely before the
+new one is started. This strategy does involve a short period of time when your app
+becomes completely unavailable.
+ 
+",[],"[{'entity': 'Deployment', 'description': 'A Kubernetes resource that manages the rollout of new versions of an application.', 'category': 'software'}, {'entity': 'ReplicaSet', 'description': 'A Kubernetes resource that ensures a specified number of replicas (identical copies) of a pod are running at any given time.', 'category': 'software'}, {'entity': 'Service', 'description': 'A Kubernetes resource that provides a network identity and load-balancing for accessing applications in a cluster.', 'category': 'software'}, {'entity': 'ReplicationController', 'description': 'A legacy Kubernetes resource that manages the number of replicas (identical copies) of a pod running at any given time.', 'category': 'software'}, {'entity': 'Pod', 'description': 'The basic execution unit in a Kubernetes cluster, representing a single instance of an application.', 'category': 'software'}, {'entity': 'kubectl', 'description': 'A command-line tool for interacting with a Kubernetes cluster.', 'category': 'software'}, {'entity': 'rolling-update', 'description': 'A kubectl command that updates a ReplicationController or ReplicaSet by replacing all original pods with new ones.', 'category': 'command'}, {'entity': 'Recreate strategy', 'description': ""A deployment strategy that deletes all old pods at once and then creates new ones, similar to modifying a ReplicationController's pod template."", 'category': 'software'}, {'entity': 'RollingUpdate strategy', 'description': 'The default deployment strategy that performs a rolling update by replacing one or more replicas with new ones while keeping the overall number of replicas constant.', 'category': 'software'}]","[{'source_entity': 'kubectl', 'description': 'executes', 'destination_entity': 'Deployment'}, {'source_entity': 'kubectl', 'description': 'manages', 'destination_entity': 'ReplicaSet'}, {'source_entity': 'kubectl', 'description': 'updates', 'destination_entity': 'Pod'}, {'source_entity': 'Deployment', 'description': 'uses', 'destination_entity': 'RollingUpdate strategy'}, {'source_entity': 'Deployment', 'description': 'implements', 'destination_entity': 'ReplicationController'}, {'source_entity': 'Service', 'description': 'provides', 'destination_entity': 'Pod'}, {'source_entity': 'kubectl', 'description': 'applies', 'destination_entity': 'Recreate strategy'}, {'source_entity': 'Deployment', 'description': 'orchestrates', 'destination_entity': 'ReplicaSet'}, {'source_entity': 'Service', 'description': 'exposes', 'destination_entity': 'Pod'}, {'source_entity': 'kubectl', 'description': 'performs', 'destination_entity': 'rolling-update'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) executes a pod, which is a container running an application.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) manages and controls pods in a cluster.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""ReplicaSet"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) manages and controls ReplicaSets, ensuring the desired number of replicas are running.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""updates"",\n    ""summary_er"": ""Kubernetes command-line tool updates a running container within a pod.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A deployment manages a set of identical replicas, which are instances of a pod. Each replica uses the same configuration and runs the same container.""\n  },\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""RollingUpdate strategy"",\n    ""relation_description"": """",\n    ""summary_er"": ""A rolling update strategy allows for zero-downtime updates by gradually replacing old replicas with new ones, ensuring continuous availability of the application.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""implements"",\n    ""summary_er"": ""A Deployment manages a set of identical Pods, ensuring that a specified number of replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""A Service provides a network interface to access a group of Pods, allowing for load balancing and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies"",\n    ""summary_er"": ""Kubectl applies configuration to a running pod, ensuring it meets the desired state.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""Recreate strategy"",\n    ""relation_description"": ""strategy"",\n    ""summary_er"": ""A pod can be created with a recreate strategy, which ensures that if the pod crashes or is deleted, a new one will be created automatically.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""orchestrates"",\n    ""summary_er"": ""A Deployment manages a set of identical Pods, ensuring that a specified number of replicas are running at any given time.""\n  },\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A ReplicaSet ensures that a specified number of identical Pods are running at any given time, maintaining the desired state.""\n  }\n]', '[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""A Service in Kubernetes exposes a port to access a Pod, allowing external traffic to reach the Pod\'s container.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""performs"",\n    ""summary_er"": ""Kubernetes command kubectl performs a rolling update on a pod, updating its configuration without disrupting service.""\n  }\n]']","Deployments provide an easy way to update applications declaratively, using a template that can always use the same ReplicaSet for a given version of the pod template. Updating a Deployment only requires modifying its pod template and Kubernetes takes care of replacing all original pods with new ones, achieving the desired state through a configured deployment strategy, either rolling update or recreate.",[{'highlight': 'Using the hash value of the pod template like this allows the Deployment to always use the same (possibly existing) ReplicaSet for a given version of the pod template.'}]
+208,297,0,[],"265
+Using Deployments for updating apps declaratively
+ The RollingUpdate strategy, on the other hand, removes old pods one by one,
+while adding new ones at the same time, keeping the application available throughout
+the whole process, and ensuring there’s no drop in its capacity to handle requests.
+This is the default strategy. The upper and lower limits for the number of pods above
+or below the desired replica count are configurable. You should use this strategy only
+when your app can handle running both the old and new version at the same time.
+SLOWING DOWN THE ROLLING UPDATE FOR DEMO PURPOSES
+In the next exercise, you’ll use the RollingUpdate strategy, but you need to slow down
+the update process a little, so you can see that the update is indeed performed in a
+rolling fashion. You can do that by setting the minReadySeconds attribute on the
+Deployment. We’ll explain what this attribute does by the end of this chapter. For
+now, set it to 10 seconds with the kubectl patch command.
+$ kubectl patch deployment kubia -p '{""spec"": {""minReadySeconds"": 10}}'
+""kubia"" patched
+TIP
+The kubectl patch command is useful for modifying a single property
+or a limited number of properties of a resource without having to edit its defi-
+nition in a text editor.
+You used the patch command to change the spec of the Deployment. This doesn’t
+cause any kind of update to the pods, because you didn’t change the pod template.
+Changing other Deployment properties, like the desired replica count or the deploy-
+ment strategy, also doesn’t trigger a rollout, because it doesn’t affect the existing indi-
+vidual pods in any way.
+TRIGGERING THE ROLLING UPDATE
+If you’d like to track the update process as it progresses, first run the curl loop again
+in another terminal to see what’s happening with the requests (don’t forget to replace
+the IP with the actual external IP of your service):
+$ while true; do curl http://130.211.109.222; done
+To trigger the actual rollout, you’ll change the image used in the single pod container
+to luksa/kubia:v2. Instead of editing the whole YAML of the Deployment object or
+using the patch command to change the image, you’ll use the kubectl set image
+command, which allows changing the image of any resource that contains a container
+(ReplicationControllers, ReplicaSets, Deployments, and so on). You’ll use it to modify
+your Deployment like this:
+$ kubectl set image deployment kubia nodejs=luksa/kubia:v2
+deployment ""kubia"" image updated
+When you execute this command, you’re updating the kubia Deployment’s pod tem-
+plate so the image used in its nodejs container is changed to luksa/kubia:v2 (from
+:v1). This is shown in figure 9.9.
+ 
+",[],"[{'entity': 'Deployments', 'description': 'A way to update apps declaratively', 'category': 'application'}, {'entity': 'RollingUpdate', 'description': 'A strategy for updating Deployments that removes old pods one by one while adding new ones at the same time', 'category': 'deployment strategy'}, {'entity': 'pods', 'description': 'Individual containers in a Deployment', 'category': 'container'}, {'entity': 'ReplicaSets', 'description': 'A resource that contains a container (like Deployments)', 'category': 'resource'}, {'entity': 'kubectl patch command', 'description': 'A command for modifying a single property or limited number of properties of a resource without editing its definition in a text editor', 'category': 'command'}, {'entity': 'minReadySeconds attribute', 'description': 'An attribute that can be set on a Deployment to slow down the update process', 'category': 'attribute'}, {'entity': 'Deployment spec', 'description': 'The specification of a Deployment, which includes properties like desired replica count and deployment strategy', 'category': 'specification'}, {'entity': 'kubectl set image command', 'description': 'A command for changing the image used in a container (like Deployments)', 'category': 'command'}, {'entity': 'nodejs container', 'description': 'A container that runs the Node.js application', 'category': 'container'}, {'entity': 'image', 'description': 'The version of an application or service (like luksa/kubia:v2)', 'category': 'resource'}, {'entity': 'curl loop', 'description': 'A command for continuously sending requests to a service', 'category': 'command'}]","[{'source_entity': 'kubectl patch command', 'description': 'updates', 'destination_entity': 'minReadySeconds attribute'}, {'source_entity': 'kubectl patch command', 'description': 'modifies', 'destination_entity': 'Deployment spec'}, {'source_entity': 'Deployments', 'description': 'managed by', 'destination_entity': 'pods'}, {'source_entity': 'Deployments', 'description': 'controlled by', 'destination_entity': 'ReplicaSets'}, {'source_entity': 'Deployment spec', 'description': 'specifies', 'destination_entity': 'nodejs container'}, {'source_entity': 'Deployment spec', 'description': 'defines', 'destination_entity': 'image'}, {'source_entity': 'curl loop', 'description': 'executes', 'destination_entity': 'kubectl set image command'}, {'source_entity': 'kubectl set image command', 'description': 'updates', 'destination_entity': 'nodejs container'}, {'source_entity': 'ReplicaSets', 'description': 'orchestrates', 'destination_entity': 'pods'}, {'source_entity': 'RollingUpdate', 'description': 'strategy used by', 'destination_entity': 'Deployments'}]","['[\n  {\n    ""source"": ""kubectl patch command"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""updates"",\n    ""summary_er"": ""The kubectl patch command updates a pod\'s configuration, allowing for changes to be made without recreating the entire resource.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl patch command"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""modifies"",\n    ""summary_er"": ""The kubectl patch command updates a running pod by modifying its configuration.""\n  }\n]', '[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""Deployments manage and orchestrate Pods, ensuring efficient resource utilization and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""controlled by"",\n    ""summary_er"": ""Deployments manage and control a set of identical Pods, ensuring consistent application behavior.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The deployment specification defines the characteristics of a pod, including its configuration and behavior.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""The deployment specification defines the characteristics of a pod, including its image.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""The curl command executes a pod using the kubectl set image command, which updates the container image of the pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""updates"",\n    ""summary_er"": ""Update a running pod\'s image using kubectl set image command, replacing the existing container with a new one.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSets"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""orchestrates"",\n    ""summary_er"": ""ReplicaSets manage and orchestrate multiple identical pods, ensuring a specified number of replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""RollingUpdate"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""strategy used by"",\n    ""summary_er"": ""RollingUpdate is a deployment strategy that updates pods in place, minimizing downtime and ensuring high availability.""\n  }\n]']","The RollingUpdate strategy in Kubernetes allows for updating applications declaratively by removing old pods one by one and adding new ones at the same time, keeping the application available throughout the process. To slow down the update process, set the minReadySeconds attribute on the Deployment. Triggering the actual rollout is done by changing the image used in the single pod container to a new version using the kubectl set image command.","[{'highlight': 'The RollingUpdate strategy removes old pods one by one, while adding new ones at the same time, keeping the application available throughout the whole process.'}, {'highlight': 'You can slow down the update process using the minReadySeconds attribute on the Deployment, which can be set to 10 seconds with the kubectl patch command.'}, {'highlight': 'The kubectl patch command is useful for modifying a single property or a limited number of properties of a resource without having to edit its definition in a text editor.'}, {'highlight': ""To trigger the actual rollout, you'll change the image used in the single pod container to luksa/kubia:v2 using the kubectl set image command.""}, {'highlight': 'The kubectl set image command allows changing the image of any resource that contains a container (ReplicationControllers, ReplicaSets, Deployments, and so on).'}]"
+209,298,0,[],"266
+CHAPTER 9
+Deployments: updating applications declaratively
+Ways of modifying Deployments and other resources
+Over the course of this book, you’ve learned several ways how to modify an existing
+object. Let’s list all of them together to refresh your memory.
+All these methods are equivalent as far as Deployments go. What they do is change
+the Deployment’s specification. This change then triggers the rollout process.
+Image registry
+Pod template
+Deployment
+kubectl set image…
+luksa/kubia:v2
+Container:
+nodejs
+:v1
+:v2
+Image registry
+Pod template
+Deployment
+Container:
+nodejs
+:v1
+:v2
+Figure 9.9
+Updating a Deployment’s pod template to point to a new image
+Table 9.1
+Modifying an existing resource in Kubernetes
+Method
+What it does
+kubectl edit
+Opens the object’s manifest in your default editor. After making 
+changes, saving the file, and exiting the editor, the object is updated.
+Example: kubectl edit deployment kubia
+kubectl patch
+Modifies individual properties of an object.
+Example: kubectl patch deployment kubia -p '{""spec"": 
+{""template"": {""spec"": {""containers"": [{""name"": 
+""nodejs"", ""image"": ""luksa/kubia:v2""}]}}}}'
+kubectl apply
+Modifies the object by applying property values from a full YAML or 
+JSON file. If the object specified in the YAML/JSON doesn’t exist yet, 
+it’s created. The file needs to contain the full definition of the 
+resource (it can’t include only the fields you want to update, as is the 
+case with kubectl patch).
+Example: kubectl apply -f kubia-deployment-v2.yaml
+kubectl replace
+Replaces the object with a new one from a YAML/JSON file. In con-
+trast to the apply command, this command requires the object to 
+exist; otherwise it prints an error.
+Example: kubectl replace -f kubia-deployment-v2.yaml
+kubectl set image
+Changes the container image defined in a Pod, ReplicationControl-
+ler’s template, Deployment, DaemonSet, Job, or ReplicaSet.
+Example: kubectl set image deployment kubia 
+nodejs=luksa/kubia:v2
+ 
+","[Empty DataFrame
+Columns: [Method, What it does]
+Index: []]","[{'entity': 'Deployments', 'description': 'A way to update applications declaratively', 'category': 'application'}, {'entity': 'Image registry', 'description': 'A place where images are stored', 'category': 'database'}, {'entity': 'Pod template', 'description': 'A template for creating pods', 'category': 'container'}, {'entity': 'Deployment', 'description': 'A way to manage deployments', 'category': 'application'}, {'entity': 'kubectl set image', 'description': 'A command to change the container image', 'category': 'command'}, {'entity': 'luksa/kubia:v2', 'description': 'An image registry URL', 'category': 'image'}, {'entity': 'nodejs', 'description': 'A programming language', 'category': 'programming language'}, {'entity': 'v1', 'description': 'A version of the nodejs image', 'category': 'version'}, {'entity': 'v2', 'description': 'A newer version of the nodejs image', 'category': 'version'}, {'entity': 'kubectl edit', 'description': ""A command to edit an object's manifest"", 'category': 'command'}, {'entity': 'kubectl patch', 'description': 'A command to modify individual properties of an object', 'category': 'command'}, {'entity': 'kubectl apply', 'description': 'A command to modify an object by applying property values from a full YAML or JSON file', 'category': 'command'}, {'entity': 'kubectl replace', 'description': 'A command to replace an object with a new one from a YAML/JSON file', 'category': 'command'}, {'entity': 'kubia-deployment-v2.yaml', 'description': 'A YAML file containing the full definition of a resource', 'category': 'file'}]","[{'source_entity': '""Deployments""', 'description': 'create', 'destination_entity': '""luksa/kubia:v2""'}, {'source_entity': '""kubectl apply""', 'description': 'apply configuration to', 'destination_entity': '""Deployment""'}, {'source_entity': '""kubectl patch""', 'description': 'update', 'destination_entity': '""Deployment""'}, {'source_entity': '""kubectl replace""', 'description': 'replace', 'destination_entity': '""Deployment""'}, {'source_entity': '""kubectl set image""', 'description': 'set image for', 'destination_entity': '""Pod template""'}, {'source_entity': '""Image registry""', 'description': 'store', 'destination_entity': '""luksa/kubia:v2""'}]","['[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""create"",\n    ""summary_er"": ""A deployment creates a new pod with image luksa/kubia:v2, ensuring consistent and scalable application execution.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""apply configuration to"",\n    ""summary_er"": ""Apply Kubernetes configuration to a running pod using kubectl apply command.""\n  },\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""A Deployment in Kubernetes manages the rollout of new versions of a pod, ensuring high availability and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl patch"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""update"",\n    ""summary_er"": ""Update a running pod using kubectl patch command, which modifies the pod\'s configuration without restarting it.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""replace"",\n    ""summary_er"": ""Update a running pod using kubectl replace command, replacing the existing pod with a new one.""\n  },\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""create"",\n    ""summary_er"": ""Create a new pod from a deployment configuration, ensuring consistent and scalable application execution.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""set image for"",\n    ""summary_er"": ""Update a pod\'s container image using kubectl, specifying the new image and optionally updating other fields.""\n  },\n  {\n    ""source"": ""Pod template"",\n    ""destination"": ""image"",\n    ""relation_description"": ""specify"",\n    ""summary_er"": ""Define an image for a pod in a Kubernetes deployment, including the Docker repository and tag.""\n  }\n]', '[\n  {\n    ""source"": ""Image registry"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""store"",\n    ""summary_er"": ""The image registry stores the \'luksa/kubia:v2\' pod, which is a containerized application.""\n  }\n]']","Kubernetes deployments can be updated using various methods such as kubectl edit, patch, apply, replace and set image. These methods change the Deployment's specification, triggering a rollout process. The deployment can also be modified by updating its pod template or container image. Examples of these methods are provided in the text.","[{'highlight': 'There are 5 ways to modify an existing object in Kubernetes: kubectl edit, kubectl patch, kubectl apply, kubectl replace, and kubectl set image.'}, {'highlight': ""kubectl edit opens the object's manifest in the default editor for editing.""}, {'highlight': 'kubectl patch modifies individual properties of an object.'}, {'highlight': 'kubectl apply applies property values from a full YAML or JSON file to modify the object.'}, {'highlight': 'kubectl set image changes the container image defined in a Pod, Deployment, etc.'}]"

@@ -1,0 +1,437 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+220,309,0,[],"277
+Using Deployments for updating apps declaratively
+Aha! There’s your problem (or as you’ll learn soon, your blessing)! The pod is shown
+as not ready, but I guess you’ve been expecting that, right? What has happened?
+UNDERSTANDING HOW A READINESS PROBE PREVENTS BAD VERSIONS FROM BEING ROLLED OUT
+As soon as your new pod starts, the readiness probe starts being hit every second (you
+set the probe’s interval to one second in the pod spec). On the fifth request the readi-
+ness probe began failing, because your app starts returning HTTP status code 500
+from the fifth request onward. 
+ As a result, the pod is removed as an endpoint from the service (see figure 9.14).
+By the time you start hitting the service in the curl loop, the pod has already been
+marked as not ready. This explains why you never hit the new pod with curl. And
+that’s exactly what you want, because you don’t want clients to hit a pod that’s not
+functioning properly.
+But what about the rollout process? The rollout status command shows only one
+new replica has started. Thankfully, the rollout process will not continue, because the
+new pod will never become available. To be considered available, it needs to be ready
+for at least 10 seconds. Until it’s available, the rollout process will not create any new
+pods, and it also won’t remove any original pods because you’ve set the maxUnavailable
+property to 0. 
+Service
+curl
+Pod: v2
+Pod: v2
+Pod: v3
+(unhealthy)
+Pod: v2
+ReplicaSet: v2
+Replicas: 3
+Deployment
+Replicas: 3
+rollingUpdate:
+maxSurge: 1
+maxUnavailable: 0
+ReplicaSet: v3
+Replicas: 1
+Requests are not forwarded
+to v3 pod because of failed
+readiness probe
+Figure 9.14
+Deployment blocked by a failing readiness probe in the new pod
+ 
+",[],"[{'entity': 'Deployments', 'description': 'A way to update apps declaratively', 'category': 'software'}, {'entity': 'Pods', 'description': 'A container that runs an application', 'category': 'container'}, {'entity': 'Readiness Probe', 'description': 'A mechanism to check if a pod is ready or not', 'category': 'process'}, {'entity': 'Service', 'description': 'An abstraction layer for accessing pods', 'category': 'application'}, {'entity': 'curl', 'description': 'A command-line tool for transferring data', 'category': 'command'}, {'entity': 'ReplicaSet', 'description': 'A controller that ensures a specified number of replicas are running', 'category': 'controller'}, {'entity': 'Deployment', 'description': 'A way to update apps declaratively', 'category': 'software'}, {'entity': 'maxSurge', 'description': 'The maximum number of new replicas that can be created at once', 'category': 'property'}, {'entity': 'maxUnavailable', 'description': 'The maximum number of unavailable replicas allowed during a rollout', 'category': 'property'}]","[{'source_entity': '""Deployments""', 'description': 'manages', 'destination_entity': '""Service""'}, {'source_entity': '""Deployments""', 'description': 'ensures', 'destination_entity': '""Pods""'}, {'source_entity': '""Deployments""', 'description': 'limits', 'destination_entity': '""maxSurge""'}, {'source_entity': '""Deployments""', 'description': 'limits', 'destination_entity': '""maxUnavailable""'}, {'source_entity': '""Service""', 'description': 'exposes', 'destination_entity': '""Deployment""'}, {'source_entity': '""Readiness Probe""', 'description': 'monitors', 'destination_entity': '""Pods""'}, {'source_entity': '""ReplicaSet""', 'description': 'ensures', 'destination_entity': '""Pods""'}, {'source_entity': '""curl""', 'description': 'requests', 'destination_entity': '""Service""'}]","['[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Deployments manage and orchestrate pods in a Kubernetes cluster, ensuring efficient resource utilization and scalability.""\n  },\n  {\n    ""source"": ""Service"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""Services provide load balancing and discovery for pods in a Kubernetes cluster, enabling communication between pods and external clients.""\n  }\n]', '[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""ensures"",\n    ""summary_er"": ""Deployments ensure that a specified number of replicas are running at any given time, guaranteeing availability and scalability for pods.""\n  }\n]', '[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits"",\n    ""summary_er"": ""Deployments set resource limits for pods, controlling how much CPU and memory a pod can use.""\n  },\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""maxSurge"",\n    ""summary_er"": ""Deployments control the maximum number of replicas that can be created at once, preventing sudden spikes in resource usage.""\n  }\n]', '[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits"",\n    ""summary_er"": ""Deployments control the maximum number of unavailable pods, ensuring a minimum level of availability for applications.""\n  },\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""maxUnavailable"",\n    ""summary_er"": ""Deployments set a limit on the maximum number of pods that can be unavailable at any given time, preventing cascading failures.""\n  }\n]', '[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""A Service provides a network interface to access a Pod, exposing its ports and allowing external traffic to reach it.""\n  }\n]', '[\n  {\n    ""source"": ""Readiness Probe"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""monitors"",\n    ""summary_er"": ""A Readiness Probe checks if a Pod is ready to serve traffic by monitoring its health.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""ensures"",\n    ""summary_er"": ""A ReplicaSet ensures a specified number of replicas (identical Pods) are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""A curl command sends HTTP requests to a pod, allowing for testing and verification of API endpoints.""\n  }\n]']","A deployment is prevented from updating an app declaratively due to a failing readiness probe in the new pod, which returns HTTP status code 500 and gets removed as an endpoint from the service, until it becomes available for at least 10 seconds.","[{'highlight': 'A readiness probe prevents bad versions from being rolled out by removing the pod as an endpoint from the service when it fails.'}, {'highlight': ""The rollout process will not continue if the new pod is not ready for at least 10 seconds, and it won't remove any original pods due to maxUnavailable property set to 0.""}, {'highlight': 'A readiness probe starts being hit every second as soon as the new pod starts, and fails when the app returns HTTP status code 500 from the fifth request onward.'}, {'highlight': 'The rollout status command shows only one new replica has started because the new pod will never become available due to failed readiness probe.'}, {'highlight': ""Requests are not forwarded to the v3 pod because of the failed readiness probe, and it's marked as not ready by the time clients start hitting the service with curl.""}]"
+221,310,0,[],"278
+CHAPTER 9
+Deployments: updating applications declaratively
+ The fact that the deployment is stuck is a good thing, because if it had continued
+replacing the old pods with the new ones, you’d end up with a completely non-working
+service, like you did when you first rolled out version 3, when you weren’t using the
+readiness probe. But now, with the readiness probe in place, there was virtually no
+negative impact on your users. A few users may have experienced the internal server
+error, but that’s not as big of a problem as if the rollout had replaced all pods with the
+faulty version 3.
+TIP
+If you only define the readiness probe without setting minReadySeconds
+properly, new pods are considered available immediately when the first invo-
+cation of the readiness probe succeeds. If the readiness probe starts failing
+shortly after, the bad version is rolled out across all pods. Therefore, you
+should set minReadySeconds appropriately.
+CONFIGURING A DEADLINE FOR THE ROLLOUT
+By default, after the rollout can’t make any progress in 10 minutes, it’s considered as
+failed. If you use the kubectl describe deployment command, you’ll see it display a
+ProgressDeadlineExceeded condition, as shown in the following listing.
+$ kubectl describe deploy kubia
+Name:                   kubia
+...
+Conditions:
+  Type          Status  Reason
+  ----          ------  ------
+  Available     True    MinimumReplicasAvailable
+  Progressing   False   ProgressDeadlineExceeded   
+The time after which the Deployment is considered failed is configurable through the
+progressDeadlineSeconds property in the Deployment spec.
+NOTE
+The extensions/v1beta1 version of Deployments doesn’t set a deadline.
+ABORTING A BAD ROLLOUT
+Because the rollout will never continue, the only thing to do now is abort the rollout
+by undoing it:
+$ kubectl rollout undo deployment kubia
+deployment ""kubia"" rolled back
+NOTE
+In future versions, the rollout will be aborted automatically when the
+time specified in progressDeadlineSeconds is exceeded.
+Listing 9.12
+Seeing the conditions of a Deployment with kubectl describe
+The Deployment 
+took too long to 
+make progress.
+ 
+",[],"[{'entity': 'Deployment', 'description': 'A Kubernetes resource that manages the rollout of new versions of an application.', 'category': 'application'}, {'entity': 'readiness probe', 'description': 'A mechanism in Kubernetes that checks if a pod is ready to receive traffic.', 'category': 'process'}, {'entity': 'minReadySeconds', 'description': ""A property in the Deployment spec that sets the minimum time a new pod must be ready before it's considered available."", 'category': 'property'}, {'entity': 'kubectl describe deployment', 'description': 'A command used to display detailed information about a Deployment.', 'category': 'command'}, {'entity': 'ProgressDeadlineExceeded', 'description': ""A condition that is displayed when the rollout can't make progress within the specified deadline."", 'category': 'condition'}, {'entity': 'progressDeadlineSeconds', 'description': ""A property in the Deployment spec that sets the time after which a Deployment is considered failed if it can't make progress."", 'category': 'property'}, {'entity': 'extensions/v1beta1', 'description': ""An older version of Deployments that doesn't set a deadline."", 'category': 'version'}, {'entity': 'kubectl rollout undo deployment', 'description': 'A command used to abort a bad rollout by rolling back the Deployment.', 'category': 'command'}]","[{'source_entity': '""ProgressDeadlineExceeded""', 'description': 'exceeds', 'destination_entity': '""progressDeadlineSeconds""'}, {'source_entity': '""kubectl describe deployment""', 'description': 'describes', 'destination_entity': '""Deployment""'}, {'source_entity': '""readiness probe""', 'description': 'monitors', 'destination_entity': '""minReadySeconds""'}, {'source_entity': '""ProgressDeadlineExceeded""', 'description': 'is caused by', 'destination_entity': '""progressDeadlineSeconds""'}, {'source_entity': '""kubectl rollout undo deployment""', 'description': 'reverts changes to', 'destination_entity': '""Deployment""'}, {'source_entity': '""extensions/v1beta1""', 'description': 'defines the API version for', 'destination_entity': '""Deployment""'}]","['[\n  {\n    ""source"": ""ProgressDeadlineExceeded"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""exceeds"",\n    ""summary_er"": ""A Pod\'s progress deadline exceeds when its maximum allowed runtime is exceeded, causing Kubernetes to terminate it.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""deployment"",\n    ""relation_description"": ""describes"",\n    ""summary_er"": ""Kubectl command used to display detailed information about a deployment, including its configuration and status.""\n  },\n  {\n    ""source"": ""deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""A deployment is related to one or more pods that run the application, providing scalability and high availability.""\n  }\n]', '[\n  {\n    ""source"": ""readiness probe"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""monitors"",\n    ""summary_er"": ""The readiness probe ensures a pod\'s application is running and ready to receive traffic, monitoring its health before allowing incoming requests.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""ProgressDeadlineExceeded"",\n    ""relation_description"": ""is caused by"",\n    ""summary_er"": ""A Pod\'s progress deadline is exceeded when its execution time exceeds the specified \'progressDeadlineSeconds\' value, causing a ProgressDeadlineExceeded error.""\n  },\n  {\n    ""source"": ""ProgressDeadlineExceeded"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is caused by"",\n    ""summary_er"": ""A ProgressDeadlineExceeded error is caused by a Pod\'s execution time exceeding the specified \'progressDeadlineSeconds\' value in its configuration.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""reverts changes to"",\n    ""summary_er"": ""Kubernetes command \'kubectl rollout undo deployment\' reverts changes made to a deployment, rolling back to its previous state.""\n  },\n  {\n    ""source"": ""deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""reverts changes to"",\n    ""summary_er"": ""A deployment in Kubernetes represents a set of identical replicas (pods) that serve the same application. The \'kubectl rollout undo\' command reverts changes made to this deployment, rolling back to its previous state.""\n  }\n]', '[\n  {\n    ""source"": ""extensions/v1beta1"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the API version for"",\n    ""summary_er"": ""The extensions/v1beta1 API defines the API version for a pod, which is a containerized application.""\n  },\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deployment target"",\n    ""summary_er"": ""A Deployment targets a pod, which is a containerized application that can be scaled and managed.""\n  }\n]']","Deployments allow updating applications declaratively, and the rollout process can be configured with deadlines and minReadySeconds. If a rollout fails, it can be aborted using `kubectl rollout undo` command. The `progressDeadlineSeconds` property in Deployment spec is configurable to set a deadline for the rollout.","[{'highlight': 'If you only define the readiness probe without setting minReadySeconds properly, new pods are considered available immediately when the first invocation of the readiness probe succeeds.'}, {'highlight': 'The time after which the Deployment is considered failed is configurable through the progressDeadlineSeconds property in the Deployment spec.'}, {'highlight': 'You can abort a bad rollout by undoing it using kubectl rollout undo deployment <deployment_name>'}, {'highlight': ""If you use the kubectl describe deployment command, you'll see it display a ProgressDeadlineExceeded condition""}, {'highlight': 'In future versions, the rollout will be aborted automatically when the time specified in progressDeadlineSeconds is exceeded.'}]"
+222,311,0,[],"279
+Summary
+9.4
+Summary
+This chapter has shown you how to make your life easier by using a declarative
+approach to deploying and updating applications in Kubernetes. Now that you’ve
+read this chapter, you should know how to
+Perform a rolling update of pods managed by a ReplicationController
+Create Deployments instead of lower-level ReplicationControllers or ReplicaSets
+Update your pods by editing the pod template in the Deployment specification
+Roll back a Deployment either to the previous revision or to any earlier revision
+still listed in the revision history
+Abort a Deployment mid-way
+Pause a Deployment to inspect how a single instance of the new version behaves
+in production before allowing additional pod instances to replace the old ones
+Control the rate of the rolling update through maxSurge and maxUnavailable
+properties
+Use minReadySeconds and readiness probes to have the rollout of a faulty ver-
+sion blocked automatically
+In addition to these Deployment-specific tasks, you also learned how to
+Use three dashes as a separator to define multiple resources in a single YAML file
+Turn on kubectl’s verbose logging to see exactly what it’s doing behind the
+curtains
+You now know how to deploy and manage sets of pods created from the same pod
+template and thus share the same persistent storage. You even know how to update
+them declaratively. But what about running sets of pods, where each instance needs to
+use its own persistent storage? We haven’t looked at that yet. That’s the subject of our
+next chapter.
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'ReplicationController', 'description': 'Resource that controls the number of replicas of a pod', 'category': 'software'}, {'entity': 'Deployments', 'description': 'Resource for managing sets of pods created from the same template', 'category': 'software'}, {'entity': 'Pods', 'description': 'Lightweight and portable container runtime environment', 'category': 'container'}, {'entity': 'ReplicaSets', 'description': 'Resource that controls the number of replicas of a pod', 'category': 'software'}, {'entity': 'kubectl', 'description': 'Command-line tool for managing Kubernetes resources', 'category': 'command'}, {'entity': 'YAML', 'description': 'Human-readable serialization format', 'category': 'format'}, {'entity': 'maxSurge', 'description': 'Property that controls the rate of rolling update', 'category': 'property'}, {'entity': 'maxUnavailable', 'description': 'Property that controls the rate of rolling update', 'category': 'property'}, {'entity': 'minReadySeconds', 'description': 'Property that controls the readiness probe', 'category': 'property'}, {'entity': 'readiness probes', 'description': 'Mechanism for determining pod readiness', 'category': 'mechanism'}]","[{'source_entity': '""Deployments""', 'description': 'are used to manage ReplicaSets', 'destination_entity': '""ReplicaSets""'}, {'source_entity': '""kubectl""', 'description': 'is a command-line tool for managing Deployments and ReplicaSets', 'destination_entity': '""Deployments""'}, {'source_entity': '""kubectl""', 'description': 'is also used to manage Pods', 'destination_entity': '""Pods""'}, {'source_entity': '""ReplicaSets""', 'description': 'are responsible for scaling Deployments', 'destination_entity': '""Deployments""'}, {'source_entity': '""readiness probes""', 'description': 'are used to determine the readiness of Pods', 'destination_entity': '""Pods""'}, {'source_entity': '""maxSurge""', 'description': 'is a parameter that controls the maximum number of Pods that can be created during scaling', 'destination_entity': '""ReplicaSets""'}, {'source_entity': '""minReadySeconds""', 'description': 'is a parameter that specifies the minimum number of seconds that a Pod must be ready before it is considered ready', 'destination_entity': '""Pods""'}, {'source_entity': '""maxUnavailable""', 'description': 'is a parameter that controls the maximum number of Pods that can be unavailable during scaling', 'destination_entity': '""ReplicaSets""'}, {'source_entity': '""kubectl""', 'description': 'can be used to create YAML configurations for Deployments and ReplicaSets', 'destination_entity': '""YAML""'}]","['[\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""ReplicaSets"",\n    ""relation_description"": ""are used to manage"",\n    ""summary_er"": ""Deployments are used to manage ReplicaSets, which in turn manage Pods.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is managed by"",\n    ""summary_er"": ""Kubectl manages Deployments and ReplicaSets, which in turn manage Pods.""\n  },\n  {\n    ""source"": ""Deployments"",\n    ""destination"": ""ReplicaSets"",\n    ""relation_description"": ""are related to"",\n    ""summary_er"": ""Deployments are related to ReplicaSets, ensuring consistent number of replicas.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is also used to manage"",\n    ""summary_er"": ""Kubectl is used to manage pods, providing a command-line interface for pod creation, deletion, and management.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSets"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""are responsible for scaling Deployments"",\n    ""summary_er"": ""ReplicaSets manage Pod replicas to scale Deployments, ensuring consistent resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""readiness probes"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""are used to determine the readiness of Pods"",\n    ""summary_er"": ""Readiness probes ensure Pod readiness by checking for specific conditions, enabling efficient resource allocation and minimizing downtime.""\n  }\n]', '[\n  {\n    ""source"": ""maxSurge"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""maximum number of Pods that can be created during scaling"",\n    ""summary_er"": ""MaxSurge controls the maximum number of Pods created during scaling, ensuring efficient resource utilization.""\n  },\n  {\n    ""source"": ""ReplicaSets"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""managed by ReplicaSets to maintain a stable number of replicas"",\n    ""summary_er"": ""ReplicaSets manage and stabilize the number of Pods, maintaining consistent replica counts.""\n  }\n]', '[\n  {\n    ""source"": ""minReadySeconds"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""is a parameter that specifies the minimum number of seconds that a Pod must be ready before it is considered ready"",\n    ""summary_er"": ""This parameter ensures that a Pod meets readiness criteria for at least minReadySeconds before being considered ready.""\n  }\n]', '[\n  {\n    ""source"": ""maxUnavailable"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""maximum number of Pods that can be unavailable"",\n    ""summary_er"": ""Max Unavailable is a parameter controlling the maximum number of Pods that can be unavailable during scaling, ensuring efficient resource utilization.""\n  },\n  {\n    ""source"": ""maxUnavailable"",\n    ""destination"": ""ReplicaSets"",\n    ""relation_description"": ""scaling control"",\n    ""summary_er"": ""Max Unavailable is used by ReplicaSets to control the maximum number of Pods that can be unavailable during scaling, maintaining desired replica counts.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be used to create YAML configurations for Deployments and ReplicaSets"",\n    ""summary_er"": ""Kubectl can create YAML configs for deployments and replica sets, which are then applied to pods.""\n  }\n]']","This chapter taught you a declarative approach to deploying and updating applications in Kubernetes, including rolling updates, Deployments, and controlling rollout rates using maxSurge and maxUnavailable properties.","[{'highlight': 'Perform a rolling update of pods managed by a ReplicationController'}, {'highlight': 'Create Deployments instead of lower-level ReplicationControllers or ReplicaSets'}, {'highlight': 'Control the rate of the rolling update through maxSurge and maxUnavailable properties'}, {'highlight': 'Use minReadySeconds and readiness probes to have the rollout of a faulty version blocked automatically'}, {'highlight': 'Deploy and manage sets of pods created from the same pod template and thus share the same persistent storage'}]"
+223,312,0,[],"280
+StatefulSets:
+deploying replicated
+stateful applications
+You now know how to run both single-instance and replicated stateless pods,
+and even stateful pods utilizing persistent storage. You can run several repli-
+cated web-server pod instances and you can run a single database pod instance
+that uses persistent storage, provided either through plain pod volumes or through
+PersistentVolumes bound by a PersistentVolumeClaim. But can you employ a
+ReplicaSet to replicate the database pod?
+This chapter covers
+Deploying stateful clustered applications
+Providing separate storage for each instance of 
+a replicated pod
+Guaranteeing a stable name and hostname for 
+pod replicas
+Starting and stopping pod replicas in a 
+predictable order
+Discovering peers through DNS SRV records
+ 
+",[],"[{'entity': 'StatefulSets', 'description': 'deploying replicated stateful applications', 'category': 'software,application'}, {'entity': 'ReplicaSet', 'description': 'replicating database pod', 'category': 'software,application'}, {'entity': 'pods', 'description': 'single-instance and replicated stateless pods, stateful pods utilizing persistent storage', 'category': 'hardware,container'}, {'entity': 'PersistentVolumes', 'description': 'providing separate storage for each instance of a replicated pod', 'category': 'software,database'}, {'entity': 'PersistentVolumeClaim', 'description': 'binding PersistentVolumes to pods', 'category': 'software,application'}, {'entity': 'DNS SRV records', 'description': 'discovering peers through DNS SRV records', 'category': 'network,process'}]","[{'source_entity': '""pods""', 'description': 'are created and managed by', 'destination_entity': '""StatefulSets""'}, {'source_entity': '""DNS SRV records""', 'description': 'are used to provide a stable IP address for', 'destination_entity': '""pods""'}, {'source_entity': '""PersistentVolumeClaim""', 'description': 'requests access to', 'destination_entity': '""PersistentVolumes""'}, {'source_entity': '""ReplicaSet""', 'description': 'ensures a specified number of', 'destination_entity': '""pods""'}, {'source_entity': '""StatefulSets""', 'description': 'manages the deployment and scaling of', 'destination_entity': '""PersistentVolumeClaim""'}]","['[\n  {\n    ""source"": ""Pods"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""are created and managed by"",\n    ""summary_er"": ""Pods are dynamically created and managed by Kubernetes to run containerized applications.""\n  },\n  {\n    ""source"": ""StatefulSets"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""are created and managed by"",\n    ""summary_er"": ""StatefulSets create and manage pods with persistent identities, scaling, and self-healing capabilities.""\n  }\n]', '[\n  {\n    ""source"": ""DNS SRV records"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to provide a stable IP address for"",\n    ""summary_er"": ""DNS SRV records are used in Kubernetes to provide a stable IP address for pods, ensuring consistent communication between them.""\n  }\n]', '[\n  {\n    ""source"": ""PersistentVolumeClaim"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests access to"",\n    ""summary_er"": ""A Persistent Volume Claim requests storage resources from a Pod, allowing it to access and utilize the claimed volume.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""ensures a specified number of"",\n    ""summary_er"": ""A ReplicaSet ensures that a specified number of pods are running at any given time, providing high availability and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages the deployment and scaling of"",\n    ""summary_er"": ""StatefulSets manage pod deployment, scaling, and updates.""\n  },\n  {\n    ""source"": ""PersistentVolumeClaim"",\n    ""destination"": null,\n    ""relation_description"": """",\n    ""summary_er"": ""No relation found for PersistentVolumeClaim""\n  }\n]']","This chapter focuses on deploying stateful clustered applications using StatefulSets, providing separate storage for each replicated pod instance, guaranteeing stable names and hostnames for pod replicas, controlling start/stop sequences, and peer discovery via DNS SRV records.","[{'highlight': 'Deploying stateful clustered applications'}, {'highlight': 'Providing separate storage for each instance of a replicated pod'}, {'highlight': 'Guaranteeing a stable name and hostname for pod replicas'}, {'highlight': 'Starting and stopping pod replicas in a predictable order'}, {'highlight': 'Discovering peers through DNS SRV records'}]"
+224,313,0,[],"281
+Replicating stateful pods
+10.1
+Replicating stateful pods
+ReplicaSets create multiple pod replicas from a single pod template. These replicas
+don’t differ from each other, apart from their name and IP address. If the pod tem-
+plate includes a volume, which refers to a specific PersistentVolumeClaim, all replicas
+of the ReplicaSet will use the exact same PersistentVolumeClaim and therefore the
+same PersistentVolume bound by the claim (shown in figure 10.1).
+Because the reference to the claim is in the pod template, which is used to stamp out
+multiple pod replicas, you can’t make each replica use its own separate Persistent-
+VolumeClaim. You can’t use a ReplicaSet to run a distributed data store, where each
+instance needs its own separate storage—at least not by using a single ReplicaSet. To
+be honest, none of the API objects you’ve seen so far make running such a data store
+possible. You need something else. 
+10.1.1 Running multiple replicas with separate storage for each
+How does one run multiple replicas of a pod and have each pod use its own storage
+volume? ReplicaSets create exact copies (replicas) of a pod; therefore you can’t use
+them for these types of pods. What can you use?
+CREATING PODS MANUALLY
+You could create pods manually and have each of them use its own PersistentVolume-
+Claim, but because no ReplicaSet looks after them, you’d need to manage them man-
+ually and recreate them when they disappear (as in the event of a node failure).
+Therefore, this isn’t a viable option.
+USING ONE REPLICASET PER POD INSTANCE
+Instead of creating pods directly, you could create multiple ReplicaSets—one for each
+pod with each ReplicaSet’s desired replica count set to one, and each ReplicaSet’s pod
+template referencing a dedicated PersistentVolumeClaim (as shown in figure 10.2).
+ Although this takes care of the automatic rescheduling in case of node failures or
+accidental pod deletions, it’s much more cumbersome compared to having a single
+ReplicaSet. For example, think about how you’d scale the pods in that case. You
+Persistent
+Volume
+Claim
+Persistent
+Volume
+ReplicaSet
+Pod
+Pod
+Pod
+Figure 10.1
+All pods from the same ReplicaSet always use the same 
+PersistentVolumeClaim and PersistentVolume.
+ 
+",[],"[{'entity': 'ReplicaSets', 'description': 'API object that creates multiple pod replicas from a single pod template', 'category': 'software'}, {'entity': 'Pods', 'description': 'Lightweight and ephemeral compute resource', 'category': 'container'}, {'entity': 'PersistentVolumeClaim', 'description': 'Request for storage resources', 'category': 'database'}, {'entity': 'PersistentVolume', 'description': 'Storage resource provisioned by administrator', 'category': 'database'}, {'entity': 'ReplicaSet', 'description': 'API object that creates multiple pod replicas from a single pod template', 'category': 'software'}, {'entity': 'Pod instance', 'description': 'Individual instance of a pod', 'category': 'container'}, {'entity': 'Storage volume', 'description': 'Persistent storage resource for a pod', 'category': 'database'}, {'entity': 'API objects', 'description': 'Software components that interact with Kubernetes API server', 'category': 'software'}, {'entity': 'Kubernetes API server', 'description': 'Server that manages and schedules pods', 'category': 'application'}]","[{'source_entity': '""Kubernetes API server""', 'description': 'manages', 'destination_entity': '""Pod instance""'}, {'source_entity': '""Kubernetes API server""', 'description': 'deploys', 'destination_entity': '""ReplicaSets""'}, {'source_entity': '""Kubernetes API server""', 'description': 'manages', 'destination_entity': '""API objects""'}, {'source_entity': '""Pod instance""', 'description': 'uses', 'destination_entity': '""PersistentVolumeClaim""'}, {'source_entity': '""Pod instance""', 'description': 'requests', 'destination_entity': '""Storage volume""'}, {'source_entity': '""ReplicaSets""', 'description': 'manages', 'destination_entity': '""Pods""'}, {'source_entity': '""ReplicaSets""', 'description': 'deploys', 'destination_entity': '""PersistentVolume""'}, {'source_entity': '""API objects""', 'description': 'managed by', 'destination_entity': '""Kubernetes API server""'}]","['[\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The Kubernetes API server manages a Pod instance, overseeing its lifecycle and ensuring it runs smoothly.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""The Kubernetes API server deploys a pod, which is an instance of a containerized application.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The Kubernetes API server manages a pod, which is a container that runs an application.""\n  }\n]', '[\n  {\n    ""source"": ""Pod instance"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A Pod instance utilizes a pod to execute its processes.""\n  },\n  {\n    ""source"": ""PersistentVolumeClaim"",\n    ""destination"": ""Persistent Volume"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""A Persistent Volume Claim requests access to a Persistent Volume for storage purposes.""\n  }\n]', '[\n  {\n    ""source"": ""Pod instance"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""A Pod instance sends requests to a pod, which can be a container or a group of containers running on the same node.""\n  },\n  {\n    ""source"": ""Storage volume"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""mounted"",\n    ""summary_er"": ""A Storage volume is mounted to a pod, providing persistent storage for the containers running within it.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSets"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A ReplicaSet ensures a specified number of replicas (identical Pods) are running at any given time, managing Pod creation and deletion.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""ReplicaSets deploy pods to ensure desired replica count, handling scaling and self-healing.""\n  },\n  {\n    ""source"": ""PersistentVolume"",\n    ""destination"": null,\n    ""relation_description"": null,\n    ""summary_er"": ""PersistentVolumes provide persistent storage for Kubernetes applications, ensuring data durability and availability.""\n  }\n]', '[\n  {\n    ""source"": ""API objects"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""API objects are managed by pods in Kubernetes, which provide a runtime environment for containers.""\n  },\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""The Kubernetes API server manages and orchestrates pods, which are the basic execution units of applications in Kubernetes.""\n  }\n]']","Stateful pods can't be replicated using ReplicaSets as they require separate storage for each instance, which is not possible with a single ReplicaSet. Options include creating pods manually or using one ReplicaSet per pod instance, but these are cumbersome and not viable for scaling.","[{'highlight': ""ReplicaSets create multiple pod replicas from a single pod template, but these replicas don't differ from each other apart from their name and IP address.""}, {'highlight': ""You can't use a ReplicaSet to run a distributed data store where each instance needs its own separate storage - at least not by using a single ReplicaSet.""}, {'highlight': 'To run multiple replicas of a pod with each pod using its own storage volume, you could create pods manually or use one ReplicaSet per pod instance.'}, {'highlight': 'Using one ReplicaSet per pod instance takes care of automatic rescheduling in case of node failures or accidental pod deletions but is much more cumbersome compared to having a single ReplicaSet.'}, {'highlight': 'Each pod from the same ReplicaSet always uses the same PersistentVolumeClaim and PersistentVolume, making it impossible to have each replica use its own separate storage.'}]"
+225,314,0,[],"282
+CHAPTER 10
+StatefulSets: deploying replicated stateful applications
+couldn’t change the desired replica count—you’d have to create additional Replica-
+Sets instead. 
+ Using multiple ReplicaSets is therefore not the best solution. But could you maybe
+use a single ReplicaSet and have each pod instance keep its own persistent state, even
+though they’re all using the same storage volume? 
+USING MULTIPLE DIRECTORIES IN THE SAME VOLUME
+A trick you can use is to have all pods use the same PersistentVolume, but then have a
+separate file directory inside that volume for each pod (this is shown in figure 10.3).
+Because you can’t configure pod replicas differently from a single pod template, you
+can’t tell each instance what directory it should use, but you can make each instance
+automatically select (and possibly also create) a data directory that isn’t being used
+by any other instance at that time. This solution does require coordination between
+the instances, and isn’t easy to do correctly. It also makes the shared storage volume
+the bottleneck.
+10.1.2 Providing a stable identity for each pod
+In addition to storage, certain clustered applications also require that each instance
+has a long-lived stable identity. Pods can be killed from time to time and replaced with
+PVC A1
+PV A1
+ReplicaSet A1
+Pod A1-xyz
+PVC A2
+PV A2
+ReplicaSet A2
+Pod A2-xzy
+PVC A3
+PV A3
+ReplicaSet A3
+Pod A3-zyx
+Figure 10.2
+Using one ReplicaSet for each pod instance
+Persistent
+Volume
+Claim
+PersistentVolume
+ReplicaSet
+Pod
+Pod
+Pod
+App
+App
+App
+/data/1/
+/data/3/
+/data/2/
+Figure 10.3
+Working around the shared storage problem by having the app 
+in each pod use a different file directory 
+ 
+",[],"[{'entity': 'StatefulSets', 'description': 'deploying replicated stateful applications', 'category': 'application'}, {'entity': 'ReplicaSet', 'description': 'a way to deploy multiple instances of a pod', 'category': 'container'}, {'entity': 'PersistentVolume', 'description': 'shared storage volume for pods', 'category': 'storage'}, {'entity': 'Pod', 'description': 'the smallest unit of deployment in Kubernetes', 'category': 'container'}, {'entity': 'PVC', 'description': 'Persistent Volume Claim, a request for storage resources', 'category': 'storage'}, {'entity': 'PV', 'description': 'Persistent Volume, a shared storage resource', 'category': 'storage'}, {'entity': 'ReplicaSet A1', 'description': 'a ReplicaSet with 1 instance', 'category': 'container'}, {'entity': 'Pod A1-xyz', 'description': 'a pod with a unique identifier xyz', 'category': 'container'}, {'entity': 'PVC A2', 'description': 'Persistent Volume Claim for replica set A2', 'category': 'storage'}, {'entity': 'PV A2', 'description': 'Persistent Volume for replica set A2', 'category': 'storage'}, {'entity': 'ReplicaSet A2', 'description': 'a ReplicaSet with 1 instance', 'category': 'container'}, {'entity': 'Pod A2-xzy', 'description': 'a pod with a unique identifier xzy', 'category': 'container'}, {'entity': 'PVC A3', 'description': 'Persistent Volume Claim for replica set A3', 'category': 'storage'}, {'entity': 'PV A3', 'description': 'Persistent Volume for replica set A3', 'category': 'storage'}, {'entity': 'ReplicaSet A3', 'description': 'a ReplicaSet with 1 instance', 'category': 'container'}, {'entity': 'Pod A3-zyx', 'description': 'a pod with a unique identifier zyx', 'category': 'container'}]","[{'source_entity': '""ReplicaSet A1""', 'description': 'created', 'destination_entity': '""Pod A1-xyz""'}, {'source_entity': '""PV A2""', 'description': 'mounted', 'destination_entity': '""Pod A1-xyz""'}, {'source_entity': '""ReplicaSet A3""', 'description': 'created', 'destination_entity': '""Pod A3-zyx""'}, {'source_entity': '""PV A2""', 'description': 'mounted', 'destination_entity': '""Pod A3-zyx""'}, {'source_entity': '""ReplicaSet A1""', 'description': 'managed', 'destination_entity': '""StatefulSets""'}, {'source_entity': '""PV A2""', 'description': 'associated with', 'destination_entity': '""PVC A2""'}, {'source_entity': '""ReplicaSet A1""', 'description': 'created', 'destination_entity': '""Pod A2-xzy""'}, {'source_entity': '""PV A3""', 'description': 'mounted', 'destination_entity': '""Pod A2-xzy""'}, {'source_entity': '""ReplicaSet A1""', 'description': 'managed', 'destination_entity': '""StatefulSets""'}, {'source_entity': '""PV A3""', 'description': 'associated with', 'destination_entity': '""PVC A3""'}, {'source_entity': '""ReplicaSet A2""', 'description': 'created', 'destination_entity': '""Pod A1-xyz""'}, {'source_entity': '""PV A2""', 'description': 'mounted', 'destination_entity': '""Pod A1-xyz""'}]","['[\n  {\n    ""source"": ""ReplicaSet A1"",\n    ""destination"": ""Pod A1-xyz"",\n    ""relation_description"": ""created"",\n    ""summary_er"": ""ReplicaSet A1 created Pod A1-xyz, ensuring a specified number of replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""PV A2"",\n    ""destination"": ""Pod A1-xyz"",\n    ""relation_description"": ""mounted"",\n    ""summary_er"": ""Persistent Volume A2 is mounted to Pod A1-xyz, providing storage for the pod\'s file system.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet A3"",\n    ""destination"": ""Pod A3-zyx"",\n    ""relation_description"": ""created"",\n    ""summary_er"": ""ReplicaSet A3 created Pod A3-zyx to ensure a specified number of replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""PV A2"",\n    ""destination"": ""Pod A3-zyx"",\n    ""relation_description"": ""mounted"",\n    ""summary_er"": ""Persistent Volume A2 is mounted to Pod A3-zyx, providing storage for the pod\'s file system.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet A1"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""managed"",\n    ""summary_er"": ""ReplicaSet A1 manages a group of identical Pods, ensuring a specified number of replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""PV A2"",\n    ""destination"": ""PVC A2"",\n    ""relation_description"": ""associated with"",\n    ""summary_er"": ""Persistent Volume (PV) A2 is associated with Persistent Volume Claim (PVC) A2, which means PV A2 provides storage for PVC A2.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet A1"",\n    ""destination"": ""Pod A2-xzy"",\n    ""relation_description"": ""created"",\n    ""summary_er"": ""ReplicaSet A1 created Pod A2-xzy, ensuring a specified number of replicas are running.""\n  }\n]', '[\n  {\n    ""source"": ""PV A3"",\n    ""destination"": ""Pod A2-xzy"",\n    ""relation_description"": ""mounted"",\n    ""summary_er"": ""Persistent Volume PV A3 is mounted to Pod A2-xzy for storage purposes.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet A1"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""managed"",\n    ""summary_er"": ""ReplicaSet A1 manages a group of identical Pods, ensuring a specified number of replicas are running at any given time.""\n  },\n  {\n    ""source"": ""StatefulSets"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""managed"",\n    ""summary_er"": ""StatefulSets manage a set of Pods that can be scaled and updated independently, providing persistent storage and network identity.""\n  }\n]', '[\n  {\n    ""source"": ""PV A3"",\n    ""destination"": ""PVC A3"",\n    ""relation_description"": ""associated with"",\n    ""summary_er"": ""Persistent Volume (PV) A3 is associated with Persistent Volume Claim (PVC) A3, which means PV A3 provides storage for PVC A3.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet A2"",\n    ""destination"": ""Pod A1-xyz"",\n    ""relation_description"": ""created"",\n    ""summary_er"": ""ReplicaSet A2 created Pod A1-xyz to ensure a specified number of replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""PV A2"",\n    ""destination"": ""Pod A1-xyz"",\n    ""relation_description"": ""mounted"",\n    ""summary_er"": ""Persistent Volume A2 is mounted to Pod A1-xyz, providing storage for the pod\'s file system.""\n  }\n]']","StatefulSets allow deploying replicated stateful applications, but using multiple ReplicaSets is not ideal. A workaround is to have a single ReplicaSet with pods using the same PersistentVolume, but each instance selecting and creating its own separate file directory, requiring coordination between instances.","[{'highlight': 'Using multiple ReplicaSets is not the best solution for deploying replicated stateful applications.'}, {'highlight': 'A trick to use the same PersistentVolume but separate file directories for each pod can be used, but requires coordination between instances and makes shared storage the bottleneck.'}, {'highlight': 'Pods can be killed from time to time and replaced with new ones, requiring a long-lived stable identity for each instance.'}, {'highlight': 'A single ReplicaSet can be used for each pod instance, but this approach has its own limitations.'}, {'highlight': 'Using separate file directories within the same PersistentVolume can help work around the shared storage problem, as shown in Figure 10.3.'}]"
+226,315,0,[],"283
+Replicating stateful pods
+new ones. When a ReplicaSet replaces a pod, the new pod is a completely new pod
+with a new hostname and IP, although the data in its storage volume may be that of
+the killed pod. For certain apps, starting up with the old instance’s data but with a
+completely new network identity may cause problems.
+ Why do certain apps mandate a stable network identity? This requirement is
+fairly common in distributed stateful applications. Certain apps require the adminis-
+trator to list all the other cluster members and their IP addresses (or hostnames) in
+each member’s configuration file. But in Kubernetes, every time a pod is resched-
+uled, the new pod gets both a new hostname and a new IP address, so the whole
+application cluster would have to be reconfigured every time one of its members is
+rescheduled. 
+USING A DEDICATED SERVICE FOR EACH POD INSTANCE
+A trick you can use to work around this problem is to provide a stable network address
+for cluster members by creating a dedicated Kubernetes Service for each individual
+member. Because service IPs are stable, you can then point to each member through
+its service IP (rather than the pod IP) in the configuration. 
+ This is similar to creating a ReplicaSet for each member to provide them with indi-
+vidual storage, as described previously. Combining these two techniques results in the
+setup shown in figure 10.4 (an additional service covering all the cluster members is
+also shown, because you usually need one for clients of the cluster).
+The solution is not only ugly, but it still doesn’t solve everything. The individual pods
+can’t know which Service they are exposed through (and thus can’t know their stable
+IP), so they can’t self-register in other pods using that IP. 
+PVC A1
+PV A1
+ReplicaSet A1
+Pod A1-xzy
+Service A1
+Service A
+PVC A2
+PV A2
+ReplicaSet A2
+Pod A2-xzy
+Service A2
+PVC A3
+PV A3
+ReplicaSet A3
+Pod A3-zyx
+Service A3
+Figure 10.4
+Using one 
+Service and ReplicaSet per 
+pod to provide a stable 
+network address and an 
+individual volume for each 
+pod, respectively
+ 
+","[  Service A\nService A1\nReplicaSet A1 Pod A1-xzy PVC A1 PV A1\nService A2\nReplicaSet A2 Pod A2-xzy PVC A2 PV A2\nService A3\nReplicaSet A3 Pod A3-zyx PVC A3 PV A3  \
+0                                      ReplicaSet A3                                                                                                                   
+
+    Col1  
+0  PV A3  ]","[{'entity': 'ReplicaSet', 'description': 'a Kubernetes object that ensures a specified number of replicas (identical pods) are running at any given time.', 'category': 'software'}, {'entity': 'Pod', 'description': 'the basic execution unit in Kubernetes, representing a single instance of a running process.', 'category': 'software'}, {'entity': 'Service', 'description': 'an abstract way to expose an application running on a set of hosts as a network service.', 'category': 'software'}, {'entity': 'PVC (Persistent Volume Claim)', 'description': 'a request for storage resources, which can be fulfilled by a PV.', 'category': 'software'}, {'entity': 'PV (Persistent Volume)', 'description': 'a piece of storage that has been provisioned and made available to the cluster.', 'category': 'hardware'}, {'entity': 'ReplicaSet', 'description': 'a Kubernetes object that ensures a specified number of replicas (identical pods) are running at any given time.', 'category': 'software'}, {'entity': 'Pod', 'description': 'the basic execution unit in Kubernetes, representing a single instance of a running process.', 'category': 'software'}, {'entity': 'Service', 'description': 'an abstract way to expose an application running on a set of hosts as a network service.', 'category': 'software'}, {'entity': 'PVC (Persistent Volume Claim)', 'description': 'a request for storage resources, which can be fulfilled by a PV.', 'category': 'software'}, {'entity': 'PV (Persistent Volume)', 'description': 'a piece of storage that has been provisioned and made available to the cluster.', 'category': 'hardware'}, {'entity': 'ReplicaSet', 'description': 'a Kubernetes object that ensures a specified number of replicas (identical pods) are running at any given time.', 'category': 'software'}, {'entity': 'Pod', 'description': 'the basic execution unit in Kubernetes, representing a single instance of a running process.', 'category': 'software'}, {'entity': 'Service', 'description': 'an abstract way to expose an application running on a set of hosts as a network service.', 'category': 'software'}, {'entity': 'PVC (Persistent Volume Claim)', 'description': 'a request for storage resources, which can be fulfilled by a PV.', 'category': 'software'}, {'entity': 'PV (Persistent Volume)', 'description': 'a piece of storage that has been provisioned and made available to the cluster.', 'category': 'hardware'}]","[{'source_entity': '""Service""', 'description': 'provides access to applications', 'destination_entity': '""Pod""'}, {'source_entity': '""Service""', 'description': 'manages traffic and load balancing', 'destination_entity': '""ReplicaSet""'}, {'source_entity': '""PVC (Persistent Volume Claim)""', 'description': 'requests storage resources from the cluster', 'destination_entity': '""PV (Persistent Volume)""'}, {'source_entity': '""Pod""', 'description': 'runs a containerized application', 'destination_entity': '""Service""'}, {'source_entity': '""ReplicaSet""', 'description': 'ensures a specified number of replicas are running', 'destination_entity': '""Pod""'}, {'source_entity': '""PVC (Persistent Volume Claim)""', 'description': 'is bound to a specific PV for storage', 'destination_entity': '""PV (Persistent Volume)""'}]","['[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""provides access to applications"",\n    ""summary_er"": ""A Service provides a network interface to access an application running in one or more Pods.""\n  }\n]', '[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages traffic and load balancing"",\n    ""summary_er"": ""A Service manages traffic and load balancing for a pod, ensuring efficient resource utilization.""\n  },\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""ensures multiple replicas of the same pod are running"",\n    ""summary_er"": ""A ReplicaSet ensures that multiple identical pods are running to maintain high availability and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""PVC"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""requests storage resources from the cluster"",\n    ""summary_er"": ""A PVC requests storage resources from a PV to be used by a Pod.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Service"",\n    ""relation_description"": ""runs a containerized application"",\n    ""summary_er"": ""A Pod runs a containerized application, which can be accessed through a Service.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""ensures a specified number of replicas are running"",\n    ""summary_er"": ""ReplicaSet guarantees a minimum number of Pod instances to run, ensuring high availability and reliability.""\n  }\n]', '[\n  {\n    ""source"": ""PVC"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is bound to"",\n    ""summary_er"": ""A PVC is bound to a specific Pod for storage, providing persistent storage for the Pod.""\n  },\n  {\n    ""source"": ""PV"",\n    ""destination"": ""PVC"",\n    ""relation_description"": ""is bound to"",\n    ""summary_er"": ""A PV is bound to a specific PVC for storage, providing persistent storage for the PVC.""\n  }\n]']","Certain apps require a stable network identity, but Kubernetes assigns a new hostname and IP every time a pod is rescheduled. To work around this, create a dedicated service for each individual member, providing a stable network address, similar to creating a ReplicaSet for individual storage. This setup can be seen in Figure 10.4, but it's still not a complete solution as pods can't self-register using the stable IP.","[{'highlight': 'When a ReplicaSet replaces a pod, the new pod is a completely new pod with a new hostname and IP, although the data in its storage volume may be that of the killed pod.'}, {'highlight': 'Certain apps require the administrator to list all the other cluster members and their IP addresses (or hostnames) in each member’s configuration file.'}, {'highlight': 'A trick you can use to work around this problem is to provide a stable network address for cluster members by creating a dedicated Kubernetes Service for each individual member.'}, {'highlight': 'The individual pods can’t know which Service they are exposed through (and thus can’t know their stable IP), so they can’t self-register in other pods using that IP.'}, {'highlight': 'Combining these two techniques results in the setup shown in figure 10.4, where one additional service covering all the cluster members is also shown.'}]"
+227,316,0,[],"284
+CHAPTER 10
+StatefulSets: deploying replicated stateful applications
+ Luckily, Kubernetes saves us from resorting to such complex solutions. The proper
+clean and simple way of running these special types of applications in Kubernetes is
+through a StatefulSet. 
+10.2
+Understanding StatefulSets
+Instead of using a ReplicaSet to run these types of pods, you create a StatefulSet
+resource, which is specifically tailored to applications where instances of the applica-
+tion must be treated as non-fungible individuals, with each one having a stable name
+and state. 
+10.2.1 Comparing StatefulSets with ReplicaSets
+To understand the purpose of StatefulSets, it’s best to compare them to ReplicaSets or
+ReplicationControllers. But first let me explain them with a little analogy that’s widely
+used in the field.
+UNDERSTANDING STATEFUL PODS WITH THE PETS VS. CATTLE ANALOGY
+You may have already heard of the pets vs. cattle analogy. If not, let me explain it. We
+can treat our apps either as pets or as cattle. 
+NOTE
+StatefulSets were initially called PetSets. That name comes from the
+pets vs. cattle analogy explained here.
+We tend to treat our app instances as pets, where we give each instance a name and
+take care of each instance individually. But it’s usually better to treat instances as cattle
+and not pay special attention to each individual instance. This makes it easy to replace
+unhealthy instances without giving it a second thought, similar to the way a farmer
+replaces unhealthy cattle. 
+ Instances of a stateless app, for example, behave much like heads of cattle. It
+doesn’t matter if an instance dies—you can create a new instance and people won’t
+notice the difference. 
+ On the other hand, with stateful apps, an app instance is more like a pet. When a
+pet dies, you can’t go buy a new one and expect people not to notice. To replace a lost
+pet, you need to find a new one that looks and behaves exactly like the old one. In the
+case of apps, this means the new instance needs to have the same state and identity as
+the old one.
+COMPARING STATEFULSETS WITH REPLICASETS OR REPLICATIONCONTROLLERS
+Pod replicas managed by a ReplicaSet or ReplicationController are much like cattle.
+Because they’re mostly stateless, they can be replaced with a completely new pod
+replica at any time. Stateful pods require a different approach. When a stateful pod
+instance dies (or the node it’s running on fails), the pod instance needs to be resur-
+rected on another node, but the new instance needs to get the same name, network
+identity, and state as the one it’s replacing. This is what happens when the pods are
+managed through a StatefulSet. 
+ 
+",[],"[{'entity': 'StatefulSets', 'description': 'a Kubernetes resource for running replicated stateful applications', 'category': 'software'}, {'entity': 'ReplicaSet', 'description': 'a Kubernetes resource for running replicas of a pod', 'category': 'software'}, {'entity': 'ReplicationController', 'description': 'a legacy Kubernetes resource for running replicas of a pod', 'category': 'software'}, {'entity': 'Pods', 'description': 'the basic execution unit in Kubernetes', 'category': 'software'}, {'entity': 'Stateful pods', 'description': 'a type of pod that requires a stable name and state', 'category': 'software'}, {'entity': 'Pets vs. Cattle analogy', 'description': 'a metaphor for treating app instances as either pets or cattle', 'category': 'concept'}, {'entity': 'Stateless apps', 'description': 'applications where instances can be replaced without affecting the overall application', 'category': 'software'}, {'entity': 'Stateful apps', 'description': 'applications where instances have a stable name and state, requiring special treatment when an instance dies', 'category': 'software'}, {'entity': 'Kubernetes', 'description': 'an open-source container orchestration system', 'category': 'software'}]","[{'source_entity': 'Kubernetes', 'description': 'manages', 'destination_entity': 'Stateless apps'}, {'source_entity': 'Kubernetes', 'description': 'supports', 'destination_entity': 'ReplicationController'}, {'source_entity': 'Kubernetes', 'description': 'manages', 'destination_entity': 'Pods'}, {'source_entity': 'StatefulSets', 'description': 'orchestrates', 'destination_entity': 'Stateful pods'}, {'source_entity': 'ReplicaSet', 'description': 'ensures', 'destination_entity': 'Pods'}, {'source_entity': 'Pets vs. Cattle analogy', 'description': 'compares', 'destination_entity': 'Stateless apps'}, {'source_entity': 'Kubernetes', 'description': 'manages', 'destination_entity': 'ReplicaSet'}, {'source_entity': 'StatefulSets', 'description': 'replaces', 'destination_entity': 'ReplicationController'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages stateless applications through pods, providing a scalable and flexible environment for containerized workloads.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""supports"",\n    ""summary_er"": ""Kubernetes manages and orchestrates pods, ensuring efficient resource utilization and scalability.""\n  },\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""ReplicationController"",\n    ""relation_description"": ""replaces"",\n    ""summary_er"": ""Kubernetes has replaced ReplicationControllers with Deployments for more flexible and scalable application deployment.""\n  }\n]', '[{\n  ""source"": ""Kubernetes"",\n  ""destination"": ""Pods"",\n  ""relation_description"": ""manages"",\n  ""summary_er"": ""Kubernetes manages pods, ensuring efficient resource allocation and scaling for containerized applications.""\n}]', '[\n  {\n    ""source"": ""StatefulSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""orchestrates"",\n    ""summary_er"": ""StatefulSets manage and orchestrate stateful applications, ensuring each pod has a unique identity and persistent storage.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""ensures"",\n    ""summary_er"": ""A ReplicaSet guarantees a specified number of replicas (identical Pod instances) are running at any given time, ensuring high availability and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""Pets"",\n    ""destination"": ""Cattle"",\n    ""relation_description"": ""compares"",\n    ""summary_er"": ""The Pets vs. Cattle analogy compares stateful applications to stateless ones, highlighting their differences in data management and scalability.""\n  },\n  {\n    ""source"": ""Stateless apps"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""Stateless apps are deployed as a pod, which is a lightweight and portable unit of deployment for containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages a group of identical pods to ensure high availability and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""replaces"",\n    ""summary_er"": ""StatefulSets replaces traditional replication controllers, providing a more scalable and flexible way to manage stateful applications.""\n  }\n]']","StatefulSets in Kubernetes deploy replicated stateful applications with stable names and states, treating instances as non-fungible individuals like pets, requiring replacement with new instances having same name, network identity, and state as the old one when it fails or is replaced.","[{'highlight': 'StatefulSets: deploying replicated stateful applications can be achieved through a Kubernetes resource specifically tailored to applications where instances must be treated as non-fungible individuals, with each one having a stable name and state.'}, {'highlight': 'StatefulSets were initially called PetSets, which comes from the pets vs. cattle analogy explained here, where app instances are treated either as pets or as cattle.'}, {'highlight': ""Stateful pods require a different approach than stateless pods, as when a stateful pod instance dies, the new instance needs to get the same name, network identity, and state as the one it's replacing.""}, {'highlight': ""ReplicaSets or ReplicationControllers manage pod replicas that are much like cattle, as they're mostly stateless and can be replaced with a completely new pod replica at any time.""}, {'highlight': 'StatefulSets provide a simple way to run special types of applications in Kubernetes, where instances must be treated as non-fungible individuals, with each one having a stable name and state.'}]"
+228,317,7,[],"285
+Understanding StatefulSets
+ A StatefulSet makes sure pods are rescheduled in such a way that they retain their
+identity and state. It also allows you to easily scale the number of pets up and down. A
+StatefulSet, like a ReplicaSet, has a desired replica count field that determines how
+many pets you want running at that time. Similar to ReplicaSets, pods are created from
+a pod template specified as part of the StatefulSet (remember the cookie-cutter anal-
+ogy?). But unlike pods created by ReplicaSets, pods created by the StatefulSet aren’t
+exact replicas of each other. Each can have its own set of volumes—in other words,
+storage (and thus persistent state)—which differentiates it from its peers. Pet pods
+also have a predictable (and stable) identity instead of each new pod instance getting
+a completely random one. 
+10.2.2 Providing a stable network identity
+Each pod created by a StatefulSet is assigned an ordinal index (zero-based), which
+is then used to derive the pod’s name and hostname, and to attach stable storage to
+the pod. The names of the pods are thus predictable, because each pod’s name is
+derived from the StatefulSet’s name and the ordinal index of the instance. Rather
+than the pods having random names, they’re nicely organized, as shown in the next
+figure.
+INTRODUCING THE GOVERNING SERVICE
+But it’s not all about the pods having a predictable name and hostname. Unlike regu-
+lar pods, stateful pods sometimes need to be addressable by their hostname, whereas
+stateless pods usually don’t. After all, each stateless pod is like any other. When you
+need one, you pick any one of them. But with stateful pods, you usually want to oper-
+ate on a specific pod from the group, because they differ from each other (they hold
+different state, for example). 
+ For this reason, a StatefulSet requires you to create a corresponding governing
+headless Service that’s used to provide the actual network identity to each pod.
+Through this Service, each pod gets its own DNS entry, so its peers and possibly other
+clients in the cluster can address the pod by its hostname. For example, if the govern-
+ing Service belongs to the default namespace and is called foo, and one of the pods
+ReplicaSet A
+Pod A-fewrb
+Pod A-jwqec
+Pod A-dsfwx
+StatefulSet A
+Pod A-1
+Pod A-2
+Pod A-0
+Figure 10.5
+Pods created by a StatefulSet have predictable names (and hostnames), 
+unlike those created by a ReplicaSet
+ 
+","[Empty DataFrame
+Columns: [Pod A-dsfwx
+ReplicaSet A Pod A-fewrb
+Pod A-jwqec, Pod A-0
+StatefulSet A Pod A-1
+Pod A-2]
+Index: []]","[{'entity': 'StatefulSets', 'description': 'A Kubernetes resource that ensures pods retain their identity and state.', 'category': 'software'}, {'entity': 'pods', 'description': 'Containers created by a StatefulSet or ReplicaSet.', 'category': 'container'}, {'entity': 'ReplicaSet', 'description': 'A Kubernetes resource that creates multiple replicas of a pod.', 'category': 'software'}, {'entity': 'pod template', 'description': 'A specification for creating pods from a StatefulSet or ReplicaSet.', 'category': 'software'}, {'entity': 'volumes', 'description': 'Persistent storage attached to each pod in a StatefulSet.', 'category': 'storage'}, {'entity': 'ordinal index', 'description': 'A zero-based index assigned to each pod created by a StatefulSet.', 'category': 'process'}, {'entity': 'hostname', 'description': 'The name of the host machine running a pod.', 'category': 'hardware'}, {'entity': 'Service', 'description': 'A Kubernetes resource that provides network identity and DNS entries for pods.', 'category': 'software'}, {'entity': 'headless Service', 'description': 'A Service that provides network identity without creating a load balancer.', 'category': 'software'}, {'entity': 'DNS entry', 'description': 'A record in the DNS system that maps a hostname to an IP address.', 'category': 'network'}, {'entity': 'namespace', 'description': 'A scope for resources within a Kubernetes cluster.', 'category': 'software'}]","[{'source_entity': '""volumes""', 'description': 'are used to persist data for pods', 'destination_entity': '""pods""'}, {'source_entity': '""pods""', 'description': 'can be scaled horizontally using ReplicaSets', 'destination_entity': '""ReplicaSet""'}, {'source_entity': '""ordinal index""', 'description': 'is used to identify the order of StatefulSets', 'destination_entity': '""StatefulSets""'}, {'source_entity': '""Service""', 'description': 'can be created as a headless Service for pods without DNS entries', 'destination_entity': '""headless Service""'}, {'source_entity': '""headless Service""', 'description': 'is used to provide DNS entries for pods', 'destination_entity': '""DNS entry""'}, {'source_entity': '""pod template""', 'description': 'defines the configuration for a pod', 'destination_entity': '""pods""'}, {'source_entity': '""StatefulSets""', 'description': 'can be used to manage pods with ordinal indices', 'destination_entity': '""ordinal index""'}, {'source_entity': '""ReplicaSet""', 'description': 'defines the desired number of replicas for a pod', 'destination_entity': '""pods""'}, {'source_entity': '""namespace""', 'description': 'is used to group related resources together', 'destination_entity': '""hostname""'}]","['[\n  {\n    ""source"": ""volumes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to persist data for"",\n    ""summary_er"": ""Persistent storage for pods is provided by volumes, allowing them to store and retrieve data.""\n  }\n]', '[\n  {\n    ""source"": ""pods"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be scaled horizontally using ReplicaSets"",\n    ""summary_er"": ""A pod can be scaled horizontally by creating a ReplicaSet, which ensures multiple copies of the same pod are running.""\n  }\n]', '[\n  {\n    ""source"": ""ordinal index"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to identify the order of StatefulSets"",\n    ""summary_er"": ""Ordinal index is a unique identifier for each pod in a StatefulSet, ensuring ordered deployment and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be created as a headless Service for pods without DNS entries"",\n    ""summary_er"": ""A Service can be created without DNS entries, allowing it to manage pods without IP addresses.""\n  }\n]', '[\n  {\n    ""source"": ""Headless Service"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is used to provide DNS entries for"",\n    ""summary_er"": ""A headless service provides a DNS entry for pods, allowing them to be accessed by name.""\n  }\n]', '[\n  {\n    ""source"": ""pod template"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the configuration for a pod"",\n    ""summary_er"": ""The pod template defines the configuration for a pod, specifying its properties and settings.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be used to manage"",\n    ""summary_er"": ""StatefulSets can manage pods with ordinal indices.""\n  },\n  {\n    ""source"": ""ordinal index"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is assigned to"",\n    ""summary_er"": ""Ordinal index is assigned to each pod in a StatefulSet.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the desired number of replicas"",\n    ""summary_er"": ""A ReplicaSet ensures a specified number of pod replicas are running at any given time, maintaining consistency and reliability in deployments.""\n  }\n]', '[\n  {\n    ""source"": ""namespace"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to group related resources together"",\n    ""summary_er"": ""Namespaces provide a logical isolation of resources, allowing multiple applications to coexist on the same cluster without conflicts.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""hostname"",\n    ""relation_description"": ""identifies the host machine running the pod"",\n    ""summary_er"": ""A hostname is assigned to each pod, enabling communication and resource allocation across the cluster.""\n  }\n]']","A StatefulSet ensures pods are rescheduled to retain their identity and state, allowing easy scaling. Pods created by StatefulSets have unique volumes and stable identities, with each pod assigned an ordinal index used for naming and hostname. A governing headless Service is required to provide a network identity, enabling addressability by hostname.","[{'highlight': 'A StatefulSet makes sure pods are rescheduled in such a way that they retain their identity and state.'}, {'highlight': ""Each pod created by a StatefulSet is assigned an ordinal index (zero-based), which is then used to derive the pod's name and hostname, and to attach stable storage to the pod.""}, {'highlight': ""A StatefulSet requires you to create a corresponding governing headless Service that's used to provide the actual network identity to each pod.""}, {'highlight': 'Pods created by a StatefulSet have predictable names (and hostnames), unlike those created by a ReplicaSet'}, {'highlight': 'Each stateful pod is like any other, but with stateful pods, you usually want to operate on a specific pod from the group, because they differ from each other (they hold different state, for example)'}]"
+229,318,5,[],"286
+CHAPTER 10
+StatefulSets: deploying replicated stateful applications
+is called A-0, you can reach the pod through its fully qualified domain name, which
+is a-0.foo.default.svc.cluster.local. You can’t do that with pods managed by a
+ReplicaSet.
+ Additionally, you can also use DNS to look up all the StatefulSet’s pods’ names by
+looking up SRV records for the foo.default.svc.cluster.local domain. We’ll
+explain SRV records in section 10.4 and learn how they’re used to discover members
+of a StatefulSet.
+REPLACING LOST PETS
+When a pod instance managed by a StatefulSet disappears (because the node the pod
+was running on has failed, it was evicted from the node, or someone deleted the pod
+object manually), the StatefulSet makes sure it’s replaced with a new instance—similar
+to how ReplicaSets do it. But in contrast to ReplicaSets, the replacement pod gets the
+same name and hostname as the pod that has disappeared (this distinction between
+ReplicaSets and StatefulSets is illustrated in figure 10.6).
+Node 1
+Node 2
+Node 1
+Node 2
+ReplicaSet B
+ReplicaSet B
+StatefulSet
+StatefulSet A
+Pod A-0
+Pod A-1
+Pod A-0
+Pod A-0
+Pod A-1
+Node 1 fails
+StatefulSet A
+Node 1
+Node 2
+Node 1
+Node 2
+ReplicaSet
+Node 1 fails
+Pod B-fdawr
+Pod B-jkbde
+Pod B-fdawr
+Pod B-rsqkw
+Pod B-jkbde
+Figure 10.6
+A StatefulSet replaces a lost pod with a new one with the same identity, whereas a 
+ReplicaSet replaces it with a completely new unrelated pod.
+ 
+",[],"[{'entity': 'StatefulSets', 'description': 'deploying replicated stateful applications', 'category': 'application'}, {'entity': 'pods', 'description': 'managed by a ReplicaSet', 'category': 'container'}, {'entity': 'DNS', 'description': ""looking up all the StatefulSet's pods' names"", 'category': 'network'}, {'entity': 'SRV records', 'description': 'used to discover members of a StatefulSet', 'category': 'database'}, {'entity': 'ReplicaSets', 'description': 'replacing lost pod instances', 'category': 'application'}, {'entity': 'StatefulSet', 'description': 'replaces a lost pod with a new one with the same identity', 'category': 'application'}, {'entity': 'Pod A-0', 'description': 'fully qualified domain name', 'category': 'container'}, {'entity': 'foo.default.svc.cluster.local', 'description': ""domain for StatefulSet's pods' names"", 'category': 'network'}, {'entity': 'a-0.foo.default.svc.cluster.local', 'description': 'fully qualified domain name of Pod A-0', 'category': 'network'}, {'entity': 'StatefulSets', 'description': 'replacing lost pod instances with a new one with the same identity', 'category': 'application'}]","[{'source_entity': '""Pod A-0""', 'description': 'is associated with', 'destination_entity': '""pods""'}, {'source_entity': '""Pod A-0""', 'description': 'uses', 'destination_entity': '""SRV records""'}, {'source_entity': '""foo.default.svc.cluster.local""', 'description': 'is a service name for', 'destination_entity': '""StatefulSet""'}, {'source_entity': '""a-0.foo.default.svc.cluster.local""', 'description': 'is a DNS name for', 'destination_entity': '""Pod A-0""'}, {'source_entity': '""ReplicaSets""', 'description': 'manages', 'destination_entity': '""StatefulSet""'}, {'source_entity': '""DNS""', 'description': 'resolves to', 'destination_entity': '""SRV records""'}]","['[\n  {\n    ""source"": ""Pod A-0"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""is associated with"",\n    ""summary_er"": ""Pod A-0 is a containerized application instance running within a Kubernetes pod.""\n  }\n]', '[\n  {\n    ""source"": ""Pod A-0"",\n    ""destination"": ""SRV records"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Pod A-0 uses SRV records for DNS resolution and service discovery.""\n  }\n]', '[\n  {\n    ""source"": ""foo.default.svc.cluster.local"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a service name for"",\n    ""summary_er"": ""A Kubernetes service named foo.default.svc.cluster.local provides a network identity and load balancing for a pod.""\n  },\n  {\n    ""source"": ""StatefulSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A StatefulSet manages the deployment, scaling, and management of pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""a-0.foo.default.svc.cluster.local"",\n    ""destination"": ""Pod A-0"",\n    ""relation_description"": ""is a DNS name for"",\n    ""summary_er"": ""The DNS name \'a-0.foo.default.svc.cluster.local\' is used to identify the pod \'Pod A-0\'.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""ReplicaSets manage multiple identical pods, ensuring a specified number of replicas are running at any given time.""\n  },\n  {\n    ""source"": ""StatefulSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""StatefulSets manage persistent and ordered deployments of pods, preserving their identity across restarts and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""DNS"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""resolves to"",\n    ""summary_er"": ""DNS resolves a domain name to its IP address, which can be used by a pod to communicate with other services.""\n  },\n  {\n    ""source"": ""SRV records"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used by"",\n    ""summary_er"": ""SRV records provide information about the service running in a pod, allowing clients to connect to it.""\n  }\n]']","StatefulSets allow deploying replicated stateful applications, enabling access to pods through fully qualified domain names and DNS lookups. They also ensure replacement of lost pods with new instances having the same name and hostname, unlike ReplicaSets which replace them with unrelated pods.","[{'highlight': 'You can reach a pod managed by a StatefulSet through its fully qualified domain name.'}, {'highlight': 'StatefulSets make sure to replace lost pods with new instances that have the same name and hostname.'}, {'highlight': 'Unlike ReplicaSets, StatefulSets use SRV records for DNS lookups to discover members of a StatefulSet.'}, {'highlight': 'A StatefulSet replaces a lost pod with a new one that has the same identity.'}, {'highlight': 'StatefulSets provide a way to deploy replicated stateful applications in Kubernetes.'}]"

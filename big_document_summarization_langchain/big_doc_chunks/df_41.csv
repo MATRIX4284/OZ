@@ -1,0 +1,547 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+410,499,17,[],"467
+Using node affinity to attract pods to certain nodes
+          preferredDuringSchedulingIgnoredDuringExecution:    
+          - weight: 80                               
+            preference:                              
+              matchExpressions:                      
+              - key: availability-zone               
+                operator: In                         
+                values:                              
+                - zone1                              
+          - weight: 20                     
+            preference:                    
+              matchExpressions:            
+              - key: share-type            
+                operator: In               
+                values:                    
+                - dedicated                
+      ...
+Let’s examine the listing closely. You’re defining a node affinity preference, instead of
+a hard requirement. You want the pods scheduled to nodes that include the labels
+availability-zone=zone1 and share-type=dedicated. You’re saying that the first
+preference rule is important by setting its weight to 80, whereas the second one is
+much less important (weight is set to 20).
+UNDERSTANDING HOW NODE PREFERENCES WORK
+If your cluster had many nodes, when scheduling the pods of the Deployment in the
+previous listing, the nodes would be split into four groups, as shown in figure 16.3.
+Nodes whose availability-zone and share-type labels match the pod’s node affin-
+ity are ranked the highest. Then, because of how the weights in the pod’s node affinity
+rules are configured, next come the shared nodes in zone1, then come the dedicated
+nodes in the other zones, and at the lowest priority are all the other nodes.
+You’re
+specifying
+preferences,
+not hard
+requirements.
+You prefer the pod to be 
+scheduled to zone1. This 
+is your most important 
+preference.
+You also prefer that your 
+pods be scheduled to 
+dedicated nodes, but this is 
+four times less important 
+than your zone preference.
+Node
+Top priority
+Availability zone 1
+Pod
+Priority: 2
+Priority: 3
+Priority: 4
+Node afﬁnity
+Preferred labels:
+avail-zone: zone1 (weight 80)
+share: dedicated (weight 20)
+avail-zone: zone1
+share: dedicated
+Node
+avail-zone: zone1
+share: shared
+Node
+Availability zone 2
+avail-zone: zone2
+share: dedicated
+Node
+avail-zone: zone2
+share: shared
+This pod may be scheduled to
+any node, but certain nodes are
+preferred based on their labels.
+Figure 16.3
+Prioritizing nodes based on a pod’s node affinity preferences
+ 
+",[],"[{'entity': 'node affinity', 'description': 'a way to specify preferences for where pods should be scheduled', 'category': 'software'}, {'entity': 'preferredDuringSchedulingIgnoredDuringExecution', 'description': 'a field in the node affinity preference', 'category': 'software'}, {'entity': 'weight', 'description': 'a value that determines the importance of a preference rule', 'category': 'software'}, {'entity': 'preference', 'description': 'a set of rules that determine where pods should be scheduled', 'category': 'software'}, {'entity': 'matchExpressions', 'description': 'a field in the preference that specifies how to match node labels', 'category': 'software'}, {'entity': 'key', 'description': 'a field in the matchExpression that specifies a label key', 'category': 'software'}, {'entity': 'operator', 'description': 'a field in the matchExpression that specifies an operator for matching labels', 'category': 'software'}, {'entity': 'values', 'description': 'a field in the matchExpression that specifies values to match against', 'category': 'software'}, {'entity': 'availability-zone', 'description': ""a label key that specifies a node's availability zone"", 'category': 'hardware'}, {'entity': 'share-type', 'description': ""a label key that specifies a node's share type"", 'category': 'hardware'}, {'entity': 'zone1', 'description': 'a specific availability zone', 'category': 'hardware'}, {'entity': 'dedicated', 'description': 'a specific share type', 'category': 'hardware'}]","[{'source_entity': 'operator', 'description': 'sets', 'destination_entity': 'values'}, {'source_entity': 'operator', 'description': 'specifies', 'destination_entity': 'key'}, {'source_entity': 'operator', 'description': 'defines', 'destination_entity': 'node affinity'}, {'source_entity': 'operator', 'description': 'sets', 'destination_entity': 'share-type'}, {'source_entity': 'operator', 'description': 'specifies', 'destination_entity': 'matchExpressions'}, {'source_entity': 'operator', 'description': 'defines', 'destination_entity': 'preference'}, {'source_entity': 'key', 'description': 'contains', 'destination_entity': 'values'}, {'source_entity': 'node affinity', 'description': 'specifies', 'destination_entity': 'preferredDuringSchedulingIgnoredDuringExecution'}, {'source_entity': 'share-type', 'description': 'defines', 'destination_entity': 'weight'}, {'source_entity': 'matchExpressions', 'description': 'contains', 'destination_entity': 'preference'}]","['[\n  {\n    ""source"": ""operator"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets"",\n    ""summary_er"": ""The Kubernetes operator sets the configuration for a pod, defining its properties and behavior.""\n  }\n]', '[\n  {\n    ""source"": ""operator"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The operator specifies a pod\'s configuration, such as its name, labels, and containers.""\n  }\n]', '[\n  {\n    ""source"": ""operator"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""The Kubernetes Operator defines a custom resource (CR) that represents a pod with specific node affinity requirements.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""node"",\n    ""relation_description"": ""affinity"",\n    ""summary_er"": ""A pod\'s node affinity specifies the nodes where it can be scheduled, based on labels and other criteria.""\n  }\n]', '[\n  {\n    ""source"": ""operator"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets"",\n    ""summary_er"": ""The Kubernetes operator sets up a pod, which is a containerized application.""\n  }\n]', '[\n  {\n    ""source"": ""operator"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The Kubernetes Operator uses a Pod to specify its configuration and settings.""\n  }\n]', '[\n  {\n    ""source"": ""operator"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""The Kubernetes operator defines a pod\'s configuration, specifying its preferences.""\n  }\n]', '[\n  {\n    ""source"": ""key"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A Kubernetes object that represents a running instance of an application, encapsulating its code, configuration, and dependencies.""\n  },\n  {\n    ""source"": ""values"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""values"",\n    ""summary_er"": ""A set of key-value pairs that provide additional metadata about the pod, such as labels or annotations.""\n  }\n]', '[\n  {\n    ""source"": ""node affinity"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""Node affinity specifies the set of nodes in which a pod can be scheduled, and is ignored during execution.""\n  }\n]', '[\n  {\n    ""source"": ""share-type"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""The share-type entity defines the characteristics of a pod in Kubernetes, specifying its properties and behavior.""\n  },\n  {\n    ""source"": ""weight"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The weight attribute specifies the resource requirements for a pod in Kubernetes, determining its allocation of CPU and memory resources.""\n  }\n]', '[\n  {\n    ""source"": ""matchExpressions"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A Kubernetes pod can contain multiple containers, which are executed in a shared environment.""\n  },\n  {\n    ""source"": ""preference"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""for"",\n    ""summary_er"": ""The preference is set for the pod to run with specific settings and resources.""\n  }\n]']","You're defining a node affinity preference for pods to be scheduled on nodes with specific labels (availability-zone=zone1 and share-type=dedicated) with the first preference having a weight of 80 and the second one having a weight of 20, indicating that zone preference is more important than dedicated node preference in case of scheduling conflicts.","[{'highlight': ""You're defining a node affinity preference, instead of a hard requirement.""}, {'highlight': 'The first preference rule is important by setting its weight to 80, whereas the second one is much less important (weight is set to 20).'}, {'highlight': 'Nodes whose availability-zone and share-type labels match the pod’s node affinity are ranked the highest.'}, {'highlight': 'You prefer the pod to be scheduled to zone1, which is your most important preference.'}, {'highlight': ""The weight of 80 for zone1 preference means it's four times more important than the dedicated nodes preference with a weight of 20.""}]"
+411,500,0,[],"468
+CHAPTER 16
+Advanced scheduling
+DEPLOYING THE PODS IN THE TWO-NODE CLUSTER
+If you create this Deployment in your two-node cluster, you should see most (if not
+all) of your pods deployed to node1. Examine the following listing to see if that’s true.
+$ kubectl get po -o wide
+NAME                READY   STATUS    RESTARTS  AGE   IP          NODE
+pref-607515-1rnwv   1/1     Running   0         4m    10.47.0.1   node2.k8s
+pref-607515-27wp0   1/1     Running   0         4m    10.44.0.8   node1.k8s
+pref-607515-5xd0z   1/1     Running   0         4m    10.44.0.5   node1.k8s
+pref-607515-jx9wt   1/1     Running   0         4m    10.44.0.4   node1.k8s
+pref-607515-mlgqm   1/1     Running   0         4m    10.44.0.6   node1.k8s
+Out of the five pods that were created, four of them landed on node1 and only one
+landed on node2. Why did one of them land on node2 instead of node1? The reason is
+that besides the node affinity prioritization function, the Scheduler also uses other pri-
+oritization functions to decide where to schedule a pod. One of those is the Selector-
+SpreadPriority function, which makes sure pods belonging to the same ReplicaSet or
+Service are spread around different nodes so a node failure won’t bring the whole ser-
+vice down. That’s most likely what caused one of the pods to be scheduled to node2.
+ You can try scaling the Deployment up to 20 or more and you’ll see the majority of
+pods will be scheduled to node1. In my test, only two out of the 20 were scheduled to
+node2. If you hadn’t defined any node affinity preferences, the pods would have been
+spread around the two nodes evenly.
+16.3
+Co-locating pods with pod affinity and anti-affinity
+You’ve seen how node affinity rules are used to influence which node a pod is scheduled
+to. But these rules only affect the affinity between a pod and a node, whereas sometimes
+you’d like to have the ability to specify the affinity between pods themselves. 
+ For example, imagine having a frontend and a backend pod. Having those pods
+deployed near to each other reduces latency and improves the performance of the
+app. You could use node affinity rules to ensure both are deployed to the same node,
+rack, or datacenter, but then you’d have to specify exactly which node, rack, or data-
+center to schedule them to, which is not the best solution. It’s better to let Kubernetes
+deploy your pods anywhere it sees fit, while keeping the frontend and backend pods
+close together. This can be achieved using pod affinity. Let’s learn more about it with
+an example.
+16.3.1 Using inter-pod affinity to deploy pods on the same node
+You’ll deploy a backend pod and five frontend pod replicas with pod affinity config-
+ured so that they’re all deployed on the same node as the backend pod.
+ First, deploy the backend pod:
+$ kubectl run backend -l app=backend --image busybox -- sleep 999999
+deployment ""backend"" created
+Listing 16.12
+Seeing where pods were scheduled
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command to interact with Kubernetes cluster', 'category': 'software'}, {'entity': 'get po', 'description': 'kubectl command to get pod information', 'category': 'software'}, {'entity': '-o wide', 'description': 'option to display pod information in wide format', 'category': 'software'}, {'entity': 'Deployment', 'description': 'Kubernetes resource to manage a set of replicas', 'category': 'application'}, {'entity': 'node1.k8s', 'description': 'node name in the Kubernetes cluster', 'category': 'hardware'}, {'entity': 'node2.k8s', 'description': 'node name in the Kubernetes cluster', 'category': 'hardware'}, {'entity': 'pref-607515-1rnwv', 'description': 'pod name and ID', 'category': 'container'}, {'entity': 'pref-607515-27wp0', 'description': 'pod name and ID', 'category': 'container'}, {'entity': 'pref-607515-5xd0z', 'description': 'pod name and ID', 'category': 'container'}, {'entity': 'pref-607515-jx9wt', 'description': 'pod name and ID', 'category': 'container'}, {'entity': 'pref-607515-mlgqm', 'description': 'pod name and ID', 'category': 'container'}, {'entity': 'Selector-SpreadPriority', 'description': 'Kubernetes scheduling function to spread pods across nodes', 'category': 'software'}, {'entity': 'ReplicaSet', 'description': 'Kubernetes resource to manage a set of replicas', 'category': 'application'}, {'entity': 'Service', 'description': 'Kubernetes resource to expose an application', 'category': 'application'}, {'entity': 'pod affinity', 'description': 'Kubernetes scheduling function to place pods near each other', 'category': 'software'}, {'entity': 'frontend pod', 'description': 'type of pod for a frontend service', 'category': 'container'}, {'entity': 'backend pod', 'description': 'type of pod for a backend service', 'category': 'container'}, {'entity': 'pod affinity configuration', 'description': 'configuration to place pods near each other', 'category': 'software'}]","[{'source_entity': '""pref-607515-jx9wt""', 'description': 'is a ReplicaSet', 'destination_entity': '""ReplicaSet""'}, {'source_entity': '""pref-607515-jx9wt""', 'description': 'has a Deployment', 'destination_entity': '""Deployment""'}, {'source_entity': '""pref-607515-jx9wt""', 'description': 'is running on node2.k8s', 'destination_entity': '""node2.k8s""'}, {'source_entity': '""pref-607515-jx9wt""', 'description': 'exposes a Service', 'destination_entity': '""Service""'}, {'source_entity': '""pref-607515-jx9wt""', 'description': 'has a backend pod', 'destination_entity': '""backend pod""'}, {'source_entity': '""kubectl""', 'description': 'gets information about the pod using get po -o wide', 'destination_entity': '""get po -o wide""'}, {'source_entity': '""pref-607515-jx9wt""', 'description': 'has a pod affinity configuration', 'destination_entity': '""pod affinity configuration""'}, {'source_entity': '""kubectl""', 'description': 'manipulates the frontend pod', 'destination_entity': '""frontend pod""'}, {'source_entity': '""pref-607515-jx9wt""', 'description': 'is running on node1.k8s', 'destination_entity': '""node1.k8s""'}, {'source_entity': '""pref-607515-jx9wt""', 'description': 'uses pod affinity', 'destination_entity': '""pod affinity""'}, {'source_entity': '""pref-607515-jx9wt""', 'description': 'has a Selector-SpreadPriority', 'destination_entity': '""Selector-SpreadPriority""'}]","['[\n  {\n    ""source"": ""pref-607515-jx9wt"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a ReplicaSet"",\n    ""summary_er"": ""A ReplicaSet is a Kubernetes resource that ensures a specified number of replicas (identical pod templates) are running at any given time. The source entity, pref-607515-jx9wt, represents the ReplicaSet, while the destination entity, pod, represents the actual running pods.""\n  }\n]', '[\n  {\n    ""source"": ""pref-607515-jx9wt"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""has a Deployment"",\n    ""summary_er"": ""A Kubernetes deployment named pref-607515-jx9wt has a pod, which is an instance of the deployment.""\n  }\n]', '[\n  {\n    ""source"": ""pref-607515-jx9wt"",\n    ""destination"": ""node2.k8s"",\n    ""relation_description"": ""is running on node2.k8s"",\n    ""summary_er"": ""The pod \'pref-607515-jx9wt\' is executing on the Kubernetes node \'node2.k8s\'.""\n  }\n]', '[\n  {\n    ""source"": ""pref-607515-jx9wt"",\n    ""destination"": ""Service"",\n    ""relation_description"": ""exposes a Service"",\n    ""summary_er"": ""A Kubernetes service exposes a Service to provide access to a pod.""\n  }\n]', '[\n  {\n    ""source"": ""pref-607515-jx9wt"",\n    ""destination"": ""backend pod"",\n    ""relation_description"": ""has a backend pod"",\n    ""summary_er"": ""The source entity \'pref-607515-jx9wt\' has a relationship with the destination entity \'backend pod\', where it hosts or runs the backend pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""gets information about the pod using get po -o wide"",\n    ""summary_er"": ""Kubectl retrieves pod details via \'get po -o wide\' command, providing comprehensive info on running pods.""\n  }\n]', '[\n  {\n    ""source"": ""pref-607515-jx9wt"",\n    ""destination"": ""pod affinity configuration"",\n    ""relation_description"": ""has a pod affinity configuration"",\n    ""summary_er"": ""The source entity, pref-607515-jx9wt, has a pod affinity configuration for the destination entity, pod affinity configuration.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""frontend pod"",\n    ""relation_description"": ""manipulates"",\n    ""summary_er"": ""Kubectl controls and configures frontend pods, managing their lifecycle and interactions.""\n  }\n]', '[\n  {\n    ""source"": ""pref-607515-jx9wt"",\n    ""destination"": ""node1.k8s"",\n    ""relation_description"": ""is running on node1.k8s"",\n    ""summary_er"": ""The pod \'pref-607515-jx9wt\' is executing on the Kubernetes node \'node1.k8s\'.""\n  }\n]', '[\n  {\n    ""source"": ""pref-607515-jx9wt"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses pod affinity"",\n    ""summary_er"": ""A Kubernetes resource uses pod affinity to schedule pods based on their affinity rules, ensuring optimal placement and performance.""\n  }\n]', '[\n  {\n    ""source"": ""pref-607515-jx9wt"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""has a Selector-SpreadPriority"",\n    ""summary_er"": ""A pod with a selector-spread priority is assigned to a node based on the spread of pods across nodes.""\n  }\n]']","In a two-node Kubernetes cluster, deploying a Deployment shows most pods deployed to one node due to prioritization functions like Selector-SpreadPriority. Scaling the Deployment up spreads pods evenly between nodes without node affinity preferences. Pod affinity allows specifying the affinity between pods themselves, such as keeping frontend and backend pods close together by configuring them to deploy on the same node.","[{'highlight': 'In a two-node cluster, most (if not all) of your pods deployed to node1 when creating a Deployment.'}, {'highlight': 'The Scheduler uses other prioritization functions besides node affinity, such as Selector-SpreadPriority, to decide where to schedule a pod.'}, {'highlight': 'Pods belonging to the same ReplicaSet or Service are spread around different nodes using the Selector-SpreadPriority function to prevent a node failure from bringing down the whole service.'}, {'highlight': 'Using pod affinity can deploy pods close together, reducing latency and improving performance, without specifying exact node, rack, or datacenter locations.'}, {'highlight': 'Pod affinity can be used to deploy multiple replicas of a pod on the same node as another pod, such as deploying frontend and backend pods together.'}]"
+412,501,0,[],"469
+Co-locating pods with pod affinity and anti-affinity
+This Deployment is not special in any way. The only thing you need to note is the
+app=backend label you added to the pod using the -l option. This label is what you’ll
+use in the frontend pod’s podAffinity configuration. 
+SPECIFYING POD AFFINITY IN A POD DEFINITION
+The frontend pod’s definition is shown in the following listing.
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 5
+  template:
+    ...
+    spec:
+      affinity:
+        podAffinity:                                 
+          requiredDuringSchedulingIgnoredDuringExecution:   
+          - topologyKey: kubernetes.io/hostname           
+            labelSelector:                                
+              matchLabels:                                
+                app: backend                              
+      ...
+The listing shows that this Deployment will create pods that have a hard requirement
+to be deployed on the same node (specified by the topologyKey field) as pods that
+have the app=backend label (see figure 16.4).
+Listing 16.13
+Pod using podAffinity: frontend-podaffinity-host.yaml
+Defining 
+podAffinity rules
+Defining a hard 
+requirement, not 
+a preference
+The pods of this Deployment 
+must be deployed on the 
+same node as the pods that 
+match the selector.
+All frontend pods will
+be scheduled only to
+the node the backend
+pod was scheduled to.
+Some node
+Other nodes
+Frontend pods
+Backend
+pod
+Pod afﬁnity
+Label selector: app=backend
+Topology key: hostname
+app: backend
+Figure 16.4
+Pod affinity allows scheduling pods to the node where other pods 
+with a specific label are.
+ 
+",[],"[{'entity': 'podAffinity', 'description': 'A configuration that specifies a hard requirement for pods to be deployed on the same node as other pods with a specific label.', 'category': 'kubernetes'}, {'entity': 'Deployment', 'description': 'A Kubernetes resource that manages the rollout of new versions of an application.', 'category': 'kubernetes'}, {'entity': 'pod', 'description': 'A lightweight and portable executable container that can be run in a managed environment such as a Kubernetes cluster.', 'category': 'container'}, {'entity': 'labelSelector', 'description': 'A configuration that selects pods based on their labels.', 'category': 'kubernetes'}, {'entity': 'matchLabels', 'description': 'A configuration that specifies the labels to match for a label selector.', 'category': 'kubernetes'}, {'entity': 'topologyKey', 'description': 'A configuration that specifies the topology key for pod affinity.', 'category': 'kubernetes'}, {'entity': 'hostname', 'description': 'The name of a node in a Kubernetes cluster.', 'category': 'hardware'}, {'entity': 'node', 'description': 'A physical or virtual machine that runs a Kubernetes cluster.', 'category': 'hardware'}, {'entity': 'scheduler', 'description': 'A component of the Kubernetes control plane that schedules pods to nodes in a cluster.', 'category': 'kubernetes'}]","[{'source_entity': '""podAffinity""', 'description': 'defines a rule for pod placement', 'destination_entity': '""topologyKey""'}, {'source_entity': '""podAffinity""', 'description': 'specifies the topology key to use for pod placement', 'destination_entity': '""node""'}, {'source_entity': '""Deployment""', 'description': 'manages a set of replicas (pods) in a cluster', 'destination_entity': '""pod""'}, {'source_entity': '""labelSelector""', 'description': 'selects pods based on labels', 'destination_entity': '""pod""'}, {'source_entity': '""scheduler""', 'description': 'assigns a node to a pod for execution', 'destination_entity': '""node""'}, {'source_entity': '""matchLabels""', 'description': 'matches labels on pods for selection', 'destination_entity': '""pod""'}]","['[\n  {\n    ""source"": ""podAffinity"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines a rule for pod placement"",\n    ""summary_er"": ""Pod affinity defines rules for placing pods in a Kubernetes cluster, ensuring specific requirements are met.""\n  },\n  {\n    ""source"": ""topologyKey"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the topology key to use for pod placement"",\n    ""summary_er"": ""Topology key specifies the key used to determine the topology of a node in a Kubernetes cluster, influencing pod placement decisions.""\n  }\n]', '[\n  {\n    ""source"": ""podAffinity"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the topology key to use for pod placement"",\n    ""summary_er"": ""Pod affinity specifies how pods are placed on nodes based on their labels and topology.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages a set of replicas (pods) in a cluster"",\n    ""summary_er"": ""A Deployment manages multiple Pods, ensuring scalability and high availability.""\n  }\n]', '[\n  {\n    ""source"": ""labelSelector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""selects pods based on labels"",\n    ""summary_er"": ""A label selector in Kubernetes selects pods based on their labels, allowing for targeted resource management and deployment.""\n  }\n]', '[\n  {\n    ""source"": ""scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assigns a node to a pod for execution"",\n    ""summary_er"": ""The scheduler assigns a specific node in the cluster to run a pod, ensuring efficient resource utilization and optimal performance.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""node"",\n    ""relation_description"": ""runs on"",\n    ""summary_er"": ""A pod executes its container(s) on a designated node within the Kubernetes cluster, leveraging the node\'s resources for smooth operation.""\n  }\n]', '[\n  {\n    ""source"": ""matchLabels"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""matches labels on pods for selection"",\n    ""summary_er"": ""Kubernetes uses matchLabels to select and filter pods based on their labels, enabling targeted pod management.""\n  }\n]']","A Deployment is created with a podAffinity rule that requires frontend pods to be deployed on the same node as backend pods, which have an app=backend label. This ensures that all frontend pods will be scheduled only to the node where the backend pod was scheduled to, creating a co-locating requirement for the two types of pods.","[{'highlight': 'This Deployment is not special in any way, but it uses podAffinity and anti-affinity to co-locate pods.'}, {'highlight': ""The frontend pod's definition specifies a hard requirement to be deployed on the same node as pods with the app=backend label.""}, {'highlight': 'Pod affinity allows scheduling pods to the node where other pods with a specific label are.'}, {'highlight': 'All frontend pods will be scheduled only to the node the backend pod was scheduled to.'}, {'highlight': 'The topologyKey field specifies that the pods must be deployed on the same node as pods that match the selector.'}]"
+413,502,0,[],"470
+CHAPTER 16
+Advanced scheduling
+NOTE
+Instead of the simpler matchLabels field, you could also use the more
+expressive matchExpressions field.
+DEPLOYING A POD WITH POD AFFINITY
+Before you create this Deployment, let’s see which node the backend pod was sched-
+uled to earlier:
+$ kubectl get po -o wide
+NAME                   READY  STATUS   RESTARTS  AGE  IP         NODE
+backend-257820-qhqj6   1/1    Running  0         8m   10.47.0.1  node2.k8s
+When you create the frontend pods, they should be deployed to node2 as well. You’re
+going to create the Deployment and see where the pods are deployed. This is shown
+in the next listing.
+$ kubectl create -f frontend-podaffinity-host.yaml
+deployment ""frontend"" created
+$ kubectl get po -o wide
+NAME                   READY  STATUS    RESTARTS  AGE  IP         NODE
+backend-257820-qhqj6   1/1    Running   0         8m   10.47.0.1  node2.k8s
+frontend-121895-2c1ts  1/1    Running   0         13s  10.47.0.6  node2.k8s
+frontend-121895-776m7  1/1    Running   0         13s  10.47.0.4  node2.k8s
+frontend-121895-7ffsm  1/1    Running   0         13s  10.47.0.8  node2.k8s
+frontend-121895-fpgm6  1/1    Running   0         13s  10.47.0.7  node2.k8s
+frontend-121895-vb9ll  1/1    Running   0         13s  10.47.0.5  node2.k8s
+All the frontend pods were indeed scheduled to the same node as the backend pod.
+When scheduling the frontend pod, the Scheduler first found all the pods that match
+the labelSelector defined in the frontend pod’s podAffinity configuration and
+then scheduled the frontend pod to the same node.
+UNDERSTANDING HOW THE SCHEDULER USES POD AFFINITY RULES
+What’s interesting is that if you now delete the backend pod, the Scheduler will sched-
+ule the pod to node2 even though it doesn’t define any pod affinity rules itself (the
+rules are only on the frontend pods). This makes sense, because otherwise if the back-
+end pod were to be deleted by accident and rescheduled to a different node, the fron-
+tend pods’ affinity rules would be broken. 
+ You can confirm the Scheduler takes other pods’ pod affinity rules into account, if
+you increase the Scheduler’s logging level and then check its log. The following listing
+shows the relevant log lines.
+... Attempting to schedule pod: default/backend-257820-qhqj6
+... ...
+... backend-qhqj6 -> node2.k8s: Taint Toleration Priority, Score: (10)
+Listing 16.14
+Deploying frontend pods and seeing which node they’re scheduled to
+Listing 16.15
+Scheduler log showing why the backend pod is scheduled to node2
+ 
+",[],"[{'entity': 'matchLabels', 'description': 'a simpler field for matching labels', 'category': 'software'}, {'entity': 'matchExpressions', 'description': 'a more expressive field for matching expressions', 'category': 'software'}, {'entity': 'kubectl', 'description': 'a command-line tool for managing Kubernetes clusters', 'category': 'software'}, {'entity': 'get po -o wide', 'description': 'a command for getting pod information in wide format', 'category': 'command'}, {'entity': 'podAffinity', 'description': 'a scheduling rule that matches pods based on affinity labels', 'category': 'software'}, {'entity': 'frontend-podaffinity-host.yaml', 'description': 'a YAML file defining a frontend pod with pod affinity rules', 'category': 'file'}, {'entity': 'Deployment', 'description': 'a Kubernetes resource for managing a set of replicas', 'category': 'software'}, {'entity': 'pod', 'description': 'a basic computing unit in Kubernetes', 'category': 'container'}, {'entity': 'node2.k8s', 'description': 'a node in the Kubernetes cluster', 'category': 'hardware'}, {'entity': 'Scheduler', 'description': 'the component responsible for scheduling pods in a Kubernetes cluster', 'category': 'software'}, {'entity': 'labelSelector', 'description': 'a field used to select pods based on labels', 'category': 'software'}, {'entity': 'podAffinity configuration', 'description': 'a set of rules defining how pods are scheduled based on affinity labels', 'category': 'software'}, {'entity': 'backend pod', 'description': 'the backend pod that was previously scheduled to node2.k8s', 'category': 'container'}, {'entity': 'frontend pods', 'description': 'a set of frontend pods that were scheduled to node2.k8s based on pod affinity rules', 'category': 'container'}]","[{'source_entity': 'Scheduler', 'description': 'uses', 'destination_entity': 'podAffinity configuration'}, {'source_entity': 'kubectl', 'description': 'applies', 'destination_entity': 'frontend-podaffinity-host.yaml'}, {'source_entity': 'Deployment', 'description': 'manages', 'destination_entity': 'pod'}, {'source_entity': 'get po -o wide', 'description': 'displays', 'destination_entity': 'frontend pods'}, {'source_entity': 'labelSelector', 'description': 'matches', 'destination_entity': 'backend pod'}, {'source_entity': 'matchExpressions', 'description': 'evaluates', 'destination_entity': 'matchLabels'}, {'source_entity': 'Scheduler', 'description': 'schedules', 'destination_entity': 'node2.k8s'}]","['[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The Scheduler component utilizes podAffinity configuration to manage resource allocation and scheduling decisions.""\n  },\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""podAffinity configuration"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The Scheduler leverages podAffinity configuration to optimize pod placement and resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies"",\n    ""summary_er"": ""Kubectl applies configuration to a running pod, ensuring it meets specified requirements and constraints.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A deployment manages one or more replicas of a pod, ensuring that the desired state of the application is maintained.""\n  }\n]', '[\n  {\n    ""source"": ""get po -o wide"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays"",\n    ""summary_er"": ""The \'get po -o wide\' command displays information about a pod in Kubernetes.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""frontend pods"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""A pod is related to frontend pods, which are groups of containers that provide a specific service or functionality.""\n  }\n]', '[\n  {\n    ""source"": ""labelSelector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""matches"",\n    ""summary_er"": ""Label selector is used to match pods based on labels, ensuring that only desired pods are selected for a particular operation.""\n  },\n  {\n    ""source"": ""backend pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""destination"",\n    ""summary_er"": ""The backend pod refers to the target pod that receives traffic or resources from other pods in the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""matchExpressions"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""evaluates"",\n    ""summary_er"": ""In Kubernetes, matchExpressions is used to evaluate a set of key-value pairs against a pod\'s labels.""\n  },\n  {\n    ""source"": ""matchLabels"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""labels"",\n    ""summary_er"": ""In Kubernetes, matchLabels is used to select pods based on their labels.""\n  }\n]', '[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""schedules"",\n    ""summary_er"": ""The Scheduler component assigns a Pod to a Node, ensuring efficient resource utilization and optimal performance.""\n  }\n]']","This chapter discusses advanced scheduling in Kubernetes using pod affinity rules. The Scheduler first finds all pods that match a labelSelector defined in a pod's configuration and schedules it to the same node. If a pod with affinity rules is deleted, the Scheduler will reschedule it to the same node to maintain consistency, even if no rules are defined on the deleted pod.","[{'highlight': 'Instead of the simpler matchLabels field, you could also use the more expressive matchExpressions field.'}, {'highlight': 'When scheduling the frontend pod, the Scheduler first found all the pods that match the labelSelector defined in the frontend pod’s podAffinity configuration and then scheduled the frontend pod to the same node.'}, {'highlight': 'If you delete the backend pod, the Scheduler will schedule the pod to node2 even though it doesn’t define any pod affinity rules itself.'}, {'highlight': 'The Scheduler takes other pods’ pod affinity rules into account when scheduling a new pod.'}, {'highlight': 'You can confirm this by increasing the Scheduler’s logging level and checking its log, which will show why the backend pod is scheduled to node2.'}]"
+414,503,0,[],"471
+Co-locating pods with pod affinity and anti-affinity
+... backend-qhqj6 -> node1.k8s: Taint Toleration Priority, Score: (10)
+... backend-qhqj6 -> node2.k8s: InterPodAffinityPriority, Score: (10)
+... backend-qhqj6 -> node1.k8s: InterPodAffinityPriority, Score: (0)
+... backend-qhqj6 -> node2.k8s: SelectorSpreadPriority, Score: (10)
+... backend-qhqj6 -> node1.k8s: SelectorSpreadPriority, Score: (10)
+... backend-qhqj6 -> node2.k8s: NodeAffinityPriority, Score: (0)
+... backend-qhqj6 -> node1.k8s: NodeAffinityPriority, Score: (0)
+... Host node2.k8s => Score 100030
+... Host node1.k8s => Score 100022
+... Attempting to bind backend-257820-qhqj6 to node2.k8s
+If you focus on the two lines in bold, you’ll see that during the scheduling of the back-
+end pod, node2 received a higher score than node1 because of inter-pod affinity. 
+16.3.2 Deploying pods in the same rack, availability zone, or 
+geographic region
+In the previous example, you used podAffinity to deploy frontend pods onto the
+same node as the backend pods. You probably don’t want all your frontend pods to
+run on the same machine, but you’d still like to keep them close to the backend
+pod—for example, run them in the same availability zone. 
+CO-LOCATING PODS IN THE SAME AVAILABILITY ZONE
+The cluster I’m using runs in three VMs on my local machine, so all the nodes are in
+the same availability zone, so to speak. But if the nodes were in different zones, all I’d
+need to do to run the frontend pods in the same zone as the backend pod would be to
+change the topologyKey property to failure-domain.beta.kubernetes.io/zone. 
+CO-LOCATING PODS IN THE SAME GEOGRAPHICAL REGION
+To allow the pods to be deployed in the same region instead of the same zone (cloud
+providers usually have datacenters located in different geographical regions and split
+into multiple availability zones in each region), the topologyKey would be set to
+failure-domain.beta.kubernetes.io/region.
+UNDERSTANDING HOW TOPOLOGYKEY WORKS
+The way topologyKey works is simple. The three keys we’ve mentioned so far aren’t
+special. If you want, you can easily use your own topologyKey, such as rack, to have
+the pods scheduled to the same server rack. The only prerequisite is to add a rack
+label to your nodes. This scenario is shown in figure 16.5.
+ For example, if you had 20 nodes, with 10 in each rack, you’d label the first ten as
+rack=rack1 and the others as rack=rack2. Then, when defining a pod’s podAffinity,
+you’d set the toplogyKey to rack. 
+ When the Scheduler is deciding where to deploy a pod, it checks the pod’s pod-
+Affinity config, finds the pods that match the label selector, and looks up the nodes
+they’re running on. Specifically, it looks up the nodes’ label whose key matches the
+topologyKey field specified in podAffinity. Then it selects all the nodes whose label
+ 
+",[],"[{'entity': 'pod affinity', 'description': 'a scheduling strategy that allows pods to be deployed on nodes based on shared labels', 'category': 'application'}, {'entity': 'anti-affinity', 'description': 'a scheduling strategy that prevents pods from being deployed on the same node', 'category': 'application'}, {'entity': 'backend-qhqj6', 'description': 'a pod name', 'category': 'container'}, {'entity': 'node1.k8s', 'description': 'a Kubernetes node name', 'category': 'hardware'}, {'entity': 'node2.k8s', 'description': 'a Kubernetes node name', 'category': 'hardware'}, {'entity': 'InterPodAffinityPriority', 'description': 'a scheduling priority for inter-pod affinity', 'category': 'application'}, {'entity': 'SelectorSpreadPriority', 'description': 'a scheduling priority for selector spread', 'category': 'application'}, {'entity': 'NodeAffinityPriority', 'description': 'a scheduling priority for node affinity', 'category': 'application'}, {'entity': 'podAffinity', 'description': 'a scheduling strategy that allows pods to be deployed on nodes based on shared labels', 'category': 'application'}, {'entity': 'topologyKey', 'description': 'a key used to specify the topology of a node', 'category': 'application'}, {'entity': 'failure-domain.beta.kubernetes.io/zone', 'description': 'a label key for specifying an availability zone', 'category': 'label'}, {'entity': 'failure-domain.beta.kubernetes.io/region', 'description': 'a label key for specifying a geographical region', 'category': 'label'}, {'entity': 'rack', 'description': 'a label key for specifying a server rack', 'category': 'label'}, {'entity': 'Scheduler', 'description': 'the Kubernetes component responsible for scheduling pods on nodes', 'category': 'application'}]","[{'source_entity': '""Scheduler""', 'description': 'assigns', 'destination_entity': '""NodeAffinityPriority""'}, {'source_entity': '""Scheduler""', 'description': 'uses', 'destination_entity': '""topologyKey""'}, {'source_entity': '""Scheduler""', 'description': 'takes into account', 'destination_entity': '""failure-domain.beta.kubernetes.io/region""'}, {'source_entity': '""Scheduler""', 'description': 'uses', 'destination_entity': '""podAffinity""'}, {'source_entity': '""node1.k8s""', 'description': 'has', 'destination_entity': '""backend-qhqj6""'}, {'source_entity': '""node2.k8s""', 'description': 'has', 'destination_entity': '""backend-qhqj6""'}, {'source_entity': '""Scheduler""', 'description': 'prioritizes', 'destination_entity': '""SelectorSpreadPriority""'}, {'source_entity': '""Scheduler""', 'description': 'uses', 'destination_entity': '""anti-affinity""'}, {'source_entity': '""Scheduler""', 'description': 'takes into account', 'destination_entity': '""failure-domain.beta.kubernetes.io/zone""'}, {'source_entity': '""node1.k8s""', 'description': 'has', 'destination_entity': '""pod affinity""'}]","['[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assigns"",\n    ""summary_er"": ""The Scheduler assigns a pod to a node based on its affinity and priority.""\n  }\n]', '[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The Scheduler component in Kubernetes utilizes pods to manage resource allocation and scheduling.""\n  }\n]', '[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""takes into account"",\n    ""summary_er"": ""The Scheduler considers the pod\'s failure domain region when scheduling tasks.""\n  },\n  {\n    ""source"": ""failure-domain.beta.kubernetes.io/region"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""associated with"",\n    ""summary_er"": ""The pod is associated with a specific region in the failure domain.""\n  }\n]', '[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The Scheduler component utilizes pods to manage resource allocation.""\n  },\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""podAffinity"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The Scheduler leverages pod affinity to optimize resource utilization and scheduling decisions.""\n  }\n]', '[\n  {\n    ""source"": ""node1.k8s"",\n    ""destination"": ""backend-qhqj6"",\n    ""relation_description"": ""has"",\n    ""summary_er"": ""Node node1.k8s hosts a pod named backend-qhqj6, indicating that the Kubernetes cluster has deployed this pod on this specific node.""\n  }\n]', '[\n  {\n    ""source"": ""node2.k8s"",\n    ""destination"": ""backend-qhqj6"",\n    ""relation_description"": ""has"",\n    ""summary_er"": ""Node node2.k8s has a pod named backend-qhqj6, which is likely running the backend service.""\n  }\n]', '[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""prioritizes"",\n    ""summary_er"": ""The Scheduler prioritizes pods based on their scheduling priority, ensuring efficient resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The Scheduler component utilizes pods to manage resource allocation.""\n  },\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""anti-affinity"",\n    ""relation_description"": """",\n    ""summary_er"": ""The Scheduler component employs anti-affinity rules to ensure pod placement optimization.""\n  }\n]', '[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""takes into account"",\n    ""summary_er"": ""The Scheduler considers resource utilization and availability when scheduling pods.""\n  },\n  {\n    ""source"": ""failure-domain.beta.kubernetes.io/zone"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""takes into account"",\n    ""summary_er"": ""The pod\'s placement is influenced by the failure domain zone, ensuring high availability.""\n  }\n]', '[\n  {\n    ""source"": ""node1.k8s"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""has"",\n    ""summary_er"": ""Node node1.k8s has a pod with affinity.""\n  }\n]']","Pods can be co-located using pod affinity and anti-affinity, prioritizing scheduling to a node based on shared labels or topology keys such as zone or region. For example, setting topologyKey to failure-domain.beta.kubernetes.io/zone allows pods to be deployed in the same availability zone, while setting it to failure-domain.beta.kubernetes.io/region schedules them in the same geographical region.","[{'highlight': 'Pod affinity and anti-affinity can be used to co-locate pods on the same node or in the same availability zone, geographic region, or rack.'}, {'highlight': 'The topologyKey property can be set to failure-domain.beta.kubernetes.io/zone or failure-domain.beta.kubernetes.io/region to schedule pods in the same availability zone or geographic region.'}, {'highlight': ""To co-locate pods in the same rack, a custom topologyKey such as 'rack' can be used and nodes must be labeled with a matching key.""}, {'highlight': ""The Scheduler checks the pod's pod-Affinity config to find matching pods and their corresponding nodes when deciding where to deploy a new pod.""}, {'highlight': 'Pod affinity scores are calculated based on InterPodAffinityPriority, SelectorSpreadPriority, and NodeAffinityPriority, with higher scores indicating a better match for co-location.'}]"
+415,504,0,[],"472
+CHAPTER 16
+Advanced scheduling
+matches the values of the pods it found earlier. In figure 16.5, the label selector
+matched the backend pod, which runs on Node 12. The value of the rack label on
+that node equals rack2, so when scheduling a frontend pod, the Scheduler will only
+select among the nodes that have the rack=rack2 label.
+NOTE
+By default, the label selector only matches pods in the same name-
+space as the pod that’s being scheduled. But you can also select pods from
+other namespaces by adding a namespaces field at the same level as label-
+Selector.
+16.3.3 Expressing pod affinity preferences instead of hard requirements
+Earlier, when we talked about node affinity, you saw that nodeAffinity can be used to
+express a hard requirement, which means a pod is only scheduled to nodes that match
+the node affinity rules. It can also be used to specify node preferences, to instruct the
+Scheduler to schedule the pod to certain nodes, while allowing it to schedule it any-
+where else if those nodes can’t fit the pod for any reason.
+ The same also applies to podAffinity. You can tell the Scheduler you’d prefer to
+have your frontend pods scheduled onto the same node as your backend pod, but if
+that’s not possible, you’re okay with them being scheduled elsewhere. An example of
+a Deployment using the preferredDuringSchedulingIgnoredDuringExecution pod
+affinity rule is shown in the next listing.
+Frontend pods will be
+scheduled to nodes in
+the same rack as the
+backend pod.
+Node 1
+Rack 1
+rack: rack1
+Node 2
+rack: rack1
+Node 3
+...
+rack: rack1
+Node 10
+rack: rack1
+Node 11
+Rack 2
+rack: rack2
+Node 12
+rack: rack2
+...
+Node 20
+rack: rack2
+Backend
+pod
+app: backend
+Frontend pods
+Pod afﬁnity (required)
+Label selector: app=backend
+Topology key: rack
+Figure 16.5
+The topologyKey in podAffinity determines the scope of where the pod 
+should be scheduled to.
+ 
+","[Empty DataFrame
+Columns: [Rack 1
+rack: rack1
+Node 1
+rack: rack1
+Node 2
+rack: rack1
+Node 3
+...
+rack: rack1
+Node 10, Col1, Rack 2
+rack: rack2
+Node 11
+rack: rack2
+app: backend
+Backend
+pod
+Node 12
+...
+rack: rack2
+Node 20, Frontend pods will be
+scheduled to nodes in
+the same rack as the
+backend pod.
+Frontend pods
+Pod affinity (required)
+Label selector: app=backend
+Topology key: rack]
+Index: [], Empty DataFrame
+Columns: [n, d]
+Index: []]","[{'entity': 'label selector', 'description': 'A way to select pods based on labels', 'category': 'software'}, {'entity': 'podAffinity', 'description': 'A way to express pod affinity preferences instead of hard requirements', 'category': 'software'}, {'entity': 'nodeAffinity', 'description': 'A way to express node affinity rules', 'category': 'software'}, {'entity': 'Scheduler', 'description': 'A component that schedules pods onto nodes', 'category': 'software'}, {'entity': 'pod', 'description': 'A container running an application', 'category': 'container'}, {'entity': 'node', 'description': 'A machine in a Kubernetes cluster', 'category': 'hardware'}, {'entity': 'namespace', 'description': 'A way to group pods and resources together', 'category': 'software'}, {'entity': 'label', 'description': 'A key-value pair used to identify a pod or node', 'category': 'software'}, {'entity': 'rack', 'description': 'A way to group nodes together based on their location', 'category': 'hardware'}, {'entity': 'Deployment', 'description': 'A way to manage and scale pods', 'category': 'software'}, {'entity': 'preferredDuringSchedulingIgnoredDuringExecution', 'description': 'A pod affinity rule that specifies a preference for scheduling', 'category': 'software'}]","[{'source_entity': '""podAffinity""', 'description': 'defines a rule for pod placement', 'destination_entity': '""Scheduler""'}, {'source_entity': '""podAffinity""', 'description': 'specifies preferred nodes or racks for pod scheduling', 'destination_entity': '""rack""'}, {'source_entity': '""nodeAffinity""', 'description': 'defines a rule for node placement', 'destination_entity': '""Scheduler""'}, {'source_entity': '""nodeAffinity""', 'description': 'specifies preferred nodes or racks for pod scheduling', 'destination_entity': '""rack""'}, {'source_entity': '""Deployment""', 'description': 'manages rollout of new versions of an application', 'destination_entity': '""pod""'}, {'source_entity': '""label selector""', 'description': 'selects pods based on labels', 'destination_entity': '""pod""'}, {'source_entity': '""nodeAffinity""', 'description': 'defines a rule for node placement', 'destination_entity': '""node""'}, {'source_entity': '""preferredDuringSchedulingIgnoredDuringExecution""', 'description': 'specifies preferred nodes or racks for pod scheduling, ignored during execution', 'destination_entity': '""rack""'}, {'source_entity': '""label selector""', 'description': 'selects pods based on labels', 'destination_entity': '""pod""'}, {'source_entity': '""namespace""', 'description': 'isolates resources for a group of applications', 'destination_entity': '""Deployment""'}]","['[\n  {\n    ""source"": ""Pod Affinity"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""defines a rule for pod placement"",\n    ""summary_er"": ""Pod affinity defines rules for placing pods together or apart, ensuring efficient resource utilization and minimizing dependencies.""\n  },\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""assigns resources to pods"",\n    ""summary_er"": ""The scheduler assigns resources such as CPU and memory to pods based on their requirements, ensuring optimal performance and utilization of cluster resources.""\n  }\n]', '[\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""podAffinity"",\n    ""summary_er"": ""Pods are scheduled on preferred nodes or racks based on affinity rules.""\n  },\n  {\n    ""source"": ""racks"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""podAffinity"",\n    ""summary_er"": ""Pods are scheduled on preferred racks based on affinity rules, ensuring efficient resource utilization and high availability.""\n  }\n]', '[\n  {\n    ""source"": ""nodeAffinity"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines a rule for node placement"",\n    ""summary_er"": ""Node affinity specifies rules for node selection, ensuring pods are placed on suitable nodes based on resource requirements and constraints.""\n  },\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assigns resources to"",\n    ""summary_er"": ""The scheduler is responsible for assigning resources such as CPU and memory to pods, ensuring efficient utilization of cluster resources.""\n  }\n]', '[\n  {\n    ""source"": ""nodeAffinity"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies preferred nodes or racks for pod scheduling"",\n    ""summary_er"": ""Node affinity specifies preferred nodes or racks for pod scheduling, allowing pods to be placed on specific hardware resources.""\n  },\n  {\n    ""source"": ""rack"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""physical location of the node"",\n    ""summary_er"": ""Rack refers to the physical location of a node within a data center or cluster, influencing pod placement and resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages rollout of new versions of an application"",\n    ""summary_er"": ""A Deployment manages the rollout of new pod versions, ensuring a smooth transition for applications.""\n  }\n]', '[\n  {\n    ""source"": ""label selector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""selects pods based on labels"",\n    ""summary_er"": ""A label selector in Kubernetes selects pods based on their labels, allowing for targeted resource management and deployment.""\n  }\n]', '[\n  {\n    ""source"": ""nodeAffinity"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines a rule for node placement"",\n    ""summary_er"": ""Node affinity defines rules for placing pods on specific nodes, ensuring efficient resource utilization and minimizing conflicts.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""rack"",\n    ""relation_description"": ""preferredDuringSchedulingIgnoredDuringExecution"",\n    ""summary_er"": ""Pods can be scheduled on preferred racks, but execution ignores this preference.""\n  }\n]', '[\n  {\n    ""source"": ""label selector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""selects pods based on labels"",\n    ""summary_er"": ""A label selector in Kubernetes selects pods based on their labels, allowing for targeted resource management and automation.""\n  }\n]', '[\n  {\n    ""source"": ""namespace"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""isolates resources for a group of applications"",\n    ""summary_er"": ""A namespace isolates resources for a group of related pods, ensuring each pod has its own dedicated resources.""\n  },\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managed by the deployment controller"",\n    ""summary_er"": ""A Deployment manages one or more replicas of a pod, ensuring the desired state is maintained and updated as needed.""\n  }\n]']","In Kubernetes, scheduling preferences can be expressed using label selectors and node or pod affinities. The Scheduler matches pods based on these rules, but if a match is not found, it will schedule the pod elsewhere. Pod affinity can also specify preferred nodes while allowing for flexibility if those nodes are unavailable.","[{'highlight': 'By default, the label selector only matches pods in the same namespace as the pod that’s being scheduled.'}, {'highlight': 'You can also select pods from other namespaces by adding a namespaces field at the same level as label-Selector.'}, {'highlight': 'podAffinity can be used to specify node preferences, to instruct the Scheduler to schedule the pod to certain nodes, while allowing it to schedule it anywhere else if those nodes can’t fit the pod for any reason.'}, {'highlight': 'The topologyKey in podAffinity determines the scope of where the pod should be scheduled to.'}, {'highlight': 'Frontend pods will be scheduled to nodes in the same rack as the backend pod.'}]"
+416,505,0,[],"473
+Co-locating pods with pod affinity and anti-affinity
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 5
+  template:
+    ...
+    spec:
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:  
+          - weight: 80                                        
+            podAffinityTerm:                                  
+              topologyKey: kubernetes.io/hostname             
+              labelSelector:                                  
+                matchLabels:                                  
+                  app: backend                                
+      containers: ...
+As in nodeAffinity preference rules, you need to define a weight for each rule. You
+also need to specify the topologyKey and labelSelector, as in the hard-requirement
+podAffinity rules. Figure 16.6 shows this scenario.
+Deploying this pod, as with your nodeAffinity example, deploys four pods on the same
+node as the backend pod, and one pod on the other node (see the following listing).
+Listing 16.16
+Pod affinity preference
+Preferred 
+instead of 
+Required
+A weight and a 
+podAffinity term is 
+specified as in the 
+previous example
+The Scheduler will prefer
+Node 2 for frontend pods,
+but may schedule pods
+to Node 1 as well.
+Node 1
+Node 2
+Backend
+pod
+app: backend
+Frontend pod
+Pod afﬁnity (preferred)
+Label selector: app=backend
+Topology key: hostname
+hostname: node2
+hostname: node1
+Figure 16.6
+Pod affinity can be used to make the Scheduler prefer nodes where 
+pods with a certain label are running. 
+ 
+",[],"[{'entity': 'podAffinity', 'description': 'a feature that allows you to specify preferences for co-locating pods', 'category': 'software'}, {'entity': 'Deployment', 'description': 'a Kubernetes resource that manages a set of replicas', 'category': 'software'}, {'entity': 'replicas', 'description': 'the number of identical copies of a pod that should be running at any given time', 'category': 'software'}, {'entity': 'podAffinityTerm', 'description': 'a specification for the pod affinity term', 'category': 'software'}, {'entity': 'topologyKey', 'description': 'a key used to identify the topology of a node', 'category': 'hardware'}, {'entity': 'labelSelector', 'description': 'a selector that matches labels on pods', 'category': 'software'}, {'entity': 'matchLabels', 'description': 'the labels that should be matched by the label selector', 'category': 'software'}, {'entity': 'app', 'description': 'an application identifier', 'category': 'software'}, {'entity': 'weight', 'description': 'a value used to specify the preference for co-locating pods', 'category': 'software'}, {'entity': 'Scheduler', 'description': 'the component responsible for scheduling pods onto nodes', 'category': 'software'}]","[{'source_entity': '""Scheduler""', 'description': 'assigns', 'destination_entity': '""podAffinityTerm""'}, {'source_entity': '""Scheduler""', 'description': 'uses', 'destination_entity': '""topologyKey""'}, {'source_entity': '""Deployment""', 'description': 'specifies', 'destination_entity': '""replicas""'}, {'source_entity': '""Deployment""', 'description': 'sets', 'destination_entity': '""weight""'}, {'source_entity': '""labelSelector""', 'description': 'matches', 'destination_entity': '""matchLabels""'}, {'source_entity': '""podAffinityTerm""', 'description': 'defines', 'destination_entity': '""podAffinity""'}]","['[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assigns"",\n    ""summary_er"": ""The Scheduler component assigns a pod to a node based on resource availability and affinity rules.""\n  }\n]', '[{""source"": ""Scheduler"", ""destination"": ""pod"", ""relation_description"": ""uses"", ""summary_er"": ""The Scheduler component in Kubernetes utilizes pods to manage resource allocation.""}]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""A Deployment in Kubernetes specifies the number of replicas for a pod, ensuring that a specified number of identical copies of the pod are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""sets"",\n    ""summary_er"": ""A Deployment in Kubernetes sets the desired state of a Pod, ensuring it runs with specified replicas and updates.""\n  }\n]', '[\n  {\n    ""source"": ""labelSelector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""matches"",\n    ""summary_er"": ""The label selector in Kubernetes matches the labels of a pod, ensuring that only pods with specific labels are targeted.""\n  }\n]', '[\n  {\n    ""source"": ""Pod Affinity Term"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A Pod Affinity Term specifies a relationship between pods, ensuring they are scheduled together or apart based on their labels and affinity rules.""\n  }\n]']","Co-locating pods with pod affinity and anti-affinity can be achieved by defining a weight for each rule, specifying the topologyKey and labelSelector. This allows the Scheduler to prefer nodes where pods with a certain label are running. For example, in a deployment of 5 replicas, the Scheduler may deploy four pods on the same node as the backend pod, and one pod on another node.","[{'highlight': 'You need to define a weight for each pod affinity rule.'}, {'highlight': 'Specify the topologyKey and labelSelector in pod affinity rules, similar to hard-requirement podAffinity rules.'}, {'highlight': 'Pod affinity can be used to make the Scheduler prefer nodes where pods with a certain label are running.'}, {'highlight': 'A weight and a podAffinity term is specified as in the previous example.'}, {'highlight': 'The Scheduler will prefer Node 2 for frontend pods, but may schedule pods to Node 1 as well.'}]"
+417,506,0,[],"474
+CHAPTER 16
+Advanced scheduling
+$ kubectl get po -o wide
+NAME                   READY  STATUS   RESTARTS  AGE  IP          NODE
+backend-257820-ssrgj   1/1    Running  0         1h   10.47.0.9   node2.k8s
+frontend-941083-3mff9  1/1    Running  0         8m   10.44.0.4   node1.k8s
+frontend-941083-7fp7d  1/1    Running  0         8m   10.47.0.6   node2.k8s
+frontend-941083-cq23b  1/1    Running  0         8m   10.47.0.1   node2.k8s
+frontend-941083-m70sw  1/1    Running  0         8m   10.47.0.5   node2.k8s
+frontend-941083-wsjv8  1/1    Running  0         8m   10.47.0.4   node2.k8s
+16.3.4 Scheduling pods away from each other with pod anti-affinity
+You’ve seen how to tell the Scheduler to co-locate pods, but sometimes you may want
+the exact opposite. You may want to keep pods away from each other. This is called
+pod anti-affinity. It’s specified the same way as pod affinity, except that you use the
+podAntiAffinity property instead of podAffinity, which results in the Scheduler
+never choosing nodes where pods matching the podAntiAffinity’s label selector are
+running, as shown in figure 16.7.
+An example of why you’d want to use pod anti-affinity is when two sets of pods inter-
+fere with each other’s performance if they run on the same node. In that case, you
+want to tell the Scheduler to never schedule those pods on the same node. Another
+example would be to force the Scheduler to spread pods of the same group across dif-
+ferent availability zones or regions, so that a failure of a whole zone (or region) never
+brings the service down completely. 
+Listing 16.17
+Pods deployed with podAffinity preferences
+These pods will NOT be scheduled
+to the same node(s) where pods
+with app=foo label are running.
+Some node
+Other nodes
+Pods
+Pod: foo
+Pod
+(required)
+anti-afﬁnity
+Label selector: app=foo
+Topology key: hostname
+app: foo
+Figure 16.7
+Using pod anti-affinity to keep pods away from nodes that run pods 
+with a certain label.
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command-line tool for managing Kubernetes clusters', 'category': 'software'}, {'entity': 'get', 'description': 'command to retrieve information about pods', 'category': 'software'}, {'entity': 'po', 'description': 'resource type for pods in Kubernetes', 'category': 'software'}, {'entity': 'wide', 'description': 'output format option for displaying pod information', 'category': 'software'}, {'entity': 'backend-257820-ssrgj', 'description': 'pod name and ID', 'category': 'container'}, {'entity': 'frontend-941083-3mff9', 'description': 'pod name and ID', 'category': 'container'}, {'entity': 'frontend-941083-7fp7d', 'description': 'pod name and ID', 'category': 'container'}, {'entity': 'frontend-941083-cq23b', 'description': 'pod name and ID', 'category': 'container'}, {'entity': 'frontend-941083-m70sw', 'description': 'pod name and ID', 'category': 'container'}, {'entity': 'frontend-941083-wsjv8', 'description': 'pod name and ID', 'category': 'container'}, {'entity': 'podAntiAffinity', 'description': 'property for specifying pod anti-affinity preferences', 'category': 'software'}, {'entity': 'podAffinity', 'description': 'property for specifying pod affinity preferences', 'category': 'software'}, {'entity': 'label selector', 'description': 'selector used to match pods with specific labels', 'category': 'software'}, {'entity': 'Topology key', 'description': 'key used to specify the topology of a node', 'category': 'software'}, {'entity': 'hostname', 'description': 'key used to specify the hostname of a node', 'category': 'hardware'}]","[{'source_entity': '""backend-257820-ssrgj""', 'description': 'uses', 'destination_entity': '""podAffinity""'}, {'source_entity': '""backend-257820-ssrgj""', 'description': 'utilizes', 'destination_entity': '""label selector""'}, {'source_entity': '""frontend-941083-cq23b""', 'description': 'employs', 'destination_entity': '""podAntiAffinity""'}, {'source_entity': '""frontend-941083-wsjv8""', 'description': 'utilizes', 'destination_entity': '""wide""'}, {'source_entity': '""frontend-941083-cq23b""', 'description': 'uses', 'destination_entity': '""Topology key""'}, {'source_entity': '""kubectl""', 'description': 'manipulates', 'destination_entity': '""hostname""'}, {'source_entity': '""frontend-941083-7fp7d""', 'description': 'executes', 'destination_entity': '""get""'}, {'source_entity': '""kubectl""', 'description': 'interacts with', 'destination_entity': '""po""'}, {'source_entity': '""frontend-941083-m70sw""', 'description': 'utilizes', 'destination_entity': '""get""'}]","['[\n  {\n    ""source"": ""backend-257820-ssrgj"",\n    ""destination"": ""podAffinity"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The backend service uses pod affinity to schedule pods on nodes with available resources.""\n  }\n]', '[\n  {\n    ""source"": ""backend-257820-ssrgj"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""utilizes"",\n    ""summary_er"": ""The backend service utilizes a pod to run its application.""\n  }\n]', '[\n  {\n    ""source"": ""frontend-941083-cq23b"",\n    ""destination"": ""podAntiAffinity"",\n    ""relation_description"": ""employs"",\n    ""summary_er"": ""The frontend service utilizes pod anti-affinity to ensure efficient resource allocation and minimize conflicts between pods.""\n  }\n]', '[\n  {\n    ""source"": ""frontend-941083-wsjv8"",\n    ""destination"": ""wide"",\n    ""relation_description"": ""utilizes"",\n    ""summary_er"": ""The frontend service utilizes the wide pod for efficient resource allocation and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""frontend-941083-cq23b"",\n    ""destination"": ""Topology key"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The frontend service uses a specific topology key to manage its deployment and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manipulates"",\n    ""summary_er"": ""Kubectl, a command-line tool, manipulates pods by creating, updating, or deleting them in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""hostname"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""returns"",\n    ""summary_er"": ""Hostname returns the hostname of the pod\'s container, providing information about its identity and network configuration.""\n  }\n]', '[\n  {\n    ""source"": ""frontend-941083-7fp7d"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""The frontend service executes within a pod, utilizing containerization for efficient resource utilization and scalability.""\n  },\n  {\n    ""source"": ""get"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""The get command is used to execute and retrieve information about the pod, providing insights into its status and configuration.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""interacts with"",\n    ""summary_er"": ""Kubectl, a command-line tool, interacts with pods to manage and deploy containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""frontend-941083-m70sw"",\n    ""destination"": ""get"",\n    ""relation_description"": ""utilizes"",\n    ""summary_er"": ""The frontend service utilizes the \'get\' pod for handling HTTP requests.""\n  }\n]']","This chapter discusses advanced scheduling in Kubernetes, specifically how to schedule pods away from each other using pod anti-affinity. This is useful when two sets of pods interfere with each other's performance if they run on the same node. Pod anti-affinity can be used to spread pods across different availability zones or regions to prevent a whole zone failure from bringing down the service completely.","[{'highlight': 'You can use pod anti-affinity to schedule pods away from each other.'}, {'highlight': 'Pod anti-affinity is specified the same way as pod affinity, but with the podAntiAffinity property instead of podAffinity.'}, {'highlight': ""The Scheduler will never choose nodes where pods matching the podAntiAffinity's label selector are running.""}, {'highlight': ""Pod anti-affinity can be used to prevent two sets of pods from interfering with each other's performance if they run on the same node.""}, {'highlight': 'Pod anti-affinity can also be used to spread pods of the same group across different availability zones or regions for high availability.'}]"
+418,507,0,[],"475
+Co-locating pods with pod affinity and anti-affinity
+USING ANTI-AFFINITY TO SPREAD APART PODS OF THE SAME DEPLOYMENT
+Let’s see how to force your frontend pods to be scheduled to different nodes. The fol-
+lowing listing shows how the pods’ anti-affinity is configured.
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 5
+  template:
+    metadata:
+      labels:                  
+        app: frontend          
+    spec:
+      affinity:
+        podAntiAffinity:                                      
+          requiredDuringSchedulingIgnoredDuringExecution:     
+          - topologyKey: kubernetes.io/hostname            
+            labelSelector:                                 
+              matchLabels:                                 
+                app: frontend                              
+      containers: ...
+This time, you’re defining podAntiAffinity instead of podAffinity, and you’re mak-
+ing the labelSelector match the same pods that the Deployment creates. Let’s see
+what happens when you create this Deployment. The pods created by it are shown in
+the following listing.
+$ kubectl get po -l app=frontend -o wide
+NAME                    READY  STATUS   RESTARTS  AGE  IP         NODE
+frontend-286632-0lffz   0/1    Pending  0         1m   <none>
+frontend-286632-2rkcz   1/1    Running  0         1m   10.47.0.1  node2.k8s
+frontend-286632-4nwhp   0/1    Pending  0         1m   <none>
+frontend-286632-h4686   0/1    Pending  0         1m   <none>
+frontend-286632-st222   1/1    Running  0         1m   10.44.0.4  node1.k8s
+As you can see, only two pods were scheduled—one to node1, the other to node2. The
+three remaining pods are all Pending, because the Scheduler isn’t allowed to schedule
+them to the same nodes.
+USING PREFERENTIAL POD ANTI-AFFINITY
+In this case, you probably should have specified a soft requirement instead (using the
+preferredDuringSchedulingIgnoredDuringExecution property). After all, it’s not
+such a big problem if two frontend pods run on the same node. But in scenarios where
+that’s a problem, using requiredDuringScheduling is appropriate. 
+Listing 16.18
+Pods with anti-affinity: frontend-podantiaffinity-host.yaml
+Listing 16.19
+Pods created by the Deployment
+The frontend pods have 
+the app=frontend label.
+Defining hard-
+requirements for 
+pod anti-affinity
+A frontend pod must not 
+be scheduled to the same 
+machine as a pod with 
+app=frontend label.
+ 
+",[],"[{'entity': 'Pod Affinity', 'description': 'A feature that allows you to schedule pods on specific nodes based on labels and selectors.', 'category': 'Software/Application'}, {'entity': 'Deployment', 'description': 'A Kubernetes resource that manages a set of replicas (identical copies) of an application.', 'category': 'Software/Application'}, {'entity': 'Pod AntiAffinity', 'description': 'A feature that prevents pods from being scheduled on the same node based on labels and selectors.', 'category': 'Software/Application'}, {'entity': 'Kubernetes', 'description': 'An open-source container orchestration system for automating the deployment, scaling, and management of containers.', 'category': 'Software/Framework'}, {'entity': 'Pods', 'description': 'The basic execution unit in Kubernetes, which represents a running instance of a container.', 'category': 'Software/Application'}, {'entity': 'Node', 'description': 'A physical or virtual machine that runs the Kubernetes control plane and/or worker nodes.', 'category': 'Hardware/Infrastructure'}, {'entity': 'LabelSelector', 'description': 'A selector used to match pods based on labels attached to them.', 'category': 'Software/Application'}, {'entity': 'TopologyKey', 'description': 'A key used to identify the topology of a node, such as its hostname or IP address.', 'category': 'Software/Framework'}, {'entity': 'Hostname', 'description': 'The unique identifier of a node in Kubernetes.', 'category': 'Hardware/Infrastructure'}, {'entity': 'Replica', 'description': 'An identical copy of an application, managed by a Deployment resource.', 'category': 'Software/Application'}, {'entity': 'Container', 'description': 'A lightweight and standalone executable package that contains an application and its dependencies.', 'category': 'Software/Framework'}, {'entity': '$ kubectl get po -l app=frontend -o wide', 'description': 'A command used to retrieve information about pods with a specific label.', 'category': 'Software/Command'}, {'entity': 'kubectl', 'description': 'The Kubernetes command-line tool for interacting with the cluster and its resources.', 'category': 'Software/Command'}]","[{'source_entity': '""Kubernetes""', 'description': 'manages', 'destination_entity': '""Pods""'}, {'source_entity': '""Kubernetes""', 'description': 'ensures', 'destination_entity': '""Pod AntiAffinity""'}, {'source_entity': '""Deployment""', 'description': 'specifies', 'destination_entity': '""Replica""'}, {'source_entity': '""Deployment""', 'description': 'uses', 'destination_entity': '""LabelSelector""'}, {'source_entity': '""Container""', 'description': 'runs', 'destination_entity': '""Pods""'}, {'source_entity': '""$ kubectl get po -l app=frontend -o wide""', 'description': 'displays', 'destination_entity': '""Pods""'}, {'source_entity': '""kubectl""', 'description': 'executes', 'destination_entity': '""commands""'}, {'source_entity': '""Pod Affinity""', 'description': 'ensures', 'destination_entity': '""Pods""'}, {'source_entity': '""Node""', 'description': 'hosts', 'destination_entity': '""Pods""'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages pods, ensuring efficient resource allocation and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""ensures"",\n    ""summary_er"": ""\\""Kubernetes\\"" ensures proper resource allocation and management for \\""pod\\"", preventing conflicts and ensuring efficient use of resources.""\n  },\n  {\n    ""source"": ""Pod AntiAffinity"",\n    ""destination"": ""Kubernetes"",\n    ""relation_description"": ""prevents"",\n    ""summary_er"": ""\\""Pod AntiAffinity\\"" prevents multiple pods from being scheduled on the same node, reducing resource contention and improving overall system stability.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""A Deployment in Kubernetes specifies the desired state of a pod, including its configuration and number of replicas.""\n  },\n  {\n    ""source"": ""Replica"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""number of"",\n    ""summary_er"": ""A Replica in Kubernetes represents the number of identical pods that should be running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A Deployment in Kubernetes manages a set of identical replicas, which are instances of a pod. The deployment uses a label selector to identify and manage the pods.""\n  },\n  {\n    ""source"": ""LabelSelector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""identifies"",\n    ""summary_er"": ""A LabelSelector in Kubernetes is used to select and identify pods based on their labels, which are key-value pairs that provide metadata about a pod.""\n  }\n]', '[\n  {\n    ""source"": ""Container"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""A container runs within a pod in Kubernetes, providing isolation and resource sharing.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl command"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""displays"",\n    ""summary_er"": ""The kubectl command displays a list of running Pods with label app=frontend.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""Kubectl executes commands on a running pod, allowing users to interact with and manage the containerized application.""\n  }\n]', '[\n  {\n    ""source"": ""Pod Affinity"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""ensures"",\n    ""summary_er"": ""Pod Affinity ensures that a pod is scheduled on a node with certain conditions, such as running other pods or having specific labels.""\n  }\n]', '[\n  {\n    ""source"": ""Node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""A Node in Kubernetes hosts one or more Pods, providing them with resources and a runtime environment.""\n  }\n]']","To force frontend pods to be scheduled on different nodes, you can use pod anti-affinity. This is achieved by configuring the podAntiAffinity property in the deployment's spec section and making it match the same pods that the deployment creates. A soft requirement can also be used with preferredDuringSchedulingIgnoredDuringExecution property if scheduling two frontend pods on the same node is not a problem, otherwise requiredDuringSchedulingIgnoredDuringExecution should be used for hard requirements.","[{'highlight': ""To force frontend pods to be scheduled to different nodes, you can use pod anti-affinity and configure the pods' anti-affinity in the Deployment spec.""}, {'highlight': 'The `podAntiAffinity` property is used instead of `podAffinity`, and the labelSelector matches the same pods created by the Deployment.'}, {'highlight': ""When creating a Deployment with pod anti-affinity, only two pods were scheduled to different nodes, while three remaining pods are Pending due to the Scheduler's restriction.""}, {'highlight': 'Using `preferredDuringSchedulingIgnoredDuringExecution` property is recommended instead of `requiredDuringSchedulingIgnoredDuringExecution` for scenarios where pod anti-affinity is not strictly required.'}, {'highlight': 'A frontend pod must not be scheduled to the same machine as a pod with app=frontend label, which is a hard requirement for pod anti-affinity.'}]"
+419,508,0,[],"476
+CHAPTER 16
+Advanced scheduling
+ As with pod affinity, the topologyKey property determines the scope of where the
+pod shouldn’t be deployed to. You can use it to ensure pods aren’t deployed to the
+same rack, availability zone, region, or any custom scope you create using custom
+node labels.
+16.4
+Summary
+In this chapter, we looked at how to ensure pods aren’t scheduled to certain nodes or
+are only scheduled to specific nodes, either because of the node’s labels or because of
+the pods running on them.
+ You learned that
+If you add a taint to a node, pods won’t be scheduled to that node unless they
+tolerate that taint.
+Three types of taints exist: NoSchedule completely prevents scheduling, Prefer-
+NoSchedule isn’t as strict, and NoExecute even evicts existing pods from a node.
+The NoExecute taint is also used to specify how long the Control Plane should
+wait before rescheduling the pod when the node it runs on becomes unreach-
+able or unready.
+Node affinity allows you to specify which nodes a pod should be scheduled to. It
+can be used to specify a hard requirement or to only express a node preference.
+Pod affinity is used to make the Scheduler deploy pods to the same node where
+another pod is running (based on the pod’s labels). 
+Pod affinity’s topologyKey specifies how close the pod should be deployed to
+the other pod (onto the same node or onto a node in the same rack, availability
+zone, or availability region).
+Pod anti-affinity can be used to keep certain pods away from each other. 
+Both pod affinity and anti-affinity, like node affinity, can either specify hard
+requirements or preferences.
+In the next chapter, you’ll learn about best practices for developing apps and how to
+make them run smoothly in a Kubernetes environment.
+ 
+",[],"[{'entity': 'pod', 'description': 'a containerized application in Kubernetes', 'category': 'container'}, {'entity': 'taint', 'description': 'a label that prevents pods from being scheduled on a node', 'category': 'process'}, {'entity': 'node', 'description': 'a machine in a Kubernetes cluster', 'category': 'hardware'}, {'entity': 'scheduler', 'description': 'a component of the Kubernetes control plane that schedules pods onto nodes', 'category': 'application'}, {'entity': 'affinity', 'description': 'a property of a pod that specifies which nodes it can be scheduled on', 'category': 'process'}, {'entity': 'topologyKey', 'description': ""a property of a pod's affinity that specifies the scope of where the pod shouldn't be deployed to"", 'category': 'process'}, {'entity': 'preference', 'description': 'a type of node affinity that allows pods to be scheduled on nodes based on preference rather than requirement', 'category': 'process'}, {'entity': 'hard requirement', 'description': 'a type of node affinity that requires pods to be scheduled on specific nodes', 'category': 'process'}, {'entity': 'pod anti-affinity', 'description': 'a property of a pod that specifies which other pods it should not be deployed near', 'category': 'process'}]","[{'source_entity': '""taint""', 'description': 'applies to', 'destination_entity': '""pod""'}, {'source_entity': '""topologyKey""', 'description': 'defines', 'destination_entity': '""node""'}, {'source_entity': '""hard requirement""', 'description': 'must be met by', 'destination_entity': '""scheduler""'}, {'source_entity': '""pod anti-affinity""', 'description': 'applies to', 'destination_entity': '""node""'}, {'source_entity': '""affinity""', 'description': 'gives preference to', 'destination_entity': '""scheduler""'}, {'source_entity': '""preference""', 'description': 'is a characteristic of', 'destination_entity': '""pod""'}]","['[\n  {\n    ""source"": ""Taint"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""applies to"",\n    ""summary_er"": ""A Taint is a mark that can be applied to a Pod, indicating it should not be scheduled on certain nodes. The Pod itself does not have any specific characteristics.""\n  }\n]', '[\n  {\n    ""source"": ""topologyKey"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""\\""Topology key\\"" is a configuration parameter that defines the topology of a Kubernetes pod, specifying how to distribute its containers across multiple nodes.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""must be met by"",\n    ""summary_er"": ""In Kubernetes, a Pod\'s requirements must be satisfied by the scheduler to ensure proper deployment and execution.""\n  },\n  {\n    ""source"": ""scheduler"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""assigns"",\n    ""summary_er"": ""The scheduler in Kubernetes assigns Pods to nodes for efficient resource utilization and optimal performance.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Node"",\n    ""relation_description"": ""Anti-Affinity"",\n    ""summary_er"": ""Pod anti-affinity ensures that a pod is not scheduled on the same node as another pod, preventing resource conflicts and improving cluster utilization.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""scheduler"",\n    ""relation_description"": ""affinity"",\n    ""summary_er"": ""The scheduler assigns a pod based on affinity, giving preference to pods with matching labels or other attributes.""\n  }\n]', '[\n  {\n    ""source"": ""preference"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a characteristic of"",\n    ""summary_er"": ""A preference is a characteristic that defines a pod, influencing its behavior and functionality.""\n  }\n]']","This chapter explores advanced scheduling techniques in Kubernetes, including pod affinity, topologyKey, taints, node affinity, pod affinity/anti-affinity, and their use cases. It discusses how to ensure pods aren't scheduled to certain nodes or are only scheduled to specific nodes based on node labels or pod requirements.","[{'highlight': 'The topologyKey property determines the scope of where the pod shouldn’t be deployed to, allowing you to ensure pods aren’t deployed to the same rack, availability zone, region, or any custom scope.'}, {'highlight': 'Three types of taints exist: NoSchedule completely prevents scheduling, Prefer-NoSchedule isn’t as strict, and NoExecute even evicts existing pods from a node.'}, {'highlight': 'Node affinity allows you to specify which nodes a pod should be scheduled to, and can be used to specify a hard requirement or to only express a node preference.'}, {'highlight': 'Pod affinity’s topologyKey specifies how close the pod should be deployed to the other pod (onto the same node or onto a node in the same rack, availability zone, or availability region).'}, {'highlight': 'Both pod affinity and anti-affinity can either specify hard requirements or preferences, allowing you to control where pods are scheduled.'}]"

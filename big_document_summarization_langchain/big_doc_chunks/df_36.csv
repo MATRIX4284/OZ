@@ -1,0 +1,584 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+360,449,0,[],"417
+Understanding pod QoS classes
+14.3
+Understanding pod QoS classes
+We’ve already mentioned that resource limits can be overcommitted and that a
+node can’t necessarily provide all its pods the amount of resources specified in their
+resource limits. 
+ Imagine having two pods, where pod A is using, let’s say, 90% of the node’s mem-
+ory and then pod B suddenly requires more memory than what it had been using up
+to that point and the node can’t provide the required amount of memory. Which
+container should be killed? Should it be pod B, because its request for memory can’t
+be satisfied, or should pod A be killed to free up memory, so it can be provided to
+pod B? 
+ Obviously, it depends. Kubernetes can’t make a proper decision on its own. You
+need a way to specify which pods have priority in such cases. Kubernetes does this by
+categorizing pods into three Quality of Service (QoS) classes:
+
+BestEffort (the lowest priority)
+
+Burstable
+
+Guaranteed (the highest)
+14.3.1 Defining the QoS class for a pod
+You might expect these classes to be assignable to pods through a separate field in the
+manifest, but they aren’t. The QoS class is derived from the combination of resource
+requests and limits for the pod’s containers. Here’s how.
+ASSIGNING A POD TO THE BESTEFFORT CLASS
+The lowest priority QoS class is the BestEffort class. It’s assigned to pods that don’t
+have any requests or limits set at all (in any of their containers). This is the QoS class
+that has been assigned to all the pods you created in previous chapters. Containers
+running in these pods have had no resource guarantees whatsoever. In the worst
+case, they may get almost no CPU time at all and will be the first ones killed when
+memory needs to be freed for other pods. But because a BestEffort pod has no
+memory limits set, its containers may use as much memory as they want, if enough
+memory is available.
+ASSIGNING A POD TO THE GUARANTEED CLASS
+On the other end of the spectrum is the Guaranteed QoS class. This class is given to
+pods whose containers’ requests are equal to the limits for all resources. For a pod’s
+class to be Guaranteed, three things need to be true:
+Requests and limits need to be set for both CPU and memory.
+They need to be set for each container.
+They need to be equal (the limit needs to match the request for each resource
+in each container).
+Because a container’s resource requests, if not set explicitly, default to the limits,
+specifying the limits for all resources (for each container in the pod) is enough for
+ 
+",[],"[{'entity': 'pod QoS classes', 'description': 'Three Quality of Service (QoS) classes: BestEffort, Burstable, and Guaranteed', 'category': 'application'}, {'entity': 'BestEffort class', 'description': 'Lowest priority QoS class, assigned to pods with no resource requests or limits set', 'category': 'application'}, {'entity': 'Burstable class', 'description': 'QoS class for pods that can burst beyond their requested resources', 'category': 'application'}, {'entity': 'Guaranteed class', 'description': 'Highest priority QoS class, assigned to pods with equal requests and limits set for all resources', 'category': 'application'}, {'entity': 'resource limits', 'description': 'Limits on the amount of resources a pod can use', 'category': 'application'}, {'entity': 'requests', 'description': 'Amount of resources a pod requests from the system', 'category': 'application'}, {'entity': 'CPU time', 'description': 'Time allocated to a container for processing', 'category': 'hardware'}, {'entity': 'memory', 'description': 'Random Access Memory (RAM) used by a pod or container', 'category': 'hardware'}, {'entity': 'node', 'description': 'Physical machine running Kubernetes', 'category': 'hardware'}, {'entity': 'pods', 'description': 'Logical entities that run containers on a node', 'category': 'application'}, {'entity': 'containers', 'description': 'Lightweight and standalone processes that run in a pod', 'category': 'application'}]","[{'source_entity': 'Guaranteed class', 'description': 'provides a guaranteed minimum amount of resources to pods', 'destination_entity': 'pods'}, {'source_entity': 'pod QoS classes', 'description': 'defines the quality of service for pods', 'destination_entity': 'requests'}, {'source_entity': 'BestEffort class', 'description': 'provides no guarantee on resource allocation to pods', 'destination_entity': 'pods'}, {'source_entity': 'Burstable class', 'description': 'allows for bursty usage of resources by pods', 'destination_entity': 'pods'}, {'source_entity': 'resource limits', 'description': 'defines the maximum amount of resources that can be used by containers', 'destination_entity': 'containers'}, {'source_entity': 'node', 'description': 'provides a physical or virtual environment for running pods and containers', 'destination_entity': 'pods'}, {'source_entity': 'memory', 'description': 'defines the amount of memory that can be used by containers', 'destination_entity': 'containers'}, {'source_entity': 'resource limits', 'description': 'defines the maximum amount of resources that can be used by pods', 'destination_entity': 'pods'}, {'source_entity': 'requests', 'description': 'defines the minimum amount of resources required by containers', 'destination_entity': 'containers'}, {'source_entity': 'CPU time', 'description': 'defines the amount of CPU time that can be used by containers', 'destination_entity': 'containers'}]","['[\n  {\n    ""source"": ""Guaranteed class"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides a guaranteed minimum amount of resources"",\n    ""summary_er"": ""The Guaranteed class ensures a minimum resource allocation to pods, guaranteeing their basic needs are met.""\n  }\n]', '[\n  {\n    ""source"": ""pod QoS classes"",\n    ""destination"": ""requests"",\n    ""relation_description"": ""defines the quality of service for pods"",\n    ""summary_er"": ""Pod QoS classes define the resource allocation and prioritization for pod requests, ensuring efficient use of cluster resources.""\n  }\n]', '[\n  {\n    ""source"": ""BestEffort"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides no guarantee on resource allocation"",\n    ""summary_er"": ""The BestEffort class provides no guarantee that resources will be allocated to a pod, making it unreliable for critical applications.""\n  }\n]', '[\n  {\n    ""source"": ""Burstable class"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allows for bursty usage of resources by pods"",\n    ""summary_er"": ""Burstable class enables flexible resource allocation for pods, allowing them to scale up or down as needed.""\n  }\n]', '[\n  {\n    ""source"": ""resource limits"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the maximum amount of resources that can be used by containers"",\n    ""summary_er"": ""Resource limits define the maximum resources a pod\'s containers can use, ensuring efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides a physical or virtual environment for running pods and containers"",\n    ""summary_er"": ""A node provides a runtime environment for one or more pods, allowing them to run and manage containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""memory"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the amount of memory that can be used by containers"",\n    ""summary_er"": ""Memory resource limit for a pod, allowing containers to use up to this amount.""\n  }\n]', '[\n  {\n    ""source"": ""resource limits"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the maximum amount of resources that can be used by pods"",\n    ""summary_er"": ""Resource limits dictate the max resources a pod can use, ensuring efficient resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""requests"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the minimum amount of resources required by containers"",\n    ""summary_er"": ""Requests define the resource requirements for a pod, ensuring containers run with sufficient CPU and memory.""\n  }\n]', '[\n  {\n    ""source"": ""CPU time"",\n    ""destination"": ""containers"",\n    ""relation_description"": ""defines the amount of CPU time that can be used by containers"",\n    ""summary_er"": ""The source entity, \'CPU time\', defines the maximum CPU resources available to containers within a pod.""\n  }\n]']","Kubernetes categorizes pods into three Quality of Service (QoS) classes: BestEffort (lowest priority), Burstable, and Guaranteed (highest). The QoS class is derived from a pod's resource requests and limits. A Guaranteed class is assigned to pods with equal request and limit settings for CPU and memory, while a BestEffort class is given to pods with no requests or limits set. This allows Kubernetes to make decisions on which containers to kill in case of resource shortages.","[{'highlight': 'Kubernetes categorizes pods into three Quality of Service (QoS) classes: BestEffort, Burstable, and Guaranteed.'}, {'highlight': ""The QoS class is derived from the combination of resource requests and limits for a pod's containers, not through a separate field in the manifest.""}, {'highlight': 'A pod with no resource requests or limits set is assigned to the BestEffort class, which has the lowest priority and may get almost no CPU time at all.'}, {'highlight': ""A Guaranteed QoS class is given to pods whose containers' requests are equal to the limits for all resources, requiring matching requests and limits for both CPU and memory.""}, {'highlight': ""Kubernetes can't make a proper decision on its own when it comes to killing a pod due to resource constraints; instead, it relies on QoS classes to prioritize pods in such cases.""}]"
+361,450,0,[],"418
+CHAPTER 14
+Managing pods’ computational resources
+the pod to be Guaranteed. Containers in those pods get the requested amount of
+resources, but cannot consume additional ones (because their limits are no higher
+than their requests). 
+ASSIGNING THE BURSTABLE QOS CLASS TO A POD
+In between BestEffort and Guaranteed is the Burstable QoS class. All other pods
+fall into this class. This includes single-container pods where the container’s limits
+don’t match its requests and all pods where at least one container has a resource
+request specified, but not the limit. It also includes pods where one container’s
+requests match their limits, but another container has no requests or limits specified.
+Burstable pods get the amount of resources they request, but are allowed to use addi-
+tional resources (up to the limit) if needed.
+UNDERSTANDING HOW THE RELATIONSHIP BETWEEN REQUESTS AND LIMITS DEFINES THE QOS CLASS
+All three QoS classes and their relationships with requests and limits are shown in fig-
+ure 14.4.
+Thinking about what QoS class a pod has can make your head spin, because it involves
+multiple containers, multiple resources, and all the possible relationships between
+requests and limits. It’s easier if you start by thinking about QoS at the container level
+(although QoS classes are a property of pods, not containers) and then derive the
+pod’s QoS class from the QoS classes of containers. 
+FIGURING OUT A CONTAINER’S QOS CLASS
+Table 14.1 shows the QoS class based on how resource requests and limits are
+defined on a single container. For single-container pods, the QoS class applies to
+the pod as well.
+ 
+BestEffort
+QoS
+Requests
+Limits
+Burstable
+QoS
+Requests
+Limits
+Guaranteed
+QoS
+Requests
+Limits
+Requests and
+limits are not set
+Requests are
+below limits
+Requests
+equal limits
+Figure 14.4
+Resource requests, limits and QoS classes
+ 
+","[Empty DataFrame
+Columns: [Requests, Limits]
+Index: [],        Col0    Col1
+0  Requests  Limits, Empty DataFrame
+Columns: [Requests, Limits]
+Index: []]","[{'entity': 'pod', 'description': 'A group of one or more containers that share the same network namespace.', 'category': 'container'}, {'entity': 'Guaranteed', 'description': 'QoS class where containers get the requested amount of resources and cannot consume additional ones.', 'category': 'QoS class'}, {'entity': 'BestEffort', 'description': 'QoS class where containers can consume any available resources, but may not get the requested amount.', 'category': 'QoS class'}, {'entity': 'Burstable', 'description': 'QoS class where containers get the requested amount of resources and are allowed to use additional resources up to their limit if needed.', 'category': 'QoS class'}, {'entity': 'requests', 'description': 'The amount of resources a container or pod requests from the system.', 'category': 'resource'}, {'entity': 'limits', 'description': 'The maximum amount of resources a container or pod is allowed to consume.', 'category': 'resource'}, {'entity': 'QoS class', 'description': ""A classification of a pod's resource allocation policy."", 'category': 'pod attribute'}, {'entity': 'container', 'description': 'A lightweight and standalone process that runs in its own isolated environment.', 'category': 'process'}, {'entity': 'namespace', 'description': 'A mechanism for isolating resources such as network interfaces, file systems, and IPC queues.', 'category': 'resource isolation'}]","[{'source_entity': '""requests""', 'description': 'are made to a container', 'destination_entity': '""container""'}, {'source_entity': '""requests""', 'description': 'can be classified into BestEffort, Guaranteed, or Burstable QoS classes', 'destination_entity': '""QoS class""'}, {'source_entity': '""requests""', 'description': 'are processed by a pod', 'destination_entity': '""pod""'}, {'source_entity': '""container""', 'description': 'is created within a namespace', 'destination_entity': '""namespace""'}, {'source_entity': '""limits""', 'description': 'are set for a pod', 'destination_entity': '""pod""'}]","['[\n  {\n    ""source"": ""requests"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are made to a container"",\n    ""summary_er"": ""Requests are sent to a container within a pod, allowing for efficient communication and resource sharing.""\n  }\n]', '[\n  {\n    ""source"": ""requests"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be classified into BestEffort, Guaranteed, or Burstable QoS classes"",\n    ""summary_er"": ""Requests can be categorized based on Quality of Service (QoS) classes, which determine the level of guarantee for resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""requests"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are processed by"",\n    ""summary_er"": ""Requests are handled by pods in a Kubernetes cluster, utilizing containerization for efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is created within a namespace"",\n    ""summary_er"": ""A container is spawned inside a pod, inheriting its namespace for resource sharing and management.""\n  }\n]', '[\n  {\n    ""source"": ""limits"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are set for a pod"",\n    ""summary_er"": ""Resource limits are configured for a containerized application running in a Kubernetes pod.""\n  }\n]']","A pod's Quality of Service (QoS) class is determined by the relationship between its resource requests and limits. The three QoS classes are BestEffort, Burstable, and Guaranteed. A pod with a best effort QoS can consume any available resources. A burstable pod gets the requested amount of resources, but can use additional ones up to their limit if needed. A guaranteed pod gets the exact amount of resources it requests.","[{'highlight': 'The pod to be Guaranteed gets the requested amount of resources, but cannot consume additional ones.'}, {'highlight': 'Burstable pods get the amount of resources they request, but are allowed to use additional resources (up to the limit) if needed.'}, {'highlight': 'All three QoS classes and their relationships with requests and limits are shown in figure 14.4.'}, {'highlight': 'For single-container pods, the QoS class applies to the pod as well.'}, {'highlight': 'Requests and limits are not set, Requests are below limits, Requests equal limits are the conditions for BestEffort, Burstable and Guaranteed QoS classes respectively.'}]"
+362,451,0,[],"419
+Understanding pod QoS classes
+NOTE
+If only requests are set, but not limits, refer to the table rows where
+requests are less than the limits. If only limits are set, requests default to the
+limits, so refer to the rows where requests equal limits.
+FIGURING OUT THE QOS CLASS OF A POD WITH MULTIPLE CONTAINERS
+For multi-container pods, if all the containers have the same QoS class, that’s also the
+pod’s QoS class. If at least one container has a different class, the pod’s QoS class is
+Burstable, regardless of what the container classes are. Table 14.2 shows how a two-
+container pod’s QoS class relates to the classes of its two containers. You can easily
+extend this to pods with more than two containers.
+NOTE
+A pod’s QoS class is shown when running kubectl describe pod and
+in the pod’s YAML/JSON manifest in the status.qosClass field.
+We’ve explained how QoS classes are determined, but we still need to look at how they
+determine which container gets killed in an overcommitted system.
+Table 14.1
+The QoS class of a single-container pod based on resource requests and limits
+CPU requests vs. limits
+Memory requests vs. limits
+Container QoS class
+None set
+None set
+BestEffort
+None set
+Requests < Limits
+Burstable
+None set
+Requests = Limits
+Burstable
+Requests < Limits
+None set
+Burstable
+Requests < Limits
+Requests < Limits
+Burstable
+Requests < Limits
+Requests = Limits
+Burstable
+Requests = Limits
+Requests = Limits
+Guaranteed
+Table 14.2
+A Pod’s QoS class derived from the classes of its containers
+Container 1 QoS class
+Container 2 QoS class
+Pod’s QoS class
+BestEffort
+BestEffort
+BestEffort
+BestEffort
+Burstable
+Burstable
+BestEffort
+Guaranteed
+Burstable
+Burstable
+Burstable
+Burstable
+Burstable
+Guaranteed
+Burstable
+Guaranteed
+Guaranteed
+Guaranteed
+ 
+","[                             CPU requests vs. limits  \
+0  None set\nNone set\nNone set\nRequests < Limit...   
+
+                          Memory requests vs. limits  \
+0  None set\nRequests < Limits\nRequests = Limits...   
+
+                                 Container QoS class  
+0  BestEffort\nBurstable\nBurstable\nBurstable\nB...  ,                                Container 1 QoS class  \
+0  BestEffort\nBestEffort\nBestEffort\nBurstable\...   
+
+                               Container 2 QoS class  \
+0  BestEffort\nBurstable\nGuaranteed\nBurstable\n...   
+
+                                     Pod’s QoS class  
+0  BestEffort\nBurstable\nBurstable\nBurstable\nB...  ]","[{'entity': 'pod QoS classes', 'description': 'Quality of Service (QoS) classes for pods in Kubernetes', 'category': 'application'}, {'entity': 'requests', 'description': 'Resource requests for containers or pods', 'category': 'process'}, {'entity': 'limits', 'description': 'Resource limits for containers or pods', 'category': 'process'}, {'entity': 'kubectl describe pod', 'description': 'Command to display detailed information about a pod', 'category': 'command'}, {'entity': 'YAML/JSON manifest', 'description': 'File format for storing configuration data in Kubernetes', 'category': 'software'}, {'entity': 'status.qosClass field', 'description': ""Field in the pod's YAML/JSON manifest that shows its QoS class"", 'category': 'field'}, {'entity': 'BestEffort', 'description': 'QoS class where no resource requests or limits are set', 'category': 'process'}, {'entity': 'Burstable', 'description': 'QoS class where container has different QoS class than pod', 'category': 'process'}, {'entity': 'Guaranteed', 'description': 'QoS class where container and pod have same QoS class', 'category': 'process'}, {'entity': 'Table 14.1', 'description': 'Table showing QoS classes for single-container pods based on resource requests and limits', 'category': 'table'}, {'entity': 'Table 14.2', 'description': 'Table showing a Pod’s QoS class derived from the classes of its containers', 'category': 'table'}]","[{'source_entity': '""pod QoS classes""', 'description': 'define', 'destination_entity': '""requests""'}, {'source_entity': '""requests""', 'description': 'specify', 'destination_entity': '""YAML/JSON manifest""'}, {'source_entity': '""YAML/JSON manifest""', 'description': 'contain', 'destination_entity': '""BestEffort""'}, {'source_entity': '""YAML/JSON manifest""', 'description': 'contain', 'destination_entity': '""Guaranteed""'}, {'source_entity': '""kubectl describe pod""', 'description': 'display', 'destination_entity': '""Table 14.2""'}, {'source_entity': '""kubectl describe pod""', 'description': 'display', 'destination_entity': '""Table 14.1""'}, {'source_entity': '""status.qosClass field""', 'description': 'specify', 'destination_entity': '""Burstable""'}, {'source_entity': '""status.qosClass field""', 'description': 'specify', 'destination_entity': '""limits""'}]","['[\n  {\n    ""source"": ""Pod QoS Classes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""Define"",\n    ""summary_er"": ""Pod QoS classes determine the quality of service for a pod, defining its resource allocation and scheduling priorities.""\n  },\n  {\n    ""source"": ""Requests"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""Requests specify the resources required by a pod, such as CPU and memory, to ensure proper execution and performance.""\n  }\n]', '[\n  {\n    ""source"": ""requests"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specify"",\n    ""summary_er"": ""Requests are specified in YAML/JSON manifests to create a pod.""\n  }\n]', '[\n  {\n    ""source"": ""YAML/JSON manifest"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contain"",\n    ""summary_er"": ""A YAML or JSON file that defines a pod\'s configuration, including its container(s), environment variables, and other settings.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""BestEffort"",\n    ""relation_description"": ""scheduler"",\n    ""summary_er"": ""A scheduling algorithm used to place pods on nodes in the cluster, with BestEffort providing a best-effort guarantee of pod placement.""\n  }\n]', '[\n  {\n    ""source"": ""YAML/JSON manifest"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contain"",\n    ""summary_er"": ""A YAML or JSON file that defines a pod\'s configuration, including its container(s), environment variables, and other settings.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""Guaranteed"",\n    ""relation_description"": ""guarantee"",\n    ""summary_er"": ""A pod is guaranteed to run with the specified resources, such as CPU and memory, until it is deleted or terminated.""\n  }\n]', '[\n    {\n        ""source"": ""kubectl"",\n        ""destination"": ""pod"",\n        ""relation_description"": ""describe"",\n        ""summary_er"": ""Displays detailed information about a Kubernetes pod using the \'kubectl describe\' command.""\n    },\n    {\n        ""source"": ""Table 14.2"",\n        ""destination"": ""pod"",\n        ""relation_description"": ""display"",\n        ""summary_er"": ""A table displaying information about one or more pods in a Kubernetes cluster, likely from a specific section of documentation.""\n    }\n]', '[\n    {\n        ""source"": ""kubectl"",\n        ""destination"": ""pod"",\n        ""relation_description"": ""describe"",\n        ""summary_er"": ""Display detailed information about a Kubernetes pod using kubectl command.""\n    },\n    {\n        ""source"": ""Table 14.1"",\n        ""destination"": ""pod"",\n        ""relation_description"": ""display"",\n        ""summary_er"": ""Show the details of a specific pod in a table format, as per Table 14.1.""\n    }\n]', '[\n  {\n    ""source"": ""status.qosClass field"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specify"",\n    ""summary_er"": ""The QoS class of a pod\'s status field specifies its resource allocation, with \'Burstable\' indicating flexible resources.""\n  }\n]', '[\n  {\n    ""source"": ""status.qosClass field"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specify"",\n    ""summary_er"": ""The QoS class of a pod\'s status field specifies the quality of service for the pod, ensuring it receives sufficient resources.""\n  },\n  {\n    ""source"": ""limits"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""resource allocation"",\n    ""summary_er"": ""A pod\'s limits specify the maximum amount of resources (CPU and memory) that can be allocated to it, preventing resource overcommitment.""\n  }\n]']","A pod's QoS (Quality of Service) class is determined by the classes of its containers, and can be BestEffort, Burstable, or Guaranteed. For single-container pods, requests and limits are used to determine the class, while for multi-container pods, the highest container class determines the pod's class. If all containers have the same QoS class, it's also the pod's class, but if at least one container has a different class, the pod's class is Burstable.","[{'highlight': 'If only requests are set, but not limits, refer to the table rows where requests are less than the limits.'}, {'highlight': 'For multi-container pods, if all the containers have the same QoS class, that’s also the pod’s QoS class.'}, {'highlight': 'A pod’s QoS class is shown when running kubectl describe pod and in the pod’s YAML/JSON manifest in the status.qosClass field.'}, {'highlight': 'The QoS class of a single-container pod based on resource requests and limits is as follows: CPU requests vs. limits, Memory requests vs. limits.'}, {'highlight': 'A Pod’s QoS class derived from the classes of its containers can be BestEffort, Burstable, or Guaranteed.'}]"
+363,452,0,[],"420
+CHAPTER 14
+Managing pods’ computational resources
+14.3.2 Understanding which process gets killed when memory is low
+When the system is overcommitted, the QoS classes determine which container gets
+killed first so the freed resources can be given to higher priority pods. First in line to
+get killed are pods in the BestEffort class, followed by Burstable pods, and finally
+Guaranteed pods, which only get killed if system processes need memory.
+UNDERSTANDING HOW QOS CLASSES LINE UP
+Let’s look at the example shown in figure 14.5. Imagine having two single-container
+pods, where the first one has the BestEffort QoS class, and the second one’s is
+Burstable. When the node’s whole memory is already maxed out and one of the pro-
+cesses on the node tries to allocate more memory, the system will need to kill one of
+the processes (perhaps even the process trying to allocate additional memory) to
+honor the allocation request. In this case, the process running in the BestEffort pod
+will always be killed before the one in the Burstable pod.
+Obviously, a BestEffort pod’s process will also be killed before any Guaranteed pods’
+processes are killed. Likewise, a Burstable pod’s process will also be killed before that
+of a Guaranteed pod. But what happens if there are only two Burstable pods? Clearly,
+the selection process needs to prefer one over the other.
+UNDERSTANDING HOW CONTAINERS WITH THE SAME QOS CLASS ARE HANDLED
+Each running process has an OutOfMemory (OOM) score. The system selects the
+process to kill by comparing OOM scores of all the running processes. When memory
+needs to be freed, the process with the highest score gets killed.
+ OOM scores are calculated from two things: the percentage of the available mem-
+ory the process is consuming and a fixed OOM score adjustment, which is based on the
+pod’s QoS class and the container’s requested memory. When two single-container pods
+exist, both in the Burstable class, the system will kill the one using more of its requested
+BestEffort
+QoS pod
+Pod A
+First in line
+to be killed
+Actual usage
+Requests
+Limits
+Burstable
+QoS pod
+Pod B
+Second in line
+to be killed
+90% used
+Requests
+Limits
+Burstable
+QoS pod
+Pod C
+Third in line
+to be killed
+70% used
+Requests
+Limits
+Guaranteed
+QoS pod
+Pod D
+Last to
+be killed
+99% used
+Requests
+Limits
+Figure 14.5
+Which pods get killed first
+ 
+",[],"[{'entity': 'BestEffort', 'description': 'Quality of Service (QoS) class that gets killed first when memory is low', 'category': 'process'}]","[{'source_entity': '""BestEffort""', 'description': '""provides a way to handle network congestion by allowing packets to be dropped or reordered""', 'destination_entity': '""network traffic""'}, {'source_entity': '""BestEffort""', 'description': '""is used in situations where packet loss is acceptable""', 'destination_entity': '""real-time applications""'}]","['[\n  {\n    ""source"": ""BestEffort"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides a way to handle network congestion by allowing packets to be dropped or reordered"",\n    ""summary_er"": ""BestEffort provides a way to handle network congestion by dropping or reordering packets, ensuring efficient network traffic flow.""\n  },\n  {\n    ""source"": ""network traffic"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides a way to handle network congestion by allowing packets to be dropped or reordered"",\n    ""summary_er"": ""Network traffic is handled efficiently through the use of BestEffort, which drops or reorders packets as needed.""\n  }\n]', '[\n  {\n    ""source"": ""BestEffort"",\n    ""destination"": ""real-time applications"",\n    ""relation_description"": ""is used in situations where packet loss is acceptable"",\n    ""summary_er"": ""In real-time apps, BestEffort ensures packets are delivered quickly, even if some are lost, to maintain low latency.""\n  }\n]']","When system memory is overcommitted, QoS classes determine which container gets killed first. BestEffort class gets killed first, followed by Burstable, and finally Guaranteed. If containers have the same QoS class, the process with the highest OutOfMemory (OOM) score gets killed, calculated from available memory consumption and fixed OOM score adjustment based on QoS class and requested memory.","[{'highlight': 'When the system is overcommitted, the QoS classes determine which container gets killed first so the freed resources can be given to higher priority pods.'}, {'highlight': ""The process running in the BestEffort pod will always be killed before the one in the Burstable pod, and a Guaranteed pod's processes are only killed if system processes need memory.""}, {'highlight': 'Each running process has an OutOfMemory (OOM) score. The system selects the process to kill by comparing OOM scores of all the running processes.'}, {'highlight': 'The system will kill the container using more of its requested memory when two single-container pods exist, both in the Burstable class.'}, {'highlight': ""Guaranteed QoS pod's processes are only killed if system processes need memory and BestEffort QoS pod's process will always be killed before any Guaranteed pods' processes are killed.""}]"
+364,453,0,[],"421
+Setting default requests and limits for pods per namespace
+memory than the other, percentage-wise. That’s why in figure 14.5, pod B, using 90%
+of its requested memory, gets killed before pod C, which is only using 70%, even
+though it’s using more megabytes of memory than pod B. 
+ This shows you need to be mindful of not only the relationship between requests
+and limits, but also of requests and the expected actual memory consumption. 
+14.4
+Setting default requests and limits for pods per 
+namespace
+We’ve looked at how resource requests and limits can be set for each individual con-
+tainer. If you don’t set them, the container is at the mercy of all other containers that
+do specify resource requests and limits. It’s a good idea to set requests and limits on
+every container.
+14.4.1 Introducing the LimitRange resource
+Instead of having to do this for every container, you can also do it by creating a Limit-
+Range resource. It allows you to specify (for each namespace) not only the minimum
+and maximum limit you can set on a container for each resource, but also the default
+resource requests for containers that don’t specify requests explicitly, as depicted in
+figure 14.6.
+API server
+Validation
+Pod A
+manifest
+- Requests
+- Limits
+Pod A
+manifest
+- Requests
+- Limits
+Pod B
+manifest
+- No
+requests
+or limits
+Pod B
+manifest
+- No
+requests
+or limits
+Defaulting
+Rejected because
+requests and limits are
+outside min/max values
+Defaults
+applied
+Namespace XYZ
+LimitRange
+Pod B
+manifest
+- Default
+requests
+- Default
+limits
+Pod B
+- Default requests
+- Default limits
+- Min/max CPU
+- Min/max memory
+- Default requests
+- Default limits
+Figure 14.6
+A LimitRange is used for validation and defaulting pods.
+ 
+",[],"[{'entity': 'requests', 'description': 'Resource requests for containers', 'category': 'software'}, {'entity': 'limits', 'description': 'Resource limits for containers', 'category': 'software'}, {'entity': 'pods', 'description': 'Deployable units of an application', 'category': 'container'}, {'entity': 'namespace', 'description': 'A logical grouping of resources in a cluster', 'category': 'network'}, {'entity': 'LimitRange', 'description': 'A resource that sets default and minimum/maximum limits for containers', 'category': 'software'}, {'entity': 'API server', 'description': 'The primary interface to a Kubernetes cluster', 'category': 'application'}, {'entity': 'Validation', 'description': 'The process of checking the validity of resources in a cluster', 'category': 'software'}, {'entity': 'Pod A', 'description': 'A specific pod with requests and limits set', 'category': 'container'}, {'entity': 'manifest', 'description': 'A file that defines the configuration of a resource', 'category': 'software'}, {'entity': 'requests', 'description': 'Resource requests for containers (again, as it appears in multiple contexts)', 'category': 'software'}, {'entity': 'limits', 'description': 'Resource limits for containers (again, as it appears in multiple contexts)', 'category': 'software'}, {'entity': 'Pod B', 'description': 'A specific pod with no requests or limits set', 'category': 'container'}, {'entity': 'Namespace XYZ', 'description': 'A specific namespace with a LimitRange resource', 'category': 'network'}]","[{'source_entity': '""requests""', 'description': 'are made to', 'destination_entity': '""API server""'}, {'source_entity': '""Pod A""', 'description': 'is created from', 'destination_entity': '""manifest""'}, {'source_entity': '""Pod B""', 'description': 'is created from', 'destination_entity': '""manifest""'}, {'source_entity': '""LimitRange""', 'description': 'enforces limits on', 'destination_entity': '""pods""'}, {'source_entity': '""API server""', 'description': 'validates', 'destination_entity': '""requests""'}, {'source_entity': '""API server""', 'description': 'serves', 'destination_entity': '""Pod A""'}, {'source_entity': '""API server""', 'description': 'serves', 'destination_entity': '""Pod B""'}, {'source_entity': '""Validation""', 'description': 'is performed on', 'destination_entity': '""requests""'}, {'source_entity': '""Namespace XYZ""', 'description': 'has', 'destination_entity': '""limits""'}, {'source_entity': '""namespace""', 'description': 'is used to', 'destination_entity': '""Pod A""'}, {'source_entity': '""namespace""', 'description': 'is used to', 'destination_entity': '""Pod B""'}]","['[\n  {\n    ""source"": ""requests"",\n    ""destination"": ""API server"",\n    ""relation_description"": ""are made to"",\n    ""summary_er"": ""Requests are sent to the API server for processing.""\n  }\n]', '[\n  {\n    ""source"": ""Pod A"",\n    ""destination"": ""manifest"",\n    ""relation_description"": ""is created from"",\n    ""summary_er"": ""Pod A is created from a manifest, which defines its configuration and settings.""\n  }\n]', '[\n  {\n    ""source"": ""Pod B"",\n    ""destination"": ""manifest"",\n    ""relation_description"": ""is created from"",\n    ""summary_er"": ""Pod B is created from a manifest, which defines its configuration and specifications.""\n  }\n]', '[\n  {\n    ""source"": ""LimitRange"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""enforces limits on"",\n    ""summary_er"": ""The LimitRange resource enforces limits on pods, controlling their CPU and memory usage.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""validates"",\n    ""summary_er"": ""The API server verifies incoming requests to ensure they conform to expected formats and protocols.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""Pod A"",\n    ""relation_description"": ""serves"",\n    ""summary_er"": ""The API server provides services to Pod A, handling incoming requests and forwarding them to the pod.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""Pod B"",\n    ""relation_description"": ""serves"",\n    ""summary_er"": ""The API server provides services to Pod B, handling incoming requests and serving responses.""\n  }\n]', '[\n  {\n    ""source"": ""Validation"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is performed on"",\n    ""summary_er"": ""Validation is a process that checks the correctness of data or inputs, and in this context, it is performed on a pod to ensure its integrity.""\n  },\n  {\n    ""source"": ""requests"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""Requests refer to the incoming demands or queries made by users or applications, which are then processed and served by the pod.""\n  }\n]', '[\n  {\n    ""source"": ""Namespace XYZ"",\n    ""destination"": ""Pod limits"",\n    ""relation_description"": ""has"",\n    ""summary_er"": ""A namespace in Kubernetes has resource limits for a pod, controlling its CPU and memory usage.""\n  }\n]', '[\n  {\n    ""source"": ""namespace"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to"",\n    ""summary_er"": ""A namespace in Kubernetes is used to group and isolate resources, including pods like Pod A.""\n  }\n]', '[\n  {\n    ""source"": ""namespace"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to"",\n    ""summary_er"": ""A namespace is a logical isolation of resources in Kubernetes, and is used to manage and organize pods.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""Pod B"",\n    ""relation_description"": ""and the destination pod"",\n    ""summary_er"": ""A pod, specifically Pod B, is an instance of a containerized application that can be managed by Kubernetes.""\n  }\n]']","To avoid containers being at the mercy of others that specify resource requests and limits, it's recommended to set these values on every container or use a LimitRange resource per namespace to specify minimum/max limit values and default resource requests.","[{'highlight': 'Setting default requests and limits for pods per namespace can be done by creating a LimitRange resource.'}, {'highlight': ""The LimitRange resource allows you to specify minimum and maximum limits, as well as default resource requests for containers that don't specify them explicitly.""}, {'highlight': ""If no requests or limits are specified in a pod's manifest, the API server will reject it because they are outside the min/max values defined by the LimitRange.""}, {'highlight': ""When a pod's manifest is missing requests and limits, the Defaulting process applies the default resource requests and limits set by the LimitRange.""}, {'highlight': 'A LimitRange is used for validation and defaulting pods in a namespace.'}]"
+365,454,0,[],"422
+CHAPTER 14
+Managing pods’ computational resources
+LimitRange resources are used by the LimitRanger Admission Control plugin (we
+explained what those plugins are in chapter 11). When a pod manifest is posted to the
+API server, the LimitRanger plugin validates the pod spec. If validation fails, the mani-
+fest is rejected immediately. Because of this, a great use-case for LimitRange objects is
+to prevent users from creating pods that are bigger than any node in the cluster. With-
+out such a LimitRange, the API server will gladly accept the pod, but then never
+schedule it. 
+ The limits specified in a LimitRange resource apply to each individual pod/con-
+tainer or other kind of object created in the same namespace as the LimitRange
+object. They don’t limit the total amount of resources available across all the pods in
+the namespace. This is specified through ResourceQuota objects, which are explained
+in section 14.5. 
+14.4.2 Creating a LimitRange object
+Let’s look at a full example of a LimitRange and see what the individual properties do.
+The following listing shows the full definition of a LimitRange resource.
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: example
+spec:
+  limits:
+  - type: Pod           
+    min:                         
+      cpu: 50m                   
+      memory: 5Mi                
+    max:                          
+      cpu: 1                      
+      memory: 1Gi                 
+  - type: Container             
+    defaultRequest:             
+      cpu: 100m                 
+      memory: 10Mi              
+    default:                      
+      cpu: 200m                   
+      memory: 100Mi               
+    min:                         
+      cpu: 50m                   
+      memory: 5Mi                
+    max:                         
+      cpu: 1                     
+      memory: 1Gi                
+    maxLimitRequestRatio:         
+      cpu: 4                      
+      memory: 10                  
+Listing 14.10
+A LimitRange resource: limits.yaml
+Specifies the 
+limits for a pod 
+as a whole
+Minimum CPU and memory all the 
+pod’s containers can request in total
+Maximum CPU and memory all the pod’s 
+containers can request (and limit)
+The
+container
+limits are
+specified
+below this
+line.
+Default requests for CPU and memory 
+that will be applied to containers that 
+don’t specify them explicitly
+Default limits for containers 
+that don’t specify them
+Minimum and maximum 
+requests/limits that a 
+container can have
+Maximum ratio between 
+the limit and request 
+for each resource
+ 
+",[],"[{'entity': 'LimitRange', 'description': ""A Kubernetes resource used to manage pods' computational resources."", 'category': 'software'}, {'entity': 'LimitRanger Admission Control plugin', 'description': 'A Kubernetes plugin that validates pod specs against LimitRange resources.', 'category': 'software'}, {'entity': 'API server', 'description': 'The central component of a Kubernetes cluster that manages API requests.', 'category': 'software'}, {'entity': 'pod manifest', 'description': ""A YAML or JSON file that defines a pod's configuration."", 'category': 'software'}, {'entity': 'LimitRange object', 'description': 'A Kubernetes resource that specifies limits for pods and containers.', 'category': 'software'}, {'entity': 'ResourceQuota objects', 'description': 'Kubernetes resources that specify quotas for resources across all pods in a namespace.', 'category': 'software'}, {'entity': 'apiVersion', 'description': 'A field in a Kubernetes resource definition that specifies the API version.', 'category': 'hardware/software'}, {'entity': 'kind', 'description': 'A field in a Kubernetes resource definition that specifies the type of resource.', 'category': 'hardware/software'}, {'entity': 'metadata', 'description': 'A field in a Kubernetes resource definition that specifies metadata about the resource.', 'category': 'hardware/software'}, {'entity': 'name', 'description': 'A field in a Kubernetes resource definition that specifies the name of the resource.', 'category': 'hardware/software'}, {'entity': 'spec', 'description': 'A field in a Kubernetes resource definition that specifies the specification of the resource.', 'category': 'hardware/software'}, {'entity': 'limits', 'description': 'A field in a LimitRange resource definition that specifies limits for pods and containers.', 'category': 'software'}, {'entity': 'type', 'description': 'A field in a LimitRange resource definition that specifies the type of limit (e.g. Pod, Container).', 'category': 'hardware/software'}, {'entity': 'min', 'description': 'A field in a LimitRange resource definition that specifies the minimum value for a resource.', 'category': 'hardware/software'}, {'entity': 'max', 'description': 'A field in a LimitRange resource definition that specifies the maximum value for a resource.', 'category': 'hardware/software'}, {'entity': 'cpu', 'description': 'A field in a LimitRange resource definition that specifies the CPU limit or request.', 'category': 'hardware/software'}, {'entity': 'memory', 'description': 'A field in a LimitRange resource definition that specifies the memory limit or request.', 'category': 'hardware/software'}, {'entity': 'defaultRequest', 'description': 'A field in a LimitRange resource definition that specifies the default request for a resource.', 'category': 'software'}, {'entity': 'default', 'description': 'A field in a LimitRange resource definition that specifies the default limit for a resource.', 'category': 'hardware/software'}, {'entity': 'maxLimitRequestRatio', 'description': 'A field in a LimitRange resource definition that specifies the maximum ratio between the limit and request for a resource.', 'category': 'hardware/software'}]","[{'source_entity': '""defaultRequest""', 'description': 'requests a resource', 'destination_entity': '""cpu""'}, {'source_entity': '""LimitRange""', 'description': 'limits the amount of resources', 'destination_entity': '""memory""'}, {'source_entity': '""LimitRange""', 'description': 'limits the amount of resources', 'destination_entity': '""cpu""'}, {'source_entity': '""apiVersion""', 'description': 'specifies the API version', 'destination_entity': '""defaultRequest""'}, {'source_entity': '""spec""', 'description': 'specifies the specification', 'destination_entity': '""LimitRange""'}, {'source_entity': '""name""', 'description': 'names a resource', 'destination_entity': '""LimitRange""'}, {'source_entity': '""max""', 'description': 'sets the maximum limit', 'destination_entity': '""memory""'}, {'source_entity': '""default""', 'description': 'sets the default limit', 'destination_entity': '""cpu""'}, {'source_entity': '""API server""', 'description': 'serves API requests', 'destination_entity': '""ResourceQuota objects""'}, {'source_entity': '""limits""', 'description': 'sets the limits for resources', 'destination_entity': '""memory""'}, {'source_entity': '""min""', 'description': 'sets the minimum limit', 'destination_entity': '""cpu""'}, {'source_entity': '""pod manifest""', 'description': ""defines a pod's configuration"", 'destination_entity': '""type""'}, {'source_entity': '""metadata""', 'description': 'provides metadata for resources', 'destination_entity': '""LimitRange object""'}, {'source_entity': '""LimitRanger Admission Control plugin""', 'description': 'enforces limits on resources', 'destination_entity': '""LimitRange object""'}, {'source_entity': '""kind""', 'description': 'specifies the kind of resource', 'destination_entity': '""LimitRange object""'}, {'source_entity': '""maxLimitRequestRatio""', 'description': 'sets the maximum limit-to-request ratio', 'destination_entity': '""defaultRequest""'}]","['[\n  {\n    ""source"": ""defaultRequest"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests a resource"",\n    ""summary_er"": ""A Kubernetes default request is made to a pod, requesting access to a specific resource.""\n  },\n  {\n    ""source"": ""cpu"",\n    ""destination"": ""pod"",\n    ""relation_description"": null,\n    ""summary_er"": ""The CPU utilization of a pod is being monitored and managed.""\n  }\n]', '[\n  {\n    ""source"": ""LimitRange"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits the amount of resources"",\n    ""summary_er"": ""A Kubernetes resource that sets limits on memory usage for pods, preventing them from consuming excessive resources.""\n  }\n]', '[\n  {\n    ""source"": ""LimitRange"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits the amount of resources"",\n    ""summary_er"": ""A LimitRange resource ensures that pods within a namespace do not exceed specified CPU and memory limits, preventing resource overconsumption.""\n  }\n]', '[\n  {\n    ""source"": ""API Version"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""specifies the API version"",\n    ""summary_er"": ""The source entity is an API version, which specifies the version of the Kubernetes API. The destination entity is a pod, which is a containerized application in Kubernetes.""\n  },\n  {\n    ""source"": ""Default Request"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""specifies the default request"",\n    ""summary_er"": ""The source entity is a default request, which specifies the default request settings for a pod. The destination entity is still a pod, which is a containerized application in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the specification"",\n    ""summary_er"": ""The spec entity defines the specifications for a pod, including resource limits and requests.""\n  },\n  {\n    ""source"": ""LimitRange"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies to"",\n    ""summary_er"": ""A LimitRange object applies to one or more pods, enforcing resource limits on CPU and memory usage.""\n  }\n]', '[\n  {\n    ""source"": ""Resource"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""names a resource"",\n    ""summary_er"": ""A Resource is named by a Pod, which requires a specific amount of CPU and Memory.""\n  },\n  {\n    ""source"": ""LimitRange"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""applies to"",\n    ""summary_er"": ""A LimitRange applies to a Pod, setting limits on the amount of CPU and Memory it can use.""\n  }\n]', '[\n  {\n    ""source"": ""max"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets the maximum limit"",\n    ""summary_er"": ""Sets memory limit for a pod to prevent resource overconsumption.""\n  },\n  {\n    ""source"": ""memory"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""resource allocation"",\n    ""summary_er"": ""Allocates memory resources to a pod for efficient usage and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""default"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets the default limit"",\n    ""summary_er"": ""The default limit is set for a pod, controlling its resource allocation.""\n  },\n  {\n    ""source"": ""cpu"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""CPU resources are allocated to a pod for execution.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""serves API requests"",\n    ""summary_er"": ""The API server serves incoming API requests to the pod, handling client interactions and routing requests to the appropriate services.""\n  },\n  {\n    ""source"": ""ResourceQuota objects"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""ResourceQuota objects manage resource allocation for the pod, ensuring it adheres to specified quotas and limits.""\n  }\n]', '[\n  {\n    ""source"": ""limits"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets the limits for resources"",\n    ""summary_er"": ""The Kubernetes resource limit is set to restrict the amount of memory a pod can use, ensuring efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""min"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets the minimum limit"",\n    ""summary_er"": ""Sets CPU resource limits for a Pod, ensuring efficient resource utilization.""\n  },\n  {\n    ""source"": ""cpu"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""resource allocation"",\n    ""summary_er"": ""Allocates CPU resources to a Pod, enabling smooth execution of containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""pod manifest"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines a pod\'s configuration"",\n    ""summary_er"": ""The pod manifest defines the configuration of a Kubernetes pod, including its containers, volumes, and other settings.""\n  },\n  {\n    ""source"": ""type"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": """"\n  }\n]', '[\n  {\n    ""source"": ""metadata"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides metadata for resources"",\n    ""summary_er"": ""Metadata provides configuration details for pods, such as resource limits and requests.""\n  },\n  {\n    ""source"": ""LimitRange object"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits resource usage"",\n    ""summary_er"": ""A LimitRange object enforces CPU and memory constraints on pods to prevent resource overconsumption.""\n  }\n]', '[\n  {\n    ""source"": ""LimitRanger Admission Control plugin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces limits on resources"",\n    ""summary_er"": ""The LimitRanger Admission Control plugin enforces resource limits on pods, ensuring they do not exceed allocated resources.""\n  },\n  {\n    ""source"": ""LimitRange object"",\n    ""destination"": ""LimitRanger Admission Control plugin"",\n    ""relation_description"": ""defines resource limits"",\n    ""summary_er"": ""A LimitRange object defines the resource limits enforced by the LimitRanger Admission Control plugin, specifying allowed values for CPU and memory.""\n  }\n]', '[\n  {\n    ""source"": ""Kind"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""specifies the kind of resource"",\n    ""summary_er"": ""The Kind field specifies the type of Kubernetes resource, which in this case is a Pod.""\n  }\n]', '[\n  {\n    ""source"": ""maxLimitRequestRatio"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets the maximum limit-to-request ratio"",\n    ""summary_er"": ""This configuration sets a cap on the maximum request size to pod resource requests, ensuring efficient resource utilization.""\n  },\n  {\n    ""source"": ""maxLimitRequestRatio"",\n    ""destination"": ""defaultRequest"",\n    ""relation_description"": ""maximum limit-to-request ratio"",\n    ""summary_er"": ""The maxLimitRequestRatio configures the default request settings for pods, balancing resource allocation and efficiency.""\n  }\n]']","A LimitRange resource is used by the LimitRanger Admission Control plugin to validate pod specs. It prevents users from creating pods bigger than any node in the cluster, specifying limits for individual containers or objects in the same namespace, but not total resources across all pods.","[{'highlight': 'LimitRange resources are used by the LimitRanger Admission Control plugin to validate pod specs.'}, {'highlight': 'Limits specified in a LimitRange resource apply to individual pods/containers, not total resources across all pods in the namespace.'}, {'highlight': 'ResourceQuota objects specify total amount of resources available across all pods in a namespace.'}, {'highlight': 'A full example of a LimitRange object includes properties such as min and max CPU/memory limits, default requests, and maximum limit request ratio.'}, {'highlight': 'The LimitRanger plugin rejects pod manifests if validation fails due to exceeding node resource limits.'}]"
+366,455,0,[],"423
+Setting default requests and limits for pods per namespace
+  - type: PersistentVolumeClaim      
+    min:                             
+      storage: 1Gi                   
+    max:                             
+      storage: 10Gi                  
+As you can see from the previous example, the minimum and maximum limits for a
+whole pod can be configured. They apply to the sum of all the pod’s containers’
+requests and limits. 
+ Lower down, at the container level, you can set not only the minimum and maxi-
+mum, but also default resource requests (defaultRequest) and default limits
+(default) that will be applied to each container that doesn’t specify them explicitly. 
+ Beside the min, max, and default values, you can even set the maximum ratio of
+limits vs. requests. The previous listing sets the CPU maxLimitRequestRatio to 4,
+which means a container’s CPU limits will not be allowed to be more than four times
+greater than its CPU requests. A container requesting 200 millicores will not be
+accepted if its CPU limit is set to 801 millicores or higher. For memory, the maximum
+ratio is set to 10.
+ In chapter 6 we looked at PersistentVolumeClaims (PVC), which allow you to claim
+a certain amount of persistent storage similarly to how a pod’s containers claim CPU
+and memory. In the same way you’re limiting the minimum and maximum amount of
+CPU a container can request, you should also limit the amount of storage a single
+PVC can request. A LimitRange object allows you to do that as well, as you can see at
+the bottom of the example.
+ The example shows a single LimitRange object containing limits for everything,
+but you could also split them into multiple objects if you prefer to have them orga-
+nized per type (one for pod limits, another for container limits, and yet another for
+PVCs, for example). Limits from multiple LimitRange objects are all consolidated
+when validating a pod or PVC.
+ Because the validation (and defaults) configured in a LimitRange object is per-
+formed by the API server when it receives a new pod or PVC manifest, if you modify
+the limits afterwards, existing pods and PVCs will not be revalidated—the new limits
+will only apply to pods and PVCs created afterward. 
+14.4.3 Enforcing the limits
+With your limits in place, you can now try creating a pod that requests more CPU than
+allowed by the LimitRange. You’ll find the YAML for the pod in the code archive. The
+next listing only shows the part relevant to the discussion.
+    resources:
+      requests:
+        cpu: 2
+Listing 14.11
+A pod with CPU requests greater than the limit: limits-pod-too-big.yaml
+A LimitRange can also set 
+the minimum and maximum 
+amount of storage a PVC 
+can request.
+ 
+",[],"[{'entity': 'PersistentVolumeClaim', 'description': 'An object that allows you to claim a certain amount of persistent storage', 'category': 'database'}, {'entity': 'min', 'description': 'Minimum limit for a resource (e.g. storage)', 'category': 'process'}, {'entity': 'max', 'description': 'Maximum limit for a resource (e.g. storage)', 'category': 'process'}, {'entity': 'storage', 'description': 'Amount of storage requested or limited', 'category': 'database'}, {'entity': 'defaultRequest', 'description': 'Default resource request for a container', 'category': 'process'}, {'entity': 'default', 'description': 'Default limit for a resource (e.g. storage)', 'category': 'process'}, {'entity': 'maxLimitRequestRatio', 'description': 'Maximum ratio of limits vs. requests for a resource (e.g. CPU)', 'category': 'process'}, {'entity': 'PersistentVolumeClaims', 'description': 'An object that allows you to claim a certain amount of persistent storage', 'category': 'database'}, {'entity': 'LimitRange', 'description': 'An object that sets limits for resources (e.g. CPU, memory)', 'category': 'process'}, {'entity': 'pod', 'description': 'A containerized application', 'category': 'application'}, {'entity': 'PVC', 'description': 'Persistent Volume Claim', 'category': 'database'}, {'entity': 'CPU', 'description': 'Central Processing Unit resource', 'category': 'hardware'}, {'entity': 'memory', 'description': 'Memory resource', 'category': 'hardware'}, {'entity': 'container', 'description': 'A process running within a pod', 'category': 'process'}]","[{'source_entity': '""container""', 'description': 'is created within', 'destination_entity': '""pod""'}, {'source_entity': '""defaultRequest""', 'description': 'defines the default request for', 'destination_entity': '""PVC""'}, {'source_entity': '""PVC""', 'description': 'requests storage of', 'destination_entity': '""storage""'}, {'source_entity': '""LimitRange""', 'description': 'sets the maximum limit for', 'destination_entity': '""CPU""'}, {'source_entity': '""LimitRange""', 'description': 'sets the minimum limit for', 'destination_entity': '""memory""'}, {'source_entity': '""PersistentVolumeClaims""', 'description': 'manages persistent volumes for', 'destination_entity': '""pod""'}, {'source_entity': '""PersistentVolumeClaim""', 'description': 'requests storage of', 'destination_entity': '""storage""'}, {'source_entity': '""maxLimitRequestRatio""', 'description': 'defines the maximum limit to request ratio for', 'destination_entity': '""PVC""'}]","['[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is created within"",\n    ""summary_er"": ""A container is a lightweight and portable package of software that runs within a pod, providing isolation and resource management.""\n  }\n]', '[\n  {\n    ""source"": ""defaultRequest"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the default request for"",\n    ""summary_er"": ""The default request is defined for a pod, which is a containerized application in Kubernetes.""\n  },\n  {\n    ""source"": ""PVC"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""A Persistent Volume Claim (PVC) is used to request storage resources for a pod.""\n  }\n]', '[\n  {\n    ""source"": ""PVC"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests storage of"",\n    ""summary_er"": ""A PVC (Persistent Volume Claim) requests storage from a pod, allowing it to use persistent data.""\n  }\n]', '[\n  {\n    ""source"": ""LimitRange"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets the maximum limit for"",\n    ""summary_er"": ""The LimitRange resource sets a maximum CPU limit for pods, ensuring they don\'t consume excessive resources.""\n  }\n]', '[\n  {\n    ""source"": ""LimitRange"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets the minimum limit for"",\n    ""summary_er"": ""A Kubernetes resource that sets memory limits for pods, ensuring they don\'t consume excessive resources.""\n  }\n]', '[\n  {\n    ""source"": ""PersistentVolumeClaims"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages persistent volumes for"",\n    ""summary_er"": ""PersistentVolumeClaims manage persistent storage for pods, ensuring data persistence and availability.""\n  }\n]', '[\n  {\n    ""source"": ""PersistentVolumeClaim"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests storage of"",\n    ""summary_er"": ""A Persistent Volume Claim requests storage from a pod, ensuring data persistence and availability.""\n  }\n]', '[\n  {\n    ""source"": ""maxLimitRequestRatio"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the maximum limit to request ratio"",\n    ""summary_er"": ""This configuration sets a cap on the ratio of requested resources to allocated resources for pods.""\n  },\n  {\n    ""source"": ""maxLimitRequestRatio"",\n    ""destination"": ""PVC"",\n    ""relation_description"": ""defines the maximum limit to request ratio"",\n    ""summary_er"": ""This parameter limits the maximum amount of resources that can be requested by a PVC (Persistent Volume Claim).""\n  }\n]']","A LimitRange object is used to set default requests and limits for pods per namespace, applying to containers' requests and limits. It allows setting min/max values, default resource requests/limits, and max ratio of limits vs requests. This validation is performed by the API server when receiving a new pod manifest, and does not affect existing pods or PVCs created before modifying the limits.","[{'highlight': 'You can configure minimum and maximum limits for a whole pod, which apply to the sum of all the pod’s containers’ requests and limits.'}, {'highlight': 'At the container level, you can set default resource requests (defaultRequest) and default limits (default) that will be applied to each container that doesn’t specify them explicitly.'}, {'highlight': 'A LimitRange object allows you to limit the amount of storage a single PVC can request, similarly to how you limit CPU and memory for containers.'}, {'highlight': 'Limits from multiple LimitRange objects are consolidated when validating a pod or PVC, but existing pods and PVCs will not be revalidated if limits are modified afterwards.'}, {'highlight': 'A LimitRange can enforce limits by preventing the creation of pods that request more CPU than allowed, as shown in listing 14.11.'}]"
+367,456,0,[],"424
+CHAPTER 14
+Managing pods’ computational resources
+The pod’s single container is requesting two CPUs, which is more than the maximum
+you set in the LimitRange earlier. Creating the pod yields the following result:
+$ kubectl create -f limits-pod-too-big.yaml 
+Error from server (Forbidden): error when creating ""limits-pod-too-big.yaml"": 
+pods ""too-big"" is forbidden: [
+  maximum cpu usage per Pod is 1, but request is 2., 
+  maximum cpu usage per Container is 1, but request is 2.]
+I’ve modified the output slightly to make it more legible. The nice thing about the
+error message from the server is that it lists all the reasons why the pod was rejected,
+not only the first one it encountered. As you can see, the pod was rejected for two rea-
+sons: you requested two CPUs for the container, but the maximum CPU limit for a
+container is one. Likewise, the pod as a whole requested two CPUs, but the maximum
+is one CPU (if this was a multi-container pod, even if each individual container
+requested less than the maximum amount of CPU, together they’d still need to
+request less than two CPUs to pass the maximum CPU for pods). 
+14.4.4 Applying default resource requests and limits
+Now let’s also see how default resource requests and limits are set on containers that
+don’t specify them. Deploy the kubia-manual pod from chapter 3 again:
+$ kubectl create -f ../Chapter03/kubia-manual.yaml
+pod ""kubia-manual"" created
+Before you set up your LimitRange object, all your pods were created without any
+resource requests or limits, but now the defaults are applied automatically when creat-
+ing the pod. You can confirm this by describing the kubia-manual pod, as shown in
+the following listing.
+$ kubectl describe po kubia-manual
+Name:           kubia-manual
+...
+Containers:
+  kubia:
+    Limits:
+      cpu:      200m
+      memory:   100Mi
+    Requests:
+      cpu:      100m
+      memory:   10Mi
+The container’s requests and limits match the ones you specified in the LimitRange
+object. If you used a different LimitRange specification in another namespace, pods
+created in that namespace would obviously have different requests and limits. This
+allows admins to configure default, min, and max resources for pods per namespace.
+Listing 14.12
+Inspecting limits that were applied to a pod automatically
+ 
+",[],"[{'entity': 'CPU', 'description': ""Computational resource requested by the pod's container"", 'category': 'hardware'}, {'entity': 'LimitRange', 'description': 'Object used to set default resource requests and limits for pods', 'category': 'software'}, {'entity': 'kubectl', 'description': 'Command-line tool used to create and manage Kubernetes resources', 'category': 'application'}, {'entity': 'pods', 'description': 'Lightweight and portable container running in a cluster', 'category': 'container'}, {'entity': 'containers', 'description': 'Running instance of an application or service', 'category': 'container'}, {'entity': 'cpu usage', 'description': 'Maximum CPU usage per pod or container', 'category': 'process'}, {'entity': 'memory usage', 'description': 'Maximum memory usage per pod or container', 'category': 'process'}, {'entity': 'requests', 'description': 'Resource requests specified by a pod or container', 'category': 'process'}, {'entity': 'limits', 'description': 'Resource limits specified for a pod or container', 'category': 'process'}, {'entity': 'namespace', 'description': 'Logical grouping of resources in a cluster', 'category': 'software'}, {'entity': 'admin', 'description': 'User with administrative privileges in a Kubernetes cluster', 'category': 'user'}]","[{'source_entity': '""requests""', 'description': 'are being made to', 'destination_entity': '""admin""'}, {'source_entity': '""admin""', 'description': 'is responsible for managing', 'destination_entity': '""requests""'}, {'source_entity': '""kubectl""', 'description': 'is used by', 'destination_entity': '""admin""'}, {'source_entity': '""kubectl""', 'description': 'is used to manage', 'destination_entity': '""containers""'}, {'source_entity': '""LimitRange""', 'description': 'is responsible for enforcing', 'destination_entity': '""CPU limits""'}, {'source_entity': '""cpu usage""', 'description': 'is being monitored by', 'destination_entity': '""admin""'}, {'source_entity': '""containers""', 'description': 'are running on', 'destination_entity': '""pods""'}, {'source_entity': '""pods""', 'description': 'are being managed by', 'destination_entity': '""kubectl""'}, {'source_entity': '""namespace""', 'description': 'is a scope for', 'destination_entity': '""containers""'}, {'source_entity': '""limits""', 'description': 'are being set by', 'destination_entity': '""admin""'}, {'source_entity': '""memory usage""', 'description': 'is being monitored by', 'destination_entity': '""admin""'}]","['[\n  {\n    ""source"": ""requests"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are being made to"",\n    ""summary_er"": ""HTTP requests are sent to a running containerized application pod for processing.""\n  },\n  {\n    ""source"": ""admin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""the destination"",\n    ""summary_er"": ""The admin user is interacting with a specific containerized application pod.""\n  }\n]', '[\n  {\n    ""source"": ""admin"",\n    ""destination"": ""pod requests"",\n    ""relation_description"": ""is responsible for managing"",\n    ""summary_er"": ""The admin entity is responsible for managing pod requests, overseeing their creation and deletion to ensure efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used by"",\n    ""summary_er"": ""Kubectl is a command-line tool used to manage Kubernetes resources, including pods.""\n  },\n  {\n    ""source"": ""admin"",\n    ""destination"": ""user"",\n    ""relation_description"": ""role"",\n    ""summary_er"": ""Admin refers to an administrative user with elevated privileges and access rights.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to manage"",\n    ""summary_er"": ""Kubectl is a command-line tool used to manage and deploy pods, containers, and other Kubernetes resources.""\n  },\n  {\n    ""source"": ""containers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are run within"",\n    ""summary_er"": ""Containers are lightweight and portable packages of software that are run within a pod in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""LimitRange"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is responsible for enforcing"",\n    ""summary_er"": ""LimitRange enforces CPU limits on pods, ensuring they don\'t exceed allocated resources.""\n  }\n]', '[\n  {\n    ""source"": ""cpu usage"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is being monitored by"",\n    ""summary_er"": ""The CPU usage is being continuously monitored by a pod, ensuring optimal system performance.""\n  },\n  {\n    ""source"": ""admin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is being monitored by"",\n    ""summary_er"": ""An admin user is monitoring the pod\'s activity to ensure smooth operation and troubleshoot issues if needed.""\n  }\n]', '[\n  {\n    ""source"": ""containers"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""are running on"",\n    ""summary_er"": ""Containers are deployed and executed within pods, utilizing shared resources and ensuring efficient utilization of system resources.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""are being managed by"",\n    ""summary_er"": ""Kubernetes manages pods, ensuring efficient resource allocation and scalability.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""are being managed by"",\n    ""summary_er"": ""kubectl is used to manage pods in Kubernetes, providing a command-line interface for deployment and management.""\n  }\n]', '[\n  {\n    ""source"": ""namespace"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a scope for"",\n    ""summary_er"": ""A namespace is a scope that contains one or more pods, providing isolation and organization for resources.""\n  },\n  {\n    ""source"": ""namespace"",\n    ""destination"": ""containers"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A namespace can contain multiple containers, which are isolated from each other within the namespace.""\n  }\n]', '[\n  {\n    ""source"": ""limits"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are being set by"",\n    ""summary_er"": ""Resource limits for a pod are being configured by an administrator.""\n  },\n  {\n    ""source"": ""admin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is"",\n    ""summary_er"": ""An admin user is associated with a pod, indicating ownership or management responsibility.""\n  }\n]', '[\n  {\n    ""source"": ""memory usage"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is being monitored by"",\n    ""summary_er"": ""Memory usage metrics are tracked and monitored by the pod to ensure efficient resource allocation.""\n  },\n  {\n    ""source"": ""admin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is being monitored by"",\n    ""summary_er"": ""The admin user has access to monitor and manage the pod\'s performance and resource utilization.""\n  }\n]']","A Kubernetes LimitRange object is used to set maximum CPU and memory usage limits for pods and containers. When creating a pod with a container requesting more than the allowed limit, the pod is rejected due to the Forbidden error message from the server listing all reasons why the pod was rejected. Default resource requests and limits can be applied automatically when creating a pod by setting them in a LimitRange object, allowing admins to configure default, min, and max resources for pods per namespace.","[{'highlight': ""The pod's single container is requesting two CPUs, which is more than the maximum you set in the LimitRange earlier.""}, {'highlight': 'maximum cpu usage per Pod is 1, but request is 2., maximum cpu usage per Container is 1, but request is 2.'}, {'highlight': 'default resource requests and limits are set on containers that don’t specify them'}, {'highlight': 'You can confirm this by describing the kubia-manual pod, as shown in the following listing.'}, {'highlight': 'The container’s requests and limits match the ones you specified in the LimitRange object'}]"
+368,457,0,[],"425
+Limiting the total resources available in a namespace
+If namespaces are used to separate different teams or to separate development, QA,
+staging, and production pods running in the same Kubernetes cluster, using a differ-
+ent LimitRange in each namespace ensures large pods can only be created in certain
+namespaces, whereas others are constrained to smaller pods.
+ But remember, the limits configured in a LimitRange only apply to each individual
+pod/container. It’s still possible to create many pods and eat up all the resources avail-
+able in the cluster. LimitRanges don’t provide any protection from that. A Resource-
+Quota object, on the other hand, does. You’ll learn about them next.
+14.5
+Limiting the total resources available in a namespace
+As you’ve seen, LimitRanges only apply to individual pods, but cluster admins also
+need a way to limit the total amount of resources available in a namespace. This is
+achieved by creating a ResourceQuota object. 
+14.5.1 Introducing the ResourceQuota object
+In chapter 10 we said that several Admission Control plugins running inside the API
+server verify whether the pod may be created or not. In the previous section, I said
+that the LimitRanger plugin enforces the policies configured in LimitRange resources.
+Similarly, the ResourceQuota Admission Control plugin checks whether the pod
+being created would cause the configured ResourceQuota to be exceeded. If that’s
+the case, the pod’s creation is rejected. Because resource quotas are enforced at pod
+creation time, a ResourceQuota object only affects pods created after the Resource-
+Quota object is created—creating it has no effect on existing pods.
+ A ResourceQuota limits the amount of computational resources the pods and the
+amount of storage PersistentVolumeClaims in a namespace can consume. It can also
+limit the number of pods, claims, and other API objects users are allowed to create
+inside the namespace. Because you’ve mostly dealt with CPU and memory so far, let’s
+start by looking at how to specify quotas for them.
+CREATING A RESOURCEQUOTA FOR CPU AND MEMORY
+The overall CPU and memory all the pods in a namespace are allowed to consume is
+defined by creating a ResourceQuota object as shown in the following listing.
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: cpu-and-mem
+spec:
+  hard:
+    requests.cpu: 400m
+    requests.memory: 200Mi
+    limits.cpu: 600m
+    limits.memory: 500Mi
+Listing 14.13
+A ResourceQuota resource for CPU and memory: quota-cpu-memory.yaml
+ 
+",[],"[{'entity': 'namespace', 'description': 'a logical grouping of resources within a Kubernetes cluster', 'category': 'software'}, {'entity': 'LimitRange', 'description': 'an object that defines limits for resources such as CPU and memory in a namespace', 'category': 'software'}, {'entity': 'pod', 'description': 'a single instance of a container running within a Kubernetes cluster', 'category': 'container'}, {'entity': 'ResourceQuota', 'description': 'an object that defines limits for resources such as CPU and memory in a namespace, and can also limit the number of pods and other API objects', 'category': 'software'}, {'entity': 'Admission Control plugin', 'description': 'a plugin that runs inside the Kubernetes API server to verify whether a pod may be created or not', 'category': 'software'}, {'entity': 'LimitRanger plugin', 'description': 'an Admission Control plugin that enforces policies configured in LimitRange resources', 'category': 'software'}, {'entity': 'ResourceQuota Admission Control plugin', 'description': 'an Admission Control plugin that checks whether a pod being created would cause the configured ResourceQuota to be exceeded', 'category': 'software'}, {'entity': 'PersistentVolumeClaim', 'description': 'a request for storage resources within a Kubernetes cluster', 'category': 'database'}, {'entity': 'CPU', 'description': 'a measure of computational resources in a namespace', 'category': 'hardware'}, {'entity': 'memory', 'description': 'a measure of storage resources in a namespace', 'category': 'hardware'}, {'entity': 'apiVersion', 'description': 'the version of the Kubernetes API being used', 'category': 'software'}, {'entity': 'kind', 'description': 'the type of object being created, such as a ResourceQuota', 'category': 'software'}, {'entity': 'metadata', 'description': 'information about the object being created, such as its name and namespace', 'category': 'software'}, {'entity': 'spec', 'description': 'the specification of the object being created, including its hard limits for CPU and memory', 'category': 'software'}, {'entity': 'hard', 'description': 'a field in the ResourceQuota object that defines the maximum amount of resources allowed', 'category': 'software'}, {'entity': 'requests.cpu', 'description': 'the maximum amount of CPU requested by pods in a namespace', 'category': 'hardware'}, {'entity': 'requests.memory', 'description': 'the maximum amount of memory requested by pods in a namespace', 'category': 'hardware'}, {'entity': 'limits.cpu', 'description': 'the maximum amount of CPU allowed for pods in a namespace', 'category': 'hardware'}, {'entity': 'limits.memory', 'description': 'the maximum amount of memory allowed for pods in a namespace', 'category': 'hardware'}]","[{'source_entity': 'LimitRange', 'description': 'defines', 'destination_entity': 'memory'}, {'source_entity': 'LimitRange', 'description': 'defines', 'destination_entity': 'limits.cpu'}, {'source_entity': 'LimitRange', 'description': 'defines', 'destination_entity': 'limits.memory'}, {'source_entity': 'pod', 'description': 'uses', 'destination_entity': 'memory'}, {'source_entity': 'pod', 'description': 'requests', 'destination_entity': 'limits.cpu'}, {'source_entity': 'pod', 'description': 'requests', 'destination_entity': 'limits.memory'}, {'source_entity': 'namespace', 'description': 'defines', 'destination_entity': 'ResourceQuota'}, {'source_entity': 'ResourceQuota', 'description': 'enforces', 'destination_entity': 'requests.cpu'}, {'source_entity': 'ResourceQuota', 'description': 'enforces', 'destination_entity': 'requests.memory'}, {'source_entity': 'Admission Control plugin', 'description': 'checks', 'destination_entity': 'ResourceQuota'}, {'source_entity': 'PersistentVolumeClaim', 'description': 'requests', 'destination_entity': 'limits.cpu'}, {'source_entity': 'PersistentVolumeClaim', 'description': 'requests', 'destination_entity': 'limits.memory'}, {'source_entity': 'CPU', 'description': 'is', 'destination_entity': 'resource'}, {'source_entity': 'LimitRanger plugin', 'description': 'enforces', 'destination_entity': 'ResourceQuota'}, {'source_entity': 'metadata', 'description': 'contains', 'destination_entity': 'kind'}, {'source_entity': 'spec', 'description': 'defines', 'destination_entity': 'limits.cpu'}, {'source_entity': 'spec', 'description': 'defines', 'destination_entity': 'limits.memory'}, {'source_entity': 'ResourceQuota Admission Control plugin', 'description': 'checks', 'destination_entity': 'ResourceQuota'}, {'source_entity': 'hard', 'description': 'is', 'destination_entity': 'limit'}]","['[\n  {\n    ""source"": ""LimitRange"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A Kubernetes LimitRange object defines the default resource limits for pods in a namespace, ensuring they do not exceed specified memory and CPU allocations.""\n  }\n]', '[{\n  ""source"": ""LimitRange"",\n  ""destination"": ""pod"",\n  ""relation_description"": ""defines"",\n  ""summary_er"": ""A LimitRange object defines a limit on resources (CPU and memory) that can be requested by pods in a namespace.""\n}]', '[\n  {\n    ""source"": ""LimitRange"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A LimitRange resource defines memory limits for pods, ensuring they do not consume excessive memory resources.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A pod uses a certain amount of memory to run its containers.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""memory"",\n    ""relation_description"": ""memory"",\n    ""summary_er"": ""A pod consumes and utilizes a specific amount of memory for its operations.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""Resource requests for a pod, specifying the amount of CPU or memory required.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits.cpu"",\n    ""summary_er"": ""CPU limits for a pod, capping the maximum usage to prevent resource overconsumption.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""Resource allocation for pods, specifying minimum guaranteed resources.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits.memory"",\n    ""summary_er"": ""Memory constraints for pods, capping maximum allocated memory.""\n  }\n]', '[\n  {\n    ""source"": ""namespace"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A namespace defines a scope for resources, including pods, services, and persistent volumes.""\n  },\n  {\n    ""source"": ""resourceQuota"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits"",\n    ""summary_er"": ""Resource quota limits the amount of resources (CPU, memory) that can be consumed by a pod.""\n  }\n]', '[\n  {\n    ""source"": ""ResourceQuota"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""ResourceQuota enforces CPU resource limits on pods, ensuring efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""ResourceQuota"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""\\""ResourceQuota\\"" ensures that a \\""pod\\"" does not exceed its allocated memory requests, preventing resource overcommitment and ensuring system stability.""\n  }\n]', '[\n  {\n    ""source"": ""Admission Control plugin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""checks"",\n    ""summary_er"": ""The Admission Control plugin verifies the admission of a pod by checking its resource requirements against the cluster\'s ResourceQuota.""\n  },\n  {\n    ""source"": ""ResourceQuota"",\n    ""destination"": ""cluster"",\n    ""relation_description"": ""resource requirements"",\n    ""summary_er"": ""A ResourceQuota is a cluster-wide resource limit that defines the maximum amount of resources (CPU and memory) that can be consumed by all pods in the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""PersistentVolumeClaim"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""A Persistent Volume Claim requests resources from a pod, ensuring it has sufficient storage and CPU capacity to run efficiently.""\n  },\n  {\n    ""source"": ""PersistentVolumeClaim"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits.cpu"",\n    ""summary_er"": ""A Persistent Volume Claim sets the maximum CPU usage for a pod, preventing it from consuming excessive resources and causing performance issues.""\n  }\n]', '[\n  {\n    ""source"": ""PersistentVolumeClaim"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""A Persistent Volume Claim requests resources from a pod, specifically memory limits.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""PersistentVolumeClaim"",\n    ""relation_description"": ""limits.memory"",\n    ""summary_er"": ""A pod\'s memory limits are set by the Persistent Volume Claim it uses to request resources.""\n  }\n]', '[\n  {\n    ""source"": ""CPU"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is"",\n    ""summary_er"": ""The CPU is a critical resource for pods, enabling them to execute instructions and perform computations.""\n  }\n]', '[\n  {\n    ""source"": ""LimitRanger plugin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""The LimitRanger plugin enforces resource limits on a pod, ensuring it does not exceed allocated resources.""\n  },\n  {\n    ""source"": ""ResourceQuota"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies to"",\n    ""summary_er"": ""A ResourceQuota applies to a pod, limiting its resource consumption and preventing over-allocation.""\n  }\n]', '[\n  {\n    ""source"": ""metadata"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""The pod\'s metadata contains information about its identity, labels, and annotations.""\n  },\n  {\n    ""source"": ""kind"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is"",\n    ""summary_er"": ""A Kubernetes pod is a logical host for one or more containers.""\n  }\n]', '[\n  {\n    ""source"": ""spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""The specification defines the characteristics of a pod, including CPU limits.""\n  },\n  {\n    ""source"": ""limits.cpu"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets"",\n    ""summary_er"": ""CPU limits are set for the pod to control resource usage.""\n  }\n]', '[\n  {\n    ""source"": ""spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""The specification defines the characteristics of a pod, including memory limits.""\n  },\n  {\n    ""source"": ""limits.memory"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets"",\n    ""summary_er"": ""Memory limits are set for the pod to prevent excessive resource usage.""\n  }\n]', '[\n  {\n    ""source"": ""ResourceQuota Admission Control plugin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""checks"",\n    ""summary_er"": ""The ResourceQuota Admission Control plugin ensures that pods do not exceed their allocated resource quotas, preventing resource overcommitment and ensuring efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""hard"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is"",\n    ""summary_er"": ""A pod has a specified hard limit on its resources, such as CPU or memory.""\n  }\n]']","Resource quotas limit the total amount of resources available in a namespace, including computational resources, storage, number of pods, claims, and API objects. They are enforced at pod creation time and do not affect existing pods. A ResourceQuota object can be created to specify quotas for CPU and memory, as shown in Listing 14.13.","[{'highlight': 'LimitRanges only apply to individual pods, but cluster admins also need a way to limit the total amount of resources available in a namespace.'}, {'highlight': 'A ResourceQuota object limits the amount of computational resources the pods and the amount of storage PersistentVolumeClaims in a namespace can consume.'}, {'highlight': 'ResourceQuotas are enforced at pod creation time, so creating one has no effect on existing pods.'}, {'highlight': 'A ResourceQuota object can limit the number of pods, claims, and other API objects users are allowed to create inside a namespace.'}, {'highlight': ""To specify quotas for CPU and memory, create a ResourceQuota object with 'requests.cpu', 'requests.memory', 'limits.cpu', and 'limits.memory' specifications.""}]"
+369,458,0,[],"426
+CHAPTER 14
+Managing pods’ computational resources
+Instead of defining a single total for each resource, you define separate totals for
+requests and limits for both CPU and memory. You’ll notice the structure is a bit dif-
+ferent, compared to that of a LimitRange. Here, both the requests and the limits for
+all resources are defined in a single place. 
+ This ResourceQuota sets the maximum amount of CPU pods in the namespace
+can request to 400 millicores. The maximum total CPU limits in the namespace are
+set to 600 millicores. For memory, the maximum total requests are set to 200 MiB,
+whereas the limits are set to 500 MiB.
+ A ResourceQuota object applies to the namespace it’s created in, like a Limit-
+Range, but it applies to all the pods’ resource requests and limits in total and not to
+each individual pod or container separately, as shown in figure 14.7.
+INSPECTING THE QUOTA AND QUOTA USAGE
+After you post the ResourceQuota object to the API server, you can use the kubectl
+describe command to see how much of the quota is already used up, as shown in
+the following listing.
+$ kubectl describe quota
+Name:           cpu-and-mem
+Namespace:      default
+Resource        Used   Hard
+--------        ----   ----
+limits.cpu      200m   600m
+limits.memory   100Mi  500Mi
+requests.cpu    100m   400m
+requests.memory 10Mi   200Mi
+I only have the kubia-manual pod running, so the Used column matches its resource
+requests and limits. When I run additional pods, their requests and limits are added to
+the used amounts.
+Listing 14.14
+Inspecting the ResourceQuota with kubectl describe quota
+LimitRange
+ResourceQuota
+Namespace: FOO
+Pod A
+Pod B
+Pod C
+LimitRange
+ResourceQuota
+Namespace: BAR
+Pod D
+Pod E
+Pod F
+Figure 14.7
+LimitRanges apply to individual pods; ResourceQuotas apply to all pods in the 
+namespace.
+ 
+","[Empty DataFrame
+Columns: [Namespace: FOO
+LimitRange ResourceQuota
+Pod A Pod B Pod C, Col1, Namespace: BAR
+LimitRange ResourceQuota
+Pod D Pod E Pod F]
+Index: []]","[{'entity': 'requests', 'description': 'resource requests for CPU and memory', 'category': 'process'}, {'entity': 'limits', 'description': 'maximum total limits for CPU and memory', 'category': 'process'}, {'entity': 'ResourceQuota', 'description': 'object that sets maximum amount of CPU and memory resources', 'category': 'database'}, {'entity': 'requests.cpu', 'description': 'maximum amount of CPU pods can request', 'category': 'process'}, {'entity': 'limits.cpu', 'description': 'maximum total CPU limits in the namespace', 'category': 'process'}, {'entity': 'requests.memory', 'description': 'maximum total requests for memory resources', 'category': 'process'}, {'entity': 'limits.memory', 'description': 'maximum total limits for memory resources', 'category': 'process'}, {'entity': 'ResourceQuota object', 'description': ""applies to all pods' resource requests and limits in total"", 'category': 'database'}, {'entity': 'kubectl describe command', 'description': 'command used to see how much of the quota is already used up', 'category': 'application'}, {'entity': 'cpu-and-mem', 'description': 'ResourceQuota object name', 'category': 'database'}, {'entity': 'default', 'description': 'namespace where ResourceQuota object is created', 'category': 'network'}, {'entity': 'limits.cpu 200m', 'description': 'maximum total CPU limits in the namespace', 'category': 'process'}, {'entity': 'limits.memory 100Mi', 'description': 'maximum total limits for memory resources', 'category': 'process'}, {'entity': 'requests.cpu 100m', 'description': 'maximum amount of CPU pods can request', 'category': 'process'}, {'entity': 'requests.memory 10Mi', 'description': 'maximum total requests for memory resources', 'category': 'process'}]","[{'source_entity': 'requests', 'description': 'specifies the CPU limit for a pod', 'destination_entity': 'requests.cpu 100m'}, {'source_entity': 'requests', 'description': 'specifies the memory limit for a pod', 'destination_entity': 'requests.memory'}, {'source_entity': 'default', 'description': 'sets the default resource quota', 'destination_entity': 'ResourceQuota object'}, {'source_entity': 'kubectl describe command', 'description': 'displays detailed information about a ResourceQuota object', 'destination_entity': 'ResourceQuota'}, {'source_entity': 'requests', 'description': 'specifies the CPU limit for a pod', 'destination_entity': 'limits.cpu 200m'}, {'source_entity': 'requests', 'description': 'specifies the memory limit for a pod', 'destination_entity': 'limits.memory'}, {'source_entity': 'ResourceQuota object', 'description': 'defines resource quotas for pods', 'destination_entity': 'cpu-and-mem'}, {'source_entity': 'limits', 'description': 'sets the CPU and memory limits for a pod', 'destination_entity': 'limits.cpu 200m'}, {'source_entity': 'requests', 'description': 'specifies the memory limit for a pod', 'destination_entity': 'limits.memory 100Mi'}, {'source_entity': 'requests', 'description': 'specifies the memory limit for a pod', 'destination_entity': 'requests.memory 10Mi'}]","['[\n  {\n    ""source"": ""requests"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the CPU limit for a pod"",\n    ""summary_er"": ""The `requests` object specifies the CPU limit for a pod, ensuring efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""requests"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the memory limit for a pod"",\n    ""summary_er"": ""The requests object in Kubernetes specifies the resource requirements, including memory limits, for a pod.""\n  }\n]', '[\n  {\n    ""source"": ""default"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets the default resource quota"",\n    ""summary_er"": ""The default resource quota sets a standard limit for resources consumed by pods in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl describe"",\n    ""destination"": ""ResourceQuota"",\n    ""relation_description"": ""displays detailed information"",\n    ""summary_er"": ""Displays detailed info about a ResourceQuota object, allowing for resource management and quota enforcement.""\n  },\n  {\n    ""source"": ""ResourceQuota"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""A pod is managed by a ResourceQuota, which enforces resource limits and quotas to ensure efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""requests"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the CPU limit for a pod"",\n    ""summary_er"": ""The requests field specifies the maximum CPU usage allowed for a pod, limiting its resource consumption.""\n  }\n]', '[\n  {\n    ""source"": ""requests"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the memory limit for a pod"",\n    ""summary_er"": ""The requests field in Kubernetes specifies the maximum amount of memory that a pod can use, ensuring efficient resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""ResourceQuota"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines resource quotas for"",\n    ""summary_er"": ""A ResourceQuota object defines CPU and memory limits for a pod, ensuring efficient resource utilization.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""cpu-and-mem"",\n    ""relation_description"": ""resource quotas for"",\n    ""summary_er"": ""A pod\'s CPU and memory resources are managed by the ResourceQuota object, preventing overutilization.""\n  }\n]', '[\n    {\n        ""source"": ""limits"",\n        ""destination"": ""pod"",\n        ""relation_description"": ""sets the CPU and memory limits for a pod"",\n        ""summary_er"": ""Limits are set for a pod\'s CPU and memory usage, ensuring efficient resource allocation.""\n    }\n]', '[\n    {\n        ""source"": ""requests"",\n        ""destination"": ""pod"",\n        ""relation_description"": ""specifies the memory limit for a pod"",\n        ""summary_er"": ""The requests object in Kubernetes specifies the memory and CPU limits for a pod, ensuring efficient resource utilization.""\n    }\n]', '[\n    {\n        ""source"": ""requests"",\n        ""destination"": ""pod"",\n        ""relation_description"": ""specifies the memory limit"",\n        ""summary_er"": ""The requests object specifies the memory limit for a pod, which is set to 10Mi.""\n    }\n]']","A ResourceQuota object sets separate totals for requests and limits of CPU and memory resources in a namespace. It can be inspected using kubectl describe quota, showing used amounts for each resource. The quota applies to all pods' resource requests and limits in total, unlike LimitRange which applies to individual pods or containers separately.","[{'highlight': ""A ResourceQuota object applies to the namespace it's created in, like a LimitRange, but it applies to all the pods' resource requests and limits in total.""}, {'highlight': 'The maximum total CPU limits in the namespace are set to 600 millicores, whereas the maximum total requests are set to 400 millicores for CPU and 200 MiB for memory.'}, {'highlight': 'You can use the kubectl describe command to see how much of the quota is already used up.'}, {'highlight': 'The Used column in the output matches the resource requests and limits of all running pods in the namespace.'}, {'highlight': 'LimitRanges apply to individual pods, while ResourceQuotas apply to all pods in the namespace.'}]"

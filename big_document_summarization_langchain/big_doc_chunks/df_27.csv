@@ -1,0 +1,572 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+270,359,0,[],"327
+Understanding the architecture
+them. You can also use the same method to run your custom system containers, but
+doing it through a DaemonSet is the recommended method.
+11.1.8 The role of the Kubernetes Service Proxy
+Beside the Kubelet, every worker node also runs the kube-proxy, whose purpose is to
+make sure clients can connect to the services you define through the Kubernetes API.
+The kube-proxy makes sure connections to the service IP and port end up at one of
+the pods backing that service (or other, non-pod service endpoints). When a service is
+backed by more than one pod, the proxy performs load balancing across those pods. 
+WHY IT’S CALLED A PROXY
+The initial implementation of the kube-proxy was the userspace proxy. It used an
+actual server process to accept connections and proxy them to the pods. To inter-
+cept connections destined to the service IPs, the proxy configured iptables rules
+(iptables is the tool for managing the Linux kernel’s packet filtering features) to
+redirect the connections to the proxy server. A rough diagram of the userspace proxy
+mode is shown in figure 11.9.
+Container Runtime
+(Docker, rkt, ...)
+Kubelet
+API server
+Worker node
+Runs, monitors,
+and manages
+containers
+Pod resource
+Container A
+Container B
+Container A
+Container B
+Container C
+Pod manifest (ﬁle)
+Local manifest directory
+Container C
+Figure 11.8
+The Kubelet runs pods based on pod specs from the API server and a local file directory.
+Client
+kube-proxy
+Conﬁgures
+:
+iptables
+redirect through proxy server
+iptables
+Pod
+Figure 11.9
+The userspace proxy mode
+ 
+","[Empty DataFrame
+Columns: [API server
+Pod resource
+Container A
+Container B, Col1, Worker node
+Runs, monitors,
+and manages
+containers Container Runtime
+Kubelet (Docker, rkt, ...)
+Container A
+Container B
+Pod manifest (file)
+Container C
+Container C
+Local manifest directory]
+Index: []]","[{'entity': 'DaemonSet', 'description': 'A recommended method to run custom system containers', 'category': 'container'}, {'entity': 'Kubelet', 'description': 'Runs, monitors, and manages containers on worker nodes', 'category': 'process'}, {'entity': 'kube-proxy', 'description': 'Makes sure clients can connect to services defined through the Kubernetes API', 'category': 'process'}, {'entity': 'iptables', 'description': ""A tool for managing the Linux kernel's packet filtering features"", 'category': 'command'}, {'entity': 'Kubernetes Service Proxy', 'description': 'Ensures connections to service IP and port end up at one of the pods backing that service', 'category': 'application'}, {'entity': 'Pod', 'description': 'A logical host for running containers', 'category': 'container'}, {'entity': 'Container', 'description': 'A runtime instance of an application or process', 'category': 'process'}, {'entity': 'API server', 'description': 'Manages the Kubernetes API and provides a REST interface to interact with the cluster', 'category': 'application'}, {'entity': 'Worker node', 'description': 'A machine that runs the Kubelet and manages containers', 'category': 'hardware'}]","[{'source_entity': '""iptables""', 'description': 'configures', 'destination_entity': '""DaemonSet""'}, {'source_entity': '""DaemonSet""', 'description': 'manages', 'destination_entity': '""Container""'}, {'source_entity': '""Container""', 'description': 'runs', 'destination_entity': '""Pod""'}, {'source_entity': '""kube-proxy""', 'description': 'uses', 'destination_entity': '""Kubernetes Service Proxy""'}, {'source_entity': '""Kubelet""', 'description': 'communicates with', 'destination_entity': '""API server""'}, {'source_entity': '""Worker node""', 'description': 'hosts', 'destination_entity': '""Pod""'}, {'source_entity': '""API server""', 'description': 'manages', 'destination_entity': '""Kubernetes Service Proxy""'}]","['[\n  {\n    ""source"": ""iptables"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures"",\n    ""summary_er"": ""Iptables configures network policies for pods in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""DaemonSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A DaemonSet manages one or more pods running on each node in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""DaemonSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A DaemonSet ensures a specified number of replicas (i.e., instances) of a pod are running at any given time, managing the lifecycle of these pods.""\n  }\n]', '[\n  {\n    ""source"": ""Container"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""A container runs within a pod, sharing resources and providing isolation.""\n  }\n]', '[\n  {\n    ""source"": ""kube-proxy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The Kubernetes Service Proxy, also known as kube-proxy, uses a pod to provide network connectivity and load balancing for services in a cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The Kubelet communicates with pods to manage and monitor their status.""\n  }\n]', '[\n  {\n    ""source"": ""Worker node"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""A worker node in a Kubernetes cluster hosts one or more pods, providing compute resources for the containers running within them.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The API server in Kubernetes manages a collection of pods, ensuring they are running and accessible to users.""\n  },\n  {\n    ""source"": ""Kubernetes Service Proxy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The Kubernetes Service Proxy is responsible for managing communication between services and pods in the cluster.""\n  }\n]']","The Kubernetes Service Proxy, also known as kube-proxy, is responsible for making sure clients can connect to services defined through the Kubernetes API. It performs load balancing across pods backing a service and ensures connections end up at one of the pods or non-pod service endpoints. The proxy runs on every worker node and uses iptables rules to intercept connections destined to service IPs, redirecting them to the proxy server.","[{'highlight': 'Kubernetes Service Proxy (kube-proxy) makes sure clients can connect to services defined through the Kubernetes API by redirecting connections to one of the pods backing that service.'}, {'highlight': 'DaemonSet is the recommended method for running custom system containers, as opposed to using a DaemonSet or other methods.'}, {'highlight': 'Kubelet runs pods based on pod specs from the API server and a local file directory, managing container resources such as Container A and Container B.'}, {'highlight': 'The Kubernetes Service Proxy (kube-proxy) performs load balancing across multiple pods backing a service when more than one pod is involved.'}, {'highlight': 'Kubelet runs on worker nodes, monitoring and managing containers, including running, stopping, and restarting container instances such as Container A, Container B, and Container C.'}]"
+271,360,0,[],"328
+CHAPTER 11
+Understanding Kubernetes internals
+The kube-proxy got its name because it was an actual proxy, but the current, much
+better performing implementation only uses iptables rules to redirect packets to a
+randomly selected backend pod without passing them through an actual proxy server.
+This mode is called the iptables proxy mode and is shown in figure 11.10.
+The major difference between these two modes is whether packets pass through the
+kube-proxy and must be handled in user space, or whether they’re handled only by
+the Kernel (in kernel space). This has a major impact on performance. 
+ Another smaller difference is that the userspace proxy mode balanced connec-
+tions across pods in a true round-robin fashion, while the iptables proxy mode
+doesn’t—it selects pods randomly. When only a few clients use a service, they may not
+be spread evenly across pods. For example, if a service has two backing pods but only
+five or so clients, don’t be surprised if you see four clients connect to pod A and only
+one client connect to pod B. With a higher number of clients or pods, this problem
+isn’t so apparent.
+ You’ll learn exactly how iptables proxy mode works in section 11.5. 
+11.1.9 Introducing Kubernetes add-ons
+We’ve now discussed the core components that make a Kubernetes cluster work. But
+in the beginning of the chapter, we also listed a few add-ons, which although not
+always required, enable features such as DNS lookup of Kubernetes services, exposing
+multiple HTTP services through a single external IP address, the Kubernetes web
+dashboard, and so on.
+HOW ADD-ONS ARE DEPLOYED
+These components are available as add-ons and are deployed as pods by submitting
+YAML manifests to the API server, the way you’ve been doing throughout the book.
+Some of these components are deployed through a Deployment resource or a Repli-
+cationController resource, and some through a DaemonSet. 
+ For example, as I’m writing this, in Minikube, the Ingress controller and the
+dashboard add-ons are deployed as ReplicationControllers, as shown in the follow-
+ing listing.
+ 
+Client
+Conﬁgures
+:
+iptables
+redirect straight to pod
+(no proxy server in-between)
+iptables
+Pod
+kube-proxy
+Figure 11.10
+The iptables proxy mode
+ 
+",[],"[{'entity': 'kube-proxy', 'description': 'a component of Kubernetes that handles network traffic', 'category': 'software'}, {'entity': 'iptables', 'description': 'a Linux utility for managing network packet filtering and routing tables', 'category': 'software'}, {'entity': 'backend pod', 'description': 'a pod in a Kubernetes cluster that provides a service', 'category': 'container'}, {'entity': 'userspace proxy mode', 'description': 'a mode of operation for kube-proxy where packets are handled in user space', 'category': 'process'}, {'entity': 'in kernel space', 'description': 'a mode of operation for kube-proxy where packets are handled by the Kernel', 'category': 'process'}, {'entity': 'round-robin fashion', 'description': 'a method of balancing connections across pods', 'category': 'algorithm'}, {'entity': 'Kubernetes add-ons', 'description': 'components that enable additional features in a Kubernetes cluster', 'category': 'software'}, {'entity': 'DNS lookup', 'description': 'the process of resolving a domain name to an IP address', 'category': 'process'}, {'entity': 'Ingress controller', 'description': 'a component that enables external access to multiple HTTP services', 'category': 'software'}, {'entity': 'dashboard add-ons', 'description': 'components that provide a web interface for managing a Kubernetes cluster', 'category': 'software'}, {'entity': 'ReplicationController', 'description': 'a resource in Kubernetes that ensures a specified number of replicas are running at any given time', 'category': 'resource'}, {'entity': 'DaemonSet', 'description': 'a resource in Kubernetes that ensures a specified number of replicas are running on each node', 'category': 'resource'}]","[{'source_entity': 'iptables', 'description': 'is used to filter network traffic', 'destination_entity': 'backend pod'}, {'source_entity': 'DNS lookup', 'description': 'is performed by kube-proxy to resolve service names', 'destination_entity': 'kube-proxy'}, {'source_entity': 'in kernel space', 'description': 'is where iptables rules are applied', 'destination_entity': 'iptables'}, {'source_entity': 'Kubernetes add-ons', 'description': 'are used to extend the functionality of a Kubernetes cluster', 'destination_entity': 'ReplicationController'}, {'source_entity': 'Kubernetes add-ons', 'description': 'are also used by DaemonSet to manage pods', 'destination_entity': 'DaemonSet'}, {'source_entity': 'kube-proxy', 'description': 'is responsible for proxying traffic in userspace mode', 'destination_entity': 'userspace proxy mode'}, {'source_entity': 'Ingress controller', 'description': 'uses kube-proxy to manage incoming HTTP requests', 'destination_entity': 'kube-proxy'}, {'source_entity': 'dashboard add-ons', 'description': 'are used to provide a web interface for managing Kubernetes clusters', 'destination_entity': 'Kubernetes add-ons'}, {'source_entity': 'Ingress controller', 'description': 'routes traffic in round-robin fashion', 'destination_entity': 'round-robin fashion'}]","['[\n  {\n    ""source"": ""iptables"",\n    ""destination"": ""backend pod"",\n    ""relation_description"": ""is used to filter network traffic"",\n    ""summary_er"": ""Iptables filters network traffic for the backend pod, ensuring secure communication between services.""\n  }\n]', '[\n  {\n    ""source"": ""DNS lookup"",\n    ""destination"": ""kube-proxy"",\n    ""relation_description"": ""is performed by"",\n    ""summary_er"": ""Kube-proxy performs DNS lookup to resolve service names.""\n  }\n]', '[\n  {\n    ""source"": ""kernel space"",\n    ""destination"": ""iptables"",\n    ""relation_description"": ""is where iptables rules are applied"",\n    ""summary_er"": ""In kernel space, iptables rules are executed to filter network traffic.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""iptables"",\n    ""relation_description"": ""container"",\n    ""summary_er"": ""A pod in Kubernetes is a container that runs the iptables service for network filtering.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes add-ons"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to extend the functionality of a Kubernetes cluster"",\n    ""summary_er"": ""Kubernetes add-ons enable extension of cluster functionality through pods.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""ReplicationController"",\n    ""relation_description"": ""is managed by"",\n    ""summary_er"": ""Pods are managed by ReplicationControllers to ensure desired replication count.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes add-ons"",\n    ""destination"": ""DaemonSet"",\n    ""relation_description"": ""are also used by"",\n    ""summary_er"": ""Kubernetes add-ons utilize DaemonSet to manage pods.""\n  }\n]', '[\n  {\n    ""source"": ""kube-proxy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is responsible for proxying traffic"",\n    ""summary_er"": ""Kube-proxy handles traffic proxying in userspace mode, ensuring pod accessibility.""\n  }\n]', '[\n  {\n    ""source"": ""Ingress controller"",\n    ""destination"": ""kube-proxy"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The Ingress controller utilizes kube-proxy to manage incoming HTTP requests, enabling efficient routing and handling of traffic.""\n  }\n]', '[\n  {\n    ""source"": ""dashboard add-ons"",\n    ""destination"": ""Kubernetes add-ons"",\n    ""relation_description"": ""are used to provide a web interface for managing Kubernetes clusters"",\n    ""summary_er"": ""Dashboard add-ons enable web-based management of Kubernetes clusters, providing an intuitive interface for cluster administration.""\n  }\n]', '[\n  {\n    ""source"": ""Ingress controller"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""routes traffic"",\n    ""summary_er"": ""The Ingress controller routes traffic in a round-robin fashion to multiple pods, ensuring efficient distribution of incoming requests.""\n  }\n]']","Kubernetes kube-proxy uses iptables rules to redirect packets to a randomly selected backend pod, without passing them through an actual proxy server. This is called the iptables proxy mode and has performance benefits over user-space proxying, which also balances connections across pods in a true round-robin fashion. Add-ons like DNS lookup and web dashboard are deployed as pods using YAML manifests and can be managed with resources such as Deployments and DaemonSets.","[{'highlight': 'Kubernetes kube-proxy uses iptables rules to redirect packets to a randomly selected backend pod without passing them through an actual proxy server, known as the iptables proxy mode.'}, {'highlight': 'Iptables proxy mode selects pods randomly, whereas userspace proxy mode balances connections across pods in a true round-robin fashion.'}, {'highlight': 'Kubernetes add-ons are deployed as pods by submitting YAML manifests to the API server and can be deployed through Deployment, ReplicationController, or DaemonSet resources.'}, {'highlight': 'Iptables proxy mode has a major impact on performance compared to userspace proxy mode, with packets being handled only by the Kernel (in kernel space).'}, {'highlight': 'The iptables proxy mode does not balance connections across pods in a true round-robin fashion, which can lead to uneven distribution of clients across pods.'}]"
+272,361,0,[],"329
+Understanding the architecture
+$ kubectl get rc -n kube-system
+NAME                       DESIRED   CURRENT   READY     AGE
+default-http-backend       1         1         1         6d
+kubernetes-dashboard       1         1         1         6d
+nginx-ingress-controller   1         1         1         6d
+The DNS add-on is deployed as a Deployment, as shown in the following listing.
+$ kubectl get deploy -n kube-system
+NAME       DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+kube-dns   1         1         1            1           6d
+Let’s see how DNS and the Ingress controllers work.
+HOW THE DNS SERVER WORKS
+All the pods in the cluster are configured to use the cluster’s internal DNS server by
+default. This allows pods to easily look up services by name or even the pod’s IP
+addresses in the case of headless services.
+ The DNS server pod is exposed through the kube-dns service, allowing the pod to
+be moved around the cluster, like any other pod. The service’s IP address is specified
+as the nameserver in the /etc/resolv.conf file inside every container deployed in the
+cluster. The kube-dns pod uses the API server’s watch mechanism to observe changes
+to Services and Endpoints and updates its DNS records with every change, allowing its
+clients to always get (fairly) up-to-date DNS information. I say fairly because during
+the time between the update of the Service or Endpoints resource and the time the
+DNS pod receives the watch notification, the DNS records may be invalid.
+HOW (MOST) INGRESS CONTROLLERS WORK
+Unlike the DNS add-on, you’ll find a few different implementations of Ingress con-
+trollers, but most of them work in the same way. An Ingress controller runs a reverse
+proxy server (like Nginx, for example), and keeps it configured according to the
+Ingress, Service, and Endpoints resources defined in the cluster. The controller thus
+needs to observe those resources (again, through the watch mechanism) and change
+the proxy server’s config every time one of them changes. 
+ Although the Ingress resource’s definition points to a Service, Ingress controllers
+forward traffic to the service’s pod directly instead of going through the service IP.
+This affects the preservation of client IPs when external clients connect through the
+Ingress controller, which makes them preferred over Services in certain use cases.
+USING OTHER ADD-ONS
+You’ve seen how both the DNS server and the Ingress controller add-ons are similar to
+the controllers running in the Controller Manager, except that they also accept client
+connections instead of only observing and modifying resources through the API server. 
+Listing 11.7
+Add-ons deployed with ReplicationControllers in Minikube
+Listing 11.8
+The kube-dns Deployment 
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command to get resources', 'category': 'software'}, {'entity': 'rc', 'description': 'resource configuration', 'category': 'software'}, {'entity': 'kube-system', 'description': 'namespace for system components', 'category': 'application'}, {'entity': 'default-http-backend', 'description': 'deployment for default HTTP backend', 'category': 'application'}, {'entity': 'kubernetes-dashboard', 'description': 'deployment for Kubernetes dashboard', 'category': 'application'}, {'entity': 'nginx-ingress-controller', 'description': 'deployment for Nginx ingress controller', 'category': 'application'}, {'entity': 'DNS add-on', 'description': 'add-on for DNS service', 'category': 'software'}, {'entity': 'Deployment', 'description': 'resource configuration for deployment', 'category': 'software'}, {'entity': 'kube-dns', 'description': 'deployment for Kubernetes DNS server', 'category': 'application'}, {'entity': 'pods', 'description': 'lightweight and portable containers', 'category': 'container'}, {'entity': ""cluster's internal DNS server"", 'description': 'DNS service within the cluster', 'category': 'software'}, {'entity': 'kube-dns service', 'description': 'service for Kubernetes DNS server', 'category': 'application'}, {'entity': 'nameserver', 'description': 'DNS resolver in /etc/resolv.conf file', 'category': 'hardware'}, {'entity': ""API server's watch mechanism"", 'description': 'mechanism to observe changes to resources', 'category': 'software'}, {'entity': 'Services and Endpoints', 'description': 'resources for services and endpoints', 'category': 'application'}, {'entity': 'Ingress controllers', 'description': 'controllers for Ingress resource', 'category': 'software'}, {'entity': 'reverse proxy server', 'description': 'server to forward traffic to pods', 'category': 'hardware'}, {'entity': 'Nginx', 'description': 'reverse proxy server implementation', 'category': 'application'}, {'entity': 'Ingress resource', 'description': 'resource for Ingress controller', 'category': 'software'}, {'entity': 'Service', 'description': 'resource for service', 'category': 'application'}, {'entity': 'Endpoints', 'description': 'resource for endpoints', 'category': 'application'}, {'entity': 'Controller Manager', 'description': 'component to run controllers', 'category': 'software'}]","[{'source_entity': 'kubectl', 'description': 'uses to manage Services and Endpoints', 'destination_entity': 'Services and Endpoints'}, {'source_entity': 'Service', 'description': 'is a resource that defines a service in Kubernetes', 'destination_entity': 'Nginx'}, {'source_entity': 'Ingress controllers', 'description': 'are responsible for routing traffic to Services', 'destination_entity': 'Services and Endpoints'}, {'source_entity': 'nameserver', 'description': ""is a component of the cluster's internal DNS server"", 'destination_entity': 'kube-dns service'}, {'source_entity': 'Endpoints', 'description': 'are used to expose a Service to the outside world', 'destination_entity': 'Services and Endpoints'}, {'source_entity': 'kubernetes-dashboard', 'description': 'is a web-based interface for managing Kubernetes clusters', 'destination_entity': 'Controller Manager'}, {'source_entity': ""cluster's internal DNS server"", 'description': 'resolves names to IP addresses within the cluster', 'destination_entity': 'kube-dns service'}, {'source_entity': 'kube-dns service', 'description': 'is responsible for providing DNS resolution within the cluster', 'destination_entity': 'nameserver'}, {'source_entity': 'Controller Manager', 'description': 'is a component that manages the lifecycle of Controllers', 'destination_entity': 'kube-system'}, {'source_entity': 'Deployment', 'description': 'is a resource that defines a set of replicas for an application', 'destination_entity': 'pods'}, {'source_entity': 'DNS add-on', 'description': 'provides DNS resolution within the cluster', 'destination_entity': 'kube-dns service'}, {'source_entity': 'Ingress resource', 'description': 'defines a set of rules for routing traffic to Services', 'destination_entity': 'Services and Endpoints'}, {'source_entity': 'nginx-ingress-controller', 'description': 'is responsible for routing traffic to Services using Ingress resources', 'destination_entity': 'Ingress resource'}, {'source_entity': 'reverse proxy server', 'description': 'is used by nginx-ingress-controller to route traffic to Services', 'destination_entity': 'Services and Endpoints'}, {'source_entity': 'rc', 'description': 'is a resource that defines a set of replicas for an application', 'destination_entity': 'pods'}, {'source_entity': 'pods', 'description': 'are the basic execution unit in Kubernetes', 'destination_entity': 'default-http-backend'}, {'source_entity': ""API server's watch mechanism"", 'description': 'is used to monitor changes to resources within the cluster', 'destination_entity': 'Controller Manager'}, {'source_entity': 'kube-system', 'description': 'is a namespace that contains system-level resources', 'destination_entity': 'Controller Manager'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to manage Services and Endpoints"",\n    ""summary_er"": ""Kubectl uses pod management capabilities to interact with Services and Endpoints in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Service"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is a resource that defines a service in Kubernetes"",\n    ""summary_er"": ""A Service is a Kubernetes resource that provides a network identity and load balancing for accessing a pod.""\n  },\n  {\n    ""source"": ""Nginx"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is a type of containerized web server"",\n    ""summary_er"": ""Nginx is a popular open-source web server software that can be run as a container in a Kubernetes pod.""\n  }\n]', '[\n  {\n    ""source"": ""Ingress controllers"",\n    ""destination"": ""Services"",\n    ""relation_description"": ""are responsible for routing traffic to"",\n    ""summary_er"": ""Ingress controllers route traffic to Services, enabling external access to applications.""\n  },\n  {\n    ""source"": ""Services"",\n    ""destination"": ""Endpoints"",\n    ""relation_description"": ""and"",\n    ""summary_er"": ""Services and Endpoints are related in that Services rely on Endpoints for pod discovery.""\n  }\n]', '[\n  {\n    ""source"": ""nameserver"",\n    ""destination"": ""kube-dns service"",\n    ""relation_description"": ""is a component of the cluster\'s internal DNS server"",\n    ""summary_er"": ""The nameserver serves as an integral part of the cluster\'s internal DNS infrastructure, facilitating domain name resolution within the Kubernetes environment.""\n  }\n]', '[\n  {\n    ""source"": ""Endpoints"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to expose a Service to the outside world"",\n    ""summary_er"": ""Endpoints enable external access to pods by exposing Services to the outside world, allowing users to interact with running containers.""\n  },\n  {\n    ""source"": ""Services"",\n    ""destination"": ""Endpoints"",\n    ""relation_description"": ""and Endpoints"",\n    ""summary_er"": ""Services and Endpoints work together to provide a stable interface for accessing applications, abstracting away pod-specific details and ensuring consistent user experience.""\n  }\n]', '[\n  {\n    ""source"": ""kubernetes-dashboard"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is managed by"",\n    ""summary_er"": ""The Kubernetes Dashboard is a web-based interface that manages and monitors pods in a cluster.""\n  },\n  {\n    ""source"": ""Controller Manager"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The Controller Manager is responsible for managing and scheduling pods in the cluster, ensuring efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""cluster\'s internal DNS server"",\n    ""destination"": ""kube-dns service"",\n    ""relation_description"": ""resolves names to IP addresses within the cluster"",\n    ""summary_er"": ""The cluster\'s internal DNS server resolves pod names to IP addresses, allowing communication between pods in the same cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kube-dns service"",\n    ""destination"": ""nameserver pod"",\n    ""relation_description"": ""is responsible for providing DNS resolution within the cluster"",\n    ""summary_er"": ""Kube-DNS provides DNS resolution to pods, ensuring they can communicate with each other and external services.""\n  }\n]', '[\n  {\n    ""source"": ""Controller Manager"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is managed by"",\n    ""summary_er"": ""The Controller Manager component manages the lifecycle of Controllers, which in turn manage and orchestrate pods within the kube-system namespace.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""is a resource that defines a set of replicas for an application"",\n    ""summary_er"": ""A Deployment is a Kubernetes resource that manages a set of identical pods, ensuring a specified number of replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""DNS add-on"",\n    ""destination"": ""kube-dns service"",\n    ""relation_description"": ""provides DNS resolution within the cluster"",\n    ""summary_er"": ""The DNS add-on provides a service called kube-dns that resolves domain names to IP addresses within the Kubernetes cluster.""\n  }\n]', '[{""source"": ""Ingress resource"", ""destination"": ""Services"", ""relation_description"": ""defines a set of rules for routing traffic to Services"", ""summary_er"": ""The Ingress resource configures how incoming traffic is routed to Services, enabling external access.""}, {""source"": ""Services"", ""destination"": ""Endpoints"", ""relation_description"": ""related services and endpoints"", ""summary_er"": ""Services are related to Endpoints, which represent the actual instances of the service running in the cluster.""}]', '[\n  {\n    ""source"": ""nginx-ingress-controller"",\n    ""destination"": ""Ingress resource"",\n    ""relation_description"": ""is responsible for routing traffic to Services using Ingress resources"",\n    ""summary_er"": ""The nginx-ingress-controller routes traffic to Services via Ingress resources, facilitating service access.""\n  }\n]', '[\n  {\n    ""source"": ""reverse proxy server"",\n    ""destination"": ""Services and Endpoints"",\n    ""relation_description"": ""is used by nginx-ingress-controller to route traffic to Services"",\n    ""summary_er"": ""A reverse proxy server, such as NGINX, is utilized by the ingress controller to forward traffic to services, enabling efficient routing and load balancing.""\n  }\n]', '[\n  {\n    ""source"": ""rc"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines a set of replicas for an application"",\n    ""summary_er"": ""A resource configuration (RC) defines a set of replicas for an application, which is then deployed as one or more pods.""\n  }\n]', '[\n  {\n    ""source"": ""pods"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are the basic execution unit in Kubernetes"",\n    ""summary_er"": ""In Kubernetes, pods are the smallest deployable units that contain one or more application containers.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to monitor changes to resources within the cluster"",\n    ""summary_er"": ""The API server\'s watch mechanism monitors changes to cluster resources, ensuring resource updates are handled efficiently.""\n  }\n]', '[\n  {\n    ""source"": ""kube-system"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a namespace that contains system-level resources"",\n    ""summary_er"": ""The kube-system namespace holds system-level resources, including the Controller Manager pod.""\n  },\n  {\n    ""source"": ""Controller Manager"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a component of the Kubernetes control plane"",\n    ""summary_er"": ""The Controller Manager is a pod that manages cluster resources and scheduling.""\n  }\n]']","Kubernetes cluster's DNS add-on is a Deployment that provides a DNS server for pods to look up services by name or IP addresses. The DNS server pod uses the API server's watch mechanism to update its records with Service and Endpoints changes. Ingress controllers run reverse proxy servers like Nginx, observing resources through the watch mechanism and configuring the proxy server accordingly. Unlike Services, Ingress controllers forward traffic directly to service pods, preserving client IPs when external clients connect.","[{'highlight': ""All pods in the cluster are configured to use the cluster's internal DNS server by default, allowing them to easily look up services by name or even pod's IP addresses.""}, {'highlight': 'The kube-dns service is exposed through a service, allowing the pod to be moved around the cluster like any other pod, and its IP address is specified as the nameserver in /etc/resolv.conf file inside every container deployed in the cluster.'}, {'highlight': 'Most Ingress controllers work by running a reverse proxy server (like Nginx) and keeping it configured according to the Ingress, Service, and Endpoints resources defined in the cluster.'}, {'highlight': ""Ingress controllers forward traffic to the service's pod directly instead of going through the service IP, affecting the preservation of client IPs when external clients connect through the Ingress controller.""}, {'highlight': 'The DNS server and Ingress controller add-ons are similar to the controllers running in the Controller Manager, except that they also accept client connections instead of only observing and modifying resources through the API server.'}]"
+273,362,0,[],"330
+CHAPTER 11
+Understanding Kubernetes internals
+ Other add-ons are similar. They all need to observe the cluster state and perform
+the necessary actions when that changes. We’ll introduce a few other add-ons in this
+and the remaining chapters.
+11.1.10Bringing it all together
+You’ve now learned that the whole Kubernetes system is composed of relatively small,
+loosely coupled components with good separation of concerns. The API server, the
+Scheduler, the individual controllers running inside the Controller Manager, the
+Kubelet, and the kube-proxy all work together to keep the actual state of the system
+synchronized with what you specify as the desired state. 
+ For example, submitting a pod manifest to the API server triggers a coordinated
+dance of various Kubernetes components, which eventually results in the pod’s con-
+tainers running. You’ll learn how this dance unfolds in the next section. 
+11.2
+How controllers cooperate
+You now know about all the components that a Kubernetes cluster is comprised of.
+Now, to solidify your understanding of how Kubernetes works, let’s go over what hap-
+pens when a Pod resource is created. Because you normally don’t create Pods directly,
+you’re going to create a Deployment resource instead and see everything that must
+happen for the pod’s containers to be started.
+11.2.1 Understanding which components are involved
+Even before you start the whole process, the controllers, the Scheduler, and the
+Kubelet are watching the API server for changes to their respective resource types.
+This is shown in figure 11.11. The components depicted in the figure will each play a
+part in the process you’re about to trigger. The diagram doesn’t include etcd, because
+it’s hidden behind the API server, and you can think of the API server as the place
+where objects are stored.
+Master node
+Controller Manager
+Watches
+Deployment
+controller
+Scheduler
+ReplicaSet
+controller
+API server
+Deployments
+Pods
+ReplicaSets
+Watches
+Watches
+Node X
+Watches
+Docker
+Kubelet
+Figure 11.11
+Kubernetes components watching API objects through the API server
+ 
+","[Empty DataFrame
+Columns: [Master node
+Controller Manager API server
+Watches
+Deployment
+Deployments
+controller
+Watches
+ReplicaSet
+ReplicaSets
+controller
+Watches
+Scheduler Pods, Watches, Node X
+Kubelet
+Docker]
+Index: []]","[{'entity': 'API server', 'description': 'The central component that exposes the Kubernetes API.', 'category': 'software'}, {'entity': 'Scheduler', 'description': 'A component responsible for scheduling pods onto nodes.', 'category': 'software'}, {'entity': 'Controller Manager', 'description': 'A component that runs multiple controllers, such as Deployment and ReplicaSet controllers.', 'category': 'software'}, {'entity': 'Kubelet', 'description': 'A component responsible for running containers on nodes.', 'category': 'software'}, {'entity': 'kube-proxy', 'description': 'A network proxy that provides load balancing and service discovery.', 'category': 'software'}, {'entity': 'Pods', 'description': 'The basic execution unit in Kubernetes, consisting of one or more containers.', 'category': 'container'}, {'entity': 'Deployment', 'description': 'A resource that manages the rollout of new versions of an application.', 'category': 'resource'}, {'entity': 'ReplicaSet', 'description': 'A resource that ensures a specified number of replicas of a pod are running at any given time.', 'category': 'resource'}, {'entity': 'etcd', 'description': 'A distributed key-value store used by Kubernetes to store its state.', 'category': 'database'}, {'entity': 'Docker', 'description': 'A container runtime that allows you to run containers on your nodes.', 'category': 'container runtime'}]","[{'source_entity': 'Controller Manager', 'description': 'Manages and coordinates the scheduling of Pods.', 'destination_entity': 'Scheduler'}, {'source_entity': 'Scheduler', 'description': 'Determines the nodes on which to run the Pods based on resource availability.', 'destination_entity': 'Pods'}, {'source_entity': 'kube-proxy', 'description': ""Provides network connectivity for Pods by routing traffic from the API server to the Pod's IP address."", 'destination_entity': 'Pods'}, {'source_entity': 'Controller Manager', 'description': 'Stores and retrieves configuration data for the cluster, such as node information and network settings.', 'destination_entity': 'etcd'}, {'source_entity': 'API server', 'description': ""Provides a RESTful API to interact with the cluster's resources, such as Pods, Services, and Deployments."", 'destination_entity': 'Deployment'}, {'source_entity': 'Kubelet', 'description': 'Manages the lifecycle of Pods on individual nodes, including creation, deletion, and updates.', 'destination_entity': 'Pods'}, {'source_entity': 'ReplicaSet', 'description': 'Ensures a specified number of replicas (identical copies) of an application are running at any given time.', 'destination_entity': 'Deployment'}, {'source_entity': 'Docker', 'description': 'Provides a container runtime environment for Pods to run in, allowing for isolation and resource management.', 'destination_entity': 'Pods'}, {'source_entity': 'API server', 'description': ""Interacts with the cluster's resources, such as Pods, Services, and Deployments, through RESTful API calls."", 'destination_entity': 'Controller Manager'}]","['[\n  {\n    ""source"": ""Controller Manager"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""Manages and coordinates the scheduling of"",\n    ""summary_er"": ""The Controller Manager schedules and manages Pods, ensuring efficient resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""Determines the nodes on which to run the Pods based on resource availability."",\n    ""summary_er"": ""The Scheduler allocates resources for Pods by selecting suitable nodes.""\n  }\n]', '[\n  {\n    ""source"": ""kube-proxy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""Provides network connectivity for Pods by routing traffic from the API server to the Pod\'s IP address."",\n    ""summary_er"": ""Kube-proxy enables communication between pods and the API server, ensuring network connectivity.""\n  }\n]', '[\n  {\n    ""source"": ""Controller Manager"",\n    ""destination"": ""etcd"",\n    ""relation_description"": ""Stores and retrieves configuration data for the cluster, such as node information and network settings."",\n    ""summary_er"": ""The Controller Manager uses etcd to store and retrieve cluster configuration data.""\n  }\n]', '[\n  {\n    ""source"": ""API Server"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""Provides a RESTful API to interact with the cluster\'s resources"",\n    ""summary_er"": ""The API server enables interaction with cluster resources, including pods, through a RESTful interface.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""Manages the lifecycle of Pods on individual nodes, including creation, deletion, and updates."",\n    ""summary_er"": ""Kubelet manages Pod lifecycle on individual nodes, handling creation, deletion, and updates.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""Ensures a specified number of replicas (identical copies)"",\n    ""summary_er"": ""ReplicaSet ensures a specified number of identical Pod copies are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""Docker"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""Provides a container runtime environment"",\n    ""summary_er"": ""Docker provides a container runtime environment for Pods to run in, allowing for isolation and resource management.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""Interacts with cluster\'s resources"",\n    ""summary_er"": ""The API server interacts with Pods to manage cluster resources.""\n  }\n]']","Kubernetes system is composed of small, loosely coupled components that work together to synchronize actual and desired state. The API server triggers a coordinated dance of components when submitting a pod manifest or Deployment resource, resulting in containers running. Controllers, Scheduler, Kubelet, and other components watch the API server for changes and cooperate to create and manage resources such as Pods, Deployments, and ReplicaSets.","[{'highlight': 'The Kubernetes system is composed of small, loosely coupled components with good separation of concerns.'}, {'highlight': 'Components such as the API server, Scheduler, controllers, Kubelet, and kube-proxy work together to keep the actual state synchronized with the desired state.'}, {'highlight': 'Creating a Deployment resource triggers a coordinated dance of various Kubernetes components resulting in containers running.'}, {'highlight': 'Controllers, Scheduler, and Kubelet watch the API server for changes to their respective resource types.'}, {'highlight': 'The API server stores objects such as Deployments, Pods, ReplicaSets, and Nodes, which are watched by other components.'}]"
+274,363,0,[],"331
+How controllers cooperate
+11.2.2 The chain of events
+Imagine you prepared the YAML file containing the Deployment manifest and you’re
+about to submit it to Kubernetes through kubectl. kubectl sends the manifest to the
+Kubernetes API server in an HTTP POST request. The API server validates the Deploy-
+ment specification, stores it in etcd, and returns a response to kubectl. Now a chain
+of events starts to unfold, as shown in figure 11.12.
+THE DEPLOYMENT CONTROLLER CREATES THE REPLICASET
+All API server clients watching the list of Deployments through the API server’s watch
+mechanism are notified of the newly created Deployment resource immediately after
+it’s created. One of those clients is the Deployment controller, which, as we discussed
+earlier, is the active component responsible for handling Deployments. 
+ As you may remember from chapter 9, a Deployment is backed by one or more
+ReplicaSets, which then create the actual pods. As a new Deployment object is
+detected by the Deployment controller, it creates a ReplicaSet for the current speci-
+fication of the Deployment. This involves creating a new ReplicaSet resource
+through the Kubernetes API. The Deployment controller doesn’t deal with individ-
+ual pods at all.
+Master node
+Controller
+Manager
+2. Notiﬁcation
+through watch
+3. Creates
+ReplicaSet
+4. Notiﬁcation
+5. Creates pod
+6. Notiﬁcation
+through watch
+7. Assigns pod to node
+1. Creates Deployment
+resource
+Deployment
+controller
+Scheduler
+kubectl
+ReplicaSet
+controller
+API server
+Deployment A
+Deployments
+ReplicaSets
+Pod A
+Pods
+ReplicaSet A
+Node X
+8. Notiﬁcation
+through watch
+9. Tells Docker to
+run containers
+Docker
+10. Runs
+containers
+Container(s)
+Kubelet
+Figure 11.12
+The chain of events that unfolds when a Deployment resource is posted to the API server
+ 
+","[Empty DataFrame
+Columns: [Master node
+1. Creates Deployment
+resource
+kubectl
+API server
+Controller
+Manager 2. Notification Deployments
+through watch
+Deployment Deployment A
+controller
+3. Creates
+ReplicaSet
+ReplicaSets
+4. Notification
+ReplicaSet ReplicaSet A
+controller
+5. Creates pod
+Pods
+6. Notification
+through watch
+Scheduler Pod A
+7. Assigns pod to node, Node X
+8. Notification
+through watch
+Kubelet
+9. Tells Docker to
+run containers
+Docker
+10. Runs
+containers
+Container(s)]
+Index: [],                                       Col0  Col1  Col2
+0  3. Creates\nReplicaSet\n4. Notification  None  None
+1                                     None            ,    Col0 Container(s)          Col2 Col3
+0  None         None  Container(s)     ]","[{'entity': 'kubectl', 'description': 'command-line tool for interacting with Kubernetes', 'category': 'software'}, {'entity': 'API server', 'description': 'Kubernetes component responsible for validating and storing resources', 'category': 'application'}, {'entity': 'etcd', 'description': 'distributed key-value store used by Kubernetes', 'category': 'database'}, {'entity': 'Deployment controller', 'description': 'component responsible for handling Deployments in Kubernetes', 'category': 'software'}, {'entity': 'ReplicaSet', 'description': 'resource that creates and manages pods in Kubernetes', 'category': 'application'}, {'entity': 'Pod', 'description': 'lightweight and portable container runtime environment', 'category': 'container'}, {'entity': 'Docker', 'description': 'containerization platform used by Kubernetes', 'category': 'software'}, {'entity': 'Kubelet', 'description': 'component responsible for running containers on nodes in a cluster', 'category': 'application'}, {'entity': 'ReplicaSet controller', 'description': 'component responsible for handling ReplicaSets in Kubernetes', 'category': 'software'}, {'entity': 'Deployment', 'description': 'resource that defines the desired state of an application in Kubernetes', 'category': 'application'}, {'entity': 'ReplicaSet A', 'description': 'example ReplicaSet resource', 'category': 'application'}, {'entity': 'Pod A', 'description': 'example Pod resource', 'category': 'container'}, {'entity': 'Node X', 'description': 'example node in a Kubernetes cluster', 'category': 'hardware'}, {'entity': 'Deployment controller', 'description': 'component responsible for handling Deployments in Kubernetes', 'category': 'software'}]","[{'source_entity': 'kubectl', 'description': 'deploys', 'destination_entity': 'Deployment controller'}, {'source_entity': 'Deployment controller', 'description': 'manages', 'destination_entity': 'Pod A'}, {'source_entity': 'Deployment controller', 'description': 'scales', 'destination_entity': 'ReplicaSet A'}, {'source_entity': 'kubectl', 'description': 'deploys', 'destination_entity': 'Pod A'}, {'source_entity': 'Docker', 'description': 'builds', 'destination_entity': 'Image'}, {'source_entity': 'Kubelet', 'description': 'pulls', 'destination_entity': 'Image'}, {'source_entity': 'ReplicaSet controller', 'description': 'ensures', 'destination_entity': 'Pod A'}, {'source_entity': 'API server', 'description': 'provides', 'destination_entity': 'Kubelet'}, {'source_entity': 'etcd', 'description': 'stores', 'destination_entity': 'cluster state'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""Kubectl command deploys a pod to the cluster, creating a new instance of the pod.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment controller"",\n    ""destination"": ""Pod A"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The deployment controller is responsible for managing the lifecycle of Pod A, ensuring it runs and scales as needed.""\n  }\n]', '[\n  {\n    ""source"": ""Deployment controller"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""scales"",\n    ""summary_er"": ""The deployment controller automatically scales the number of running pods to meet changing demands, ensuring high availability and efficient resource utilization.""\n  },\n  {\n    ""source"": ""ReplicaSet A"",\n    ""destination"": ""Deployment controller"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""ReplicaSet A is managed by a deployment controller, which ensures the desired number of replicas are maintained and updated as needed.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""Kubernetes command-line tool deploys a containerized application to a pod, ensuring efficient resource utilization and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""Docker"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""builds"",\n    ""summary_er"": ""Docker builds images for pods, which are then deployed to a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""pulls"",\n    ""summary_er"": ""Kubelet pulls container images for pods, ensuring they have the necessary dependencies to run.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet controller"",\n    ""destination"": ""Pod A"",\n    ""relation_description"": ""ensures"",\n    ""summary_er"": ""The ReplicaSet controller guarantees that a specified number of replicas (in this case, Pod A) are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The API server provides a pod with necessary resources and configuration.""\n  }\n]', '[\n  {\n    ""source"": ""etcd"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores"",\n    ""summary_er"": ""Etcd stores the cluster state for a Kubernetes pod, ensuring data consistency and availability.""\n  }\n]']","When a Deployment manifest is submitted to Kubernetes, the API server validates it and returns a response. The Deployment controller creates a ReplicaSet, which in turn creates pods. A chain of notifications through watch mechanisms triggers this process, involving clients such as kubectl, Scheduler, and Kubelet.","[{'highlight': 'When a YAML file containing a Deployment manifest is submitted to Kubernetes through kubectl, it triggers a chain of events that starts with the API server validating the Deployment specification and storing it in etcd.'}, {'highlight': ""The Deployment controller creates a ReplicaSet for the current specification of the Deployment as soon as it detects the new Deployment object through the API server's watch mechanism.""}, {'highlight': 'The Deployment controller does not deal with individual pods, but rather relies on ReplicaSets to create and manage actual pods.'}, {'highlight': ""The chain of events triggered by a Deployment resource includes notifications through the API server's watch mechanism, creation of a ReplicaSet, assignment of a pod to a node, and running containers using Docker.""}, {'highlight': 'The Kubernetes API server plays a central role in this process, validating the Deployment specification, storing it in etcd, and notifying clients watching the list of Deployments through its watch mechanism.'}]"
+275,364,0,[],"332
+CHAPTER 11
+Understanding Kubernetes internals
+THE REPLICASET CONTROLLER CREATES THE POD RESOURCES
+The newly created ReplicaSet is then picked up by the ReplicaSet controller, which
+watches for creations, modifications, and deletions of ReplicaSet resources in the
+API server. The controller takes into consideration the replica count and pod selec-
+tor defined in the ReplicaSet and verifies whether enough existing Pods match
+the selector.
+ The controller then creates the Pod resources based on the pod template in the
+ReplicaSet (the pod template was copied over from the Deployment when the Deploy-
+ment controller created the ReplicaSet). 
+THE SCHEDULER ASSIGNS A NODE TO THE NEWLY CREATED PODS
+These newly created Pods are now stored in etcd, but they each still lack one import-
+ant thing—they don’t have an associated node yet. Their nodeName attribute isn’t set.
+The Scheduler watches for Pods like this, and when it encounters one, chooses the
+best node for the Pod and assigns the Pod to the node. The Pod’s definition now
+includes the name of the node it should be running on.
+ Everything so far has been happening in the Kubernetes Control Plane. None of
+the controllers that have taken part in this whole process have done anything tangible
+except update the resources through the API server. 
+THE KUBELET RUNS THE POD’S CONTAINERS
+The worker nodes haven’t done anything up to this point. The pod’s containers
+haven’t been started yet. The images for the pod’s containers haven’t even been down-
+loaded yet. 
+ But with the Pod now scheduled to a specific node, the Kubelet on that node can
+finally get to work. The Kubelet, watching for changes to Pods on the API server, sees a
+new Pod scheduled to its node, so it inspects the Pod definition and instructs Docker,
+or whatever container runtime it’s using, to start the pod’s containers. The container
+runtime then runs the containers.
+11.2.3 Observing cluster events
+Both the Control Plane components and the Kubelet emit events to the API server as
+they perform these actions. They do this by creating Event resources, which are like
+any other Kubernetes resource. You’ve already seen events pertaining to specific
+resources every time you used kubectl describe to inspect those resources, but you
+can also retrieve events directly with kubectl get events.
+ Maybe it’s me, but using kubectl get to inspect events is painful, because they’re
+not shown in proper temporal order. Instead, if an event occurs multiple times, the
+event is displayed only once, showing when it was first seen, when it was last seen, and
+the number of times it occurred. Luckily, watching events with the --watch option is
+much easier on the eyes and useful for seeing what’s happening in the cluster. 
+ The following listing shows the events emitted in the process described previously
+(some columns have been removed and the output is edited heavily to make it legible
+in the limited space on the page).
+ 
+",[],"[{'entity': 'ReplicaSet', 'description': 'A Kubernetes resource that manages a set of replicas (identical Pods)', 'category': 'software'}, {'entity': 'Controller', 'description': 'A component that watches for changes to resources and takes action accordingly', 'category': 'software'}, {'entity': 'ReplicaSet Controller', 'description': 'A specific controller that manages ReplicaSets', 'category': 'software'}, {'entity': 'Pod', 'description': 'A Kubernetes resource that represents a running container', 'category': 'software'}, {'entity': 'Scheduler', 'description': 'A component that assigns nodes to Pods based on their requirements', 'category': 'software'}, {'entity': 'Kubelet', 'description': 'A component that runs on worker nodes and manages the execution of Pods', 'category': 'software'}, {'entity': 'Docker', 'description': 'A container runtime that executes containers based on Pod definitions', 'category': 'software'}, {'entity': 'API Server', 'description': 'The central component of the Kubernetes control plane that manages resources and events', 'category': 'software'}, {'entity': 'etcd', 'description': 'A distributed key-value store used by Kubernetes to store cluster state', 'category': 'software'}, {'entity': 'Kubectl', 'description': 'A command-line tool for interacting with the Kubernetes API server', 'category': 'software'}, {'entity': 'Event', 'description': 'A Kubernetes resource that represents a notification about a specific action or change', 'category': 'software'}]","[{'source_entity': '""Kubectl""', 'description': 'executes', 'destination_entity': '""Command""'}, {'source_entity': '""ReplicaSet Controller""', 'description': 'manages', 'destination_entity': '""Pods""'}, {'source_entity': '""Scheduler""', 'description': 'allocates', 'destination_entity': '""Resources""'}, {'source_entity': '""API Server""', 'description': 'communicates with', 'destination_entity': '""etcd""'}, {'source_entity': '""Controller""', 'description': 'monitors', 'destination_entity': '""Pods""'}, {'source_entity': '""ReplicaSet""', 'description': 'ensures', 'destination_entity': '""Required Number of Pods""'}, {'source_entity': '""Kubelet""', 'description': 'pulls and runs', 'destination_entity': '""Docker Containers""'}]","['[\n  {\n    ""source"": ""Kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""Kubectl executes commands on a pod, allowing for remote execution of shell commands within the container.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet Controller"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The ReplicaSet controller manages a set of identical Pods to ensure a specified number of replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allocates"",\n    ""summary_er"": ""The Scheduler entity allocates resources to a pod, ensuring efficient resource utilization and scheduling of containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""API Server"",\n    ""destination"": ""etcd"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The API Server interacts with etcd to manage and store cluster data.""\n  }\n]', '[\n  {\n    ""source"": ""Controller"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""monitors"",\n    ""summary_er"": ""The controller continuously monitors the pods to ensure they are running smoothly and efficiently.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""ensures"",\n    ""summary_er"": ""A ReplicaSet ensures a required number of pods are running at any given time, maintaining application availability and reliability.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""pulls and runs"",\n    ""summary_er"": ""The Kubelet pulls Docker containers and runs them as pods in a Kubernetes cluster.""\n  }\n]']","The ReplicaSet controller creates Pod resources based on a pod template, which are then scheduled by the Scheduler to a specific node. The Kubelet runs the containers on the assigned node, and both the Control Plane components and Kubelet emit events to the API server as they perform these actions.","[{'highlight': 'The ReplicaSet controller creates Pod resources based on the pod template in the ReplicaSet, which was copied over from the Deployment.'}, {'highlight': 'The Scheduler assigns a node to the newly created Pods and updates their definition with the name of the node they should be running on.'}, {'highlight': ""The Kubelet runs the Pod's containers by instructing Docker to start them, after the Pod is scheduled to a specific node.""}, {'highlight': 'Both the Control Plane components and the Kubelet emit events to the API server as they perform actions, which can be retrieved with kubectl get events or watched with --watch option.'}, {'highlight': 'The ReplicaSet controller verifies whether enough existing Pods match the selector defined in the ReplicaSet before creating new Pod resources.'}]"
+276,365,0,[],"333
+Understanding what a running pod is
+$ kubectl get events --watch
+    NAME             KIND         REASON              SOURCE 
+... kubia            Deployment   ScalingReplicaSet   deployment-controller  
+                     ➥ Scaled up replica set kubia-193 to 3
+... kubia-193        ReplicaSet   SuccessfulCreate    replicaset-controller  
+                     ➥ Created pod: kubia-193-w7ll2
+... kubia-193-tpg6j  Pod          Scheduled           default-scheduler   
+                     ➥ Successfully assigned kubia-193-tpg6j to node1
+... kubia-193        ReplicaSet   SuccessfulCreate    replicaset-controller  
+                     ➥ Created pod: kubia-193-39590
+... kubia-193        ReplicaSet   SuccessfulCreate    replicaset-controller  
+                     ➥ Created pod: kubia-193-tpg6j
+... kubia-193-39590  Pod          Scheduled           default-scheduler  
+                     ➥ Successfully assigned kubia-193-39590 to node2
+... kubia-193-w7ll2  Pod          Scheduled           default-scheduler  
+                     ➥ Successfully assigned kubia-193-w7ll2 to node2
+... kubia-193-tpg6j  Pod          Pulled              kubelet, node1  
+                     ➥ Container image already present on machine
+... kubia-193-tpg6j  Pod          Created             kubelet, node1  
+                     ➥ Created container with id 13da752
+... kubia-193-39590  Pod          Pulled              kubelet, node2  
+                     ➥ Container image already present on machine
+... kubia-193-tpg6j  Pod          Started             kubelet, node1  
+                     ➥ Started container with id 13da752
+... kubia-193-w7ll2  Pod          Pulled              kubelet, node2  
+                     ➥ Container image already present on machine
+... kubia-193-39590  Pod          Created             kubelet, node2  
+                     ➥ Created container with id 8850184
+...
+As you can see, the SOURCE column shows the controller performing the action, and
+the NAME and KIND columns show the resource the controller is acting on. The REASON
+column and the MESSAGE column (shown in every second line) give more details
+about what the controller has done.
+11.3
+Understanding what a running pod is
+With the pod now running, let’s look more closely at what a running pod even is. If a
+pod contains a single container, do you think that the Kubelet just runs this single
+container, or is there more to it?
+ You’ve run several pods throughout this book. If you’re the investigative type, you
+may have already snuck a peek at what exactly Docker ran when you created a pod. If
+not, let me explain what you’d see.
+ Imagine you run a single container pod. Let’s say you create an Nginx pod:
+$ kubectl run nginx --image=nginx
+deployment ""nginx"" created
+You can now ssh into the worker node running the pod and inspect the list of run-
+ning Docker containers. I’m using Minikube to test this out, so to ssh into the single
+Listing 11.9
+Watching events emitted by the controllers
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command-line tool for interacting with Kubernetes', 'category': 'application'}, {'entity': 'get', 'description': 'kubectl command to retrieve information about a resource', 'category': 'command'}, {'entity': 'events', 'description': 'resource in Kubernetes that stores events related to controller actions', 'category': 'resource'}, {'entity': 'watch', 'description': 'option for the get command to continuously stream events', 'category': 'command option'}, {'entity': 'NAME', 'description': 'column in the events list that shows the name of the resource being acted on', 'category': 'column'}, {'entity': 'KIND', 'description': 'column in the events list that shows the type of resource being acted on', 'category': 'column'}, {'entity': 'REASON', 'description': 'column in the events list that shows why a controller action was taken', 'category': 'column'}, {'entity': 'SOURCE', 'description': 'column in the events list that shows which controller performed an action', 'category': 'column'}, {'entity': 'deployment-controller', 'description': 'controller responsible for managing deployments in Kubernetes', 'category': 'controller'}, {'entity': 'replicaset-controller', 'description': 'controller responsible for managing replica sets in Kubernetes', 'category': 'controller'}, {'entity': 'default-scheduler', 'description': 'scheduler that assigns pods to nodes by default in Kubernetes', 'category': 'scheduler'}, {'entity': 'pod', 'description': 'resource in Kubernetes that represents a running container or group of containers', 'category': 'resource'}, {'entity': 'container', 'description': 'lightweight and standalone execution environment for an application', 'category': 'process'}, {'entity': 'Docker', 'description': 'container runtime that allows you to run containers on a Linux system', 'category': 'runtime'}, {'entity': 'Minikube', 'description': 'tool for running Kubernetes locally on a single machine', 'category': 'application'}, {'entity': 'ssh', 'description': 'command-line tool for securely accessing a remote system', 'category': 'command'}]","[{'source_entity': 'kubectl', 'description': 'uses to manage containers', 'destination_entity': 'container'}, {'source_entity': 'deployment-controller', 'description': 'manages deployments of', 'destination_entity': 'deployment'}, {'source_entity': 'replicaset-controller', 'description': 'manages replicasets of', 'destination_entity': 'replicaset'}, {'source_entity': 'ssh', 'description': 'connects to remote servers for', 'destination_entity': 'container'}, {'source_entity': 'NAME', 'description': 'is the name of a', 'destination_entity': 'pod'}, {'source_entity': 'get', 'description': 'fetches information about a', 'destination_entity': 'deployment-controller'}, {'source_entity': 'KIND', 'description': 'specifies the type of resource being managed by', 'destination_entity': 'kubectl'}, {'source_entity': 'SOURCE', 'description': 'indicates the source of a resource being managed by', 'destination_entity': 'kubectl'}, {'source_entity': 'default-scheduler', 'description': 'schedules pods for deployment on', 'destination_entity': 'node'}, {'source_entity': 'pod', 'description': 'is a running instance of a container', 'destination_entity': 'container'}, {'source_entity': 'events', 'description': 'are generated by the system to notify about changes in', 'destination_entity': 'deployment-controller'}, {'source_entity': 'Docker', 'description': 'is used to build and run containers for', 'destination_entity': 'container'}, {'source_entity': 'Minikube', 'description': 'is a local development environment that runs on top of', 'destination_entity': 'Kubernetes'}, {'source_entity': 'watch', 'description': 'monitors the output of commands to display updates in real-time for', 'destination_entity': 'kubectl'}, {'source_entity': 'REASON', 'description': 'indicates the reason for a resource being deleted or updated by', 'destination_entity': 'deployment-controller'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to manage"",\n    ""summary_er"": ""Kubectl manages containers within pods, ensuring efficient resource utilization and streamlined deployment processes.""\n  }\n]', '[\n  {\n    ""source"": ""deployment-controller"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages deployments of"",\n    ""summary_er"": ""The deployment controller is responsible for managing the lifecycle of pods, ensuring they are properly deployed and running as expected.""\n  }\n]', '[\n  {\n    ""source"": ""replicaset-controller"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages replicasets of"",\n    ""summary_er"": ""Replicaset controller manages pods by ensuring a specified number of replicas are running.""\n  }\n]', '[\n  {\n    ""source"": ""ssh"",\n    ""destination"": ""pod/container"",\n    ""relation_description"": ""connects to remote servers for"",\n    ""summary_er"": ""SSH establishes secure connections with remote containers, enabling access and management.""\n  }\n]', '[\n  {\n    ""source"": ""NAME"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is the name of a"",\n    ""summary_er"": ""The NAME field in Kubernetes is used to identify a pod, providing its unique identifier.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""NAME"",\n    ""relation_description"": ""and the destination pod"",\n    ""summary_er"": ""A pod in Kubernetes can have a name that serves as its identifier, making it easier to reference and manage.""\n  }\n]', '[\n  {\n    ""source"": ""get"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""fetches information about a"",\n    ""summary_er"": ""A Kubernetes API call that retrieves details about a specific pod, such as its status and configuration.""\n  },\n  {\n    ""source"": ""get"",\n    ""destination"": ""deployment-controller"",\n    ""relation_description"": ""fetches information about a"",\n    ""summary_er"": ""A Kubernetes API call that retrieves details about the deployment controller, which manages deployments of applications.""\n  }\n]', '[\n  {\n    ""source"": ""KIND"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the type of resource being managed by"",\n    ""summary_er"": ""KIND specifies the type of Kubernetes resource, such as a pod or deployment.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""command used to manage pods"",\n    ""summary_er"": ""kubectl is a command-line tool used to interact with Kubernetes resources, including pods.""\n  }\n]', '[\n  {\n    ""source"": ""SOURCE"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""indicates the source of a resource being managed by"",\n    ""summary_er"": ""The SOURCE entity indicates the origin of a resource, which is being managed by Kubernetes.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""and the destination pod"",\n    ""summary_er"": ""The kubectl command interacts with a specific pod, which is the target of its management actions.""\n  }\n]', '[\n  {\n    ""source"": ""default-scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""schedules pods for deployment on"",\n    ""summary_er"": ""The default scheduler assigns pods to nodes, ensuring efficient resource utilization and deployment.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""container"",\n    ""relation_description"": ""is a running instance of a container"",\n    ""summary_er"": ""A pod is a running instance of a container, providing a logical host for one or more containers.""\n  }\n]', '[\n  {\n    ""source"": ""events"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are generated by the system to notify about changes in"",\n    ""summary_er"": ""System-generated events inform about pod updates.""\n  }\n]', '[\n  {\n    ""source"": ""Docker"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to build and run containers for"",\n    ""summary_er"": ""Docker is used to create and manage containers, which are then deployed in a pod.""\n  }\n]', '[\n  {\n    ""source"": ""Minikube"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs on top of"",\n    ""summary_er"": ""Minikube is a local development environment that runs on top of pods, providing a sandboxed environment for Kubernetes applications.""\n  }\n]', '[\n  {\n    ""source"": ""watch"",\n    ""destination"": ""kubectl"",\n    ""relation_description"": ""monitors the output of commands to display updates in real-time for"",\n    ""summary_er"": ""Watch monitors kubectl output in real-time, displaying updates as they occur.""\n  }\n]', '[\n  {\n    ""source"": ""REASON"",\n    ""destination"": ""deployment-controller"",\n    ""relation_description"": ""indicates the reason for a resource being deleted or updated by"",\n    ""summary_er"": ""The REASON entity indicates the cause of a resource deletion or update triggered by deployment-controller.""\n  }\n]']","A running pod is a logical host that can contain one or more containers and has its own IP address. It's created by the Kubelet which runs the container(s) specified in the pod spec. The Kubelet creates a network namespace for each pod, allowing for isolated networking between pods.","[{'highlight': 'A running pod in Kubernetes is a logical host that can contain one or more containers.'}, {'highlight': ""The Kubelet runs a container for each container specified in the pod's configuration, even if it's just one container.""}, {'highlight': ""You can inspect the list of running Docker containers on the worker node by ssh-ing into it and using the 'docker ps' command.""}, {'highlight': 'The SOURCE column in the kubectl get events output shows the controller performing the action, while the NAME and KIND columns show the resource being acted upon.'}, {'highlight': ""A pod's configuration is stored as a Deployment object in Kubernetes, which can be used to manage multiple replicas of the same containerized application.""}]"
+277,366,0,[],"334
+CHAPTER 11
+Understanding Kubernetes internals
+node, I use minikube ssh. If you’re using GKE, you can ssh into a node with gcloud
+compute ssh <node name>.
+ Once you’re inside the node, you can list all the running containers with docker
+ps, as shown in the following listing.
+docker@minikubeVM:~$ docker ps
+CONTAINER ID   IMAGE                  COMMAND                 CREATED
+c917a6f3c3f7   nginx                  ""nginx -g 'daemon off""  4 seconds ago 
+98b8bf797174   gcr.io/.../pause:3.0   ""/pause""                7 seconds ago
+...
+NOTE
+I’ve removed irrelevant information from the previous listing—this
+includes both columns and rows. I’ve also removed all the other running con-
+tainers. If you’re trying this out yourself, pay attention to the two containers
+that were created a few seconds ago. 
+As expected, you see the Nginx container, but also an additional container. Judging
+from the COMMAND column, this additional container isn’t doing anything (the con-
+tainer’s command is ""pause""). If you look closely, you’ll see that this container was
+created a few seconds before the Nginx container. What’s its role?
+ This pause container is the container that holds all the containers of a pod
+together. Remember how all containers of a pod share the same network and other
+Linux namespaces? The pause container is an infrastructure container whose sole
+purpose is to hold all these namespaces. All other user-defined containers of the pod
+then use the namespaces of the pod infrastructure container (see figure 11.13).
+Actual application containers may die and get restarted. When such a container starts
+up again, it needs to become part of the same Linux namespaces as before. The infra-
+structure container makes this possible since its lifecycle is tied to that of the pod—the
+container runs from the time the pod is scheduled until the pod is deleted. If the
+infrastructure pod is killed in the meantime, the Kubelet recreates it and all the pod’s
+containers.
+Listing 11.10
+Listing running Docker containers
+Pod
+Container A
+Container A
+Pod infrastructure
+container
+Container B
+Container B
+Uses Linux
+namespaces from
+Uses Linux
+namespaces from
+Figure 11.13
+A two-container pod results in three running containers 
+sharing the same Linux namespaces.
+ 
+",[],"[{'entity': 'node', 'description': 'a node in a Kubernetes cluster', 'category': 'hardware'}, {'entity': 'minikube', 'description': 'a tool for running Kubernetes locally', 'category': 'software'}, {'entity': 'GKE', 'description': 'Google Kubernetes Engine, a managed Kubernetes service', 'category': 'cloud platform'}, {'entity': 'gcloud', 'description': 'the Google Cloud CLI command-line tool', 'category': 'command'}, {'entity': 'ssh', 'description': 'a secure shell protocol for remote access', 'category': 'protocol'}, {'entity': 'docker', 'description': 'a containerization platform', 'category': 'software'}, {'entity': 'minikubeVM', 'description': 'the virtual machine running minikube', 'category': 'hardware'}, {'entity': 'CONTAINER ID', 'description': 'a unique identifier for a Docker container', 'category': 'attribute'}, {'entity': 'IMAGE', 'description': 'the image used to create a Docker container', 'category': 'attribute'}, {'entity': 'COMMAND', 'description': 'the command run by a Docker container', 'category': 'attribute'}, {'entity': 'pause', 'description': 'a Docker container that holds all the containers of a pod together', 'category': 'container type'}, {'entity': 'Nginx', 'description': 'a web server software running in a Docker container', 'category': 'application'}, {'entity': 'pod infrastructure container', 'description': 'a container that holds all the namespaces for a pod', 'category': 'container type'}, {'entity': 'Kubelet', 'description': 'the agent that runs on each node in a Kubernetes cluster', 'category': 'software'}]","[{'source_entity': '""gcloud""', 'description': 'deploys', 'destination_entity': '""Nginx""'}, {'source_entity': '""ssh""', 'description': 'connects to', 'destination_entity': '""minikubeVM""'}, {'source_entity': '""docker""', 'description': 'runs', 'destination_entity': '""pause""'}, {'source_entity': '""minikube""', 'description': 'manages', 'destination_entity': '""pod infrastructure container""'}, {'source_entity': '""Kubelet""', 'description': 'communicates with', 'destination_entity': '""node""'}, {'source_entity': '""CONTAINER ID""', 'description': 'identifies', 'destination_entity': '""docker container""'}, {'source_entity': '""gcloud""', 'description': 'manages', 'destination_entity': '""GKE""'}, {'source_entity': '""minikube""', 'description': 'runs', 'destination_entity': '""Kubelet""'}]","['[\n  {\n    ""source"": ""gcloud"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""Google Cloud deploys a pod to manage Nginx web server.""\n  }\n]', '[\n  {\n    ""source"": ""ssh"",\n    ""destination"": ""minikubeVM"",\n    ""relation_description"": ""connects to"",\n    ""summary_er"": ""SSH connects Minikube VM for remote access and management.""\n  }\n]', '[\n  {\n    ""source"": ""docker"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""Docker container runs within a Kubernetes pod, providing isolation and resource management.""\n  }\n]', '[\n  {\n    ""source"": ""minikube"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Minikube manages a pod, which is a containerized application running on top of a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""infrastructure"",\n    ""relation_description"": ""container"",\n    ""summary_er"": ""A pod contains one or more containers that provide the infrastructure for a containerized application.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""container"",\n    ""relation_description"": ""infrastructure"",\n    ""summary_er"": ""A pod provides the underlying infrastructure for one or more containers running on top of it.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The Kubelet communicates with a pod to manage and monitor its lifecycle.""\n  }\n]', '[\n  {\n    ""source"": ""CONTAINER ID"",\n    ""destination"": ""docker container"",\n    ""relation_description"": ""identifies"",\n    ""summary_er"": ""A unique identifier assigned to a Docker container, used to track and manage its lifecycle.""\n  }\n]', '[\n  {\n    ""source"": ""gcloud"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Google Cloud\'s gcloud command-line tool manages Kubernetes Engine (GKE) pods, providing a scalable and secure environment for containerized applications.""\n  },\n  {\n    ""source"": ""gcloud"",\n    ""destination"": ""GKE"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The gcloud tool enables users to manage Google Kubernetes Engine (GKE), a fully managed, load-balanced platform for running containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""minikube"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""Minikube, a Kubernetes cluster manager, runs on top of a pod, which is the basic execution unit in Kubernetes.""\n  }\n]']","Kubernetes uses an additional 'pause' container to hold all containers of a pod together, sharing network and other Linux namespaces. This infrastructure container runs from pod scheduling until deletion, allowing application containers to reuse these namespaces if restarted.","[{'highlight': 'You can list all the running containers with docker ps command.'}, {'highlight': 'The pause container is an infrastructure container that holds all the containers of a pod together, sharing the same network and other Linux namespaces.'}, {'highlight': 'Actual application containers may die and get restarted, but the infrastructure container makes it possible for them to become part of the same Linux namespaces as before.'}, {'highlight': 'The Kubelet recreates the infrastructure pod and all its containers if it is killed in the meantime.'}, {'highlight': 'A two-container pod results in three running containers sharing the same Linux namespaces, including a pod infrastructure container.'}]"
+278,367,0,[],"335
+Inter-pod networking
+11.4
+Inter-pod networking
+By now, you know that each pod gets its own unique IP address and can communicate
+with all other pods through a flat, NAT-less network. How exactly does Kubernetes
+achieve this? In short, it doesn’t. The network is set up by the system administrator or
+by a Container Network Interface (CNI) plugin, not by Kubernetes itself. 
+11.4.1 What the network must be like
+Kubernetes doesn’t require you to use a specific networking technology, but it does
+mandate that the pods (or to be more precise, their containers) can communicate
+with each other, regardless if they’re running on the same worker node or not. The
+network the pods use to communicate must be such that the IP address a pod sees as
+its own is the exact same address that all other pods see as the IP address of the pod in
+question. 
+ Look at figure 11.14. When pod A connects to (sends a network packet to) pod B,
+the source IP pod B sees must be the same IP that pod A sees as its own. There should
+be no network address translation (NAT) performed in between—the packet sent by
+pod A must reach pod B with both the source and destination address unchanged.
+This is important, because it makes networking for applications running inside pods
+simple and exactly as if they were running on machines connected to the same net-
+work switch. The absence of NAT between pods enables applications running inside
+them to self-register in other pods. 
+Node 1
+Pod A
+IP: 10.1.1.1
+srcIP: 10.1.1.1
+dstIP: 10.1.2.1
+srcIP: 10.1.1.1
+dstIP: 10.1.2.1
+Packet
+Node 2
+Pod B
+IP: 10.1.2.1
+srcIP: 10.1.1.1
+dstIP: 10.1.2.1
+Packet
+Network
+No NAT (IPs
+are preserved)
+Figure 11.14
+Kubernetes mandates pods are connected through a NAT-less 
+network.
+ 
+","[  No NAT (IPs\nare preserved)\nNode 1 Node 2\nPod A Pod B\nIP: 10.1.1.1 IP: 10.1.2.1\nPacket Packet\nsrcIP: 10.1.1.1 srcIP: 10.1.1.1\ndstIP: 10.1.2.1 dstIP: 10.1.2.1  \
+0  Node 1\nPod A\nIP: 10.1.1.1\nPacket\nsrcIP: 10...                                                                                                                    
+1                                                                                                                                                                       
+2                                            Network                                                                                                                    
+3                   srcIP: 10.1.1.1\ndstIP: 10.1.2.1                                                                                                                    
+
+                                                Col1  Col2  
+0  Node 2\nPod B\nIP: 10.1.2.1\nPacket\nsrcIP: 10...  None  
+1                                               None        
+2                                               None  None  
+3                                               None  None  ]","[{'entity': 'Inter-pod networking', 'description': 'communication between pods in Kubernetes', 'category': 'application'}, {'entity': 'pod', 'description': 'a container running on a node in Kubernetes', 'category': 'container'}, {'entity': 'IP address', 'description': 'unique identifier for each pod', 'category': 'network'}, {'entity': 'Kubernetes', 'description': 'container orchestration system', 'category': 'software'}, {'entity': 'CNI plugin', 'description': 'Container Network Interface plugin', 'category': 'framework'}, {'entity': 'NAT', 'description': 'Network Address Translation', 'category': 'networking'}, {'entity': 'packet', 'description': 'data sent over a network', 'category': 'networking'}, {'entity': 'Node 1', 'description': 'a node in the Kubernetes cluster', 'category': 'hardware'}, {'entity': 'Pod A', 'description': 'a pod running on Node 1', 'category': 'container'}, {'entity': 'IP: 10.1.1.1', 'description': 'IP address of Pod A', 'category': 'network'}, {'entity': 'srcIP: 10.1.1.1', 'description': 'source IP address of packet sent by Pod A', 'category': 'network'}, {'entity': 'dstIP: 10.1.2.1', 'description': 'destination IP address of packet sent by Pod A', 'category': 'network'}, {'entity': 'Node 2', 'description': 'a node in the Kubernetes cluster', 'category': 'hardware'}, {'entity': 'Pod B', 'description': 'a pod running on Node 2', 'category': 'container'}]","[{'source_entity': '""NAT""', 'description': 'performs network address translation on', 'destination_entity': '""Pod B""'}, {'source_entity': '""srcIP: 10.1.1.1""', 'description': 'sends packets to', 'destination_entity': '""dstIP: 10.1.2.1""'}, {'source_entity': '""CNI plugin""', 'description': 'manages network connectivity for', 'destination_entity': '""Pod A""'}, {'source_entity': '""Pod A""', 'description': 'communicates with', 'destination_entity': '""Pod B""'}, {'source_entity': '""IP: 10.1.1.1""', 'description': 'belongs to', 'destination_entity': '""Pod A""'}, {'source_entity': '""Kubernetes""', 'description': 'manages and orchestrates', 'destination_entity': '""pod""'}, {'source_entity': '""Node 1""', 'description': 'hosts', 'destination_entity': '""Pod A""'}, {'source_entity': '""Node 2""', 'description': 'hosts', 'destination_entity': '""Pod B""'}, {'source_entity': '""Inter-pod networking""', 'description': 'facilitates communication between', 'destination_entity': '""pod""'}, {'source_entity': '""packet""', 'description': 'is transmitted over', 'destination_entity': '""IP address""'}]","['[\n  {\n    ""source"": ""NAT"",\n    ""destination"": ""Pod B"",\n    ""relation_description"": ""performs network address translation on"",\n    ""summary_er"": ""The NAT performs network address translation for Pod B, allowing it to communicate with other pods and services.""\n  }\n]', '[\n  {\n    ""source"": ""srcIP: 10.1.1.1"",\n    ""destination"": ""dstIP: 10.1.2.1"",\n    ""relation_description"": ""sends packets to"",\n    ""summary_er"": ""The source IP address `10.1.1.1` sends packets to the destination IP address `10.1.2.1`, indicating a network communication between two pods.""\n  },\n  {\n    ""source"": ""dstIP: 10.1.2.1"",\n    ""destination"": ""srcIP: 10.1.1.1"",\n    ""relation_description"": ""receives packets from"",\n    ""summary_er"": ""The destination IP address `10.1.2.1` receives packets from the source IP address `10.1.1.1`, indicating a network communication between two pods.""\n  },\n  {\n    ""source"": ""srcIP: 10.1.1.1"",\n    ""destination"": ""dstIP: 10.1.2.1"",\n    ""relation_description"": ""establishes connection with"",\n    ""summary_er"": ""The source IP address `10.1.1.1` establishes a connection with the destination IP address `10.1.2.1`, indicating a network communication setup between two pods.""\n  },\n  {\n    ""source"": ""dstIP: 10.1.2.1"",\n    ""destination"": ""srcIP: 10.1.1.1"",\n    ""relation_description"": ""maintains connection with"",\n    ""summary_er"": ""The destination IP address `10.1.2.1` maintains a connection with the source IP address `10.1.1.1`, indicating an ongoing network communication between two pods.""\n  }\n]', '[\n  {\n    ""source"": ""CNI plugin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages network connectivity for"",\n    ""summary_er"": ""The CNI plugin manages network connectivity for a pod, ensuring it can communicate with other pods and services within the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Pod A"",\n    ""destination"": ""Pod B"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""Pod A exchanges data or messages with Pod B, enabling them to work together in a Kubernetes cluster.""\n  }\n]', '[{\n    ""source"": ""IP"",\n    ""destination"": ""Pod A"",\n    ""relation_description"": ""belongs to"",\n    ""summary_er"": ""The IP address 10.1.1.1 is assigned to and belongs to the pod named \\""Pod A\\"", which is a containerized application running on a Kubernetes cluster.""\n}]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages and orchestrates"",\n    ""summary_er"": ""Kubernetes manages and orchestrates pods, ensuring efficient resource allocation and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""Node 1"",\n    ""destination"": ""Pod A"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""Node 1 hosts Pod A, indicating that Node 1 provides a runtime environment for Pod A to execute.""\n  }\n]', '[\n    {\n        ""source"": ""Node 2"",\n        ""destination"": ""Pod B"",\n        ""relation_description"": ""hosts"",\n        ""summary_er"": ""Node 2 hosts Pod B, indicating a container runtime environment where Pod B is executed.""\n    }\n]', '[\n  {\n    ""source"": ""inter-pod networking"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""facilitates communication between"",\n    ""summary_er"": ""Inter-pod networking enables communication between pods, allowing them to exchange data and collaborate.""\n  }\n]', '[\n  {\n    ""source"": ""packet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is transmitted over"",\n    ""summary_er"": ""A packet of data is sent from one point to another within a pod, utilizing the pod\'s network infrastructure.""\n  },\n  {\n    ""source"": ""packet"",\n    ""destination"": ""IP address"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""An IP address is embedded within each packet, serving as a unique identifier for data transmission and routing purposes.""\n  }\n]']","Kubernetes achieves inter-pod networking by not setting up the network itself, but rather relying on system administrators or CNI plugins to do so. The network must allow pods to communicate with each other without NAT and with the same IP addresses visible to all pods. This enables simple networking for applications running inside pods as if they were connected to the same network switch.","[{'highlight': ""Kubernetes doesn't require you to use a specific networking technology, but it does mandate that the pods can communicate with each other.""}, {'highlight': 'The network the pods use to communicate must be such that the IP address a pod sees as its own is the exact same address that all other pods see as the IP address of the pod in question.'}, {'highlight': 'There should be no network address translation (NAT) performed in between—the packet sent by pod A must reach pod B with both the source and destination address unchanged.'}, {'highlight': 'Kubernetes mandates pods are connected through a NAT-less network.'}, {'highlight': 'The absence of NAT between pods enables applications running inside them to self-register in other pods.'}]"
+279,368,0,[],"336
+CHAPTER 11
+Understanding Kubernetes internals
+ For example, say you have a client pod X and pod Y, which provides a kind of noti-
+fication service to all pods that register with it. Pod X connects to pod Y and tells it,
+“Hey, I’m pod X, available at IP 1.2.3.4; please send updates to me at this IP address.”
+The pod providing the service can connect to the first pod by using the received
+IP address. 
+ The requirement for NAT-less communication between pods also extends to pod-
+to-node and node-to-pod communication. But when a pod communicates with ser-
+vices out on the internet, the source IP of the packets the pod sends does need to be
+changed, because the pod’s IP is private. The source IP of outbound packets is
+changed to the host worker node’s IP address.
+ Building a proper Kubernetes cluster involves setting up the networking according
+to these requirements. There are various methods and technologies available to do
+this, each with its own benefits or drawbacks in a given scenario. Because of this, we’re
+not going to go into specific technologies. Instead, let’s explain how inter-pod net-
+working works in general. 
+11.4.2 Diving deeper into how networking works
+In section 11.3, we saw that a pod’s IP address and network namespace are set up and
+held by the infrastructure container (the pause container). The pod’s containers then
+use its network namespace. A pod’s network interface is thus whatever is set up in the
+infrastructure container. Let’s see how the interface is created and how it’s connected
+to the interfaces in all the other pods. Look at figure 11.15. We’ll discuss it next.
+ENABLING COMMUNICATION BETWEEN PODS ON THE SAME NODE
+Before the infrastructure container is started, a virtual Ethernet interface pair (a veth
+pair) is created for the container. One interface of the pair remains in the host’s
+namespace (you’ll see it listed as vethXXX when you run ifconfig on the node),
+whereas the other is moved into the container’s network namespace and renamed
+eth0. The two virtual interfaces are like two ends of a pipe (or like two network
+devices connected by an Ethernet cable)—what goes in on one side comes out on the
+other, and vice-versa. 
+Node
+Pod A
+eth0
+10.1.1.1
+veth123
+Pod B
+eth0
+10.1.1.2
+veth234
+Bridge
+10.1.1.0/24
+This is pod A’s
+veth pair.
+This is pod B’s
+veth pair.
+Figure 11.15
+Pods on a node are 
+connected to the same bridge through 
+virtual Ethernet interface pairs.
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'Pod X', 'description': 'Client pod providing notification service', 'category': 'container'}, {'entity': 'Pod Y', 'description': 'Notification service pod', 'category': 'container'}, {'entity': 'IP address', 'description': 'Unique identifier for a network interface', 'category': 'network'}, {'entity': 'NAT-less communication', 'description': 'Communication between pods without network address translation', 'category': 'process'}, {'entity': 'pause container', 'description': ""Infrastructure container holding pod's IP address and network namespace"", 'category': 'container'}, {'entity': 'veth pair', 'description': 'Virtual Ethernet interface pair for communication between pods', 'category': 'network'}, {'entity': 'eth0', 'description': ""Pod's network interface"", 'category': 'interface'}, {'entity': 'bridge', 'description': 'Network bridge connecting pods on the same node', 'category': 'network'}, {'entity': 'node-to-pod communication', 'description': 'Communication between a node and a pod', 'category': 'process'}, {'entity': 'pod-to-node communication', 'description': 'Communication between a pod and a node', 'category': 'process'}, {'entity': 'outbound packets', 'description': 'Packets sent from a pod to the internet', 'category': 'network'}]","[{'source_entity': '""Pod X""', 'description': 'establishes a veth pair with', 'destination_entity': '""veth pair""'}, {'source_entity': '""Pod X""', 'description': 'uses to communicate with', 'destination_entity': '""bridge""'}, {'source_entity': '""Pod Y""', 'description': 'establishes a veth pair with', 'destination_entity': '""veth pair""'}, {'source_entity': '""Pod Y""', 'description': 'uses to communicate with', 'destination_entity': '""bridge""'}, {'source_entity': '""Pod X""', 'description': 'exchanges pod-to-node communication with', 'destination_entity': '""node-to-pod communication""'}, {'source_entity': '""Pod Y""', 'description': 'exchanges pod-to-node communication with', 'destination_entity': '""node-to-pod communication""'}, {'source_entity': '""pause container""', 'description': 'establishes NAT-less communication with', 'destination_entity': '""NAT-less communication""'}, {'source_entity': '""Pod X""', 'description': 'uses to communicate with', 'destination_entity': '""pod-to-node communication""'}, {'source_entity': '""Pod Y""', 'description': 'uses to communicate with', 'destination_entity': '""pod-to-node communication""'}, {'source_entity': '""pause container""', 'description': 'uses to establish a connection with', 'destination_entity': '""IP address""'}, {'source_entity': '""Pod X""', 'description': 'sends outbound packets through', 'destination_entity': '""eth0""'}, {'source_entity': '""Pod Y""', 'description': 'sends outbound packets through', 'destination_entity': '""eth0""'}]","['[\n  {\n    ""source"": ""Pod X"",\n    ""destination"": ""veth pair"",\n    ""relation_description"": ""establishes a veth pair with"",\n    ""summary_er"": ""A Pod establishes a virtual Ethernet (veth) pair to communicate with another pod.""\n  }\n]', '[\n  {\n    ""source"": ""Pod X"",\n    ""destination"": ""bridge"",\n    ""relation_description"": ""uses to communicate with"",\n    ""summary_er"": ""Pod X uses bridge to communicate with other pods.""\n  }\n]', '[\n  {\n    ""source"": ""Pod Y"",\n    ""destination"": ""veth pair"",\n    ""relation_description"": ""establishes a veth pair with"",\n    ""summary_er"": ""Pod Y establishes a virtual Ethernet (veth) pair with another pod, enabling communication between them.""\n  }\n]', '[\n  {\n    ""source"": ""Pod Y"",\n    ""destination"": ""bridge"",\n    ""relation_description"": ""uses to communicate with"",\n    ""summary_er"": ""Pod Y uses bridge to communicate with other pods.""\n  }\n]', '[\n  {\n    ""source"": ""Pod X"",\n    ""destination"": ""Destination Pod"",\n    ""relation_description"": ""exchanges pod-to-node communication with"",\n    ""summary_er"": ""Pod X exchanges pod-to-node communication with Destination Pod, enabling efficient data transfer between them.""\n  }\n]', '[\n  {\n    ""source"": ""Pod Y"",\n    ""destination"": ""Node"",\n    ""relation_description"": ""exchanges pod-to-node communication with"",\n    ""summary_er"": ""Pod Y exchanges data with Node for efficient communication.""\n  },\n  {\n    ""source"": ""Node"",\n    ""destination"": ""Pod Y"",\n    ""relation_description"": ""node-to-pod communication"",\n    ""summary_er"": ""Node sends and receives data to/from Pod Y for seamless interaction.""\n  }\n]', '[\n  {\n    ""source"": ""pause container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""establishes NAT-less communication with"",\n    ""summary_er"": ""The pause container enables NAT-less communication between containers in a pod, allowing them to communicate directly without network address translation.""\n  }\n]', '[\n  {\n    ""source"": ""Pod X"",\n    ""destination"": ""Destination Pod"",\n    ""relation_description"": ""uses to communicate with"",\n    ""summary_er"": ""Pod X communicates with Destination Pod for pod-to-node communication.""\n  }\n]', '[\n  {\n    ""source"": ""Pod Y"",\n    ""destination"": ""Node"",\n    ""relation_description"": ""uses to communicate with"",\n    ""summary_er"": ""Pod Y uses Node for inter-pod communication.""\n  },\n  {\n    ""source"": ""Pod Y"",\n    ""destination"": ""Pod X"",\n    ""relation_description"": ""pod-to-node communication"",\n    ""summary_er"": ""Pod Y communicates with Pod X through node-level protocols.""\n  }\n]', '[\n  {\n    ""source"": ""pause container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to establish a connection with"",\n    ""summary_er"": ""The pause container establishes a connection with a pod, allowing for communication and resource sharing.""\n  },\n  {\n    ""source"": ""IP address"",\n    ""destination"": ""container"",\n    ""relation_description"": ""used by"",\n    ""summary_er"": ""An IP address is used by a container to establish network connectivity and communicate with other containers or external networks.""\n  }\n]', '[\n  {\n    ""source"": ""Pod X"",\n    ""destination"": ""eth0"",\n    ""relation_description"": ""sends outbound packets through"",\n    ""summary_er"": ""Pod X sends data to eth0 via network interface.""\n  }\n]', '[\n  {\n    ""source"": ""Pod Y"",\n    ""destination"": ""eth0"",\n    ""relation_description"": ""sends outbound packets through"",\n    ""summary_er"": ""Pod Y sends network traffic to eth0 interface.""\n  }\n]']","A Kubernetes cluster's inter-pod networking works by creating a virtual Ethernet interface pair (veth pair) for each pod, connecting it to the same bridge as other pods on the same node. The pod's containers use its network namespace and IP address, which is set up and held by the infrastructure container (pause container). This allows communication between pods on the same node without needing NAT.","[{'highlight': ""A pod's IP address and network namespace are set up and held by the infrastructure container (the pause container).""}, {'highlight': 'Before the infrastructure container is started, a virtual Ethernet interface pair (a veth pair) is created for the container.'}, {'highlight': 'Pods on a node are connected to the same bridge through virtual Ethernet interface pairs.'}, {'highlight': ""The source IP of outbound packets from a pod is changed to the host worker node's IP address when communicating with services out on the internet.""}, {'highlight': ""A pod's network interface is whatever is set up in the infrastructure container, and its containers use its network namespace.""}]"

@@ -1,0 +1,522 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+330,419,0,[],"387
+Configuring the container’s security context
+spec:
+  containers:
+  - name: main
+    image: alpine
+    command: [""/bin/sleep"", ""999999""]
+    securityContext:                      
+      readOnlyRootFilesystem: true        
+    volumeMounts:                      
+    - name: my-volume                  
+      mountPath: /volume               
+      readOnly: false                  
+  volumes:
+  - name: my-volume
+    emptyDir:
+When you deploy this pod, the container is running as root, which has write permis-
+sions to the / directory, but trying to write a file there fails:
+$ kubectl exec -it pod-with-readonly-filesystem touch /new-file
+touch: /new-file: Read-only file system
+On the other hand, writing to the mounted volume is allowed:
+$ kubectl exec -it pod-with-readonly-filesystem touch /volume/newfile
+$ kubectl exec -it pod-with-readonly-filesystem -- ls -la /volume/newfile
+-rw-r--r--    1 root     root       0 May  7 19:11 /mountedVolume/newfile
+As shown in the example, when you make the container’s filesystem read-only, you’ll
+probably want to mount a volume in every directory the application writes to (for
+example, logs, on-disk caches, and so on).
+TIP
+To increase security, when running pods in production, set their con-
+tainer’s readOnlyRootFilesystem property to true.
+SETTING SECURITY CONTEXT OPTIONS AT THE POD LEVEL
+In all these examples, you’ve set the security context of an individual container. Sev-
+eral of these options can also be set at the pod level (through the pod.spec.security-
+Context property). They serve as a default for all the pod’s containers but can be
+overridden at the container level. The pod-level security context also allows you to set
+additional properties, which we’ll explain next.
+13.2.7 Sharing volumes when containers run as different users
+In chapter 6, we explained how volumes are used to share data between the pod’s
+containers. You had no trouble writing files in one container and reading them in
+the other. 
+ But this was only because both containers were running as root, giving them full
+access to all the files in the volume. Now imagine using the runAsUser option we
+explained earlier. You may need to run the two containers as two different users (per-
+haps you’re using two third-party container images, where each one runs its process
+This container’s filesystem 
+can’t be written to...
+...but writing to /volume is 
+allowed, becase a volume 
+is mounted there.
+ 
+",[],"[{'entity': 'container', 'description': 'A lightweight and portable software package that includes an application and its dependencies.', 'category': 'software'}, {'entity': 'security context', 'description': 'A set of options that define the security settings for a container or pod.', 'category': 'process'}, {'entity': 'readOnlyRootFilesystem', 'description': 'An option in the security context that makes the root filesystem read-only.', 'category': 'process'}, {'entity': 'volumeMounts', 'description': 'A list of volumes that are mounted to a container.', 'category': 'container'}, {'entity': 'volumes', 'description': 'A list of persistent storage resources that can be shared among containers in a pod.', 'category': 'database'}, {'entity': 'emptyDir', 'description': 'A type of volume that is stored on the host node and is not persisted across restarts.', 'category': 'database'}, {'entity': 'kubectl', 'description': 'A command-line tool for interacting with a Kubernetes cluster.', 'category': 'application'}, {'entity': 'exec', 'description': 'A command in kubectl that allows you to execute a command inside a container.', 'category': 'command'}, {'entity': 'touch', 'description': 'A command that creates a new file or updates the timestamp of an existing file.', 'category': 'command'}, {'entity': 'ls', 'description': 'A command that lists the contents of a directory.', 'category': 'command'}, {'entity': 'runAsUser', 'description': 'An option in the security context that specifies the user ID under which a container should run.', 'category': 'process'}, {'entity': 'pod', 'description': 'A logical host for one or more containers, providing shared resources and networking.', 'category': 'application'}, {'entity': 'spec', 'description': 'The configuration section of a pod that defines its properties and behavior.', 'category': 'process'}]","[{'source_entity': 'container', 'description': 'has', 'destination_entity': 'spec'}, {'source_entity': 'spec', 'description': 'defines', 'destination_entity': 'runAsUser'}, {'source_entity': 'spec', 'description': 'defines', 'destination_entity': 'readOnlyRootFilesystem'}, {'source_entity': 'kubectl', 'description': 'uses', 'destination_entity': 'exec'}, {'source_entity': 'kubectl', 'description': 'runs', 'destination_entity': 'touch'}, {'source_entity': 'spec', 'description': 'includes', 'destination_entity': 'volumes'}, {'source_entity': 'spec', 'description': 'defines', 'destination_entity': 'volumeMounts'}, {'source_entity': 'pod', 'description': 'contains', 'destination_entity': 'container'}, {'source_entity': 'container', 'description': 'uses', 'destination_entity': 'ls'}, {'source_entity': 'emptyDir', 'description': 'is used by', 'destination_entity': 'container'}]","['[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""has"",\n    ""summary_er"": ""A container is a runtime environment for an application, and a pod is a logical host that can run one or more containers.""\n  }\n]', '[\n  {\n    ""source"": ""spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""The spec section of a Kubernetes configuration defines the characteristics of a pod, including its runAsUser attribute.""\n  },\n  {\n    ""source"": ""runAsUser"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""attribute"",\n    ""summary_er"": ""The runAsUser attribute in a Kubernetes pod specification determines the user ID under which the container runs.""\n  }\n]', '[\n  {\n    ""source"": ""spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""The spec field in a Kubernetes Pod definition specifies the configuration for the container, including settings such as readOnlyRootFilesystem.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) utilizes pods for container execution.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""exec"",\n    ""relation_description"": ""exec"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) executes commands within pod containers using exec.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""Kubernetes command that deploys and manages pods in a cluster.""\n  }\n]', '[\n  {\n    ""source"": ""spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""includes"",\n    ""summary_er"": ""The Pod specification defines the characteristics of a containerized application, including its configuration and dependencies.""\n  },\n  {\n    ""source"": ""spec"",\n    ""destination"": ""volumes"",\n    ""relation_description"": ""includes"",\n    ""summary_er"": ""A volume is a directory that can be used to persist data across pod restarts or even between pods in the same cluster.""\n  }\n]', '[\n  {\n    ""source"": ""spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""The specification defines the characteristics of a pod, including its configuration and behavior.""\n  },\n  {\n    ""source"": ""spec"",\n    ""destination"": ""volumeMounts"",\n    ""relation_description"": ""includes"",\n    ""summary_er"": ""The specification includes details about volume mounts within a pod, such as file system access.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""container"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A pod contains one or more containers, which are the smallest units of deployment in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A container uses a pod as its runtime environment, leveraging the pod\'s resources and capabilities.""\n  }\n]', '[\n  {\n    ""source"": ""emptyDir"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used by"",\n    ""summary_er"": ""Empty Dir provides temporary storage for a pod, allowing it to use files without persisting them across restarts.""\n  }\n]']","When configuring a pod's security context, setting the container's readOnlyRootFilesystem property to true makes the filesystem read-only, preventing write access to the / directory. However, writing to a mounted volume is allowed. To increase security in production environments, set this property to true at the pod level or override it at the container level.","[{'highlight': 'When you deploy this pod, the container is running as root, which has write permissions to the / directory, but trying to write a file there fails: touch /new-file'}, {'highlight': 'On the other hand, writing to the mounted volume is allowed: $ kubectl exec -it pod-with-readonly-filesystem touch /volume/newfile'}, {'highlight': 'To increase security, when running pods in production, set their container’s readOnlyRootFilesystem property to true.'}, {'highlight': 'You may need to run the two containers as two different users (perhaps you’re using two third-party container images, where each one runs its process'}, {'highlight': 'When you make the container’s filesystem read-only, you’ll probably want to mount a volume in every directory the application writes to (for example, logs, on-disk caches, and so on).'}]"
+331,420,0,[],"388
+CHAPTER 13
+Securing cluster nodes and the network
+under its own specific user). If those two containers use a volume to share files, they
+may not necessarily be able to read or write files of one another. 
+ That’s why Kubernetes allows you to specify supplemental groups for all the pods
+running in the container, allowing them to share files, regardless of the user IDs
+they’re running as. This is done using the following two properties:
+
+fsGroup
+
+supplementalGroups
+What they do is best explained in an example, so let’s see how to use them in a pod
+and then see what their effect is. The next listing describes a pod with two containers
+sharing the same volume.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-with-shared-volume-fsgroup
+spec:
+  securityContext:                       
+    fsGroup: 555                         
+    supplementalGroups: [666, 777]       
+  containers:
+  - name: first
+    image: alpine
+    command: [""/bin/sleep"", ""999999""]
+    securityContext:                     
+      runAsUser: 1111                    
+    volumeMounts:                               
+    - name: shared-volume                       
+      mountPath: /volume
+      readOnly: false
+  - name: second
+    image: alpine
+    command: [""/bin/sleep"", ""999999""]
+    securityContext:                     
+      runAsUser: 2222                    
+    volumeMounts:                               
+    - name: shared-volume                       
+      mountPath: /volume
+      readOnly: false
+  volumes:                                      
+  - name: shared-volume                         
+    emptyDir:
+After you create this pod, run a shell in its first container and see what user and group
+IDs the container is running as:
+$ kubectl exec -it pod-with-shared-volume-fsgroup -c first sh
+/ $ id
+uid=1111 gid=0(root) groups=555,666,777
+Listing 13.14
+fsGroup & supplementalGroups: pod-with-shared-volume-fsgroup.yaml
+The fsGroup and supplementalGroups 
+are defined in the security context at 
+the pod level.
+The first container 
+runs as user ID 1111.
+Both containers 
+use the same 
+volume
+The second
+container
+runs as user
+ID 2222.
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'fsGroup', 'description': 'Property to specify supplemental groups for all pods running in a container', 'category': 'process'}, {'entity': 'supplementalGroups', 'description': 'Property to specify additional groups for all pods running in a container', 'category': 'process'}, {'entity': 'Pod', 'description': 'Basic execution unit in Kubernetes', 'category': 'software'}, {'entity': 'Container', 'description': 'Lightweight and standalone execution environment', 'category': 'software'}, {'entity': 'Volume', 'description': 'Shared storage for multiple containers', 'category': 'process'}, {'entity': 'EmptyDir', 'description': 'In-memory volume that is deleted when the pod is terminated', 'category': 'process'}, {'entity': 'Security Context', 'description': 'Configuration to specify security settings for a pod or container', 'category': 'software'}, {'entity': 'fsGroup ID', 'description': 'User ID used by containers to access shared files', 'category': 'hardware'}, {'entity': 'Supplemental Group IDs', 'description': 'Additional group IDs used by containers to access shared files', 'category': 'hardware'}, {'entity': 'kubectl', 'description': 'Command-line tool for managing Kubernetes clusters', 'category': 'software'}, {'entity': 'exec', 'description': 'Command to execute a command in a container', 'category': 'process'}]","[{'source_entity': 'Kubernetes', 'description': 'manages', 'destination_entity': 'Pod'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages pods by orchestrating their creation, scaling, and termination.""\n  }\n]']","Kubernetes allows specifying supplemental groups for pods to share files, regardless of user IDs. The fsGroup and supplementalGroups properties are used in a pod's security context to achieve this. An example is provided where two containers with different user IDs share the same volume, and the container running as user ID 1111 can read or write files of the container running as user ID 2222 due to the shared group permissions.","[{'highlight': 'Kubernetes allows you to specify supplemental groups for all the pods running in the container, allowing them to share files, regardless of the user IDs they’re running as.'}, {'highlight': 'The fsGroup and supplementalGroups are defined in the security context at the pod level.'}, {'highlight': 'Both containers use the same volume, but may not necessarily be able to read or write files of one another due to different user IDs.'}, {'highlight': 'fsGroup is used to specify a single group ID for all pods running in the container, while supplementalGroups allows multiple group IDs to be specified.'}, {'highlight': 'The first and second containers run as user IDs 1111 and 2222 respectively, but share the same volume with group IDs 555, 666, and 777.'}]"
+332,421,0,[],"389
+Restricting the use of security-related features in pods
+The id command shows the container is running with user ID 1111, as specified in the
+pod definition. The effective group ID is 0(root), but group IDs 555, 666, and 777 are
+also associated with the user. 
+ In the pod definition, you set fsGroup to 555. Because of this, the mounted volume
+will be owned by group ID 555, as shown here:
+/ $ ls -l / | grep volume
+drwxrwsrwx    2 root     555              6 May 29 12:23 volume
+If you create a file in the mounted volume’s directory, the file is owned by user ID
+1111 (that’s the user ID the container is running as) and by group ID 555:
+/ $ echo foo > /volume/foo
+/ $ ls -l /volume
+total 4
+-rw-r--r--    1 1111     555              4 May 29 12:25 foo
+This is different from how ownership is otherwise set up for newly created files. Usu-
+ally, the user’s effective group ID, which is 0 in your case, is used when a user creates
+files. You can see this by creating a file in the container’s filesystem instead of in the
+volume:
+/ $ echo foo > /tmp/foo
+/ $ ls -l /tmp
+total 4
+-rw-r--r--    1 1111     root             4 May 29 12:41 foo
+As you can see, the fsGroup security context property is used when the process cre-
+ates files in a volume (but this depends on the volume plugin used), whereas the
+supplementalGroups property defines a list of additional group IDs the user is asso-
+ciated with. 
+ This concludes this section about the configuration of the container’s security con-
+text. Next, we’ll see how a cluster administrator can restrict users from doing so.
+13.3
+Restricting the use of security-related features in pods
+The examples in the previous sections have shown how a person deploying pods can
+do whatever they want on any cluster node, by deploying a privileged pod to the
+node, for example. Obviously, a mechanism must prevent users from doing part or
+all of what’s been explained. The cluster admin can restrict the use of the previously
+described security-related features by creating one or more PodSecurityPolicy
+resources.
+13.3.1 Introducing the PodSecurityPolicy resource
+PodSecurityPolicy is a cluster-level (non-namespaced) resource, which defines what
+security-related features users can or can’t use in their pods. The job of upholding
+the policies configured in PodSecurityPolicy resources is performed by the
+ 
+",[],"[{'entity': 'id command', 'description': 'shows the container is running with user ID 1111', 'category': 'command'}, {'entity': 'pod definition', 'description': 'sets fsGroup to 555', 'category': 'resource'}, {'entity': 'fsGroup', 'description': 'security context property used when creating files in a volume', 'category': 'property'}, {'entity': 'supplementalGroups', 'description': 'defines a list of additional group IDs the user is associated with', 'category': 'property'}, {'entity': 'PodSecurityPolicy', 'description': ""cluster-level resource that defines security-related features users can or can't use"", 'category': 'resource'}, {'entity': 'privileged pod', 'description': 'pod that has full access to the cluster node', 'category': 'pod type'}, {'entity': '/volume/foo', 'description': ""file created in the mounted volume's directory"", 'category': 'file'}, {'entity': '/tmp/foo', 'description': ""file created in the container's filesystem"", 'category': 'file'}, {'entity': 'fsGroup security context property', 'description': 'used when creating files in a volume', 'category': 'property'}]","[{'source_entity': '""PodSecurityPolicy""', 'description': 'defines', 'destination_entity': '""fsGroup security context property""'}, {'source_entity': '""PodSecurityPolicy""', 'description': 'enforces', 'destination_entity': '""privileged pod""'}, {'source_entity': '""pod definition""', 'description': 'specifies', 'destination_entity': '""fsGroup security context property""'}, {'source_entity': '""id command""', 'description': 'uses', 'destination_entity': '""/tmp/foo""'}, {'source_entity': '""id command""', 'description': 'uses', 'destination_entity': '""/volume/foo""'}, {'source_entity': '""fsGroup security context property""', 'description': 'applies to', 'destination_entity': '""pod definition""'}, {'source_entity': '""privileged pod""', 'description': 'has access to', 'destination_entity': '""/tmp/foo""'}, {'source_entity': '""privileged pod""', 'description': 'has access to', 'destination_entity': '""/volume/foo""'}, {'source_entity': '""supplementalGroups""', 'description': 'is a part of', 'destination_entity': '""pod definition""'}]","['[\n  {\n    ""source"": ""PodSecurityPolicy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A PodSecurityPolicy defines a set of permissions for pods to run with, including fsGroup security context property.""\n  }\n]', '[\n  {\n    ""source"": ""PodSecurityPolicy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""PodSecurityPolicy enforces security rules on pods, restricting privileged access to sensitive resources.""\n  }\n]', '[\n  {\n    ""source"": ""Pod Definition"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""Specifies"",\n    ""summary_er"": ""The Pod Definition specifies the characteristics of a pod, including its name, labels, and security context.""\n  },\n  {\n    ""source"": ""FSGroup Security Context Property"",\n    ""destination"": ""Security Context"",\n    ""relation_description"": ""Defines"",\n    ""summary_er"": ""The FSGroup Security Context Property defines the file system group ID for a container\'s root filesystem.""\n  }\n]', '[\n  {\n    ""source"": ""id command"",\n    ""destination"": ""/tmp/foo"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The \'id\' command utilizes a file path stored in \'/tmp/foo\'.""\n  }\n]', '[\n  {\n    ""source"": ""id command"",\n    ""destination"": ""/volume/foo"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The \'id\' command utilizes a file located at \'/volume/foo\'.""\n  }\n]', '[\n  {\n    ""source"": ""fsGroup security context property"",\n    ""destination"": ""pod definition"",\n    ""relation_description"": ""applies to"",\n    ""summary_er"": ""The fsGroup security context property applies to a pod\'s definition, specifying the file system group ID for the container.""\n  }\n]', '[\n  {\n    ""source"": ""privileged pod"",\n    ""destination"": ""/tmp/foo"",\n    ""relation_description"": ""has access to"",\n    ""summary_er"": ""A privileged pod has read/write access to a file located at /tmp/foo, allowing it to manipulate or delete the file.""\n  }\n]', '[\n  {\n    ""source"": ""privileged pod"",\n    ""destination"": ""/volume/foo"",\n    ""relation_description"": ""has access to"",\n    ""summary_er"": ""A privileged pod has read/write access to a specific volume, in this case \'/volume/foo\'. This allows the pod to interact with and modify data stored on the volume.""\n  }\n]', '[\n  {\n    ""source"": ""supplementalGroups"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a part of"",\n    ""summary_er"": ""Supplemental groups are a set of IDs that can be used to identify pods and their relationships within the Kubernetes cluster.""\n  },\n  {\n    ""source"": ""pod definition"",\n    ""destination"": ""supplementalGroups"",\n    ""relation_description"": ""is defined by"",\n    ""summary_er"": ""A pod definition is a YAML or JSON file that defines the characteristics of a pod, including its supplemental groups.""\n  }\n]']","The document explains how to restrict the use of security-related features in pods. It discusses the fsGroup and supplementalGroups properties, which are used to set group IDs for users running containers. The fsGroup property sets the ownership of a mounted volume, while the supplementalGroups property defines additional group IDs associated with a user. A cluster administrator can restrict the use of these features by creating PodSecurityPolicy resources, which define what security-related features users can or cannot use in their pods.","[{'highlight': 'The fsGroup security context property is used when a process creates files in a volume, whereas the supplementalGroups property defines a list of additional group IDs the user is associated with.'}]"
+333,422,0,[],"390
+CHAPTER 13
+Securing cluster nodes and the network
+PodSecurityPolicy admission control plugin running in the API server (we explained
+admission control plugins in chapter 11).
+NOTE
+The PodSecurityPolicy admission control plugin may not be enabled
+in your cluster. Before running the following examples, ensure it’s enabled. If
+you’re using Minikube, refer to the next sidebar.
+When someone posts a pod resource to the API server, the PodSecurityPolicy admis-
+sion control plugin validates the pod definition against the configured PodSecurity-
+Policies. If the pod conforms to the cluster’s policies, it’s accepted and stored into
+etcd; otherwise it’s rejected immediately. The plugin may also modify the pod
+resource according to defaults configured in the policy.
+UNDERSTANDING WHAT A PODSECURITYPOLICY CAN DO
+A PodSecurityPolicy resource defines things like the following:
+Whether a pod can use the host’s IPC, PID, or Network namespaces
+Which host ports a pod can bind to
+What user IDs a container can run as
+Whether a pod with privileged containers can be created
+Enabling RBAC and PodSecurityPolicy admission control in Minikube
+I’m using Minikube version v0.19.0 to run these examples. That version doesn’t
+enable either the PodSecurityPolicy admission control plugin or RBAC authorization,
+which is required in part of the exercises. One exercise also requires authenticating
+as a different user, so you’ll also need to enable the basic authentication plugin
+where users are defined in a file.
+To run Minikube with all these plugins enabled, you may need to use this (or a similar)
+command, depending on the version you’re using: 
+$ minikube start --extra-config apiserver.Authentication.PasswordFile.
+➥ BasicAuthFile=/etc/kubernetes/passwd --extra-config=apiserver.
+➥ Authorization.Mode=RBAC --extra-config=apiserver.GenericServerRun
+➥ Options.AdmissionControl=NamespaceLifecycle,LimitRanger,Service
+➥ Account,PersistentVolumeLabel,DefaultStorageClass,ResourceQuota,
+➥ DefaultTolerationSeconds,PodSecurityPolicy
+The API server won’t start up until you create the password file you specified in the
+command line options. This is how to create the file:
+$ cat <<EOF | minikube ssh sudo tee /etc/kubernetes/passwd
+password,alice,1000,basic-user
+password,bob,2000,privileged-user
+EOF
+You’ll find a shell script that runs both commands in the book’s code archive in
+Chapter13/minikube-with-rbac-and-psp-enabled.sh.
+ 
+",[],"[{'entity': 'PodSecurityPolicy', 'description': 'A resource that defines policies for pod creation and modification', 'category': 'software'}, {'entity': 'admission control plugin', 'description': 'A plugin that validates pod definitions against configured PodSecurityPolicies', 'category': 'software'}, {'entity': 'API server', 'description': 'The component of the Kubernetes cluster that handles incoming requests and updates', 'category': 'software'}, {'entity': 'etcd', 'description': 'A distributed key-value store used by Kubernetes to store cluster data', 'category': 'database'}, {'entity': 'IPC namespace', 'description': 'A namespace that controls access to inter-process communication resources', 'category': 'hardware'}, {'entity': 'PID namespace', 'description': 'A namespace that controls access to process ID resources', 'category': 'hardware'}, {'entity': 'Network namespace', 'description': 'A namespace that controls access to network resources', 'category': 'hardware'}, {'entity': 'host ports', 'description': 'Ports on the host machine that can be bound by pods', 'category': 'hardware'}, {'entity': 'user IDs', 'description': 'IDs under which containers can run', 'category': 'software'}, {'entity': 'privileged containers', 'description': 'Containers that have elevated privileges', 'category': 'software'}, {'entity': 'RBAC', 'description': 'Role-Based Access Control, a system for controlling access to cluster resources', 'category': 'software'}, {'entity': 'PodSecurityPolicy admission control plugin', 'description': 'A plugin that validates pod definitions against configured PodSecurityPolicies', 'category': 'software'}, {'entity': 'Minikube', 'description': 'A tool for running a single-node Kubernetes cluster on a local machine', 'category': 'software'}, {'entity': 'apiserver.GenericServerRunOptions.AdmissionControl', 'description': 'An option that enables the PodSecurityPolicy admission control plugin', 'category': 'software'}, {'entity': 'NamespaceLifecycle', 'description': 'A feature that manages namespace lifecycle events', 'category': 'software'}, {'entity': 'LimitRanger', 'description': 'A feature that enforces resource limits on pods', 'category': 'software'}, {'entity': 'ServiceAccount', 'description': 'An object that represents a service account', 'category': 'software'}, {'entity': 'PersistentVolumeLabel', 'description': 'A feature that manages persistent volume labels', 'category': 'software'}, {'entity': 'DefaultStorageClass', 'description': 'A feature that sets a default storage class for pods', 'category': 'software'}, {'entity': 'ResourceQuota', 'description': 'A feature that enforces resource quotas on pods', 'category': 'software'}, {'entity': 'DefaultTolerationSeconds', 'description': 'A feature that sets a default toleration period for pods', 'category': 'software'}, {'entity': 'BasicAuthFile', 'description': 'A file that contains basic authentication credentials', 'category': 'hardware'}, {'entity': 'password file', 'description': 'A file that contains password and user ID information', 'category': 'hardware'}]","[{'source_entity': 'PodSecurityPolicy', 'description': 'enforces security policies on pods', 'destination_entity': 'pods'}, {'source_entity': 'PersistentVolumeLabel', 'description': 'labels persistent volumes for easy identification', 'destination_entity': 'persistent volumes'}, {'source_entity': 'NamespaceLifecycle', 'description': 'manages the lifecycle of namespaces', 'destination_entity': 'namespaces'}, {'source_entity': 'Minikube', 'description': 'provides a single-node Kubernetes cluster for development and testing', 'destination_entity': 'Kubernetes clusters'}, {'source_entity': 'host ports', 'description': 'exposes host machine ports to containers', 'destination_entity': 'containers'}, {'source_entity': 'etcd', 'description': 'stores and manages cluster-wide configuration data', 'destination_entity': 'Kubernetes clusters'}, {'source_entity': 'ServiceAccount', 'description': 'provides an identity for pods to authenticate with the API server', 'destination_entity': 'API server'}, {'source_entity': 'IPC namespace', 'description': 'isolates IPC namespaces between containers', 'destination_entity': 'containers'}, {'source_entity': 'API server', 'description': 'accepts and processes API requests from clients', 'destination_entity': 'clients'}, {'source_entity': 'user IDs', 'description': 'maps user IDs to usernames for authentication', 'destination_entity': 'users'}, {'source_entity': 'PodSecurityPolicy admission control plugin', 'description': 'enforces PodSecurityPolicy on pod creations and updates', 'destination_entity': 'pods'}, {'source_entity': 'ResourceQuota', 'description': 'limits resource usage by pods and services', 'destination_entity': 'pods and services'}, {'source_entity': 'LimitRanger', 'description': 'enforces resource limits on pods and services', 'destination_entity': 'pods and services'}, {'source_entity': 'admission control plugin', 'description': 'enforces admission control policies on pod creations and updates', 'destination_entity': 'pods'}, {'source_entity': 'DefaultStorageClass', 'description': 'provides a default storage class for persistent volumes', 'destination_entity': 'persistent volumes'}, {'source_entity': 'password file', 'description': 'stores passwords for authentication', 'destination_entity': 'users and services'}, {'source_entity': 'Network namespace', 'description': 'isolates network namespaces between containers', 'destination_entity': 'containers'}, {'source_entity': 'apiserver.GenericServerRunOptions.AdmissionControl', 'description': 'configures admission control options for the API server', 'destination_entity': 'API server'}, {'source_entity': 'DefaultTolerationSeconds', 'description': 'sets a default toleration duration for pods', 'destination_entity': 'pods'}, {'source_entity': 'privileged containers', 'description': 'runs containers with elevated privileges', 'destination_entity': 'containers'}, {'source_entity': 'BasicAuthFile', 'description': 'stores basic authentication credentials for services', 'destination_entity': 'services and users'}, {'source_entity': 'RBAC', 'description': 'enforces role-based access control policies on API requests', 'destination_entity': 'API server and clients'}, {'source_entity': 'PID namespace', 'description': 'isolates PID namespaces between containers', 'destination_entity': 'containers'}]","['[\n  {\n    ""source"": ""PodSecurityPolicy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces security policies on pods"",\n    ""summary_er"": ""PodSecurityPolicy enforces security policies on pods, ensuring compliance and integrity.""\n  }\n]', '[\n  {\n    ""source"": ""PersistentVolumeLabel"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""labels persistent volumes for easy identification"",\n    ""summary_er"": ""Labels persistent volumes in pods for easy identification and management.""\n  }\n]', '[\n  {\n    ""source"": ""NamespaceLifecycle"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages the lifecycle of namespaces"",\n    ""summary_er"": ""NamespaceLifecycle manages namespace creation, deletion, and updates for pods.""\n  }\n]', '[\n  {\n    ""source"": ""Minikube"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""Minikube provides a single-node Kubernetes cluster for development and testing, which can be used to run a pod.""\n  }\n]', '[\n  {\n    ""source"": ""host ports"",\n    ""destination"": ""containers"",\n    ""relation_description"": ""exposes host machine ports to containers"",\n    ""summary_er"": ""Host ports are exposed to containers, allowing them to communicate with the host machine.""\n  }\n]', '[\n  {\n    ""source"": ""etcd"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores and manages cluster-wide configuration data"",\n    ""summary_er"": ""Etcd stores and manages configuration data for pods in a Kubernetes cluster, ensuring consistency across all nodes.""\n  }\n]', '[\n  {\n    ""source"": ""ServiceAccount"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides an identity for pods to authenticate with the API server"",\n    ""summary_er"": ""A ServiceAccount provides authentication credentials for a pod to access the Kubernetes API server.""\n  }\n]', '[\n  {\n    ""source"": ""IPC namespace"",\n    ""destination"": ""containers"",\n    ""relation_description"": ""isolates IPC namespaces between containers"",\n    ""summary_er"": ""The IPC namespace isolates communication between containers, ensuring each container has its own isolated namespace.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""accepts and processes API requests from clients"",\n    ""summary_er"": ""The API server receives and handles incoming API requests from client applications, processing them efficiently.""\n  }\n]', '[\n  {\n    ""source"": ""user IDs"",\n    ""destination"": ""users"",\n    ""relation_description"": ""maps user IDs to usernames for authentication"",\n    ""summary_er"": ""User ID mapping enables secure authentication by linking unique identifiers to corresponding usernames, ensuring accurate and efficient access control.""\n  }\n]', '[\n  {\n    ""source"": ""PodSecurityPolicy admission control plugin"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""enforces PodSecurityPolicy on pod creations and updates"",\n    ""summary_er"": ""The PodSecurityPolicy admission control plugin enforces security policies on pods during creation or update, ensuring compliance with specified rules.""\n  }\n]', '[\n  {\n    ""source"": ""ResourceQuota"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits resource usage"",\n    ""summary_er"": ""ResourceQuota limits resource usage by pods, ensuring efficient utilization of system resources.""\n  },\n  {\n    ""source"": ""ResourceQuota"",\n    ""destination"": ""service"",\n    ""relation_description"": ""limits resource usage"",\n    ""summary_er"": ""ResourceQuota also limits resource usage by services, maintaining a balanced and scalable environment.""\n  }\n]', '[\n  {\n    ""source"": ""LimitRanger"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces resource limits on pods and services"",\n    ""summary_er"": ""LimitRanger enforces resource limits on pods and services to prevent overutilization of resources.""\n  },\n  {\n    ""source"": ""LimitRanger"",\n    ""destination"": ""service"",\n    ""relation_description"": ""enforces resource limits on pods and services"",\n    ""summary_er"": ""LimitRanger also enforces resource limits on services to maintain efficient resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""admission control plugin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces admission control policies on pod creations and updates"",\n    ""summary_er"": ""The admission control plugin enforces policies on pod creation and update to ensure secure and controlled environment.""\n  }\n]', '[\n  {\n    ""source"": ""DefaultStorageClass"",\n    ""destination"": ""persistent volumes"",\n    ""relation_description"": ""provides a default storage class"",\n    ""summary_er"": ""DefaultStorageClass provides a default storage class for persistent volumes, enabling efficient and scalable storage management.""\n  }\n]', '[\n  {\n    ""source"": ""password file"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores passwords for authentication"",\n    ""summary_er"": ""The password file securely stores credentials for user and service authentication within a Kubernetes pod.""\n  },\n  {\n    ""source"": ""users"",\n    ""destination"": ""services"",\n    ""relation_description"": ""users and services"",\n    ""summary_er"": ""Users interact with various services, which provide functionality and resources to meet their needs in a secure and managed environment.""\n  }\n]', '[\n  {\n    ""source"": ""Network namespace"",\n    ""destination"": ""containers"",\n    ""relation_description"": ""isolates network namespaces between containers"",\n    ""summary_er"": ""The Network namespace isolates network traffic between containers, ensuring each container has its own isolated network space.""\n  }\n]', '[\n  {\n    ""source"": ""apiserver"",\n    ""destination"": ""GenericServerRunOptions"",\n    ""relation_description"": ""AdmissionControl"",\n    ""summary_er"": ""Configures admission control options for the API server.""\n  },\n  {\n    ""source"": ""GenericServerRunOptions"",\n    ""destination"": ""AdmissionControl"",\n    ""relation_description"": ""option"",\n    ""summary_er"": ""Option to configure admission control in GenericServerRunOptions.""\n  },\n  {\n    ""source"": ""AdmissionControl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures"",\n    ""summary_er"": ""Configures pod-level admission control options.""\n  }\n]', '[\n  {\n    ""source"": ""DefaultTolerationSeconds"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets a default toleration duration for"",\n    ""summary_er"": ""Default Toleration Seconds sets a default time period for pod tolerations, allowing pods to run with specific conditions.""\n  }\n]', '[\n  {\n    ""source"": ""privileged containers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs containers with elevated privileges"",\n    ""summary_er"": ""Privileged containers run within a pod, allowing them to access host resources and execute commands with elevated privileges.""\n  }\n]', '[\n  {\n    ""source"": ""BasicAuthFile"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores basic authentication credentials for services"",\n    ""summary_er"": ""BasicAuthFile stores authentication details for services, ensuring secure access to pods.""\n  },\n  {\n    ""source"": ""services"",\n    ""destination"": ""users"",\n    ""relation_description"": ""and users"",\n    ""summary_er"": ""Services and users are related in terms of authentication and authorization, ensuring proper access control.""\n  }\n]', '[\n  {\n    ""source"": ""RBAC"",\n    ""destination"": ""API server and clients"",\n    ""relation_description"": ""enforces role-based access control policies on API requests"",\n    ""summary_er"": ""RBAC enforces secure access to API resources by defining roles and permissions for clients.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""API server and clients"",\n    ""relation_description"": ""communication between the two entities"",\n    ""summary_er"": ""The pod facilitates communication between the API server and clients, enabling data exchange and interaction.""\n  }\n]', '[\n  {\n    ""source"": ""PID namespace"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""isolates PID namespaces between containers"",\n    ""summary_er"": ""The PID namespace of a container is isolated from the host\'s PID namespace, preventing process ID collisions and ensuring container process isolation.""\n  }\n]']","A PodSecurityPolicy admission control plugin validates pod definitions against configured policies before storing them in etcd. A PodSecurityPolicy resource defines settings such as IPC and network namespace usage, host ports, user IDs, and privileged container creation. To enable RBAC and PodSecurityPolicy admission control in Minikube, use the command: $ minikube start --extra-config apiserver.Authentication.PasswordFile=/etc/kubernetes/passwd --extra-config=apiserver.Authorization.Mode=RBAC --extra-config=apiserver.GenericServerRunOptions.AdmissionControl=NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,ResourceQuota,DefaultTolerationSeconds,PodSecurityPolicy. Create a password file with the command: $ cat <<EOF | minikube ssh sudo tee /etc/kubernetes/passwd password,alice,1000,basic-user password,bob,2000,privileged-user EOF","[{'highlight': ""The PodSecurityPolicy admission control plugin validates the pod definition against the configured PodSecurity-Policies, and if the pod conforms to the cluster's policies, it's accepted and stored into etcd; otherwise it's rejected immediately.""}, {'highlight': ""A PodSecurityPolicy resource defines things like whether a pod can use the host's IPC, PID, or Network namespaces, which host ports a pod can bind to, what user IDs a container can run as, and whether a pod with privileged containers can be created.""}, {'highlight': 'To enable RBAC and PodSecurityPolicy admission control in Minikube, you need to use the command: $ minikube start --extra-config apiserver.Authentication.PasswordFile=/etc/kubernetes/passwd --extra-config=apiserver.Authorization.Mode=RBAC --extra-config=apiserver.GenericServerRunOptions.AdmissionControl=PodSecurityPolicy'}, {'highlight': 'You need to create a password file by running the command: $ cat <<EOF | minikube ssh sudo tee /etc/kubernetes/passwd password,alice,1000,basic-user password,bob,2000,privileged-user EOF'}, {'highlight': ""The PodSecurityPolicy admission control plugin may not be enabled in your cluster, so you need to ensure it's enabled before running the examples.""}]"
+334,423,0,[],"391
+Restricting the use of security-related features in pods
+Which kernel capabilities are allowed, which are added by default and which are
+always dropped
+What SELinux labels a container can use
+Whether a container can use a writable root filesystem or not
+Which filesystem groups the container can run as
+Which volume types a pod can use
+If you’ve read this chapter up to this point, everything but the last item in the previous
+list should be familiar. The last item should also be fairly clear. 
+EXAMINING A SAMPLE PODSECURITYPOLICY
+The following listing shows a sample PodSecurityPolicy, which prevents pods from
+using the host’s IPC, PID, and Network namespaces, and prevents running privileged
+containers and the use of most host ports (except ports from 10000-11000 and 13000-
+14000). The policy doesn’t set any constraints on what users, groups, or SELinux
+groups the container can run as.
+apiVersion: extensions/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: default
+spec:
+  hostIPC: false                 
+  hostPID: false                 
+  hostNetwork: false             
+  hostPorts:                         
+  - min: 10000                       
+    max: 11000                       
+  - min: 13000                       
+    max: 14000                       
+  privileged: false              
+  readOnlyRootFilesystem: true   
+  runAsUser:                      
+    rule: RunAsAny                
+  fsGroup:                        
+    rule: RunAsAny                
+  supplementalGroups:             
+    rule: RunAsAny                
+  seLinux:                      
+    rule: RunAsAny              
+  volumes:                  
+  - '*'                     
+Most of the options specified in the example should be self-explanatory, especially if
+you’ve read the previous sections. After this PodSecurityPolicy resource is posted to
+Listing 13.15
+An example PodSecurityPolicy: pod-security-policy.yaml
+Containers aren’t 
+allowed to use the 
+host’s IPC, PID, or 
+network namespace.
+They can only bind to host ports 
+10000 to 11000 (inclusive) or 
+host ports 13000 to 14000.
+Containers cannot run 
+in privileged mode.
+Containers are forced to run 
+with a read-only root filesystem.
+Containers can 
+run as any user 
+and any group.
+They can also use any 
+SELinux groups they want.
+All volume types can 
+be used in pods.
+ 
+",[],"[{'entity': 'kernel capabilities', 'description': '', 'category': 'software'}, {'entity': 'SELinux labels', 'description': '', 'category': 'software'}, {'entity': 'writable root filesystem', 'description': '', 'category': 'hardware'}, {'entity': 'filesystem groups', 'description': '', 'category': 'hardware'}, {'entity': 'volume types', 'description': '', 'category': 'software'}, {'entity': 'PodSecurityPolicy', 'description': '', 'category': 'software'}, {'entity': 'hostIPC', 'description': ""allowing pods to use the host's IPC namespace"", 'category': 'software'}, {'entity': 'hostPID', 'description': ""allowing pods to use the host's PID namespace"", 'category': 'software'}, {'entity': 'hostNetwork', 'description': ""allowing pods to use the host's network namespace"", 'category': 'software'}, {'entity': 'hostPorts', 'description': 'allowing pods to bind to specific host ports', 'category': 'hardware'}, {'entity': 'privileged', 'description': 'allowing containers to run in privileged mode', 'category': 'software'}, {'entity': 'readOnlyRootFilesystem', 'description': 'forcing containers to run with a read-only root filesystem', 'category': 'hardware'}, {'entity': 'runAsUser', 'description': 'specifying which users containers can run as', 'category': 'software'}, {'entity': 'fsGroup', 'description': 'specifying which groups containers can run as', 'category': 'software'}, {'entity': 'supplementalGroups', 'description': 'specifying which supplemental groups containers can run as', 'category': 'software'}, {'entity': 'seLinux', 'description': 'specifying which SELinux labels containers can use', 'category': 'software'}, {'entity': 'volumes', 'description': 'specifying which volume types pods can use', 'category': 'hardware'}]","[{'source_entity': '""writable root filesystem""', 'description': 'provides', 'destination_entity': '""runAsUser""'}, {'source_entity': '""PodSecurityPolicy""', 'description': 'defines', 'destination_entity': '""fsGroup""'}, {'source_entity': '""readOnlyRootFilesystem""', 'description': 'specifies', 'destination_entity': '""volume types""'}, {'source_entity': '""seLinux""', 'description': 'enforces', 'destination_entity': '""SELinux labels""'}, {'source_entity': '""hostNetwork""', 'description': 'grants', 'destination_entity': '""kernel capabilities""'}, {'source_entity': '""privileged""', 'description': 'allows', 'destination_entity': '""hostIPC""'}, {'source_entity': '""supplementalGroups""', 'description': 'specifies', 'destination_entity': '""filesystem groups""'}, {'source_entity': '""volumes""', 'description': 'includes', 'destination_entity': '""hostPorts""'}]","['[\n  {\n    ""source"": ""writable root filesystem"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""A writable root filesystem provides a pod with a persistent and modifiable file system.""\n  },\n  {\n    ""source"": ""runAsUser"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""The runAsUser field in a pod configuration provides the user ID under which the container runs.""\n  }\n]', '[\n  {\n    ""source"": ""PodSecurityPolicy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A PodSecurityPolicy defines a set of permissions for pods to run with, including fsGroup settings.""\n  },\n  {\n    ""source"": ""fsGroup"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""settings"",\n    ""summary_er"": ""fsGroup is a setting in a PodSecurityPolicy that controls the file system group ID for a pod\'s processes.""\n  }\n]', '[\n  {\n    ""source"": ""readOnlyRootFilesystem"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The readOnlyRootFilesystem specifies a type of volume for a pod, ensuring that only read-only access to the root filesystem is allowed.""\n  }\n]', '[\n  {\n    ""source"": ""selinux"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""SELinux enforces security policies on pods, ensuring isolation and access control.""\n  }\n]', '[\n  {\n    ""source"": ""hostNetwork"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""grants"",\n    ""summary_er"": ""The host network grants kernel capabilities to a pod, allowing it to access and utilize system resources.""\n  }\n]', '[\n  {\n    ""source"": ""privileged"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allows"",\n    ""summary_er"": ""Privileged mode allows a container to access host IPC, enabling communication between containers and the host.""\n  },\n  {\n    ""source"": ""hostIPC"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enabling"",\n    ""summary_er"": ""Host IPC enables communication between containers and the host, allowing for inter-process communication between them.""\n  }\n]', '[\n  {\n    ""source"": ""supplementalGroups"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The supplementalGroups field in a Kubernetes Pod specification defines the filesystem groups that a container within the pod belongs to.""\n  }\n]', '[\n  {\n    ""source"": ""volumes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""includes"",\n    ""summary_er"": ""A Kubernetes volume provides persistent storage for a pod, including host directories and Docker volumes.""\n  },\n  {\n    ""source"": ""hostPorts"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""includes"",\n    ""summary_er"": ""A hostPort in a pod allows a container to expose a port on the host machine\'s network stack.""\n  }\n]']","This document discusses restricting security-related features in pods, specifically kernel capabilities, SELinux labels, writable root filesystems, and volume types. A sample PodSecurityPolicy is provided that prevents pods from using the host's IPC, PID, and Network namespaces, and restricts privileged containers and host ports. The policy allows containers to run as any user or group, and use any SELinux groups.","[{'highlight': 'PodSecurityPolicy restricts the use of security-related features in pods, including kernel capabilities, SELinux labels, writable root filesystem, filesystem groups, volume types, and host ports.'}, {'highlight': ""A sample PodSecurityPolicy prevents pods from using the host's IPC, PID, and Network namespaces, and running privileged containers and most host ports (except ports 10000-11000 and 13000-14000).""}, {'highlight': 'The policy allows containers to run as any user, group, or SELinux group, and use all volume types.'}, {'highlight': 'Containers are forced to run with a read-only root filesystem and cannot run in privileged mode.'}, {'highlight': 'Host ports 10000-11000 and 13000-14000 are allowed for container binding.'}]"
+335,424,0,[],"392
+CHAPTER 13
+Securing cluster nodes and the network
+the cluster, the API server will no longer allow you to deploy the privileged pod used
+earlier. For example
+$ kubectl create -f pod-privileged.yaml
+Error from server (Forbidden): error when creating ""pod-privileged.yaml"":
+pods ""pod-privileged"" is forbidden: unable to validate against any pod 
+security policy: [spec.containers[0].securityContext.privileged: Invalid 
+value: true: Privileged containers are not allowed]
+Likewise, you can no longer deploy pods that want to use the host’s PID, IPC, or Net-
+work namespace. Also, because you set readOnlyRootFilesystem to true in the pol-
+icy, the container filesystems in all pods will be read-only (containers can only write
+to volumes).
+13.3.2 Understanding runAsUser, fsGroup, and supplementalGroups 
+policies
+The policy in the previous example doesn’t impose any limits on which users and
+groups containers can run as, because you’ve used the RunAsAny rule for the runAs-
+User, fsGroup, and supplementalGroups fields. If you want to constrain the list of
+allowed user or group IDs, you change the rule to MustRunAs and specify the range of
+allowed IDs. 
+USING THE MUSTRUNAS RULE
+Let’s look at an example. To only allow containers to run as user ID 2 and constrain the
+default filesystem group and supplemental group IDs to be anything from 2–10 or 20–
+30 (all inclusive), you’d include the following snippet in the PodSecurityPolicy resource.
+  runAsUser:
+    rule: MustRunAs
+    ranges:
+    - min: 2                
+      max: 2                
+  fsGroup:
+    rule: MustRunAs
+    ranges:
+    - min: 2                
+      max: 10               
+    - min: 20               
+      max: 30               
+  supplementalGroups:
+    rule: MustRunAs
+    ranges:
+    - min: 2                
+      max: 10               
+    - min: 20               
+      max: 30               
+Listing 13.16
+Specifying IDs containers must run as: psp-must-run-as.yaml
+Add a single range with min equal 
+to max to set one specific ID.
+Multiple ranges are 
+supported—here, 
+group IDs can be 2–10 
+or 20–30 (inclusive).
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command to create a pod', 'category': 'software'}, {'entity': 'pod-privileged.yaml', 'description': 'file containing pod configuration', 'category': 'software'}, {'entity': 'API server', 'description': 'component of the Kubernetes cluster', 'category': 'application'}, {'entity': 'PodSecurityPolicy', 'description': 'resource that defines security policies for pods', 'category': 'database'}, {'entity': 'runAsUser', 'description': 'field in PodSecurityPolicy that specifies user ID constraints', 'category': 'process'}, {'entity': 'fsGroup', 'description': 'field in PodSecurityPolicy that specifies filesystem group constraints', 'category': 'process'}, {'entity': 'supplementalGroups', 'description': 'field in PodSecurityPolicy that specifies supplemental group constraints', 'category': 'process'}, {'entity': 'MustRunAs rule', 'description': 'rule in PodSecurityPolicy that constrains user or group IDs', 'category': 'database'}, {'entity': 'ranges', 'description': 'field in MustRunAs rule that specifies allowed ID ranges', 'category': 'process'}, {'entity': 'min', 'description': 'field in range that specifies minimum value', 'category': 'process'}, {'entity': 'max', 'description': 'field in range that specifies maximum value', 'category': 'process'}, {'entity': '2-10', 'description': 'ID range allowed for user ID, filesystem group, and supplemental groups', 'category': 'database'}, {'entity': '20-30', 'description': 'ID range allowed for user ID, filesystem group, and supplemental groups', 'category': 'database'}]","[{'source_entity': 'runAsUser', 'description': 'specifies the user ID to run a container as', 'destination_entity': 'PodSecurityPolicy'}, {'source_entity': 'fsGroup', 'description': 'defines the file system group ID for a container', 'destination_entity': 'PodSecurityPolicy'}, {'source_entity': 'max', 'description': 'sets the maximum value for a range', 'destination_entity': 'ranges'}, {'source_entity': 'min', 'description': 'sets the minimum value for a range', 'destination_entity': 'ranges'}, {'source_entity': 'kubectl', 'description': 'applies a configuration file to the API server', 'destination_entity': 'API server'}, {'source_entity': 'supplementalGroups', 'description': 'defines additional group IDs for a container', 'destination_entity': 'PodSecurityPolicy'}, {'source_entity': 'MustRunAs rule', 'description': 'specifies a rule for running a container as a specific user ID', 'destination_entity': 'runAsUser'}, {'source_entity': '2-10', 'description': 'defines a range of values for a configuration option', 'destination_entity': 'ranges'}, {'source_entity': '20-30', 'description': 'defines a range of values for a configuration option', 'destination_entity': 'ranges'}]","['[\n  {\n    ""source"": ""runAsUser"",\n    ""destination"": ""PodSecurityPolicy"",\n    ""relation_description"": ""specifies the user ID to run a container as"",\n    ""summary_er"": ""This relation specifies the user ID that a container should run as, ensuring proper security and access control within the Pod Security Policy.""\n  }\n]', '[\n  {\n    ""source"": ""fsGroup"",\n    ""destination"": ""PodSecurityPolicy"",\n    ""relation_description"": ""defines the file system group ID for a container"",\n    ""summary_er"": ""The fsGroup relation defines the file system group ID for a container, which is used by PodSecurityPolicy to enforce security policies.""\n  }\n]', '[\n  {\n    ""source"": ""max"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets the maximum value for a range"",\n    ""summary_er"": ""Max sets the upper limit for a numerical range in a Kubernetes pod configuration.""\n  }\n]', '[\n  {\n    ""source"": ""min"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets the minimum value for a range"",\n    ""summary_er"": ""The \'min\' relation sets the lower bound of a numerical range in a pod\'s configuration.""\n  },\n  {\n    ""source"": ""ranges"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets the maximum value for a range"",\n    ""summary_er"": ""The \'ranges\' relation defines the upper limit of a numerical range within a pod\'s parameters.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""API server"",\n    ""relation_description"": ""applies a configuration file"",\n    ""summary_er"": ""Kubectl applies a configuration file to the API server, which manages and controls the cluster.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""API server"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""The pod is managed by the API server, which provides a centralized interface for managing cluster resources.""\n  }\n]', '[\n  {\n    ""source"": ""supplementalGroups"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines additional group IDs for a container"",\n    ""summary_er"": ""Supplemental groups define additional group IDs that can be used by a container to access resources, enhancing security and flexibility.""\n  },\n  {\n    ""source"": ""PodSecurityPolicy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the security policies for a pod"",\n    ""summary_er"": ""A Pod Security Policy defines the set of privileges and constraints that can be applied to a pod, ensuring secure execution and resource access.""\n  }\n]', '[\n  {\n    ""source"": ""MustRunAs"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runAsUser"",\n    ""summary_er"": ""The MustRunAs rule specifies a user ID for running a container, which is applied to the pod\'s runAsUser attribute.""\n  }\n]', '[\n  {\n    ""source"": ""2-10"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines a range of values for a configuration option"",\n    ""summary_er"": ""The source entity \'2-10\' defines a range of values for a pod\'s configuration option, which is used to specify the ranges in a Kubernetes deployment.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""ranges"",\n    ""relation_description"": ""used to specify the ranges in a Kubernetes deployment"",\n    ""summary_er"": ""The destination entity \'ranges\' specifies the range of values for a pod\'s configuration option, which is used in a Kubernetes deployment.""\n  }\n]', '[\n    {\n        ""source"": ""20-30"",\n        ""destination"": ""pod"",\n        ""relation_description"": ""defines a range of values for a configuration option"",\n        ""summary_er"": ""This configuration option defines a range of values for a pod, specifying its size and scope.""\n    },\n    {\n        ""source"": ""pod"",\n        ""destination"": ""ranges"",\n        ""relation_description"": ""ranges"",\n        ""summary_er"": ""A pod can have multiple ranges, each defining a specific aspect of the pod\'s configuration.""\n    }\n]']","A cluster node and network security chapter that explains the restriction of deploying privileged pods due to a pod security policy. It also discusses how to constrain container user IDs using the MustRunAs rule, with examples showing how to specify allowed ID ranges for runAsUser, fsGroup, and supplementalGroups fields.","[{'highlight': 'The API server will no longer allow deploying privileged pods due to security policy restrictions.'}, {'highlight': ""Pods with host's PID, IPC, or Network namespace are also restricted from deployment.""}, {'highlight': 'Container filesystems in all pods will be read-only due to readOnlyRootFilesystem set to true in the policy.'}, {'highlight': 'The RunAsAny rule allows containers to run as any user and group IDs without restrictions.'}, {'highlight': 'Using the MustRunAs rule, you can specify a range of allowed user or group IDs for containers to run as.'}]"
+336,425,0,[],"393
+Restricting the use of security-related features in pods
+If the pod spec tries to set either of those fields to a value outside of these ranges, the
+pod will not be accepted by the API server. To try this, delete the previous PodSecurity-
+Policy and create the new one from the psp-must-run-as.yaml file. 
+NOTE
+Changing the policy has no effect on existing pods, because PodSecurity-
+Policies are enforced only when creating or updating pods.
+DEPLOYING A POD WITH RUNASUSER OUTSIDE OF THE POLICY’S RANGE
+If you try deploying the pod-as-user-guest.yaml file from earlier, which says the con-
+tainer should run as user ID 405, the API server rejects the pod:
+$ kubectl create -f pod-as-user-guest.yaml
+Error from server (Forbidden): error when creating ""pod-as-user-guest.yaml""
+: pods ""pod-as-user-guest"" is forbidden: unable to validate against any pod 
+security policy: [securityContext.runAsUser: Invalid value: 405: UID on 
+container main does not match required range.  Found 405, allowed: [{2 2}]]
+Okay, that was obvious. But what happens if you deploy a pod without setting the runAs-
+User property, but the user ID is baked into the container image (using the USER direc-
+tive in the Dockerfile)?
+DEPLOYING A POD WITH A CONTAINER IMAGE WITH AN OUT-OF-RANGE USER ID
+I’ve created an alternative image for the Node.js app you’ve used throughout the
+book. The image is configured so that the container will run as user ID 5. The Docker-
+file for the image is shown in the following listing.
+FROM node:7
+ADD app.js /app.js
+USER 5                         
+ENTRYPOINT [""node"", ""app.js""]
+I pushed the image to Docker Hub as luksa/kubia-run-as-user-5. If I deploy a pod
+with that image, the API server doesn’t reject it:
+$ kubectl run run-as-5 --image luksa/kubia-run-as-user-5 --restart Never
+pod ""run-as-5"" created
+Unlike before, the API server accepted the pod and the Kubelet has run its container.
+Let’s see what user ID the container is running as:
+$ kubectl exec run-as-5 -- id
+uid=2(bin) gid=2(bin) groups=2(bin)
+As you can see, the container is running as user ID 2, which is the ID you specified in
+the PodSecurityPolicy. The PodSecurityPolicy can be used to override the user ID
+hardcoded into a container image.
+Listing 13.17
+Dockerfile with a USER directive: kubia-run-as-user-5/Dockerfile
+Containers run from 
+this image will run 
+as user ID 5.
+ 
+",[],"[{'entity': 'PodSecurityPolicy', 'description': 'A policy that defines security settings for pods', 'category': 'software'}, {'entity': 'API server', 'description': 'The component that manages access to the Kubernetes cluster', 'category': 'application'}, {'entity': 'PodSecurityPolicy', 'description': 'A policy that defines security settings for pods', 'category': 'software'}, {'entity': 'kubectl', 'description': 'The command-line tool used to interact with the Kubernetes cluster', 'category': 'command'}, {'entity': 'PodSecurityPolicy', 'description': 'A policy that defines security settings for pods', 'category': 'software'}, {'entity': 'runAsUser', 'description': 'The field in a pod spec that sets the user ID for a container', 'category': 'process'}, {'entity': 'Dockerfile', 'description': 'A file that defines the instructions for building a Docker image', 'category': 'software'}, {'entity': 'USER directive', 'description': 'A command in a Dockerfile that sets the user ID for a container', 'category': 'command'}, {'entity': 'Kubelet', 'description': 'The component that runs containers on nodes', 'category': 'application'}, {'entity': 'id', 'description': 'A command used to display the user ID and group ID of a process', 'category': 'command'}, {'entity': 'PodSecurityPolicy', 'description': 'A policy that defines security settings for pods', 'category': 'software'}]","[{'source_entity': '""Kubelet""', 'description': 'runs', 'destination_entity': '""PodSecurityPolicy""'}, {'source_entity': '""API server""', 'description': 'enforces', 'destination_entity': '""PodSecurityPolicy""'}, {'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""Kubelet""'}, {'source_entity': '""Kubelet""', 'description': 'executes', 'destination_entity': '""Dockerfile""'}, {'source_entity': '""Kubelet""', 'description': 'sets', 'destination_entity': '""runAsUser""'}, {'source_entity': '""kubectl""', 'description': 'specifies', 'destination_entity': '""USER directive""'}, {'source_entity': '""id""', 'description': 'identifies', 'destination_entity': '""runAsUser""'}]","['[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""The Kubelet runs a Pod, which is a container that can run an application or service.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""PodSecurityPolicy"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""The API server enforces PodSecurityPolicy to ensure secure pod creation and management.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""kubectl, a command-line tool for Kubernetes, uses pods to execute commands and manage cluster resources.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""Kubelet executes pods, ensuring they run as expected in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""Dockerfile"",\n    ""destination"": ""container"",\n    ""relation_description"": ""builds"",\n    ""summary_er"": ""A Dockerfile builds a container image, which can then be used to create running containers.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets"",\n    ""summary_er"": ""The Kubelet component sets configuration for a pod, defining its execution environment and behavior.""\n  }\n]', '[{""source"": ""kubectl"", ""destination"": ""pod"", ""relation_description"": ""specifies"", ""summary_er"": ""Kubectl command-line tool uses \'specifies\' to identify a specific pod.""}]', '[\n  {\n    ""source"": ""id"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""identifies"",\n    ""summary_er"": ""The \'id\' field identifies a unique identifier for a pod, which is a container that runs an application.""\n  },\n  {\n    ""source"": ""runAsUser"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the user ID to run the container as"",\n    ""summary_er"": ""The \'runAsUser\' field specifies the user ID under which the container will run, ensuring proper permissions and security.""\n  }\n]']","A PodSecurityPolicy can restrict the use of security-related features in pods, enforcing only when creating or updating pods. If a pod spec tries to set fields outside allowed ranges, it's rejected by the API server. However, if a container image has an out-of-range user ID, but the runAsUser property is not set, the API server may still accept the pod and run the container with the specified ID in the PodSecurityPolicy.","[{'highlight': 'If the pod spec tries to set either of those fields (runAsUser or fsGroup) to a value outside of these ranges, the pod will not be accepted by the API server.'}]"
+337,426,0,[],"394
+CHAPTER 13
+Securing cluster nodes and the network
+USING THE MUSTRUNASNONROOT RULE IN THE RUNASUSER FIELD
+For the runAsUser field an additional rule can be used: MustRunAsNonRoot. As the
+name suggests, it prevents users from deploying containers that run as root. Either the
+container spec must specify a runAsUser field, which can’t be zero (zero is the root
+user’s ID), or the container image itself must run as a non-zero user ID. We explained
+why this is a good thing earlier.
+13.3.3 Configuring allowed, default, and disallowed capabilities
+As you learned, containers can run in privileged mode or not, and you can define a
+more fine-grained permission configuration by adding or dropping Linux kernel
+capabilities in each container. Three fields influence which capabilities containers can
+or cannot use:
+
+allowedCapabilities
+
+defaultAddCapabilities
+
+requiredDropCapabilities
+We’ll look at an example first, and then discuss what each of the three fields does. The
+following listing shows a snippet of a PodSecurityPolicy resource defining three fields
+related to capabilities.
+apiVersion: extensions/v1beta1 
+kind: PodSecurityPolicy
+spec:
+  allowedCapabilities:          
+  - SYS_TIME                    
+  defaultAddCapabilities:         
+  - CHOWN                         
+  requiredDropCapabilities:     
+  - SYS_ADMIN                   
+  - SYS_MODULE                  
+  ...
+NOTE
+The SYS_ADMIN capability allows a range of administrative operations,
+and the SYS_MODULE capability allows loading and unloading of Linux kernel
+modules.
+SPECIFYING WHICH CAPABILITIES CAN BE ADDED TO A CONTAINER
+The allowedCapabilities field is used to specify which capabilities pod authors can
+add in the securityContext.capabilities field in the container spec. In one of the
+previous examples, you added the SYS_TIME capability to your container. If the Pod-
+SecurityPolicy admission control plugin had been enabled, you wouldn’t have been
+able to add that capability, unless it was specified in the PodSecurityPolicy as shown
+in listing 13.18.
+Listing 13.18
+Specifying capabilities in a PodSecurityPolicy: psp-capabilities.yaml
+Allow containers to 
+add the SYS_TIME 
+capability.
+Automatically add the CHOWN 
+capability to every container.
+Require containers to 
+drop the SYS_ADMIN and 
+SYS_MODULE capabilities.
+ 
+",[],"[{'entity': 'MustRunAsNonRoot', 'description': 'A rule that prevents users from deploying containers that run as root.', 'category': 'process'}, {'entity': 'runAsUser', 'description': 'A field in the container spec that specifies a user ID for the container to run as.', 'category': 'field'}, {'entity': 'root', 'description': ""The root user's ID, which is zero."", 'category': 'user'}, {'entity': 'container spec', 'description': 'A specification for a container that defines its configuration and settings.', 'category': 'application'}, {'entity': 'allowedCapabilities', 'description': 'A field in the PodSecurityPolicy resource that specifies which capabilities containers can add.', 'category': 'field'}, {'entity': 'defaultAddCapabilities', 'description': 'A field in the PodSecurityPolicy resource that specifies which capabilities are automatically added to every container.', 'category': 'field'}, {'entity': 'requiredDropCapabilities', 'description': 'A field in the PodSecurityPolicy resource that specifies which capabilities containers must drop.', 'category': 'field'}, {'entity': 'SYS_TIME', 'description': 'A Linux kernel capability that allows a range of administrative operations.', 'category': 'capability'}, {'entity': 'CHOWN', 'description': 'A Linux kernel capability that allows loading and unloading of Linux kernel modules.', 'category': 'capability'}, {'entity': 'SYS_ADMIN', 'description': 'A Linux kernel capability that allows a range of administrative operations.', 'category': 'capability'}, {'entity': 'SYS_MODULE', 'description': 'A Linux kernel capability that allows loading and unloading of Linux kernel modules.', 'category': 'capability'}, {'entity': 'PodSecurityPolicy', 'description': 'A resource in Kubernetes that defines the security configuration for a pod.', 'category': 'resource'}, {'entity': 'extensions/v1beta1', 'description': 'The API version for the PodSecurityPolicy resource.', 'category': 'API'}]","[{'source_entity': '""container spec""', 'description': 'specifies the runAsUser', 'destination_entity': '""runAsUser""'}, {'source_entity': '""container spec""', 'description': 'requires a PodSecurityPolicy with MustRunAsNonRoot', 'destination_entity': '""PodSecurityPolicy""'}, {'source_entity': '""container spec""', 'description': 'specifies the required drop capabilities', 'destination_entity': '""requiredDropCapabilities""'}, {'source_entity': '""container spec""', 'description': 'specifies the allowed capabilities', 'destination_entity': '""allowedCapabilities""'}, {'source_entity': '""MustRunAsNonRoot""', 'description': 'requires a PodSecurityPolicy with SYS_ADMIN capability', 'destination_entity': '""PodSecurityPolicy""'}, {'source_entity': '""requiredDropCapabilities""', 'description': 'includes CHOWN capability', 'destination_entity': '""CHOWN""'}, {'source_entity': '""allowedCapabilities""', 'description': 'includes SYS_TIME capability', 'destination_entity': '""SYS_TIME""'}, {'source_entity': '""defaultAddCapabilities""', 'description': 'includes extensions/v1beta1 capabilities', 'destination_entity': '""extensions/v1beta1""'}]","['[\n  {\n    ""source"": ""container spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the runAsUser"",\n    ""summary_er"": ""The container specification defines the user to run as, which is used by the pod.""\n  }\n]', '[\n  {\n    ""source"": ""Container Spec"",\n    ""destination"": ""Pod Security Policy"",\n    ""relation_description"": ""requires a PodSecurityPolicy with MustRunAsNonRoot"",\n    ""summary_er"": ""A container specification must run as non-root user to comply with the specified pod security policy, ensuring secure execution of containers within the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""container spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the required drop capabilities"",\n    ""summary_er"": ""The container specification defines the necessary privileges for a pod to function correctly.""\n  }\n]', '[\n  {\n    ""source"": ""container spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the allowed capabilities"",\n    ""summary_er"": ""The container specification defines the allowed capabilities for a pod, determining what it can do and interact with.""\n  }\n]', '[\n  {\n    ""source"": ""MustRunAsNonRoot"",\n    ""destination"": ""PodSecurityPolicy"",\n    ""relation_description"": ""requires a PodSecurityPolicy with SYS_ADMIN capability"",\n    ""summary_er"": ""To run as non-root, a Pod must have a PodSecurityPolicy with SYS_ADMIN capability to ensure proper access control.""\n  }\n]', '[\n  {\n    ""source"": ""requiredDropCapabilities"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""includes CHOWN capability"",\n    ""summary_er"": ""The required drop capabilities include the ability to perform a CHOWN operation, which allows changing ownership of files and directories.""\n  }\n]', '[\n  {\n    ""source"": ""allowedCapabilities"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""includes SYS_TIME capability"",\n    ""summary_er"": ""The pod includes a system time capability, allowing it to manage and display time-related information.""\n  }\n]', '[\n  {\n    ""source"": ""defaultAddCapabilities"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""includes extensions/v1beta1 capabilities"",\n    ""summary_er"": ""The default add capabilities feature includes extensions from v1beta1, enabling capabilities for pods.""\n  }\n]']","Securing cluster nodes and network involves using the MustRunAsNonRoot rule in the runAsUser field, preventing users from deploying containers that run as root. Configuring allowed, default, and disallowed capabilities includes specifying which capabilities can be added or dropped in a container using fields like allowedCapabilities, defaultAddCapabilities, and requiredDropCapabilities. This helps control what operations containers can perform by adding or dropping Linux kernel capabilities.","[{'highlight': 'The MustRunAsNonRoot rule can be used in the runAsUser field to prevent users from deploying containers that run as root.'}, {'highlight': 'Three fields influence which capabilities containers can or cannot use: allowedCapabilities, defaultAddCapabilities, and requiredDropCapabilities.'}, {'highlight': 'The allowedCapabilities field specifies which capabilities pod authors can add in the securityContext.capabilities field in the container spec.'}, {'highlight': 'The SYS_ADMIN capability allows a range of administrative operations, and the SYS_MODULE capability allows loading and unloading of Linux kernel modules.'}, {'highlight': 'The requiredDropCapabilities field requires containers to drop specific capabilities, such as SYS_ADMIN and SYS_MODULE.'}]"
+338,427,0,[],"395
+Restricting the use of security-related features in pods
+ADDING CAPABILITIES TO ALL CONTAINERS
+All capabilities listed under the defaultAddCapabilities field will be added to
+every deployed pod’s containers. If a user doesn’t want certain containers to have
+those capabilities, they need to explicitly drop them in the specs of those containers.
+ The example in listing 13.18 enables the automatic addition of the CAP_CHOWN capa-
+bility to every container, thus allowing processes running in the container to change the
+ownership of files in the container (with the chown command, for example).
+DROPPING CAPABILITIES FROM A CONTAINER
+The final field in this example is requiredDropCapabilities. I must admit, this was a
+somewhat strange name for me at first, but it’s not that complicated. The capabilities
+listed in this field are dropped automatically from every container (the PodSecurity-
+Policy Admission Control plugin will add them to every container’s security-
+Context.capabilities.drop field). 
+ If a user tries to create a pod where they explicitly add one of the capabilities listed
+in the policy’s requiredDropCapabilities field, the pod is rejected:
+$ kubectl create -f pod-add-sysadmin-capability.yaml
+Error from server (Forbidden): error when creating ""pod-add-sysadmin-
+capability.yaml"": pods ""pod-add-sysadmin-capability"" is forbidden: unable 
+to validate against any pod security policy: [capabilities.add: Invalid 
+value: ""SYS_ADMIN"": capability may not be added]
+13.3.4 Constraining the types of volumes pods can use
+The last thing a PodSecurityPolicy resource can do is define which volume types users
+can add to their pods. At the minimum, a PodSecurityPolicy should allow using at
+least the emptyDir, configMap, secret, downwardAPI, and the persistentVolume-
+Claim volumes. The pertinent part of such a PodSecurityPolicy resource is shown in
+the following listing.
+kind: PodSecurityPolicy
+spec:
+  volumes:
+  - emptyDir
+  - configMap
+  - secret
+  - downwardAPI
+  - persistentVolumeClaim
+If multiple PodSecurityPolicy resources are in place, pods can use any volume type
+defined in any of the policies (the union of all volumes lists is used).
+Listing 13.19
+A PSP snippet allowing the use of only certain volume types: 
+psp-volumes.yaml
+ 
+",[],"[{'entity': 'security-related features', 'description': 'features related to security in pods', 'category': 'application'}, {'entity': 'CAPABILITIES', 'description': ""capabilities added to every deployed pod's containers"", 'category': 'process'}, {'entity': 'CAP_CHOWN', 'description': 'capability allowing processes running in the container to change ownership of files', 'category': 'process'}, {'entity': 'requiredDropCapabilities', 'description': 'field listing capabilities dropped automatically from every container', 'category': 'process'}, {'entity': 'PodSecurity-Policy Admission Control plugin', 'description': ""plugin adding capabilities to every container's security-Context.capabilities.drop field"", 'category': 'application'}, {'entity': 'kubectl', 'description': 'command-line tool used to create a pod where capabilities are added', 'category': 'command'}, {'entity': 'pod-add-sysadmin-capability.yaml', 'description': 'file containing YAML configuration for creating a pod with added capability', 'category': 'file'}, {'entity': 'emptyDir', 'description': 'volume type allowing users to add empty directories to their pods', 'category': 'database'}, {'entity': 'configMap', 'description': 'volume type allowing users to add configuration maps to their pods', 'category': 'database'}, {'entity': 'secret', 'description': 'volume type allowing users to add secrets to their pods', 'category': 'database'}, {'entity': 'downwardAPI', 'description': 'volume type allowing users to add downward API data to their pods', 'category': 'database'}, {'entity': 'persistentVolume-Claim', 'description': 'volume type allowing users to add persistent volume claims to their pods', 'category': 'database'}, {'entity': 'PodSecurityPolicy', 'description': 'resource defining security policies for pods', 'category': 'application'}, {'entity': 'volumes', 'description': 'field listing allowed volume types in a PodSecurityPolicy resource', 'category': 'process'}]","[{'source_entity': '""PodSecurityPolicy""', 'description': 'defines', 'destination_entity': '""security-related features""'}, {'source_entity': '""PodSecurity-Policy Admission Control plugin""', 'description': 'enforces', 'destination_entity': '""PodSecurityPolicy""'}, {'source_entity': '""CAPABILITIES""', 'description': 'specifies', 'destination_entity': '""requiredDropCapabilities""'}, {'source_entity': '""kubectl""', 'description': 'applies', 'destination_entity': '""pod-add-sysadmin-capability.yaml""'}, {'source_entity': '""volumes""', 'description': 'includes', 'destination_entity': '""configMap"", ""emptyDir"", ""persistentVolume-Claim""'}, {'source_entity': '""CAP_CHOWN""', 'description': 'grants', 'destination_entity': '""secret""'}]","['[\n  {\n    ""source"": ""PodSecurityPolicy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A PodSecurityPolicy defines security-related features for pods, ensuring they adhere to specific security standards.""\n  }\n]', '[\n  {\n    ""source"": ""PodSecurity-Policy Admission Control plugin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""The PodSecurity-Policy Admission Control plugin enforces security policies on pods, ensuring they meet specific requirements before being deployed.""\n  }\n]', '[\n  {\n    ""source"": ""CAPABILITIES"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requiredDropCapabilities"",\n    ""summary_er"": ""The CAPABILITIES entity specifies a required drop capability for a pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies"",\n    ""summary_er"": ""\\""kubectl\\"" applies a configuration file to create or update a \\""pod\\"", in this case, adding sysadmin capability.""\n  }\n]', '[{""source"": ""volumes"", ""destination"": ""pod"", ""relation_description"": ""includes"", ""summary_er"": ""The volumes relation indicates that a pod includes one or more volumes, which are used to store data.""}, \n {""source"": ""configMap"", ""destination"": ""pod"", ""relation_description"": ""includes"", ""summary_er"": ""A configMap is included in a pod, providing configuration data for the application.""}, \n {""source"": ""emptyDir"", ""destination"": ""pod"", ""relation_description"": ""includes"", ""summary_er"": ""An emptyDir volume is included in a pod, providing temporary storage space.""}, \n {""source"": ""persistentVolume-Claim"", ""destination"": ""pod"", ""relation_description"": ""includes"", ""summary_er"": ""A persistentVolume-Claim is included in a pod, referencing a persistent volume for data storage.""}]', '[\n  {\n    ""source"": ""CAP_CHOWN"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""grants"",\n    ""summary_er"": ""The CAP_CHOWN capability grants permission to change ownership of a pod\'s secret.""\n  }\n]']","PodSecurityPolicy resources allow restricting security-related features in pods, adding capabilities to containers, and constraining volume types. Capabilities can be added or dropped from containers using defaultAddCapabilities and requiredDropCapabilities fields respectively. Volume types can also be restricted, with a minimum of emptyDir, configMap, secret, downwardAPI, and persistentVolumeClaim allowed.","[{'highlight': 'All capabilities listed under the defaultAddCapabilities field will be added to every deployed pod’s containers.'}, {'highlight': 'The final field in this example is requiredDropCapabilities. Capabilities listed in this field are dropped automatically from every container.'}, {'highlight': 'If a user tries to create a pod where they explicitly add one of the capabilities listed in the policy’s requiredDropCapabilities field, the pod is rejected.'}, {'highlight': 'A PodSecurityPolicy resource can define which volume types users can add to their pods. At least emptyDir, configMap, secret, downwardAPI, and persistentVolume-Claim volumes should be allowed.'}, {'highlight': 'If multiple PodSecurityPolicy resources are in place, pods can use any volume type defined in any of the policies (the union of all volumes lists is used).'}]"
+339,428,0,[],"396
+CHAPTER 13
+Securing cluster nodes and the network
+13.3.5 Assigning different PodSecurityPolicies to different users 
+and groups
+We mentioned that a PodSecurityPolicy is a cluster-level resource, which means it
+can’t be stored in and applied to a specific namespace. Does that mean it always
+applies across all namespaces? No, because that would make them relatively unus-
+able. After all, system pods must often be allowed to do things that regular pods
+shouldn’t.
+ Assigning different policies to different users is done through the RBAC mecha-
+nism described in the previous chapter. The idea is to create as many policies as you
+need and make them available to individual users or groups by creating ClusterRole
+resources and pointing them to the individual policies by name. By binding those
+ClusterRoles to specific users or groups with ClusterRoleBindings, when the Pod-
+SecurityPolicy Admission Control plugin needs to decide whether to admit a pod defi-
+nition or not, it will only consider the policies accessible to the user creating the pod. 
+ You’ll see how to do this in the next exercise. You’ll start by creating an additional
+PodSecurityPolicy.
+CREATING A PODSECURITYPOLICY ALLOWING PRIVILEGED CONTAINERS TO BE DEPLOYED
+You’ll create a special PodSecurityPolicy that will allow privileged users to create pods
+with privileged containers. The following listing shows the policy’s definition.
+apiVersion: extensions/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: privileged          
+spec:
+  privileged: true        
+  runAsUser:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  volumes:
+  - '*'
+After you post this policy to the API server, you have two policies in the cluster:
+$ kubectl get psp
+NAME         PRIV    CAPS   SELINUX    RUNASUSER   FSGROUP    ...  
+default      false   []     RunAsAny   RunAsAny    RunAsAny   ...
+privileged   true    []     RunAsAny   RunAsAny    RunAsAny   ...
+NOTE
+The shorthand for PodSecurityPolicy is psp.
+Listing 13.20
+A PodSecurityPolicy for privileged users: psp-privileged.yaml
+The name of this 
+policy is ""privileged.”
+It allows running 
+privileged containers.
+ 
+",[],"[{'entity': 'PodSecurityPolicy', 'description': 'A cluster-level resource that defines a set of permissions for pods.', 'category': 'software'}, {'entity': 'RBAC', 'description': 'Role-Based Access Control mechanism for managing access to resources in Kubernetes.', 'category': 'software'}, {'entity': 'ClusterRole', 'description': 'A resource that defines a set of permissions for users or groups in Kubernetes.', 'category': 'software'}, {'entity': 'ClusterRoleBinding', 'description': 'A resource that binds a ClusterRole to a user or group in Kubernetes.', 'category': 'software'}, {'entity': 'PodSecurityPolicy Admission Control plugin', 'description': 'A plugin that enforces PodSecurityPolicies when creating pods in Kubernetes.', 'category': 'software'}, {'entity': 'privileged containers', 'description': 'Containers that run with elevated privileges in Kubernetes.', 'category': 'software'}, {'entity': 'kubectl', 'description': 'The command-line tool for interacting with a Kubernetes cluster.', 'category': 'software'}, {'entity': 'PodSecurityPolicy (psp)', 'description': 'A shorthand for PodSecurityPolicy in Kubernetes.', 'category': 'software'}, {'entity': 'extensions/v1beta1', 'description': 'The API version for the PodSecurityPolicy resource in Kubernetes.', 'category': 'software'}, {'entity': 'apiVersion', 'description': 'A field in the PodSecurityPolicy resource that specifies its API version.', 'category': 'software'}, {'entity': 'kind', 'description': 'A field in the PodSecurityPolicy resource that specifies its type.', 'category': 'software'}, {'entity': 'metadata', 'description': 'A field in the PodSecurityPolicy resource that contains metadata about it.', 'category': 'software'}, {'entity': 'name', 'description': 'A field in the PodSecurityPolicy resource that specifies its name.', 'category': 'software'}, {'entity': 'spec', 'description': 'A field in the PodSecurityPolicy resource that contains its specification.', 'category': 'software'}, {'entity': 'privileged', 'description': 'A field in the PodSecurityPolicy resource that specifies whether privileged containers are allowed.', 'category': 'software'}, {'entity': 'runAsUser', 'description': 'A field in the PodSecurityPolicy resource that specifies the rule for running as a user.', 'category': 'software'}, {'entity': 'fsGroup', 'description': 'A field in the PodSecurityPolicy resource that specifies the rule for file system groups.', 'category': 'software'}, {'entity': 'supplementalGroups', 'description': 'A field in the PodSecurityPolicy resource that specifies the rule for supplemental groups.', 'category': 'software'}, {'entity': 'seLinux', 'description': 'A field in the PodSecurityPolicy resource that specifies the rule for SELinux.', 'category': 'software'}, {'entity': 'volumes', 'description': 'A field in the PodSecurityPolicy resource that specifies the allowed volumes.', 'category': 'software'}]","[{'source_entity': 'PodSecurityPolicy', 'description': 'defines a set of permissions for pods to run with', 'destination_entity': 'privileged containers'}, {'source_entity': 'kubectl', 'description': 'applies the PodSecurityPolicy Admission Control plugin', 'destination_entity': 'PodSecurityPolicy Admission Control plugin'}, {'source_entity': 'seLinux', 'description': 'is used to define security context for pods', 'destination_entity': 'pods'}, {'source_entity': 'ClusterRoleBinding', 'description': 'binds a ClusterRole to a user or group', 'destination_entity': 'users/groups'}, {'source_entity': '""extensions/v1beta1""', 'description': 'defines the API version for PodSecurityPolicy', 'destination_entity': 'PodSecurityPolicy'}, {'source_entity': 'supplementalGroups', 'description': 'defines a set of supplemental groups for pods to run with', 'destination_entity': 'pods'}, {'source_entity': 'privileged', 'description': 'grants permission for containers to run with elevated privileges', 'destination_entity': 'containers'}, {'source_entity': 'runAsUser', 'description': 'defines the user ID for a container to run as', 'destination_entity': 'containers'}, {'source_entity': 'fsGroup', 'description': 'defines the file system group ID for a pod to run with', 'destination_entity': 'pods'}, {'source_entity': 'PodSecurityPolicy (psp)', 'description': 'defines a set of permissions for pods to run with', 'destination_entity': 'privileged containers'}, {'source_entity': 'volumes', 'description': 'defines the volumes that can be used by a pod', 'destination_entity': 'pods'}, {'source_entity': 'metadata', 'description': 'provides metadata for a resource', 'destination_entity': 'resources'}, {'source_entity': 'kind', 'description': 'defines the type of resource being created', 'destination_entity': 'resources'}, {'source_entity': 'ClusterRole', 'description': 'defines a set of permissions for a cluster', 'destination_entity': 'cluster'}, {'source_entity': 'RBAC', 'description': 'defines the Role-Based Access Control policy for a cluster', 'destination_entity': 'cluster'}]","['[\n  {\n    ""source"": ""PodSecurityPolicy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines a set of permissions for pods to run with"",\n    ""summary_er"": ""PodSecurityPolicy defines permissions for pods, including privileged containers.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""PodSecurityPolicy Admission Control plugin"",\n    ""relation_description"": ""applies"",\n    ""summary_er"": ""Kubectl applies the PodSecurityPolicy Admission Control plugin to enforce security policies on pods.""\n  },\n  {\n    ""source"": ""PodSecurityPolicy Admission Control plugin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforce security policies on"",\n    ""summary_er"": ""The PodSecurityPolicy Admission Control plugin enforces security policies on pods, ensuring secure execution and data access.""\n  }\n]', '[\n  {\n    ""source"": ""SELinux"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to define security context for"",\n    ""summary_er"": ""SELinux defines security context for pods, ensuring secure execution of pod processes.""\n  }\n]', '[\n  {\n    ""source"": ""ClusterRoleBinding"",\n    ""destination"": ""users/groups"",\n    ""relation_description"": ""binds a ClusterRole to a user or group"",\n    ""summary_er"": ""ClusterRoleBinding binds a ClusterRole to users or groups, granting access and permissions.""\n  }\n]', '[\n  {\n    ""source"": ""extensions/v1beta1"",\n    ""destination"": ""PodSecurityPolicy"",\n    ""relation_description"": ""defines the API version"",\n    ""summary_er"": ""The extensions/v1beta1 API defines the PodSecurityPolicy, which specifies the security policies for pods.""\n  }\n]', '[\n  {\n    ""source"": ""supplementalGroups"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines a set of supplemental groups for pods to run with"",\n    ""summary_er"": ""Supplemental groups are defined for pods to run with, enhancing security and access control.""\n  }\n]', '[\n  {\n    ""source"": ""privileged"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""grants permission for containers to run with elevated privileges"",\n    ""summary_er"": ""Privileged mode allows containers to access host system resources, potentially compromising security.""\n  }\n]', '[\n  {\n    ""source"": ""runAsUser"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the user ID for a container to run as"",\n    ""summary_er"": ""This field specifies the user ID under which a container will run, ensuring proper permissions and access control within the pod.""\n  }\n]', '[\n  {\n    ""source"": ""fsGroup"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the file system group ID for a pod to run with"",\n    ""summary_er"": ""The fsGroup relation specifies the file system group ID that a pod should run with, ensuring secure access to shared resources.""\n  }\n]', '[\n  {\n    ""source"": ""PodSecurityPolicy"",\n    ""destination"": ""privileged containers"",\n    ""relation_description"": ""defines a set of permissions for pods to run with"",\n    ""summary_er"": ""PodSecurityPolicy defines permissions for pods to run with, specifically allowing or denying access to privileged containers.""\n  }\n]', '[\n  {\n    ""source"": ""volumes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the volumes that can be used by a pod"",\n    ""summary_er"": ""The volume definition specifies the storage resources available to a pod, enabling data persistence and sharing across containers.""\n  }\n]', '[\n  {\n    ""source"": ""metadata"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides metadata for a resource"",\n    ""summary_er"": ""Metadata is provided to pods, enabling them to access and utilize additional information.""\n  }\n]', '[\n  {\n    ""source"": ""kind"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the type of resource being created"",\n    ""summary_er"": ""The kind field specifies the type of Kubernetes object, in this case a pod, which defines the characteristics and behavior of the resource.""\n  }\n]', '[\n  {\n    ""source"": ""ClusterRole"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines a set of permissions for a cluster"",\n    ""summary_er"": ""A ClusterRole defines a set of permissions for a cluster, which can be applied to pods within that cluster.""\n  }\n]', '[\n  {\n    ""source"": ""RBAC"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the Role-Based Access Control policy for a cluster"",\n    ""summary_er"": ""RBAC defines access control policies for pods within a Kubernetes cluster, ensuring secure interactions between users and resources.""\n  }\n]']","PodSecurityPolicies (PSPs) are cluster-level resources that can't be stored in a specific namespace. Different PSBs can be assigned to different users and groups using the RBAC mechanism by creating ClusterRole resources, pointing them to individual policies, and binding them to users or groups with ClusterRoleBindings. A new PSP is created to allow privileged containers to be deployed, allowing for more flexibility in managing system pods and user pods.","[{'highlight': 'PodSecurityPolicies can be assigned to different users and groups through the RBAC mechanism, allowing for fine-grained access control.'}, {'highlight': 'A PodSecurityPolicy is a cluster-level resource that cannot be stored in and applied to a specific namespace, but can be made available to individual users or groups by creating ClusterRole resources.'}, {'highlight': 'The PodSecurityPolicy Admission Control plugin considers only the policies accessible to the user creating the pod when deciding whether to admit a pod definition or not.'}, {'highlight': ""A special PodSecurityPolicy allowing privileged containers to be deployed can be created, which allows running privileged containers and has a name of 'privileged'.""}, {'highlight': ""The shorthand for PodSecurityPolicy is 'psp', and the command 'kubectl get psp' can be used to list all available policies in the cluster.""}]"

@@ -1,0 +1,520 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+430,519,0,[],"487
+Understanding the pod’s lifecycle
+you’ll only see a FailedPostStartHook warning among the pod’s events (you can see
+them using kubectl describe pod). A while later, you’ll see more information on why
+the hook failed, as shown in the following listing.
+FailedSync   Error syncing pod, skipping: failed to ""StartContainer"" for 
+             ""kubia"" with PostStart handler: command 'sh -c echo 'hook 
+             will fail with exit code 15'; sleep 5 ; exit 15' exited 
+             with 15: : ""PostStart Hook Failed"" 
+The number 15 in the last line is the exit code of the command. When using an HTTP
+GET hook handler, the reason may look like the following listing (you can try this by
+deploying the post-start-hook-httpget.yaml file from the book’s code archive).
+FailedSync   Error syncing pod, skipping: failed to ""StartContainer"" for 
+             ""kubia"" with PostStart handler: Get 
+             http://10.32.0.2:9090/postStart: dial tcp 10.32.0.2:9090: 
+             getsockopt: connection refused: ""PostStart Hook Failed"" 
+NOTE
+The post-start hook is intentionally misconfigured to use port 9090
+instead of the correct port 8080, to show what happens when the hook fails.
+The standard and error outputs of command-based post-start hooks aren’t logged any-
+where, so you may want to have the process the hook invokes log to a file in the con-
+tainer’s filesystem, which will allow you to examine the contents of the file with
+something like this:
+$ kubectl exec my-pod cat logfile.txt 
+If the container gets restarted for whatever reason (including because the hook failed),
+the file may be gone before you can examine it. You can work around that by mount-
+ing an emptyDir volume into the container and having the hook write to it.
+USING A PRE-STOP CONTAINER LIFECYCLE HOOK
+A pre-stop hook is executed immediately before a container is terminated. When a
+container needs to be terminated, the Kubelet will run the pre-stop hook, if config-
+ured, and only then send a SIGTERM to the process (and later kill the process if it
+doesn’t terminate gracefully). 
+ A pre-stop hook can be used to initiate a graceful shutdown of the container, if it
+doesn’t shut down gracefully upon receipt of a SIGTERM signal. They can also be used
+to perform arbitrary operations before shutdown without having to implement those
+operations in the application itself (this is useful when you’re running a third-party
+app, whose source code you don’t have access to and/or can’t modify). 
+ Configuring a pre-stop hook in a pod manifest isn’t very different from adding a
+post-start hook. The previous example showed a post-start hook that executes a com-
+Listing 17.4
+Pod’s events showing the exit code of the failed command-based hook
+Listing 17.5
+Pod’s events showing the reason why an HTTP GET hook failed
+ 
+",[],"[{'entity': 'PostStart Hook', 'description': 'A hook executed immediately after a container starts.', 'category': 'container lifecycle'}, {'entity': 'FailedSync', 'description': 'An error syncing pod, skipping: failed to start container.', 'category': 'pod events'}, {'entity': 'PostStart handler', 'description': 'A command executed immediately after a container starts.', 'category': 'container lifecycle'}, {'entity': 'Get http://10.32.0.2:9090/postStart', 'description': 'An HTTP GET hook handler.', 'category': 'container lifecycle'}, {'entity': 'dial tcp 10.32.0.2:9090', 'description': 'A network error connecting to port 9090.', 'category': 'network'}, {'entity': 'connection refused', 'description': 'An error message indicating a connection was refused.', 'category': 'error'}, {'entity': 'kubectl describe pod', 'description': 'A command to display the events of a pod.', 'category': 'command'}, {'entity': 'SIGTERM', 'description': 'A signal sent to a process to terminate it gracefully.', 'category': 'process'}, {'entity': 'pre-stop hook', 'description': 'A hook executed immediately before a container is terminated.', 'category': 'container lifecycle'}, {'entity': 'emptyDir volume', 'description': 'A type of volume that can be used to persist data across container restarts.', 'category': 'volume'}, {'entity': 'kubectl exec my-pod cat logfile.txt', 'description': 'A command to execute a process in a pod and display its output.', 'category': 'command'}]","[{'source_entity': '""FailedSync""', 'description': 'failed to synchronize', 'destination_entity': '""dial tcp 10.32.0.2:9090""'}, {'source_entity': '""Get http://10.32.0.2:9090/postStart""', 'description': 'attempted to get post start data', 'destination_entity': '""connection refused""'}, {'source_entity': '""PostStart handler""', 'description': 'handled post start event', 'destination_entity': '""emptyDir volume""'}, {'source_entity': '""kubectl exec my-pod cat logfile.txt""', 'description': 'executed command to read log file', 'destination_entity': '""logfile.txt""'}, {'source_entity': '""PostStart Hook""', 'description': 'triggered post start hook', 'destination_entity': '""SIGTERM""'}, {'source_entity': '""kubectl describe pod""', 'description': 'described pod details', 'destination_entity': '""my-pod""'}]","['[\n    {\n        ""source"": ""Pod"",\n        ""destination"": ""Kubernetes Cluster"",\n        ""relation_description"": ""FailedSync"",\n        ""summary_er"": ""The pod failed to synchronize with the Kubernetes cluster due to a TCP connection issue.""\n    },\n    {\n        ""source"": ""TCP Connection"",\n        ""destination"": ""Pod"",\n        ""relation_description"": ""dial tcp 10.32.0.2:9090"",\n        ""summary_er"": ""The pod attempted to establish a TCP connection with the Kubernetes cluster on port 9090 but failed.""\n    }\n]', '[\n  {\n    ""source"": ""http://10.32.0.2:9090/postStart"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""attempted to get post start data"",\n    ""summary_er"": ""The system attempted to retrieve post-start data from a pod, but encountered an error due to connection refusal.""\n  },\n  {\n    ""source"": ""http://10.32.0.2:9090/postStart"",\n    ""destination"": ""connection"",\n    ""relation_description"": ""refused"",\n    ""summary_er"": ""The system\'s attempt to establish a connection was refused, resulting in an error.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""http://10.32.0.2:9090/postStart"",\n    ""relation_description"": ""connection"",\n    ""summary_er"": ""A pod attempted to establish a connection with the system\'s post-start data endpoint.""\n  },\n  {\n    ""source"": ""error"",\n    ""destination"": ""http://10.32.0.2:9090/postStart"",\n    ""relation_description"": ""encountered"",\n    ""summary_er"": ""An error was encountered while attempting to retrieve post-start data from the system\'s endpoint.""\n  },\n  {\n    ""source"": ""connection"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""refused"",\n    ""summary_er"": ""The connection attempt by a pod was refused, resulting in an error.""\n  }\n]', '[\n  {\n    ""source"": ""PostStart handler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""handled post start event"",\n    ""summary_er"": ""The PostStart handler in Kubernetes handles events that occur after a pod has started, ensuring proper initialization and setup.""\n  },\n  {\n    ""source"": ""emptyDir volume"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides temporary storage"",\n    ""summary_er"": ""An emptyDir volume in Kubernetes provides temporary storage for a pod, allowing data to be stored during its execution without persisting after termination.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""my-pod"",\n    ""relation_description"": ""executed command to read log file"",\n    ""summary_er"": ""Kubernetes client executed a command on a pod to read a log file.""\n  },\n  {\n    ""source"": ""my-pod"",\n    ""destination"": ""logfile.txt"",\n    ""relation_description"": ""read from"",\n    ""summary_er"": ""A pod read a log file as part of its execution.""\n  }\n]', '[\n  {\n    ""source"": ""PostStart Hook"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""triggered post start hook"",\n    ""summary_er"": ""The PostStart Hook is triggered after a pod has started, allowing for custom initialization scripts to run.""\n  },\n  {\n    ""source"": ""SIGTERM"",\n    ""destination"": ""process"",\n    ""relation_description"": ""signal sent to terminate process"",\n    ""summary_er"": ""SIGTERM is a signal sent to a process to request its termination, typically used in container orchestration systems like Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""described pod details"",\n    ""summary_er"": ""Get detailed information about a specific Kubernetes pod using \'kubectl describe pod\' command.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""my-pod"",\n    ""relation_description"": ""destination"",\n    ""summary_er"": ""The target pod for the \'kubectl describe pod\' command is named \'my-pod\'.""\n  }\n]']","A pod's lifecycle includes post-start and pre-stop hooks, which can be used to execute commands or initiate a graceful shutdown. Post-start hooks are executed immediately after a container is started, while pre-stop hooks are executed before a container is terminated. If a hook fails, it will display an error message in the pod's events. To troubleshoot failed hooks, one can use kubectl describe pod and exec into the container to examine log files or mount an emptyDir volume for logging purposes.","[{'highlight': ""When a post-start hook fails, you'll see a FailedPostStartHook warning among the pod's events, followed by more information on why the hook failed.""}, {'highlight': ""The standard and error outputs of command-based post-start hooks aren't logged anywhere, so it's recommended to have the process invoked by the hook log to a file in the container's filesystem.""}, {'highlight': 'A pre-stop hook is executed immediately before a container is terminated and can be used to initiate a graceful shutdown of the container or perform arbitrary operations before shutdown.'}, {'highlight': 'Configuring a pre-stop hook in a pod manifest is similar to adding a post-start hook, but with a different lifecycle event.'}, {'highlight': ""When using an HTTP GET hook handler, the reason for failure may look like 'Get http://<ip>:9090/postStart: dial tcp <ip>:9090: getsockopt: connection refused', indicating a connection refusal error.""}]"
+431,520,0,[],"488
+CHAPTER 17
+Best practices for developing apps
+mand, so we’ll look at a pre-stop hook that performs an HTTP GET request now. The
+following listing shows how to define a pre-stop HTTP GET hook in a pod.
+    lifecycle:
+      preStop:            
+        httpGet:          
+          port: 8080          
+          path: shutdown      
+The pre-stop hook defined in this listing performs an HTTP GET request to http:/
+/
+POD_IP:8080/shutdown as soon as the Kubelet starts terminating the container.
+Apart from the port and path shown in the listing, you can also set the fields scheme
+(HTTP or HTTPS) and host, as well as httpHeaders that should be sent in the
+request. The host field defaults to the pod IP. Be sure not to set it to localhost,
+because localhost would refer to the node, not the pod.
+ In contrast to the post-start hook, the container will be terminated regardless of
+the result of the hook—an error HTTP response code or a non-zero exit code when
+using a command-based hook will not prevent the container from being terminated.
+If the pre-stop hook fails, you’ll see a FailedPreStopHook warning event among the
+pod’s events, but because the pod is deleted soon afterward (after all, the pod’s dele-
+tion is what triggered the pre-stop hook in the first place), you may not even notice
+that the pre-stop hook failed to run properly. 
+TIP
+If the successful completion of the pre-stop hook is critical to the proper
+operation of your system, verify whether it’s being executed at all. I’ve wit-
+nessed situations where the pre-stop hook didn’t run and the developer
+wasn’t even aware of that.
+USING A PRE-STOP HOOK BECAUSE YOUR APP DOESN’T RECEIVE THE SIGTERM SIGNAL
+Many developers make the mistake of defining a pre-stop hook solely to send a SIGTERM
+signal to their apps in the pre-stop hook. They do this because they don’t see their appli-
+cation receive the SIGTERM signal sent by the Kubelet. The reason why the signal isn’t
+received by the application isn’t because Kubernetes isn’t sending it, but because the sig-
+nal isn’t being passed to the app process inside the container itself. If your container
+image is configured to run a shell, which in turn runs the app process, the signal may be
+eaten up by the shell itself, instead of being passed down to the child process.
+ In such cases, instead of adding a pre-stop hook to send the signal directly to your
+app, the proper fix is to make sure the shell passes the signal to the app. This can be
+achieved by handling the signal in the shell script running as the main container pro-
+cess and then passing it on to the app. Or you could not configure the container image
+to run a shell at all and instead run the application binary directly. You do this by using
+the exec form of ENTRYPOINT or CMD in the Dockerfile: ENTRYPOINT [""/mybinary""]
+instead of ENTRYPOINT /mybinary.
+Listing 17.6
+A pre-stop hook YAML snippet: pre-stop-hook-httpget.yaml
+This is a pre-stop hook that 
+performs an HTTP GET request.
+The request is sent to 
+http://POD_IP:8080/shutdown.
+ 
+",[],"[{'entity': 'pre-stop hook', 'description': 'A hook that performs an HTTP GET request before a pod is terminated.', 'category': 'application'}, {'entity': 'httpGet', 'description': ""A field used to define a pre-stop hook in a pod's YAML file."", 'category': 'command'}, {'entity': 'port', 'description': 'A field used to specify the port number for an HTTP GET request.', 'category': 'process'}, {'entity': 'path', 'description': 'A field used to specify the path for an HTTP GET request.', 'category': 'process'}, {'entity': 'scheme', 'description': 'A field used to specify the scheme (HTTP or HTTPS) for an HTTP GET request.', 'category': 'process'}, {'entity': 'host', 'description': 'A field used to specify the host for an HTTP GET request.', 'category': 'process'}, {'entity': 'httpHeaders', 'description': 'A field used to specify headers that should be sent in an HTTP GET request.', 'category': 'process'}, {'entity': 'Kubelet', 'description': 'The component responsible for terminating a pod and running pre-stop hooks.', 'category': 'application'}, {'entity': 'pod IP', 'description': 'The IP address of the pod being terminated.', 'category': 'network'}, {'entity': 'SIGTERM signal', 'description': 'A signal sent by the Kubelet to a container to terminate it.', 'category': 'signal'}, {'entity': 'container image', 'description': 'The image used to run a container, which can be configured to run a shell or an application binary directly.', 'category': 'image'}, {'entity': 'shell script', 'description': 'A script that runs as the main container process and can handle signals and pass them on to child processes.', 'category': 'script'}, {'entity': 'ENTRYPOINT', 'description': 'A command used in a Dockerfile to specify the default command to run when a container is started.', 'category': 'command'}, {'entity': 'CMD', 'description': 'A command used in a Dockerfile to specify an alternative command to run when a container is started.', 'category': 'command'}]","[{'source_entity': '""Kubelet""', 'description': 'executes', 'destination_entity': '""container image""'}, {'source_entity': '""httpGet""', 'description': 'requests', 'destination_entity': '""pod IP""'}, {'source_entity': '""CMD""', 'description': 'specifies', 'destination_entity': '""container image""'}, {'source_entity': '""ENTRYPOINT""', 'description': 'runs', 'destination_entity': '""container image""'}, {'source_entity': '""pre-stop hook""', 'description': 'executes', 'destination_entity': '""shell script""'}, {'source_entity': '""SIGTERM signal""', 'description': 'triggers', 'destination_entity': '""pre-stop hook""'}, {'source_entity': '""httpHeaders""', 'description': 'specifies', 'destination_entity': '""container image""'}, {'source_entity': '""scheme""', 'description': 'defines', 'destination_entity': '""port""'}, {'source_entity': '""path""', 'description': 'specifies', 'destination_entity': '""container image""'}]","['[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""The Kubelet executes a pod by running its container image.""\n  }\n]', '[\n  {\n    ""source"": ""httpGet"",\n    ""destination"": ""requests"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""The httpGet relation retrieves HTTP requests from a source, which are then processed by the pod.""\n  },\n  {\n    ""source"": ""requests"",\n    ""destination"": ""pod IP"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""The pod receives HTTP requests and processes them using its IP address.""\n  }\n]', '[\n  {\n    ""source"": ""CMD"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The CMD command in a Dockerfile specifies the default command to run inside a container when it\'s launched.""\n  },\n  {\n    ""source"": ""container image"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""A container image runs as a pod in Kubernetes, providing a lightweight and portable execution environment for applications.""\n  }\n]', '[\n  {\n    ""source"": ""ENTRYPOINT"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""The ENTRYPOINT instruction in a Dockerfile specifies the command to run when the container starts, which is executed within the context of a pod.""\n  },\n  {\n    ""source"": ""container image"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""A container image is used to create a new pod in Kubernetes, which runs the application and its dependencies.""\n  }\n]', '[\n  {\n    ""source"": ""pre-stop hook"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""A pre-stop hook executes a shell script in a pod, typically to perform cleanup or preparation tasks before the pod is terminated.""\n  }\n]', '[\n  {\n    ""source"": ""SIGTERM signal"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""triggers"",\n    ""summary_er"": ""The SIGTERM signal triggers a pre-stop hook in a pod, initiating shutdown procedures.""\n  }\n]', '[\n  {\n    ""source"": ""httpHeaders"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The httpHeaders relation specifies that a pod\'s container image is associated with its HTTP headers.""\n  },\n  {\n    ""source"": ""container image"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""associated with"",\n    ""summary_er"": ""A container image is associated with a pod, which is a logical host for the container.""\n  }\n]', '[\n  {\n    ""source"": ""scheme"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""The scheme defines a port for communication with a pod.""\n  },\n  {\n    ""source"": ""port"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""for"",\n    ""summary_er"": ""A port is used for communication with a pod.""\n  }\n]', '[\n  {\n    ""source"": ""path"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The path attribute in Kubernetes specifies the container image for a pod.""\n  },\n  {\n    ""source"": ""container image"",\n    ""destination"": ""Docker"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""A container image is related to Docker, which is used to build and run containers.""\n  }\n]']","Kubernetes pre-stop hooks can be used to perform actions before a pod is terminated, such as sending an HTTP GET request. However, if the hook fails or returns an error, it will not prevent the container from being terminated. It's also important to note that using a pre-stop hook solely to send a SIGTERM signal to an app is not necessary, and instead the shell should be configured to pass the signal to the app process. A pre-stop hook YAML snippet example is provided for performing an HTTP GET request in a pod.","[{'highlight': ""A pre-stop hook can be defined in a pod's lifecycle section with an httpGet field to perform an HTTP GET request before termination.""}, {'highlight': 'The host field in a pre-stop hook defaults to the pod IP, and setting it to localhost will refer to the node instead of the pod.'}, {'highlight': ""If the pre-stop hook fails, a FailedPreStopHook warning event is logged among the pod's events, but may not be noticed due to the pod being deleted soon afterward.""}, {'highlight': 'Defining a pre-stop hook solely to send a SIGTERM signal to an app is incorrect and can be fixed by handling the signal in the shell script running as the main container process or by running the application binary directly without a shell.'}, {'highlight': ""A pre-stop hook's successful completion is not guaranteed, and its execution should be verified if critical for system operation, especially when using a command-based hook.""}]"
+432,521,0,[],"489
+Understanding the pod’s lifecycle
+ A container using the first form runs the mybinary executable as its main process,
+whereas the second form runs a shell as the main process with the mybinary process
+executed as a child of the shell process.
+UNDERSTANDING THAT LIFECYCLE HOOKS TARGET CONTAINERS, NOT PODS
+As a final thought on post-start and pre-stop hooks, let me emphasize that these lifecy-
+cle hooks relate to containers, not pods. You shouldn’t use a pre-stop hook for run-
+ning actions that need to be performed when the pod is terminating. The reason is
+that the pre-stop hook gets called when the container is being terminated (most likely
+because of a failed liveness probe). This may happen multiple times in the pod’s life-
+time, not only when the pod is in the process of being shut down. 
+17.2.5 Understanding pod shutdown
+We’ve touched on the subject of pod termination, so let’s explore this subject in more
+detail and go over exactly what happens during pod shutdown. This is important for
+understanding how to cleanly shut down an application running in a pod.
+ Let’s start at the beginning. A pod’s shut-down is triggered by the deletion of the
+Pod object through the API server. Upon receiving an HTTP DELETE request, the
+API server doesn’t delete the object yet, but only sets a deletionTimestamp field in it.
+Pods that have the deletionTimestamp field set are terminating. 
+ Once the Kubelet notices the pod needs to be terminated, it starts terminating
+each of the pod’s containers. It gives each container time to shut down gracefully, but
+the time is limited. That time is called the termination grace period and is configu-
+rable per pod. The timer starts as soon as the termination process starts. Then the fol-
+lowing sequence of events is performed:
+1
+Run the pre-stop hook, if one is configured, and wait for it to finish.
+2
+Send the SIGTERM signal to the main process of the container.
+3
+Wait until the container shuts down cleanly or until the termination grace
+period runs out.
+4
+Forcibly kill the process with SIGKILL, if it hasn’t terminated gracefully yet.
+The sequence of events is illustrated in figure 17.5.
+Pre-stop hook process
+Termination grace period
+Main container process
+Container shutdown
+initiated
+Container killed
+if still running
+Time
+SIGTERM
+SIGKILL
+Figure 17.5
+The container termination sequence
+ 
+","[  Main container process Col1 Col2
+0                                 ]","[{'entity': 'container', 'description': 'A process that runs within a pod, with its own lifecycle and hooks.', 'category': 'software'}, {'entity': 'pod', 'description': 'The basic execution unit in Kubernetes, consisting of one or more containers.', 'category': 'application'}, {'entity': 'Kubelet', 'description': 'A component of the Kubernetes control plane that runs on each node and is responsible for managing pods and containers.', 'category': 'software'}, {'entity': 'API server', 'description': ""The central component of the Kubernetes control plane, responsible for storing and retrieving data about the cluster's resources."", 'category': 'software'}, {'entity': 'deletionTimestamp', 'description': 'A field in a Pod object that indicates when the pod is scheduled to be deleted.', 'category': 'database'}, {'entity': 'pre-stop hook', 'description': 'A lifecycle hook that runs before a container is terminated, allowing it to perform any necessary cleanup or shutdown actions.', 'category': 'software'}, {'entity': 'SIGTERM', 'description': 'A signal sent to a process to request its termination, but allowing it to clean up and shut down cleanly.', 'category': 'hardware'}, {'entity': 'SIGKILL', 'description': 'A signal sent to a process to forcibly terminate it, without allowing it to clean up or shut down cleanly.', 'category': 'hardware'}, {'entity': 'termination grace period', 'description': 'The time allowed for a container to shut down cleanly before being forcibly terminated.', 'category': 'process'}]","[{'source_entity': '""container""', 'description': 'is terminated', 'destination_entity': '""pod""'}, {'source_entity': '""pod""', 'description': 'sets', 'destination_entity': '""termination grace period""'}, {'source_entity': '""API server""', 'description': 'receives', 'destination_entity': '""deletionTimestamp""'}, {'source_entity': '""pre-stop hook""', 'description': 'executes', 'destination_entity': '""container""'}, {'source_entity': '""SIGKILL""', 'description': 'kills', 'destination_entity': '""container""'}, {'source_entity': '""Kubelet""', 'description': 'sends', 'destination_entity': '""SIGTERM""'}, {'source_entity': '""deletionTimestamp""', 'description': 'is checked by', 'destination_entity': '""API server""'}]","['[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is terminated"",\n    ""summary_er"": ""A container is terminated when its execution is completed or it encounters an error, resulting in the pod\'s lifecycle being affected.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets"",\n    ""summary_er"": ""A Kubernetes pod is set to a specific configuration, defining its lifecycle and behavior.""\n  },\n  {\n    ""source"": ""termination grace period"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""The termination grace period is the time allowed for a pod to terminate before it is forcefully killed by Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""receives"",\n    ""summary_er"": ""The API server receives deletion requests for a pod, initiating its removal from the system.""\n  }\n]', '[\n  {\n    ""source"": ""pre-stop hook"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""A pre-stop hook in Kubernetes executes a command on a pod before it is terminated.""\n  }\n]', '[\n  {\n    ""source"": ""SIGKILL"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""kills"",\n    ""summary_er"": ""SIGKILL signal terminates a running container within a pod, effectively killing it.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sends"",\n    ""summary_er"": ""The Kubelet sends a SIGTERM signal to a pod, initiating its termination process.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is checked by"",\n    ""summary_er"": ""The API server checks the existence of a pod before performing deletion operations.""\n  }\n]']","A pod's lifecycle involves container termination, triggered by the deletion of the Pod object through the API server. The Kubelet terminates each container, running pre-stop hooks and sending SIGTERM signals to main processes. If containers don't shut down cleanly within the configured termination grace period, they are forcibly killed with a SIGKILL signal.","[{'highlight': ""A pod's shut-down is triggered by the deletion of the Pod object through the API server.""}, {'highlight': ""The Kubelet notices the pod needs to be terminated, it starts terminating each of the pod's containers with a configurable termination grace period.""}, {'highlight': ""The sequence of events during pod shutdown is: run the pre-stop hook, send SIGTERM signal to the main process, wait for container shutdown or until the termination grace period runs out, and forcibly kill the process if it hasn't terminated gracefully yet.""}, {'highlight': ""Pre-stop hooks target containers, not pods, and shouldn't be used for running actions that need to be performed when the pod is terminating.""}, {'highlight': ""A pod's termination involves setting a deletionTimestamp field in the Pod object, which triggers the Kubelet to terminate each container with a configurable termination grace period.""}]"
+433,522,0,[],"490
+CHAPTER 17
+Best practices for developing apps
+SPECIFYING THE TERMINATION GRACE PERIOD
+The termination grace period can be configured in the pod spec by setting the spec.
+terminationGracePeriodSeconds field. It defaults to 30, which means the pod’s con-
+tainers will be given 30 seconds to terminate gracefully before they’re killed forcibly. 
+TIP
+You should set the grace period to long enough so your process can fin-
+ish cleaning up in that time. 
+The grace period specified in the pod spec can also be overridden when deleting the
+pod like this:
+$ kubectl delete po mypod --grace-period=5
+This will make the Kubelet wait five seconds for the pod to shut down cleanly. When
+all the pod’s containers stop, the Kubelet notifies the API server and the Pod resource
+is finally deleted. You can force the API server to delete the resource immediately,
+without waiting for confirmation, by setting the grace period to zero and adding the
+--force option like this:
+$ kubectl delete po mypod --grace-period=0 --force
+Be careful when using this option, especially with pods of a StatefulSet. The Stateful-
+Set controller takes great care to never run two instances of the same pod at the same
+time (two pods with the same ordinal index and name and attached to the same
+PersistentVolume). By force-deleting a pod, you’ll cause the controller to create a
+replacement pod without waiting for the containers of the deleted pod to shut
+down. In other words, two instances of the same pod might be running at the same
+time, which may cause your stateful cluster to malfunction. Only delete stateful pods
+forcibly when you’re absolutely sure the pod isn’t running anymore or can’t talk to
+the other members of the cluster (you can be sure of this when you confirm that the
+node that hosted the pod has failed or has been disconnected from the network and
+can’t reconnect). 
+ Now that you understand how containers are shut down, let’s look at it from the
+application’s perspective and go over how applications should handle the shutdown
+procedure.
+IMPLEMENTING THE PROPER SHUTDOWN HANDLER IN YOUR APPLICATION
+Applications should react to a SIGTERM signal by starting their shut-down procedure
+and terminating when it finishes. Instead of handling the SIGTERM signal, the applica-
+tion can be notified to shut down through a pre-stop hook. In both cases, the app
+then only has a fixed amount of time to terminate cleanly. 
+ But what if you can’t predict how long the app will take to shut down cleanly? For
+example, imagine your app is a distributed data store. On scale-down, one of the pod
+instances will be deleted and therefore shut down. In the shut-down procedure, the
+ 
+",[],"[{'entity': 'termination grace period', 'description': ""The time given to a pod's containers to terminate gracefully before being killed forcibly."", 'category': 'process'}, {'entity': 'spec.terminationGracePeriodSeconds', 'description': 'A field in the pod spec that configures the termination grace period.', 'category': 'command'}, {'entity': 'Kubelet', 'description': 'The agent that runs on each node and is responsible for running containers and notifying the API server when a pod has shut down.', 'category': 'process'}, {'entity': 'API server', 'description': 'The central component of Kubernetes that manages all cluster resources.', 'category': 'application'}, {'entity': 'kubectl delete', 'description': 'A command used to delete a pod, with options for specifying the termination grace period and forcing deletion.', 'category': 'command'}, {'entity': 'StatefulSet controller', 'description': 'A component that manages stateful sets by ensuring that only one instance of each pod is running at any given time.', 'category': 'application'}, {'entity': 'SIGTERM signal', 'description': 'A signal sent to a process to indicate that it should terminate cleanly.', 'category': 'signal'}, {'entity': 'pre-stop hook', 'description': 'A mechanism for notifying an application to shut down before terminating the pod.', 'category': 'process'}, {'entity': 'pod instances', 'description': 'The individual containers that make up a pod.', 'category': 'container'}, {'entity': 'scale-down', 'description': 'A process by which the number of replicas in a deployment is reduced.', 'category': 'process'}]","[{'source_entity': '""kubectl delete""', 'description': 'deletes', 'destination_entity': '""pod instances""'}, {'source_entity': '""termination grace period""', 'description': 'specifies', 'destination_entity': '""API server""'}, {'source_entity': '""pre-stop hook""', 'description': 'executes before', 'destination_entity': '""SIGTERM signal""'}, {'source_entity': '""StatefulSet controller""', 'description': 'manages', 'destination_entity': '""pod instances""'}, {'source_entity': '""Kubelet""', 'description': 'communicates with', 'destination_entity': '""API server""'}, {'source_entity': '""spec.terminationGracePeriodSeconds""', 'description': 'configures', 'destination_entity': '""pod instances""'}, {'source_entity': '""scale-down""', 'description': 'reduces the number of', 'destination_entity': '""pod instances""'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deletes"",\n    ""summary_er"": ""Kubernetes command \'kubectl delete\' removes a pod instance from the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""termination grace period"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The termination grace period is a setting that specifies how long a pod can run after being deleted, allowing for cleanup and resource release.""\n  }\n]', '[\n  {\n    ""source"": ""pre-stop hook"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes before"",\n    ""summary_er"": ""The pre-stop hook executes a command before terminating a pod, allowing for cleanup or other necessary actions.""\n  },\n  {\n    ""source"": ""SIGTERM signal"",\n    ""destination"": ""pre-stop hook"",\n    ""relation_description"": ""triggers"",\n    ""summary_er"": ""The SIGTERM signal triggers the execution of the pre-stop hook, which prepares the pod for termination.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSet controller"",\n    ""destination"": ""pod instances"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The StatefulSet controller manages a set of identical pod instances, ensuring consistent state across multiple replicas.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The Kubelet communicates with a pod to manage and monitor its lifecycle.""\n  }\n]', '[\n  {\n    ""source"": ""spec"",\n    ""destination"": ""pod instances"",\n    ""relation_description"": ""configures"",\n    ""summary_er"": ""The spec entity configures the pod instances by setting termination grace period seconds.""\n  }\n]', '[\n  {\n    ""source"": ""scale-down"",\n    ""destination"": ""pod instances"",\n    ""relation_description"": ""reduces the number of"",\n    ""summary_er"": ""The scale-down operation reduces the number of pod instances, potentially saving resources.""\n  }\n]']","The termination grace period for Kubernetes pods can be configured in the pod spec or overridden when deleting the pod. It's essential to set a sufficient time for processes to finish cleaning up before being killed. Applications should react to SIGTERM signals by starting their shut-down procedure and terminating within a fixed amount of time, using pre-stop hooks if necessary.","[{'highlight': 'The termination grace period can be configured in the pod spec by setting the spec.terminationGracePeriodSeconds field.'}, {'highlight': 'You should set the grace period to long enough so your process can finish cleaning up in that time.'}, {'highlight': 'When deleting a pod, you can override the specified grace period using the --grace-period option with kubectl delete command.'}, {'highlight': 'Applications should react to a SIGTERM signal by starting their shut-down procedure and terminating when it finishes.'}, {'highlight': 'Be careful when force-deleting a pod, especially with pods of a StatefulSet, as it may cause the controller to create a replacement pod without waiting for the containers of the deleted pod to shut down.'}]"
+434,523,0,[],"491
+Understanding the pod’s lifecycle
+pod needs to migrate all its data to the remaining pods to make sure it’s not lost.
+Should the pod start migrating the data upon receiving a termination signal (through
+either the SIGTERM signal or through a pre-stop hook)? 
+ Absolutely not! This is not recommended for at least the following two reasons:
+A container terminating doesn’t necessarily mean the whole pod is being
+terminated.
+You have no guarantee the shut-down procedure will finish before the process
+is killed.
+This second scenario doesn’t happen only when the grace period runs out before the
+application has finished shutting down gracefully, but also when the node running
+the pod fails in the middle of the container shut-down sequence. Even if the node
+then starts up again, the Kubelet will not restart the shut-down procedure (it won’t
+even start up the container again). There are absolutely no guarantees that the pod
+will be allowed to complete its whole shut-down procedure.
+REPLACING CRITICAL SHUT-DOWN PROCEDURES WITH DEDICATED SHUT-DOWN PROCEDURE PODS
+How do you ensure that a critical shut-down procedure that absolutely must run to
+completion does run to completion (for example, to ensure that a pod’s data is
+migrated to other pods)?
+ One solution is for the app (upon receipt of a termination signal) to create a new
+Job resource that would run a new pod, whose sole job is to migrate the deleted pod’s
+data to the remaining pods. But if you’ve been paying attention, you’ll know that you
+have no guarantee the app will indeed manage to create the Job object every single
+time. What if the node fails exactly when the app tries to do that? 
+ The proper way to handle this problem is by having a dedicated, constantly run-
+ning pod that keeps checking for the existence of orphaned data. When this pod finds
+the orphaned data, it can migrate it to the remaining pods. Rather than a constantly
+running pod, you can also use a CronJob resource and run the pod periodically. 
+ You may think StatefulSets could help here, but they don’t. As you’ll remember,
+scaling down a StatefulSet leaves PersistentVolumeClaims orphaned, leaving the data
+stored on the PersistentVolume stranded. Yes, upon a subsequent scale-up, the Persistent-
+Volume will be reattached to the new pod instance, but what if that scale-up never
+happens (or happens after a long time)? For this reason, you may want to run a
+data-migrating pod also when using StatefulSets (this scenario is shown in figure 17.6).
+To prevent the migration from occurring during an application upgrade, the data-
+migrating pod could be configured to wait a while to give the stateful pod time to
+come up again before performing the migration.
+ 
+ 
+ 
+",[],"[{'entity': 'pod', 'description': 'A container that runs as one or more processes within a cluster.', 'category': 'container'}, {'entity': 'SIGTERM signal', 'description': 'A signal sent to a process to terminate it.', 'category': 'signal'}, {'entity': 'pre-stop hook', 'description': 'A script executed before a pod is terminated.', 'category': 'hook'}, {'entity': 'Kubelet', 'description': 'The agent that runs on each node in a cluster and manages the running of pods.', 'category': 'agent'}, {'entity': 'Job resource', 'description': 'A resource used to run a batch job, such as migrating data from one pod to another.', 'category': 'resource'}, {'entity': 'CronJob resource', 'description': 'A resource used to schedule the running of a job at specific times or intervals.', 'category': 'resource'}, {'entity': 'StatefulSet', 'description': 'A resource used to manage stateful applications, such as databases or file systems.', 'category': 'resource'}, {'entity': 'PersistentVolumeClaim', 'description': 'A request for storage resources, such as a disk or volume.', 'category': 'resource'}, {'entity': 'data-migrating pod', 'description': 'A pod that runs a script to migrate data from one location to another.', 'category': 'pod'}]","[{'source_entity': '""CronJob resource""', 'description': 'schedules', 'destination_entity': '""pod""'}, {'source_entity': '""CronJob resource""', 'description': 'manages', 'destination_entity': '""data-migrating pod""'}, {'source_entity': '""Job resource""', 'description': 'executes', 'destination_entity': '""pod""'}, {'source_entity': '""PersistentVolumeClaim""', 'description': 'requests', 'destination_entity': '""Persistent Volume""'}, {'source_entity': '""pre-stop hook""', 'description': 'triggers', 'destination_entity': '""Kubelet""'}, {'source_entity': '""SIGTERM signal""', 'description': 'terminates', 'destination_entity': '""pod""'}, {'source_entity': '""StatefulSet""', 'description': 'manages', 'destination_entity': '""pod""'}]","['[\n  {\n    ""source"": ""CronJob resource"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""schedules"",\n    ""summary_er"": ""A CronJob resource schedules a Pod to run periodically, ensuring timely execution of tasks.""\n  }\n]', '[\n  {\n    ""source"": ""CronJob resource"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The CronJob resource manages a pod, which is a containerized application that can run in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Job resource"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""A Job resource executes a Pod, which is a containerized application.""\n  }\n]', '[\n  {\n    ""source"": ""PersistentVolumeClaim"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""A PersistentVolumeClaim requests resources from a pod, ensuring sufficient storage for the application.""\n  }\n]', '[\n  {\n    ""source"": ""pre-stop hook"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""triggers"",\n    ""summary_er"": ""A pre-stop hook in Kubernetes triggers a specific action on a pod, typically before it is terminated.""\n  }\n]', '[\n  {\n    ""source"": ""SIGTERM signal"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""terminates"",\n    ""summary_er"": ""The SIGTERM signal causes a running container to terminate, effectively shutting down the pod.""\n  }\n]', '[\n  {\n    ""source"": ""StatefulSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A StatefulSet manages a set of identical pods, ensuring that a specified number of replicas are running at any given time.""\n  }\n]']","When a Kubernetes pod receives a termination signal, it should not start migrating its data immediately. Instead, a dedicated pod or CronJob resource can be used to periodically check for orphaned data and migrate it to remaining pods, ensuring data is not lost in case of node failure or application upgrade.",[{'highlight': 'A container terminating doesn’t necessarily mean the whole pod is being terminated.'}]
+435,524,0,[],"492
+CHAPTER 17
+Best practices for developing apps
+17.3
+Ensuring all client requests are handled properly
+You now have a good sense of how to make pods shut down cleanly. Now, we’ll look at
+the pod’s lifecycle from the perspective of the pod’s clients (clients consuming the ser-
+vice the pod is providing). This is important to understand if you don’t want clients to
+run into problems when you scale pods up or down.
+ It goes without saying that you want all client requests to be handled properly. You
+obviously don’t want to see broken connections when pods are starting up or shutting
+down. By itself, Kubernetes doesn’t prevent this from happening. Your app needs to
+follow a few rules to prevent broken connections. First, let’s focus on making sure all
+connections are handled properly when the pod starts up.
+17.3.1 Preventing broken client connections when a pod is starting up
+Ensuring each connection is handled properly at pod startup is simple if you under-
+stand how Services and service Endpoints work. When a pod is started, it’s added as an
+endpoint to all the Services, whose label selector matches the pod’s labels. As you may
+remember from chapter 5, the pod also needs to signal to Kubernetes that it’s ready.
+Until it is, it won’t become a service endpoint and therefore won’t receive any requests
+from clients. 
+ If you don’t specify a readiness probe in your pod spec, the pod is always considered
+ready. It will start receiving requests almost immediately—as soon as the first kube-proxy
+updates the iptables rules on its node and the first client pod tries to connect to the
+service. If your app isn’t ready to accept connections by then, clients will see “connec-
+tion refused” types of errors.
+ All you need to do is make sure that your readiness probe returns success only
+when your app is ready to properly handle incoming requests. A good first step is to
+add an HTTP GET readiness probe and point it to the base URL of your app. In many
+Pod
+A-0
+Pod
+A-1
+StatefulSet A
+Replicas: 2
+Scale
+down
+PVC
+A-0
+PV
+PVC
+A-1
+PV
+Pod
+A-0
+StatefulSet A
+Replicas: 1
+Transfers data to
+remaining pod(s)
+Connects to
+orphaned PVC
+Data-migrating
+Pod
+Job
+PVC
+A-0
+PV
+PVC
+A-1
+PV
+Figure 17.6
+Using a dedicated pod to migrate data 
+ 
+","[  PV PV PV PV\nConnects to\norphaned PVC\nPVC PVC PVC PVC\nA-0 A-1 A-0 A-1\nTransfers data to\nremaining pod(s)\nPod Pod Pod Data-migrating\nA-0 A-1 A-0 Pod\nScale\ndown\nStatefulSet A StatefulSet A\nJob\nReplicas: 2 Replicas: 1  \
+0                         StatefulSet A\nReplicas: 2                                                                                                                                                                                   
+
+  Col1  
+0  Job  ]","[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'Pods', 'description': 'Lightweight and ephemeral containers', 'category': 'container'}, {'entity': 'Services', 'description': 'Abstraction for accessing pods', 'category': 'application'}, {'entity': 'Service Endpoints', 'description': 'List of IP addresses of pods providing a service', 'category': 'network'}, {'entity': 'Readiness Probe', 'description': 'Mechanism to check if a pod is ready to receive requests', 'category': 'process'}, {'entity': 'HTTP GET', 'description': 'Request method for retrieving data from a server', 'category': 'protocol'}, {'entity': 'kube-proxy', 'description': 'Component responsible for updating iptables rules', 'category': 'software'}, {'entity': 'iptables', 'description': 'Linux kernel firewalling system', 'category': 'hardware'}, {'entity': 'Pod spec', 'description': 'Configuration file for a pod', 'category': 'configuration'}, {'entity': 'StatefulSet', 'description': 'Type of deployment that maintains a stable identity and network configuration', 'category': 'application'}, {'entity': 'Replicas', 'description': 'Number of identical pods running in a StatefulSet', 'category': 'process'}, {'entity': 'Scale down', 'description': 'Action to reduce the number of replicas', 'category': 'process'}, {'entity': 'PVC', 'description': 'Persistent Volume Claim, a request for storage resources', 'category': 'storage'}, {'entity': 'PV', 'description': 'Persistent Volume, a storage resource', 'category': 'storage'}, {'entity': 'Job', 'description': 'Type of deployment that runs to completion', 'category': 'application'}]","[{'source_entity': '""Kubernetes""', 'description': 'manages', 'destination_entity': '""Job""'}, {'source_entity': '""Kubernetes""', 'description': 'deploys', 'destination_entity': '""StatefulSet""'}, {'source_entity': '""Kubernetes""', 'description': 'exposes', 'destination_entity': '""Service Endpoints""'}, {'source_entity': '""HTTP GET""', 'description': 'requests', 'destination_entity': '""Service Endpoints""'}, {'source_entity': '""Readiness Probe""', 'description': 'checks', 'destination_entity': '""Pods""'}, {'source_entity': '""Replicas""', 'description': 'manages', 'destination_entity': '""Pods""'}, {'source_entity': '""PV""', 'description': 'provides', 'destination_entity': '""Pods""'}, {'source_entity': '""PVC""', 'description': 'requests', 'destination_entity': '""PV""'}, {'source_entity': '""Scale down""', 'description': 'reduces', 'destination_entity': '""Replicas""'}, {'source_entity': '""kube-proxy""', 'description': 'manages', 'destination_entity': '""iptables""'}, {'source_entity': '""Pod spec""', 'description': 'defines', 'destination_entity': '""Pods""'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages and orchestrates containerized applications, including pods, which are the basic execution unit in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys"",\n    ""summary_er"": ""Kubernetes deploys pods, ensuring scalable and reliable application deployment.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes"",\n    ""summary_er"": ""Kubernetes exposes a pod to provide a network interface for communication and access.""\n  }\n]', '[\n  {\n    ""source"": ""HTTP GET"",\n    ""destination"": ""requests"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""The HTTP GET request sends a GET request to retrieve data from a server, which is handled by the requests module.""\n  },\n  {\n    ""source"": ""requests"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""Service Endpoints"",\n    ""summary_er"": ""A pod in Kubernetes can be exposed as a service endpoint, allowing external access through the requests module.""\n  }\n]', '[\n  {\n    ""source"": ""Readiness Probe"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""checks"",\n    ""summary_er"": ""The Readiness Probe ensures a Pod is ready to serve by checking its status, allowing it to receive traffic and execute tasks.""\n  }\n]', '[\n  {\n    ""source"": ""Replicas"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""ReplicaSets manage a set of identical pods, ensuring a specified number of replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""PV"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""Persistent Volumes (PV) provide storage resources to Pods, allowing them to access and utilize external storage.""\n  }\n]', '[\n  {\n    ""source"": ""PVC"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""A PVC (Persistent Volume Claim) requests storage resources from a PV (Persistent Volume), which provides actual storage capacity for a pod.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""ReplicaSet"",\n    ""relation_description"": ""scale down"",\n    ""summary_er"": ""When a ReplicaSet scales down, it reduces the number of replicas (i.e., running instances) of a pod.""\n  }\n]', '[\n  {\n    ""source"": ""kube-proxy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kube-Proxy manages network traffic for pods, ensuring they can communicate with each other and the outside world.""\n  }\n]', '[\n  {\n    ""source"": ""Pod spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A Pod specification defines a pod, which is the basic execution unit in Kubernetes.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""Pods"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A pod contains one or more containers that run as processes on the host operating system.""\n  }\n]']","To handle client requests properly, Kubernetes apps need to follow rules to prevent broken connections when pods are starting up or shutting down. This involves ensuring each connection is handled properly at pod startup by adding an HTTP GET readiness probe that returns success only when the app is ready to accept incoming requests.","[{'highlight': 'To prevent broken client connections when a pod is starting up, ensure each connection is handled properly by adding an HTTP GET readiness probe and pointing it to the base URL of your app.'}, {'highlight': ""If you don't specify a readiness probe in your pod spec, the pod will be considered ready immediately after startup, which may cause clients to see 'connection refused' errors if your app isn't ready to accept connections.""}, {'highlight': ""Kubernetes doesn't prevent broken client connections by itself; your app needs to follow rules to handle connections properly when pods are starting up or shutting down.""}, {'highlight': 'To ensure all client requests are handled properly, make sure your app is ready to accept connections before becoming a service endpoint and receiving requests from clients.'}, {'highlight': 'A dedicated pod can be used to migrate data when scaling down StatefulSets, which helps prevent data loss or corruption during the process.'}]"
+436,525,0,[],"493
+Ensuring all client requests are handled properly
+cases that gets you far enough and saves you from having to implement a special read-
+iness endpoint in your app. 
+17.3.2 Preventing broken connections during pod shut-down
+Now let’s see what happens at the other end of a pod’s life—when the pod is deleted and
+its containers are terminated. We’ve already talked about how the pod’s containers
+should start shutting down cleanly as soon they receive the SIGTERM signal (or when its
+pre-stop hook is executed). But does that ensure all client requests are handled properly? 
+ How should the app behave when it receives a termination signal? Should it con-
+tinue to accept requests? What about requests that have already been received but
+haven’t completed yet? What about persistent HTTP connections, which may be in
+between requests, but are open (when no active request exists on the connection)?
+Before we can answer those questions, we need to take a detailed look at the chain of
+events that unfolds across the cluster when a Pod is deleted. 
+UNDERSTANDING THE SEQUENCE OF EVENTS OCCURRING AT POD DELETION
+In chapter 11 we took an in-depth look at what components make up a Kubernetes clus-
+ter. You need to always keep in mind that those components run as separate processes on
+multiple machines. They aren’t all part of a single big monolithic process. It takes time
+for all the components to be on the same page regarding the state of the cluster. Let’s
+explore this fact by looking at what happens across the cluster when a Pod is deleted.
+ When a request for a pod deletion is received by the API server, it first modifies the
+state in etcd and then notifies its watchers of the deletion. Among those watchers are
+the Kubelet and the Endpoints controller. The two sequences of events, which happen
+in parallel (marked with either A or B), are shown in figure 17.7.
+A2. Stop
+containers
+API server
+kube-proxy
+Kubelet
+Worker node
+Endpoints
+controller
+kube-proxy
+Pod
+(containers)
+Client
+Delete
+pod
+B1. Pod deletion
+notiﬁcation
+B2. Remove pod
+as endpoint
+A1. Pod deletion
+notiﬁcation
+B3. Endpoint
+modiﬁcation
+notiﬁcation
+B4. Remove pod
+from iptables
+B4. Remove pod
+from iptables
+iptables
+iptables
+Worker node
+Figure 17.7
+Sequence of events that occurs when a Pod is deleted
+ 
+",[],"[{'entity': 'client requests', 'description': 'requests handled properly by Kubernetes', 'category': 'application'}, {'entity': 'SIGTERM signal', 'description': 'signal sent to containers to shut down cleanly', 'category': 'process'}, {'entity': 'pre-stop hook', 'description': 'hook executed before container shutdown', 'category': 'process'}, {'entity': 'Kubernetes cluster', 'description': 'collection of components running as separate processes', 'category': 'application'}, {'entity': 'API server', 'description': 'component that modifies etcd state and notifies watchers', 'category': 'process'}, {'entity': 'etcd', 'description': 'key-value store used by Kubernetes cluster', 'category': 'database'}, {'entity': 'Kubelet', 'description': 'component that runs on worker nodes and manages pods', 'category': 'process'}, {'entity': 'Endpoints controller', 'description': 'component that manages endpoints for pods', 'category': 'process'}, {'entity': 'Kube-proxy', 'description': 'component that provides load balancing and networking', 'category': 'application'}, {'entity': 'iptables', 'description': 'networking rule set used by Kubernetes cluster', 'category': 'process'}, {'entity': 'pod deletion notification', 'description': 'notification sent to components when a pod is deleted', 'category': 'event'}]","[{'source_entity': '""client requests""', 'description': 'requests to delete a pod', 'destination_entity': '""pod deletion notification""'}, {'source_entity': '""Kubernetes cluster""', 'description': 'manages and schedules pods', 'destination_entity': '""API server""'}, {'source_entity': '""API server""', 'description': 'receives requests from clients and schedules pods on the cluster', 'destination_entity': '""Kubelet""'}, {'source_entity': '""pre-stop hook""', 'description': 'executes a script before deleting a pod', 'destination_entity': '""pod deletion notification""'}, {'source_entity': '""etcd""', 'description': ""stores and retrieves data about the cluster's state"", 'destination_entity': '""Kubernetes cluster""'}, {'source_entity': '""Kubelet""', 'description': 'runs on each node and is responsible for running pods', 'destination_entity': '""pod deletion notification""'}, {'source_entity': '""SIGTERM signal""', 'description': ""sent to the container when it's time to shut down"", 'destination_entity': '""pre-stop hook""'}, {'source_entity': '""Kube-proxy""', 'description': 'configures and manages network policies for pods', 'destination_entity': '""Endpoints controller""'}, {'source_entity': '""Endpoints controller""', 'description': 'manages the endpoints of services in the cluster', 'destination_entity': '""iptables""'}]","['[\n  {\n    ""source"": ""Client Requests"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""requests to delete"",\n    ""summary_er"": ""Client initiates a request to delete a pod, triggering a deletion process.""\n  },\n  {\n    ""source"": ""Pod Deletion Notification"",\n    ""destination"": ""Kubernetes Cluster"",\n    ""relation_description"": ""notification of pod deletion"",\n    ""summary_er"": ""The Kubernetes cluster receives notification that a pod has been deleted, updating its state accordingly.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes cluster"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages and schedules"",\n    ""summary_er"": ""The Kubernetes cluster manages and schedules pods, ensuring efficient resource allocation and deployment.""\n  },\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The API server communicates with the pod to receive and process requests, enabling seamless interaction between components.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""schedules pods on the cluster"",\n    ""summary_er"": ""The API server receives requests from clients and schedules pods on the cluster, ensuring efficient resource utilization.""\n  },\n  {\n    ""source"": ""API server"",\n    ""destination"": ""Kubelet"",\n    ""relation_description"": ""receives requests from clients"",\n    ""summary_er"": ""The API server sends client requests to Kubelet for pod scheduling and management.""\n  }\n]', '[\n  {\n    ""source"": ""Pre-Stop Hook"",\n    ""destination"": ""Pod Deletion Notification"",\n    ""relation_description"": ""Executes a script before deleting a pod"",\n    ""summary_er"": ""The Pre-Stop Hook executes a script to notify or perform actions before deleting a Pod, ensuring proper cleanup and notification.""\n  }\n]', '[\n  {\n    ""source"": ""etcd"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""stores and retrieves data about the cluster\'s state"",\n    ""summary_er"": ""Etcd stores and manages data about the Kubernetes cluster, including pod information.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""runs on each node and is responsible for running pods"",\n    ""summary_er"": ""The Kubelet runs pods on each node, managing their lifecycle.""\n  },\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Kubelet"",\n    ""relation_description"": ""pod deletion notification"",\n    ""summary_er"": ""A pod notifies the Kubelet of its own deletion, allowing for cleanup and resource release.""\n  }\n]', '[\n  {\n    ""source"": ""SIGTERM signal"",\n    ""destination"": ""container"",\n    ""relation_description"": ""sent to the container when it\'s time to shut down"",\n    ""summary_er"": ""The SIGTERM signal is sent to a container to initiate its shutdown process, allowing for clean termination and resource release.""\n  },\n  {\n    ""source"": ""SIGTERM signal"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sent to the pod when it\'s time to shut down"",\n    ""summary_er"": ""The SIGTERM signal is propagated from a container to its parent pod, triggering shutdown and termination of all associated resources.""\n  },\n  {\n    ""source"": ""container"",\n    ""destination"": ""pre-stop hook"",\n    ""relation_description"": ""executed before shutting down the container"",\n    ""summary_er"": ""A pre-stop hook is executed within a container just before it\'s shut down, allowing for any necessary cleanup or finalization tasks to be performed.""\n  }\n]', '[\n  {\n    ""source"": ""Kube-proxy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures and manages network policies"",\n    ""summary_er"": ""Kube-proxy configures network policies for pods, ensuring secure communication between them.""\n  },\n  {\n    ""source"": ""Endpoints controller"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages service endpoints"",\n    ""summary_er"": ""Endpoints controller manages service endpoints for pods, enabling external access to services running within the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Endpoints controller"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages the endpoints of services in the cluster"",\n    ""summary_er"": ""The Endpoints controller manages service endpoints for pods, ensuring consistent network access.""\n  },\n  {\n    ""source"": ""iptables"",\n    ""destination"": """",\n    ""relation_description"": """",\n    ""summary_er"": """"\n  }\n]']","When a pod is deleted, the API server modifies etcd and notifies watchers, including Kubelet and Endpoints controller. Two parallel sequences of events occur: A) containers on the worker node stop, kube-proxy removes the pod as an endpoint, and iptables updates; B) the Pod's deletion notification is sent to the client, the endpoints controller removes the pod from its list, and the kubelet removes the pod from iptables.","[{'highlight': 'When a request for a pod deletion is received by the API server, it first modifies the state in etcd and then notifies its watchers of the deletion.'}, {'highlight': 'The Kubelet and the Endpoints controller are among the watchers that receive notification of the pod deletion.'}, {'highlight': 'When a Pod is deleted, its containers should start shutting down cleanly as soon as they receive the SIGTERM signal or when their pre-stop hook is executed.'}, {'highlight': 'The sequence of events that unfolds across the cluster when a Pod is deleted includes modification of state in etcd, notification to watchers, and removal of the pod from iptables.'}, {'highlight': 'Preventing broken connections during pod shut-down involves handling client requests properly, continuing to accept requests, and completing pending requests before terminating.'}]"
+437,526,0,[],"494
+CHAPTER 17
+Best practices for developing apps
+In the A sequence of events, you’ll see that as soon as the Kubelet receives the notifica-
+tion that the pod should be terminated, it initiates the shutdown sequence as explained
+in section 17.2.5 (run the pre-stop hook, send SIGTERM, wait for a period of time, and
+then forcibly kill the container if it hasn’t yet terminated on its own). If the app
+responds to the SIGTERM by immediately ceasing to receive client requests, any client
+trying to connect to it will receive a Connection Refused error. The time it takes for
+this to happen from the time the pod is deleted is relatively short because of the direct
+path from the API server to the Kubelet.
+ Now, let’s look at what happens in the other sequence of events—the one leading
+up to the pod being removed from the iptables rules (sequence B in the figure).
+When the Endpoints controller (which runs in the Controller Manager in the Kuber-
+netes Control Plane) receives the notification of the Pod being deleted, it removes
+the pod as an endpoint in all services that the pod is a part of. It does this by modify-
+ing the Endpoints API object by sending a REST request to the API server. The API
+server then notifies all clients watching the Endpoints object. Among those watchers
+are all the kube-proxies running on the worker nodes. Each of these proxies then
+updates the iptables rules on its node, which is what prevents new connections
+from being forwarded to the terminating pod. An important detail here is that
+removing the iptables rules has no effect on existing connections—clients who are
+already connected to the pod will still send additional requests to the pod through
+those existing connections.
+ Both of these sequences of events happen in parallel. Most likely, the time it takes
+to shut down the app’s process in the pod is slightly shorter than the time required for
+the iptables rules to be updated. The chain of events that leads to iptables rules
+being updated is considerably longer (see figure 17.8), because the event must first
+reach the Endpoints controller, which then sends a new request to the API server, and
+A2. Send
+SIGTERM
+API server
+API server
+Kubelet
+Endpoints
+controller
+Container(s)
+A1. Watch
+notiﬁcation
+(pod modiﬁed)
+B1. Watch
+notiﬁcation
+(pod modiﬁed)
+B2. Remove pod’s IP
+from endpoints
+kube-proxy
+B4. Update
+iptables
+rules
+iptables
+kube-proxy
+iptables
+Time
+B3. Watch notiﬁcation
+(endpoints changed)
+Figure 17.8
+Timeline of events when pod is deleted
+ 
+",[],"[{'entity': 'Kubelet', 'description': 'A component that runs on each node in a Kubernetes cluster, responsible for managing pods and containers.', 'category': 'software'}, {'entity': 'SIGTERM', 'description': 'A signal sent to a process to terminate it gracefully.', 'category': 'process'}, {'entity': 'API server', 'description': 'The central component of the Kubernetes control plane that exposes the API for managing cluster resources.', 'category': 'software'}, {'entity': 'Endpoints controller', 'description': 'A component in the Kubernetes control plane that manages endpoint objects and updates iptables rules accordingly.', 'category': 'software'}, {'entity': 'Pod', 'description': 'The basic execution unit in a Kubernetes cluster, consisting of one or more containers.', 'category': 'container'}, {'entity': 'Container(s)', 'description': 'A lightweight and standalone executable package that contains an application and its dependencies.', 'category': 'container'}, {'entity': 'Kube-proxy', 'description': 'A component in the Kubernetes control plane that runs on each node and manages network traffic for pods.', 'category': 'software'}, {'entity': 'Iptables rules', 'description': 'Rules used to filter and manage incoming and outgoing network traffic in a Linux system.', 'category': 'network'}, {'entity': 'Connection Refused error', 'description': 'An error that occurs when a client tries to connect to a terminated pod.', 'category': 'error'}, {'entity': 'REST request', 'description': 'A type of HTTP request used for interacting with web services.', 'category': 'protocol'}, {'entity': 'API object', 'description': 'A Kubernetes resource that represents an API endpoint.', 'category': 'software'}, {'entity': 'Watcher(s)', 'description': 'Components in the Kubernetes control plane that monitor and respond to changes in cluster resources.', 'category': 'software'}]","[{'source_entity': '""Pod""', 'description': 'is created by', 'destination_entity': '""API server""'}, {'source_entity': '""Connection Refused error""', 'description': 'occurs when trying to connect to', 'destination_entity': '""API server""'}, {'source_entity': '""Watcher(s)""', 'description': 'monitors and updates', 'destination_entity': '""Iptables rules""'}, {'source_entity': '""Kubelet""', 'description': 'communicates with', 'destination_entity': '""API server""'}, {'source_entity': '""REST request""', 'description': 'is sent to', 'destination_entity': '""API server""'}, {'source_entity': '""Kube-proxy""', 'description': 'manages and updates', 'destination_entity': '""Iptables rules""'}, {'source_entity': '""SIGTERM""', 'description': 'signal is sent to', 'destination_entity': '""Container(s)""'}, {'source_entity': '""Endpoints controller""', 'description': 'manages and updates', 'destination_entity': '""API object""'}]","['[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""API Server"",\n    ""relation_description"": ""is created by"",\n    ""summary_er"": ""A Pod is created by the API server, which is a central component of Kubernetes that manages and orchestrates containerized applications.""\n  },\n  {\n    ""source"": ""API Server"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The API server manages Pods, which are the basic execution units in Kubernetes, ensuring they run efficiently and effectively.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""API Server"",\n    ""relation_description"": ""Connection Refused error"",\n    ""summary_er"": ""When trying to connect to an API server, a Connection Refused error occurs due to a failed connection attempt between the client and the server.""\n  }\n]', '[\n  {\n    ""source"": ""Watcher(s)"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""monitors and updates"",\n    ""summary_er"": ""The Watcher(s) monitors and updates the pod, ensuring its optimal performance.""\n  },\n  {\n    ""source"": ""Iptables rules"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""Iptables rules are applied to the pod for network security and access control.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The Kubelet communicates with pods to manage and monitor them.""\n  }\n]', '[\n  {\n    ""source"": ""REST request"",\n    ""destination"": ""API server"",\n    ""relation_description"": ""is sent to"",\n    ""summary_er"": ""A REST request is sent to the API server for processing and response.""\n  }\n]', '[\n  {\n    ""source"": ""Kube-proxy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages and updates"",\n    ""summary_er"": ""Kube-proxy manages and updates pod configurations, ensuring network connectivity and routing within a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""Iptables rules"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""Iptables rules are used to configure network policies for pods in a Kubernetes cluster, controlling incoming and outgoing traffic.""\n  }\n]', '[\n  {\n    ""source"": ""SIGTERM"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""signal is sent to"",\n    ""summary_er"": ""The SIGTERM signal is sent to a container or pod, typically indicating termination.""\n  },\n  {\n    ""source"": ""Container(s)"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""container(s) are part of"",\n    ""summary_er"": ""A container or containers are part of a pod, which provides shared resources and networking.""\n  }\n]', '[\n  {\n    ""source"": ""Endpoints controller"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages and updates"",\n    ""summary_er"": ""The Endpoints controller manages and updates information about pods in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""API object"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""An API object represents a pod in the Kubernetes system, providing access to its properties and behavior.""\n  }\n]']","When a pod is deleted in Kubernetes, two sequences of events occur in parallel: the Kubelet shuts down the app's process and removes it from iptables rules. The shutdown sequence is relatively short, while updating iptables rules involves a longer chain of events, including notification to the Endpoints controller, API server, and kube-proxy.","[{'highlight': ""When a pod is deleted, the Kubelet initiates a shutdown sequence that includes running the pre-stop hook, sending SIGTERM, waiting for a period of time, and then forcibly killing the container if it hasn't yet terminated on its own.""}, {'highlight': 'The Endpoints controller removes the pod as an endpoint in all services that the pod is a part of by modifying the Endpoints API object and notifying all clients watching the Endpoints object.'}, {'highlight': 'Removing iptables rules has no effect on existing connections, but prevents new connections from being forwarded to the terminating pod.'}, {'highlight': 'The time it takes for a pod to be shut down is relatively short compared to the time required for iptables rules to be updated, which involves multiple steps and notifications between components.'}, {'highlight': 'Existing clients connected to the pod will still send additional requests to the pod through existing connections even after the iptables rules have been updated.'}]"
+438,527,0,[],"495
+Ensuring all client requests are handled properly
+then the API server must notify the kube-proxy before the proxy finally modifies the
+iptables rules. A high probability exists that the SIGTERM signal will be sent well
+before the iptables rules are updated on all nodes.
+ The end result is that the pod may still receive client requests after it was sent the
+termination signal. If the app closes the server socket and stops accepting connections
+immediately, this will cause clients to receive “Connection Refused” types of errors
+(similar to what happens at pod startup if your app isn’t capable of accepting connec-
+tions immediately and you don’t define a readiness probe for it). 
+SOLVING THE PROBLEM
+Googling solutions to this problem makes it seem as though adding a readiness probe
+to your pod will solve the problem. Supposedly, all you need to do is make the readi-
+ness probe start failing as soon as the pod receives the SIGTERM. This is supposed to
+cause the pod to be removed as the endpoint of the service. But the removal would
+happen only after the readiness probe fails for a few consecutive times (this is configu-
+rable in the readiness probe spec). And, obviously, the removal then still needs to
+reach the kube-proxy before the pod is removed from iptables rules. 
+ In reality, the readiness probe has absolutely no bearing on the whole process at
+all. The Endpoints controller removes the pod from the service Endpoints as soon as
+it receives notice of the pod being deleted (when the deletionTimestamp field in the
+pod’s spec is no longer null). From that point on, the result of the readiness probe
+is irrelevant.
+ What’s the proper solution to the problem? How can you make sure all requests
+are handled fully?
+ It’s clear the pod needs to keep accepting connections even after it receives the ter-
+mination signal up until all the kube-proxies have finished updating the iptables
+rules. Well, it’s not only the kube-proxies. There may also be Ingress controllers or
+load balancers forwarding connections to the pod directly, without going through the
+Service (iptables). This also includes clients using client-side load-balancing. To
+ensure none of the clients experience broken connections, you’d have to wait until all
+of them somehow notify you they’ll no longer forward connections to the pod. 
+ That’s impossible, because all those components are distributed across many dif-
+ferent computers. Even if you knew the location of every one of them and could wait
+until all of them say it’s okay to shut down the pod, what do you do if one of them
+doesn’t respond? How long do you wait for the response? Remember, during that
+time, you’re holding up the shut-down process. 
+ The only reasonable thing you can do is wait for a long-enough time to ensure all
+the proxies have done their job. But how long is long enough? A few seconds should
+be enough in most situations, but there’s no guarantee it will suffice every time. When
+the API server or the Endpoints controller is overloaded, it may take longer for the
+notification to reach the kube-proxy. It’s important to understand that you can’t solve
+the problem perfectly, but even adding a 5- or 10-second delay should improve the
+user experience considerably. You can use a longer delay, but don’t go overboard,
+ 
+",[],"[{'entity': 'SIGTERM signal', 'description': 'A signal sent to a process to terminate it', 'category': 'process'}, {'entity': 'kube-proxy', 'description': 'A component that modifies iptables rules', 'category': 'application'}, {'entity': 'iptables rules', 'description': 'Rules used by the kernel to filter network traffic', 'category': 'network'}, {'entity': 'readiness probe', 'description': 'A mechanism to determine if a pod is ready to receive traffic', 'category': 'process'}, {'entity': 'Endpoints controller', 'description': 'A component that removes pods from service Endpoints', 'category': 'application'}, {'entity': 'deletionTimestamp field', 'description': ""A field in the pod's spec that indicates when it will be deleted"", 'category': 'database'}, {'entity': 'kube-proxies', 'description': 'Components that modify iptables rules', 'category': 'application'}, {'entity': 'Ingress controllers', 'description': 'Components that forward connections to pods directly', 'category': 'application'}, {'entity': 'load balancers', 'description': 'Components that distribute traffic across multiple servers', 'category': 'network'}, {'entity': 'client-side load-balancing', 'description': 'A technique used by clients to distribute traffic across multiple servers', 'category': 'application'}, {'entity': 'API server', 'description': 'A component that manages the Kubernetes API', 'category': 'application'}, {'entity': 'Endpoints controller', 'description': 'A component that removes pods from service Endpoints', 'category': 'application'}, {'entity': 'pod', 'description': 'A unit of execution in Kubernetes', 'category': 'container'}, {'entity': 'service', 'description': 'An abstraction layer for accessing a group of pods', 'category': 'network'}, {'entity': 'termination signal', 'description': 'A signal sent to a pod to terminate it', 'category': 'process'}]","[{'source_entity': '""iptables rules""', 'description': 'enforce', 'destination_entity': '""Ingress controllers""'}, {'source_entity': '""Ingress controllers""', 'description': 'handle', 'destination_entity': '""load balancers""'}, {'source_entity': '""API server""', 'description': 'communicate with', 'destination_entity': '""kube-proxies""'}, {'source_entity': '""kube-proxies""', 'description': 'forward requests to', 'destination_entity': '""service""'}, {'source_entity': '""client-side load-balancing""', 'description': 'distribute traffic across', 'destination_entity': '""pod""'}, {'source_entity': '""SIGTERM signal""', 'description': 'terminate', 'destination_entity': '""API server""'}, {'source_entity': '""termination signal""', 'description': 'kill', 'destination_entity': '""kube-proxies""'}, {'source_entity': '""readiness probe""', 'description': 'check the health of', 'destination_entity': '""pod""'}, {'source_entity': '""Endpoints controller""', 'description': 'manage', 'destination_entity': '""service""'}, {'source_entity': '""deletionTimestamp field""', 'description': 'indicate when to delete', 'destination_entity': '""pod""'}]","['[\n  {\n    ""source"": ""iptables rules"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforce"",\n    ""summary_er"": ""Iptables rules are enforced on a pod to control incoming and outgoing network traffic, ensuring security and access control.""\n  },\n  {\n    ""source"": ""Ingress controllers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""control"",\n    ""summary_er"": ""Ingress controllers manage incoming HTTP requests for multiple services running in a pod, routing traffic to the correct service.""\n  }\n]', '[\n  {\n    ""source"": ""Ingress controllers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""handle"",\n    ""summary_er"": ""Ingress controllers handle incoming traffic by routing it to a pod, which can be a containerized application or service.""\n  },\n  {\n    ""source"": ""load balancers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""route traffic"",\n    ""summary_er"": ""Load balancers distribute incoming traffic across multiple pods, ensuring efficient resource utilization and high availability.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""kube-proxies"",\n    ""relation_description"": ""communicate with"",\n    ""summary_er"": ""The API server communicates with kube-proxy to manage network policies and routing.""\n  }\n]', '[\n  {\n    ""source"": ""kube-proxies"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""forward requests to"",\n    ""summary_er"": ""Kube proxies forward incoming requests from services to their corresponding pods, enabling communication between services and pods within a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""client-side load-balancing"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""distribute traffic across"",\n    ""summary_er"": ""Client-side load balancing distributes incoming traffic across multiple pods for efficient resource utilization and high availability.""\n  }\n]', '[\n  {\n    ""source"": ""SIGTERM signal"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""terminate"",\n    ""summary_er"": ""The SIGTERM signal is sent to a pod to initiate its termination process, allowing for graceful shutdown and cleanup of resources.""\n  }\n]', '[\n  {\n    ""source"": ""termination signal"",\n    ""destination"": ""pod kube-proxies"",\n    ""relation_description"": ""kill"",\n    ""summary_er"": ""A termination signal sent to a pod named \'kube-proxies\' results in its immediate termination.""\n  }\n]', '[\n  {\n    ""source"": ""readiness probe"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""check the health of"",\n    ""summary_er"": ""A readiness probe in Kubernetes checks the health of a pod by executing a command or making an HTTP request to determine if it\'s ready to serve traffic.""\n  }\n]', '[\n  {\n    ""source"": ""Endpoints controller"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manage"",\n    ""summary_er"": ""The Endpoints controller manages a collection of endpoint objects, which represent network services offered by pods.""\n  }\n]', '[\n  {\n    ""source"": ""deletionTimestamp field"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""indicate when to delete"",\n    ""summary_er"": ""The deletionTimestamp field in a Kubernetes object indicates when it should be deleted, typically used for pod management.""\n  }\n]']","The pod needs to keep accepting connections after receiving the termination signal until all kube-proxies and other components have finished updating their rules. A long-enough delay, such as 5-10 seconds, should be added before shutting down the pod to ensure a smooth user experience.","[{'highlight': ""The readiness probe has no bearing on the process of removing a pod from a service's Endpoints after receiving notice of deletion.""}, {'highlight': 'To ensure all requests are handled fully, the pod needs to keep accepting connections until all kube-proxies have finished updating iptables rules.'}, {'highlight': ""Waiting for all clients to notify that they'll no longer forward connections is impossible due to distributed components across many computers.""}, {'highlight': ""Adding a delay of 5-10 seconds before shutting down the pod can improve user experience, but there's no guarantee it will suffice every time.""}, {'highlight': 'The Endpoints controller removes the pod from the service Endpoints as soon as it receives notice of deletion, regardless of readiness probe results.'}]"
+439,528,0,[],"496
+CHAPTER 17
+Best practices for developing apps
+because the delay will prevent the container from shutting down promptly and will
+cause the pod to be shown in lists long after it has been deleted, which is always frus-
+trating to the user deleting the pod.
+WRAPPING UP THIS SECTION
+To recap—properly shutting down an application includes these steps:
+Wait for a few seconds, then stop accepting new connections. 
+Close all keep-alive connections not in the middle of a request.
+Wait for all active requests to finish.
+Then shut down completely.
+To understand what’s happening with the connections and requests during this pro-
+cess, examine figure 17.9 carefully.
+Not as simple as exiting the process immediately upon receiving the termination sig-
+nal, right? Is it worth going through all this? That’s for you to decide. But the least you
+can do is add a pre-stop hook that waits a few seconds, like the one in the following
+listing, perhaps.
+    lifecycle:                    
+      preStop:                    
+        exec:                     
+          command:                
+          - sh
+          - -c
+          - ""sleep 5""
+Listing 17.7
+A pre-stop hook for preventing broken connections
+Delay (few seconds)
+Key:
+Connection
+Request
+iptables rules
+updated on all nodes
+(no new connections
+after this point)
+Stop
+accepting new
+connections
+Close inactive
+keep-alive
+connections
+and wait for
+active requests
+to ﬁnish
+When last
+active request
+completes,
+shut down
+completely
+Time
+SIGTERM
+Figure 17.9
+Properly handling existing and new connections after receiving a termination signal
+ 
+",[],"[{'entity': 'container', 'description': 'a lightweight and standalone executable software package, commonly used in containerization.', 'category': 'software'}, {'entity': 'pod', 'description': 'the basic execution unit in Kubernetes, consisting of one or more containers.', 'category': 'application'}, {'entity': 'Kubernetes', 'description': 'an open-source container orchestration system for automating the deployment, scaling, and management of containers.', 'category': 'software'}, {'entity': 'SIGTERM', 'description': 'a signal sent to a process to indicate that it should terminate gracefully.', 'category': 'process'}, {'entity': 'pre-stop hook', 'description': 'a mechanism in Kubernetes that allows for custom actions to be executed before a pod is terminated.', 'category': 'application'}, {'entity': 'lifecycle', 'description': ""the management of a pod's life cycle, including creation, execution, and termination."", 'category': 'process'}, {'entity': 'exec', 'description': 'a command in Kubernetes that executes a binary or script within a container.', 'category': 'command'}, {'entity': 'sleep', 'description': 'a Unix command that pauses the execution of a process for a specified amount of time.', 'category': 'command'}, {'entity': 'iptables rules', 'description': 'configuration settings in Linux that control network traffic and packet filtering.', 'category': 'network'}]","[{'source_entity': 'Kubernetes', 'description': 'manages', 'destination_entity': 'container'}, {'source_entity': 'Kubernetes', 'description': 'enforces', 'destination_entity': 'iptables rules'}, {'source_entity': 'pre-stop hook', 'description': 'executes', 'destination_entity': 'lifecycle'}, {'source_entity': 'pre-stop hook', 'description': 'terminates', 'destination_entity': 'SIGTERM'}, {'source_entity': 'container', 'description': 'hosts', 'destination_entity': 'pod'}, {'source_entity': 'exec', 'description': 'runs', 'destination_entity': 'pre-stop hook'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages a pod, which is a container that runs an application.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""Kubernetes enforces network policies through iptables rules, ensuring secure communication between pods.""\n  }\n]', '[\n  {\n    ""source"": ""pre-stop hook"",\n    ""destination"": ""pod lifecycle"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""The pre-stop hook executes a command in the context of the pod\'s lifecycle, typically to prepare for termination.""\n  }\n]', '[\n  {\n    ""source"": ""pre-stop hook"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""terminates"",\n    ""summary_er"": ""The pre-stop hook terminates a running pod by sending a SIGTERM signal.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""A container runs on a host, which is an instance of a pod in Kubernetes. The host provides resources to the container.""\n  }\n]', '[\n  {\n    ""source"": ""exec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""Exec command runs within a pod, allowing for execution of scripts or commands inside a containerized environment.""\n  },\n  {\n    ""source"": ""pre-stop hook"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hook"",\n    ""summary_er"": ""Pre-stop hook is executed before a pod is terminated, allowing for cleanup or preparation tasks to be performed.""\n  }\n]']","To properly shut down an application, wait for a few seconds, then stop accepting new connections, close inactive keep-alive connections, wait for active requests to finish, and finally shut down completely. A pre-stop hook can be added to wait a few seconds before shutting down, preventing broken connections and frustrating the user with lingering pod listings.","[{'highlight': 'To properly shut down an application, wait for a few seconds, then stop accepting new connections, close all keep-alive connections not in the middle of a request, wait for all active requests to finish, and then shut down completely.'}, {'highlight': 'A pre-stop hook can be added to wait a few seconds before shutting down, such as the one in Listing 17.7 that waits 5 seconds.'}, {'highlight': 'The process of shutting down an application involves stopping new connections, closing inactive keep-alive connections, and waiting for active requests to finish before shutting down completely.'}, {'highlight': 'Properly handling existing and new connections after receiving a termination signal is crucial to prevent broken connections and ensure a smooth shutdown process.'}, {'highlight': 'The use of a pre-stop hook can help prevent broken connections by delaying the shutdown process for a few seconds, allowing active requests to finish before shutting down completely.'}]"

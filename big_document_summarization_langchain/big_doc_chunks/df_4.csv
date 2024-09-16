@@ -1,0 +1,516 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+40,129,0,[],"97
+Introducing ReplicationControllers
+RESPONDING TO A NODE FAILURE
+Seeing the ReplicationController respond to the manual deletion of a pod isn’t too
+interesting, so let’s look at a better example. If you’re using Google Kubernetes Engine
+to run these examples, you have a three-node Kubernetes cluster. You’re going to dis-
+connect one of the nodes from the network to simulate a node failure.
+NOTE
+If you’re using Minikube, you can’t do this exercise, because you only
+have one node that acts both as a master and a worker node.
+If a node fails in the non-Kubernetes world, the ops team would need to migrate the
+applications running on that node to other machines manually. Kubernetes, on the
+other hand, does that automatically. Soon after the ReplicationController detects that
+its pods are down, it will spin up new pods to replace them. 
+ Let’s see this in action. You need to ssh into one of the nodes with the gcloud
+compute ssh command and then shut down its network interface with sudo ifconfig
+eth0 down, as shown in the following listing.
+NOTE
+Choose a node that runs at least one of your pods by listing pods with
+the -o wide option.
+$ gcloud compute ssh gke-kubia-default-pool-b46381f1-zwko
+Enter passphrase for key '/home/luksa/.ssh/google_compute_engine':
+Welcome to Kubernetes v1.6.4!
+...
+luksa@gke-kubia-default-pool-b46381f1-zwko ~ $ sudo ifconfig eth0 down
+When you shut down the network interface, the ssh session will stop responding, so
+you need to open up another terminal or hard-exit from the ssh session. In the new
+terminal you can list the nodes to see if Kubernetes has detected that the node is
+down. This takes a minute or so. Then, the node’s status is shown as NotReady:
+$ kubectl get node
+NAME                                   STATUS     AGE
+gke-kubia-default-pool-b46381f1-opc5   Ready      5h
+gke-kubia-default-pool-b46381f1-s8gj   Ready      5h
+gke-kubia-default-pool-b46381f1-zwko   NotReady   5h    
+If you list the pods now, you’ll still see the same three pods as before, because Kuber-
+netes waits a while before rescheduling pods (in case the node is unreachable because
+of a temporary network glitch or because the Kubelet is restarting). If the node stays
+unreachable for several minutes, the status of the pods that were scheduled to that
+node changes to Unknown. At that point, the ReplicationController will immediately
+spin up a new pod. You can see this by listing the pods again:
+Listing 4.6
+Simulating a node failure by shutting down its network interface
+Node isn’t ready, 
+because it’s 
+disconnected from 
+the network
+ 
+",[],"[{'entity': 'ReplicationController', 'description': 'A Kubernetes resource that ensures a specified number of replicas (identical Pods) are running at any given time.', 'category': 'software'}, {'entity': 'node failure', 'description': 'A situation where a node in the Kubernetes cluster becomes unreachable due to network issues or other problems.', 'category': 'hardware'}, {'entity': 'gcloud compute ssh command', 'description': 'A command used to SSH into a Google Kubernetes Engine node.', 'category': 'software'}, {'entity': 'ifconfig eth0 down', 'description': 'A command used to shut down the network interface on a node.', 'category': 'software'}, {'entity': 'Kubernetes cluster', 'description': 'A group of machines (nodes) that run containerized applications and are managed by Kubernetes.', 'category': 'hardware'}, {'entity': 'ReplicationController', 'description': 'A Kubernetes resource that ensures a specified number of replicas (identical Pods) are running at any given time.', 'category': 'software'}, {'entity': 'pods', 'description': 'The smallest deployable units in Kubernetes, which represent an application or service.', 'category': 'software'}, {'entity': 'kubectl get node command', 'description': 'A command used to list the nodes in a Kubernetes cluster.', 'category': 'software'}, {'entity': 'NotReady status', 'description': 'The status of a node that is not ready due to network issues or other problems.', 'category': 'hardware'}, {'entity': 'Unknown status', 'description': 'The status of a pod that is scheduled to an unreachable node.', 'category': 'software'}, {'entity': 'ReplicationController', 'description': 'A Kubernetes resource that ensures a specified number of replicas (identical Pods) are running at any given time.', 'category': 'software'}]","[{'source_entity': 'Kubernetes cluster', 'description': 'monitors for node failure', 'destination_entity': 'node'}, {'source_entity': 'Kubernetes cluster', 'description': 'displays Unknown status when a node is not responding', 'destination_entity': 'node'}, {'source_entity': 'ifconfig eth0 down command', 'description': 'brings down the network interface on a node', 'destination_entity': 'node'}, {'source_entity': 'ReplicationController', 'description': 'ensures that a specified number of pods are running at any given time', 'destination_entity': 'pods'}, {'source_entity': 'Kubernetes cluster', 'description': 'manages and monitors the status of pods', 'destination_entity': 'pods'}, {'source_entity': 'kubectl get node command', 'description': 'fetches information about a specific node in the Kubernetes cluster', 'destination_entity': 'node'}, {'source_entity': 'gcloud compute ssh command', 'description': 'establishes an SSH connection to a specific node in the Google Cloud Compute Engine', 'destination_entity': 'node'}, {'source_entity': 'Kubernetes cluster', 'description': 'detects and reports NotReady status for nodes that are not responding', 'destination_entity': 'node'}]","['[\n  {\n    ""source"": ""Kubernetes cluster"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""monitors for node failure"",\n    ""summary_er"": ""The Kubernetes cluster continuously monitors pods for potential node failures, ensuring high availability and reliability.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes cluster"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays Unknown status when a node is not responding"",\n    ""summary_er"": ""The Kubernetes cluster displays an \'Unknown\' status for a pod when its corresponding node is unresponsive, indicating a potential issue with the node\'s connectivity or availability.""\n  }\n]', '[\n  {\n    ""source"": ""ifconfig"",\n    ""destination"": ""node"",\n    ""relation_description"": ""brings down the network interface"",\n    ""summary_er"": ""The ifconfig command brings down the network interface on a node, affecting its connectivity.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""ensures that a specified number of pods are running at any given time"",\n    ""summary_er"": ""ReplicationController guarantees a fixed number of pod instances, ensuring consistent availability.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes cluster"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages and monitors the status of"",\n    ""summary_er"": ""The Kubernetes cluster oversees and tracks the state of individual pods, ensuring their proper functioning within the containerized environment.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""node"",\n    ""relation_description"": ""fetches information about a specific node in the Kubernetes cluster"",\n    ""summary_er"": ""The kubectl command fetches node information from the Kubernetes cluster, providing details about a specific node.""\n  }\n]', '[\n  {\n    ""source"": ""gcloud compute ssh command"",\n    ""destination"": ""node"",\n    ""relation_description"": ""establishes an SSH connection to a specific node in the Google Cloud Compute Engine"",\n    ""summary_er"": ""Establishes secure shell access to a Google Cloud Compute Engine node using the gcloud compute ssh command.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes cluster"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""detects and reports NotReady status for nodes that are not responding"",\n    ""summary_er"": ""The Kubernetes cluster monitors pod health, reporting NotReady status for unresponsive nodes.""\n  }\n]']","A ReplicationController in Kubernetes automatically spins up new pods to replace those that are down when a node fails, as demonstrated by simulating a node failure on a three-node cluster. After shutting down the network interface of one node, the status is shown as NotReady, and the pods remain unchanged for several minutes before the ReplicationController creates a new pod to replace the downed ones.","[{'highlight': 'Kubernetes automatically spins up new pods to replace ones that are down due to a node failure.'}, {'highlight': 'To simulate a node failure in Google Kubernetes Engine, disconnect one of the nodes from the network by shutting down its network interface with sudo ifconfig eth0 down.'}, {'highlight': 'Kubernetes waits for several minutes before rescheduling pods that were scheduled to an unreachable node, and then changes their status to Unknown.'}, {'highlight': 'A ReplicationController will immediately spin up a new pod when the status of the pods that were scheduled to an unreachable node changes to Unknown.'}, {'highlight': ""The status of a node can be checked with kubectl get node, and its status is shown as NotReady if it's disconnected from the network.""}]"
+41,130,0,[],"98
+CHAPTER 4
+Replication and other controllers: deploying managed pods
+$ kubectl get pods
+NAME          READY   STATUS    RESTARTS   AGE
+kubia-oini2   1/1     Running   0          10m
+kubia-k0xz6   1/1     Running   0          10m
+kubia-q3vkg   1/1     Unknown   0          10m    
+kubia-dmdck   1/1     Running   0          5s    
+Looking at the age of the pods, you see that the kubia-dmdck pod is new. You again
+have three pod instances running, which means the ReplicationController has again
+done its job of bringing the actual state of the system to the desired state. 
+ The same thing happens if a node fails (either breaks down or becomes unreach-
+able). No immediate human intervention is necessary. The system heals itself
+automatically. 
+ To bring the node back, you need to reset it with the following command:
+$ gcloud compute instances reset gke-kubia-default-pool-b46381f1-zwko
+When the node boots up again, its status should return to Ready, and the pod whose
+status was Unknown will be deleted.
+4.2.4
+Moving pods in and out of the scope of a ReplicationController
+Pods created by a ReplicationController aren’t tied to the ReplicationController in
+any way. At any moment, a ReplicationController manages pods that match its label
+selector. By changing a pod’s labels, it can be removed from or added to the scope
+of a ReplicationController. It can even be moved from one ReplicationController to
+another.
+TIP
+Although a pod isn’t tied to a ReplicationController, the pod does refer-
+ence it in the metadata.ownerReferences field, which you can use to easily
+find which ReplicationController a pod belongs to.
+If you change a pod’s labels so they no longer match a ReplicationController’s label
+selector, the pod becomes like any other manually created pod. It’s no longer man-
+aged by anything. If the node running the pod fails, the pod is obviously not resched-
+uled. But keep in mind that when you changed the pod’s labels, the replication
+controller noticed one pod was missing and spun up a new pod to replace it.
+ Let’s try this with your pods. Because your ReplicationController manages pods
+that have the app=kubia label, you need to either remove this label or change its value
+to move the pod out of the ReplicationController’s scope. Adding another label will
+have no effect, because the ReplicationController doesn’t care if the pod has any addi-
+tional labels. It only cares whether the pod has all the labels referenced in the label
+selector. 
+This pod’s status is 
+unknown, because its 
+node is unreachable.
+This pod was created 
+five seconds ago.
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command to get pods', 'category': 'software'}, {'entity': 'pods', 'description': 'managed by ReplicationController', 'category': 'container'}, {'entity': 'ReplicationController', 'description': 'manages pods based on label selector', 'category': 'application'}, {'entity': 'label selector', 'description': 'used to select pods managed by ReplicationController', 'category': 'software'}, {'entity': 'node', 'description': 'compute instance in GKE cluster', 'category': 'hardware'}, {'entity': 'gcloud', 'description': 'command to reset compute instance', 'category': 'software'}, {'entity': 'instances', 'description': 'compute instances in GKE cluster', 'category': 'hardware'}, {'entity': 'ReplicationController', 'description': 'manages pods based on label selector', 'category': 'application'}, {'entity': 'pod', 'description': 'managed by ReplicationController or not', 'category': 'container'}, {'entity': 'labels', 'description': 'metadata used to identify pods', 'category': 'software'}, {'entity': 'ownerReferences', 'description': 'field in pod metadata referencing ReplicationController', 'category': 'software'}, {'entity': 'node failure', 'description': 'event causing pod status to become Unknown', 'category': 'hardware'}, {'entity': 'pod creation', 'description': 'event creating a new pod instance', 'category': 'container'}]","[{'source_entity': 'ReplicationController', 'description': 'manages', 'destination_entity': 'pods'}, {'source_entity': 'kubectl', 'description': 'creates', 'destination_entity': 'pod'}, {'source_entity': 'gcloud', 'description': 'selects', 'destination_entity': 'instances'}, {'source_entity': 'label selector', 'description': 'identifies', 'destination_entity': 'pods'}, {'source_entity': 'node failure', 'description': 'affects', 'destination_entity': 'pod creation'}, {'source_entity': 'node', 'description': 'hosts', 'destination_entity': 'pods'}, {'source_entity': 'labels', 'description': 'applies to', 'destination_entity': 'pods'}, {'source_entity': 'ownerReferences', 'description': 'manages', 'destination_entity': 'ReplicationController'}]","['[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A ReplicationController manages a set of identical pods, ensuring a specified number of replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) creates a new pod, which is a container running an application.""\n  }\n]', '[\n  {\n    ""source"": ""gcloud"",\n    ""destination"": ""pod instances"",\n    ""relation_description"": ""selects"",\n    ""summary_er"": ""GCloud command-line tool selects specific pod instances for management and operation.""\n  }\n]', '[\n  {\n    ""source"": ""label selector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""identifies"",\n    ""summary_er"": ""A label selector is used to identify a specific pod in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""affects"",\n    ""summary_er"": ""Node failure can affect pod creation, leading to potential downtime or errors in application deployment.""\n  }\n]', '[\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""A node in a Kubernetes cluster can host one or more pods, providing them with resources and infrastructure.""\n  }\n]', '[\n  {\n    ""source"": ""labels"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applies to"",\n    ""summary_er"": ""Labels are key-value pairs that apply to a pod, providing metadata and configuration.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""container"",\n    ""summary_er"": ""A pod is a logical host for one or more containers, providing shared resources and networking.""\n  }\n]', '[\n  {\n    ""source"": ""ownerReferences"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The ownerReferences field in a Kubernetes object manages the lifecycle of a pod, ensuring it is created and deleted as needed.""\n  }\n]']","ReplicationController automatically manages pods based on a label selector and can spin up new pods if one fails or is removed from scope. A pod's labels can be changed to move it in or out of the ReplicationController's scope, but changing its labels does not delete it. The replication controller will notice if a managed pod is missing and spin up a new one to replace it.","[{'highlight': 'The ReplicationController automatically brings the actual state of the system to the desired state, even if a node fails or becomes unreachable.'}, {'highlight': ""Pods created by a ReplicationController aren't tied to the controller and can be removed from or added to its scope by changing their labels.""}, {'highlight': ""A pod's status will return to Ready when its node boots up again after being reset, and any pods that were Unknown will be deleted.""}, {'highlight': ""Changing a pod's labels so they no longer match a ReplicationController's label selector makes the pod like any other manually created pod, not managed by anything.""}, {'highlight': 'A ReplicationController notices when a pod is missing and spins up a new pod to replace it if the node running the pod fails.'}]"
+42,131,0,[],"99
+Introducing ReplicationControllers
+ADDING LABELS TO PODS MANAGED BY A REPLICATIONCONTROLLER
+Let’s confirm that a ReplicationController doesn’t care if you add additional labels to
+its managed pods:
+$ kubectl label pod kubia-dmdck type=special
+pod ""kubia-dmdck"" labeled
+$ kubectl get pods --show-labels
+NAME          READY   STATUS    RESTARTS   AGE   LABELS
+kubia-oini2   1/1     Running   0          11m   app=kubia
+kubia-k0xz6   1/1     Running   0          11m   app=kubia
+kubia-dmdck   1/1     Running   0          1m    app=kubia,type=special
+You’ve added the type=special label to one of the pods. Listing all pods again shows
+the same three pods as before, because no change occurred as far as the Replication-
+Controller is concerned.
+CHANGING THE LABELS OF A MANAGED POD
+Now, you’ll change the app=kubia label to something else. This will make the pod no
+longer match the ReplicationController’s label selector, leaving it to only match two
+pods. The ReplicationController should therefore start a new pod to bring the num-
+ber back to three:
+$ kubectl label pod kubia-dmdck app=foo --overwrite
+pod ""kubia-dmdck"" labeled
+The --overwrite argument is necessary; otherwise kubectl will only print out a warn-
+ing and won’t change the label, to prevent you from inadvertently changing an exist-
+ing label’s value when your intent is to add a new one. 
+ Listing all the pods again should now show four pods: 
+$ kubectl get pods -L app
+NAME         READY  STATUS             RESTARTS  AGE  APP
+kubia-2qneh  0/1    ContainerCreating  0         2s   kubia   
+kubia-oini2  1/1    Running            0         20m  kubia
+kubia-k0xz6  1/1    Running            0         20m  kubia
+kubia-dmdck  1/1    Running            0         10m  foo    
+NOTE
+You’re using the -L app option to display the app label in a column.
+There, you now have four pods altogether: one that isn’t managed by your Replication-
+Controller and three that are. Among them is the newly created pod.
+ Figure 4.5 illustrates what happened when you changed the pod’s labels so they no
+longer matched the ReplicationController’s pod selector. You can see your three pods
+and your ReplicationController. After you change the pod’s label from app=kubia to
+app=foo, the ReplicationController no longer cares about the pod. Because the con-
+troller’s replica count is set to 3 and only two pods match the label selector, the
+Newly created pod that replaces
+the pod you removed from the
+scope of the ReplicationController
+Pod no longer 
+managed by the 
+ReplicationController
+ 
+",[],"[{'entity': 'ReplicationController', 'description': 'A Kubernetes resource that ensures a specified number of replicas (identical Pods) are running at any given time.', 'category': 'software'}, {'entity': 'kubectl', 'description': 'The command-line tool for interacting with Kubernetes clusters.', 'category': 'software'}, {'entity': 'label', 'description': 'A key-value pair that can be attached to a Pod or other Kubernetes resource.', 'category': 'software'}, {'entity': 'pod', 'description': 'A lightweight and portable container that runs an application.', 'category': 'container'}, {'entity': 'ReplicaSet', 'description': 'A resource that ensures a specified number of replicas (identical Pods) are running at any given time.', 'category': 'software'}, {'entity': '--overwrite', 'description': 'An option for the kubectl label command to overwrite an existing label value.', 'category': 'command'}, {'entity': '-L app', 'description': 'An option for the kubectl get command to display the app label in a column.', 'category': 'command'}, {'entity': 'containerCreating', 'description': 'A status phase of a Pod that indicates it is being created.', 'category': 'status'}, {'entity': 'Running', 'description': 'A status phase of a Pod that indicates it is running and ready to accept traffic.', 'category': 'status'}, {'entity': 'ContainerCreating', 'description': 'A status phase of a Pod that indicates it is being created.', 'category': 'status'}, {'entity': 'ReplicationController', 'description': 'A Kubernetes resource that ensures a specified number of replicas (identical Pods) are running at any given time.', 'category': 'software'}, {'entity': 'kubectl label', 'description': 'The command for adding or modifying labels on a Pod or other Kubernetes resource.', 'category': 'command'}, {'entity': 'pod selector', 'description': 'A label selector used by a ReplicationController to identify the Pods it manages.', 'category': 'software'}]","[{'source_entity': '""containerCreating""', 'description': 'creating a new container', 'destination_entity': '""ContainerCreating""'}, {'source_entity': '""kubectl label""', 'description': 'applying a label to', 'destination_entity': '""ReplicationController""'}, {'source_entity': '""kubectl label""', 'description': 'overwriting an existing label on', 'destination_entity': '""pod selector""'}, {'source_entity': '""Running""', 'description': 'indicating the status of a', 'destination_entity': '""pod""'}, {'source_entity': '""kubectl""', 'description': 'creating or updating a', 'destination_entity': '""ReplicaSet""'}, {'source_entity': '""label""', 'description': 'adding or modifying an attribute to', 'destination_entity': '""pod selector""'}, {'source_entity': '""kubectl label""', 'description': 'displaying labels for a', 'destination_entity': '""ReplicaSet""'}]","['[\n  {\n    ""source"": ""containerCreating"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creating a new container"",\n    ""summary_er"": ""A Kubernetes process creating a new container within a pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""applying a label to"",\n    ""summary_er"": ""Applying a label to a pod using kubectl command, which allows for organization and filtering of pods in Kubernetes.""\n  },\n  {\n    ""source"": ""label"",\n    ""destination"": ""ReplicationController"",\n    ""relation_description"": ""applied by"",\n    ""summary_er"": ""A label is applied by the ReplicationController to manage and scale replicas in a Kubernetes deployment.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod selector"",\n    ""relation_description"": ""overwriting an existing label on"",\n    ""summary_er"": ""Using kubectl to update a label on a pod that already has one, based on a selector.""\n  }\n]', '[\n  {\n    ""source"": ""Running"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""indicating the status of a"",\n    ""summary_er"": ""The \'Running\' status indicates that a pod is currently executing and performing its intended function.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creating or updating a"",\n    ""summary_er"": ""Kubectl is used to create or update a pod, which is a container running an application.""\n  },\n  {\n    ""source"": ""ReplicaSet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managing the number of"",\n    ""summary_er"": ""A ReplicaSet ensures that a specified number of pods are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""label"",\n    ""destination"": ""pod selector"",\n    ""relation_description"": ""adding or modifying an attribute to"",\n    ""summary_er"": ""Labels are used to select pods based on their attributes, such as name, namespace, and labels.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displaying labels for a"",\n    ""summary_er"": ""Kubectl displays labels for a specific pod, allowing users to view and manage metadata associated with the pod.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""ReplicaSet"",\n    ""relation_description"": ""displaying labels for a"",\n    ""summary_er"": ""Kubectl displays labels for a ReplicaSet, enabling users to view and manage metadata associated with the set of identical pods.""\n  }\n]']","A ReplicationController doesn't care if labels are added to its managed pods. Changing a label on a managed pod makes it no longer match the controller's label selector, prompting the controller to start a new pod to bring the number back to three.","[{'highlight': 'You can add additional labels to pods managed by a ReplicationController without affecting its functionality.'}, {'highlight': 'Changing the label of a pod managed by a ReplicationController will cause it to start a new pod to maintain the desired replica count.'}, {'highlight': 'The --overwrite argument is necessary when changing the label of a pod managed by a ReplicationController to prevent inadvertently adding a new label instead of updating an existing one.'}, {'highlight': 'You can use the -L option followed by the label name to display specific labels in a column when listing pods with kubectl get pods.'}, {'highlight': 'A ReplicationController will create a new pod if the number of matching pods falls below its replica count, even if one or more pods are removed from its scope.'}]"
+43,132,0,[],"100
+CHAPTER 4
+Replication and other controllers: deploying managed pods
+ReplicationController spins up pod kubia-2qneh to bring the number back up to
+three. Pod kubia-dmdck is now completely independent and will keep running until
+you delete it manually (you can do that now, because you don’t need it anymore).
+REMOVING PODS FROM CONTROLLERS IN PRACTICE
+Removing a pod from the scope of the ReplicationController comes in handy when
+you want to perform actions on a specific pod. For example, you might have a bug
+that causes your pod to start behaving badly after a specific amount of time or a spe-
+cific event. If you know a pod is malfunctioning, you can take it out of the Replication-
+Controller’s scope, let the controller replace it with a new one, and then debug or
+play with the pod in any way you want. Once you’re done, you delete the pod. 
+CHANGING THE REPLICATIONCONTROLLER’S LABEL SELECTOR
+As an exercise to see if you fully understand ReplicationControllers, what do you
+think would happen if instead of changing the labels of a pod, you modified the
+ReplicationController’s label selector? 
+ If your answer is that it would make all the pods fall out of the scope of the
+ReplicationController, which would result in it creating three new pods, you’re abso-
+lutely right. And it shows that you understand how ReplicationControllers work. 
+ Kubernetes does allow you to change a ReplicationController’s label selector, but
+that’s not the case for the other resources that are covered in the second half of this
+Initial state
+After re-labelling
+Re-label kubia-dmdck
+app: kubia
+Pod:
+kubia-oini2
+app: kubia
+Pod:
+kubia-2qneh
+[ContainerCreating]
+Pod:
+kubia-dmdck
+app: kubia
+Pod:
+kubia-k0xz6
+app: kubia
+type: special
+type: special
+app: foo
+app: kubia
+Pod:
+kubia-dmdck
+app: kubia
+Pod:
+kubia-k0xz6
+ReplicationController: kubia
+Replicas: 3
+Selector: app=kubia
+ReplicationController: kubia
+Replicas: 3
+Selector: app=kubia
+Pod:
+kubia-oini2
+Figure 4.5
+Removing a pod from the scope of a ReplicationController by changing its labels 
+ 
+",[],"[{'entity': 'ReplicationController', 'description': 'A Kubernetes resource that ensures a specified number of replicas (pods) are running at any given time.', 'category': 'software'}, {'entity': 'Pod', 'description': 'The basic execution unit in Kubernetes, representing a container or process.', 'category': 'container'}, {'entity': 'kubia-2qneh', 'description': 'A pod name', 'category': 'container'}, {'entity': 'kubia-dmdck', 'description': 'A pod name', 'category': 'container'}, {'entity': 'Replicas', 'description': 'The number of replicas (pods) a ReplicationController ensures are running.', 'category': 'software'}, {'entity': 'Selector', 'description': 'A label selector used by a ReplicationController to identify pods it manages.', 'category': 'software'}, {'entity': 'app=kubia', 'description': 'A label value used in the Selector of a ReplicationController.', 'category': 'label'}, {'entity': 'ContainerCreating', 'description': 'A pod status indicating that a container is being created.', 'category': 'software'}, {'entity': 'kubia-oini2', 'description': 'A pod name', 'category': 'container'}, {'entity': 'kubia-k0xz6', 'description': 'A pod name', 'category': 'container'}]","[{'source_entity': '""ReplicationController""', 'description': 'creates', 'destination_entity': '""Pod""'}, {'source_entity': '""ReplicationController""', 'description': 'manages', 'destination_entity': '""kubia-oini2""'}, {'source_entity': '""ReplicationController""', 'description': 'manages', 'destination_entity': '""kubia-k0xz6""'}, {'source_entity': '""ReplicationController""', 'description': 'manages', 'destination_entity': '""kubia-2qneh""'}, {'source_entity': '""Pod""', 'description': 'is in', 'destination_entity': '""ContainerCreating""'}, {'source_entity': '""Pod""', 'description': 'has', 'destination_entity': '""app=kubia""'}, {'source_entity': '""kubia-oini2""', 'description': 'is a', 'destination_entity': '""Replica""'}, {'source_entity': '""kubia-k0xz6""', 'description': 'is a', 'destination_entity': '""Replica""'}, {'source_entity': '""kubia-2qneh""', 'description': 'is a', 'destination_entity': '""Replica""'}]","['[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""creates"",\n    ""summary_er"": ""A ReplicationController creates a specified number of Pod instances, ensuring that a minimum number of Pods are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A ReplicationController manages a pod, ensuring it runs multiple replicas to maintain availability and scalability.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A ReplicationController manages a set of identical pods, ensuring a specified number of replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationController"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A ReplicationController manages a pod, ensuring it runs multiple copies of an application.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is in"",\n    ""summary_er"": ""A Pod is a logical host for one or more application containers. It provides shared resources and a single IP address.""\n  },\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""ContainerCreating"",\n    ""relation_description"": """",\n    ""summary_er"": ""The ContainerCreating phase indicates that the container is being created within the pod, but has not yet completed initialization.""\n  }\n]', '[\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""has"",\n    ""summary_er"": ""A Pod in Kubernetes represents a logical host, and has one or more containers running within it, such as the kubia app.""\n  }\n]', '[\n  {\n    ""source"": ""kubia-oini2"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a"",\n    ""summary_er"": ""Kubia is a pod in Kubernetes, which is a containerized application.""\n  },\n  {\n    ""source"": ""Replica"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""represents"",\n    ""summary_er"": ""A Replica represents multiple identical pods running the same application.""\n  }\n]', '[\n  {\n    ""source"": ""kubia-k0xz6"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a"",\n    ""summary_er"": ""Kubia is a pod that runs a replica of an application.""\n  },\n  {\n    ""source"": ""Replica"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""represents"",\n    ""summary_er"": ""A replica represents a running instance of a pod in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""kubia-2qneh"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a"",\n    ""summary_er"": ""Kubia is a pod, which is a container running an application.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""Replica"",\n    ""relation_description"": ""has a"",\n    ""summary_er"": ""A replica is a copy of a pod, ensuring high availability and scalability.""\n  }\n]']","A ReplicationController can spin up new pods to bring the number back up after one is removed, allowing for independent pod management and changing label selectors to control which pods are included in the controller's scope.","[{'highlight': 'ReplicationController spins up pod kubia-2qneh to bring the number back up to three.'}, {'highlight': 'You can remove a pod from the scope of the ReplicationController, let it replace it with a new one, and then debug or play with the pod in any way you want.'}, {'highlight': ""Changing the ReplicationController's label selector would make all the pods fall out of its scope, resulting in it creating three new pods.""}, {'highlight': ""You can change a ReplicationController's label selector, but that's not the case for other resources like Deployments and StatefulSets.""}, {'highlight': ""A ReplicationController has a 'Selector' field that determines which pods it manages, and changing this selector can affect the pods it controls.""}]"
+44,133,0,[],"101
+Introducing ReplicationControllers
+chapter and which are also used for managing pods. You’ll never change a controller’s
+label selector, but you’ll regularly change its pod template. Let’s take a look at that.
+4.2.5
+Changing the pod template
+A ReplicationController’s pod template can be modified at any time. Changing the pod
+template is like replacing a cookie cutter with another one. It will only affect the cookies
+you cut out afterward and will have no effect on the ones you’ve already cut (see figure
+4.6). To modify the old pods, you’d need to delete them and let the Replication-
+Controller replace them with new ones based on the new template.
+As an exercise, you can try editing the ReplicationController and adding a label to the
+pod template. You can edit the ReplicationController with the following command:
+$ kubectl edit rc kubia
+This will open the ReplicationController’s YAML definition in your default text editor.
+Find the pod template section and add an additional label to the metadata. After you
+save your changes and exit the editor, kubectl will update the ReplicationController
+and print the following message:
+replicationcontroller ""kubia"" edited
+You can now list pods and their labels again and confirm that they haven’t changed.
+But if you delete the pods and wait for their replacements to be created, you’ll see the
+new label.
+ Editing a ReplicationController like this to change the container image in the pod
+template, deleting the existing pods, and letting them be replaced with new ones from
+the new template could be used for upgrading pods, but you’ll learn a better way of
+doing that in chapter 9. 
+Replication
+Controller
+Replicas: 3
+Template:
+A
+B
+C
+Replication
+Controller
+Replicas: 3
+Template:
+A
+Replication
+Controller
+Replicas: 3
+Template:
+A
+Replication
+Controller
+Replicas: 3
+Template:
+D
+A
+B
+C
+A
+B
+C
+A
+B
+Change
+template
+Delete
+a pod
+RC creates
+new pod
+Figure 4.6
+Changing a ReplicationController’s pod template only affects pods created afterward and has no 
+effect on existing pods.
+ 
+",[],"[{'entity': 'ReplicationControllers', 'description': 'A Kubernetes resource that manages the replication of pods.', 'category': 'software'}, {'entity': 'pod template', 'description': 'The configuration for a pod, including its container image and labels.', 'category': 'software'}, {'entity': 'label selector', 'description': 'A way to select pods based on their labels.', 'category': 'software'}, {'entity': 'kubectl edit', 'description': 'A command used to edit a Kubernetes resource, such as a ReplicationController.', 'category': 'command'}, {'entity': 'rc kubia', 'description': 'The name of a ReplicationController.', 'category': 'software'}, {'entity': 'YAML definition', 'description': 'A human-readable format for representing data, used to define Kubernetes resources.', 'category': 'format'}, {'entity': 'metadata', 'description': 'Information about a pod or other Kubernetes resource.', 'category': 'software'}, {'entity': 'labels', 'description': 'Key-value pairs that can be attached to pods and other Kubernetes resources.', 'category': 'software'}, {'entity': 'ReplicationController', 'description': 'A Kubernetes resource that manages the replication of pods.', 'category': 'software'}, {'entity': 'pods', 'description': 'The smallest deployable units in a Kubernetes cluster, which can contain one or more containers.', 'category': 'software'}, {'entity': 'container image', 'description': ""The version of an application's code that is running in a container."", 'category': 'software'}, {'entity': 'chapter 9', 'description': 'A reference to a future chapter in the book, which will cover a better way of upgrading pods.', 'category': 'book'}]","[{'source_entity': 'rc kubia', 'description': 'is a YAML definition for', 'destination_entity': 'ReplicationControllers'}, {'source_entity': 'rc kubia', 'description': 'defines a ReplicationController', 'destination_entity': 'ReplicationController'}, {'source_entity': 'rc kubia', 'description': 'specifies the number of pods to run', 'destination_entity': 'pods'}, {'source_entity': 'chapter 9', 'description': 'discusses how to use YAML definitions for', 'destination_entity': 'ReplicationControllers'}, {'source_entity': 'kubectl edit', 'description': 'allows editing the YAML definition of', 'destination_entity': 'rc kubia'}, {'source_entity': 'pod template', 'description': 'is used by rc kubia to define a pod', 'destination_entity': 'pods'}, {'source_entity': 'labels', 'description': 'are used by rc kubia to identify and select', 'destination_entity': 'ReplicationControllers'}, {'source_entity': 'label selector', 'description': 'is used by rc kubia to select pods based on labels', 'destination_entity': 'pods'}, {'source_entity': 'metadata', 'description': 'provides additional information about the YAML definition of', 'destination_entity': 'rc kubia'}]","['[\n  {\n    ""source"": ""rc_kubia"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a YAML definition for"",\n    ""summary_er"": ""ReplicationController is a YAML definition that creates a pod.""\n  }\n]', '[\n  {\n    ""source"": ""rc_kubia"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines a ReplicationController"",\n    ""summary_er"": ""A ReplicationController named rc_kubia defines a pod, ensuring that a specified number of replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""rc_kubia"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""specifies the number of pods to run"",\n    ""summary_er"": ""The rc_kubia resource specifies the number of pods to run in a Kubernetes cluster.""\n  }\n]', '[\n    {\n        ""source"": ""Chapter 9"",\n        ""destination"": ""Pod"",\n        ""relation_description"": ""discusses how to use YAML definitions for"",\n        ""summary_er"": ""Chapter 9 discusses using YAML definitions to create Pods.""\n    },\n    {\n        ""source"": ""Chapter 9"",\n        ""destination"": ""ReplicationControllers"",\n        ""relation_description"": ""discusses how to use YAML definitions for"",\n        ""summary_er"": ""Chapter 9 also covers using YAML definitions for ReplicationControllers.""\n    }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""editing"",\n    ""summary_er"": ""Edit the YAML definition of a pod using kubectl command.""\n  },\n  {\n    ""source"": ""rc kubia"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""definition"",\n    ""summary_er"": ""Reference to the YAML definition of a pod named kubia""\n  }\n]', '[\n  {\n    ""source"": ""pod template"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used by rc kubia to define a pod"",\n    ""summary_er"": ""The Pod Template is used by the Kibia RC to create a new Pod instance, defining its configuration and settings.""\n  }\n]', '[\n  {\n    ""source"": ""labels"",\n    ""destination"": ""ReplicationControllers"",\n    ""relation_description"": ""are used by rc kubia to identify and select"",\n    ""summary_er"": ""Labels are used by Replication Controllers (RC) Kubia to identify and select a pod.""\n  }\n]', '[\n  {\n    ""source"": ""label selector"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used by rc kubia to select pods based on labels"",\n    ""summary_er"": ""Label selectors are used by ReplicaControllers (RCs) like \'kubia\' to filter and select Pods based on their labels, enabling targeted resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""metadata"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides additional information about the YAML definition of"",\n    ""summary_er"": ""The metadata provides context to the pod, including its configuration and properties.""\n  },\n  {\n    ""source"": ""metadata"",\n    ""destination"": ""rc kubia"",\n    ""relation_description"": ""and the destination pod"",\n    ""summary_er"": ""The metadata is associated with the rc kubia pod, providing a link between them.""\n  }\n]']","ReplicationControllers can modify their pod template at any time, but changes only affect new pods created after the modification. To change an existing pod, it must be deleted and a new one will be created based on the updated template.","[{'highlight': ""A ReplicationController's pod template can be modified at any time.""}, {'highlight': ""Changing the pod template is like replacing a cookie cutter with another one. It will only affect the cookies you cut out afterward and will have no effect on the ones you've already cut.""}, {'highlight': 'You can edit the ReplicationController with the following command: $ kubectl edit rc kubia'}, {'highlight': 'Editing a ReplicationController like this to change the container image in the pod template, deleting the existing pods, and letting them be replaced with new ones from the new template could be used for upgrading pods,'}, {'highlight': ""Changing a ReplicationController's pod template only affects pods created afterward and has no effect on existing pods.""}]"
+45,134,0,[],"102
+CHAPTER 4
+Replication and other controllers: deploying managed pods
+4.2.6
+Horizontally scaling pods
+You’ve seen how ReplicationControllers make sure a specific number of pod instances
+is always running. Because it’s incredibly simple to change the desired number of rep-
+licas, this also means scaling pods horizontally is trivial. 
+ Scaling the number of pods up or down is as easy as changing the value of the rep-
+licas field in the ReplicationController resource. After the change, the Replication-
+Controller will either see too many pods exist (when scaling down) and delete part of
+them, or see too few of them (when scaling up) and create additional pods. 
+SCALING UP A REPLICATIONCONTROLLER
+Your ReplicationController has been keeping three instances of your pod running.
+You’re going to scale that number up to 10 now. As you may remember, you’ve
+already scaled a ReplicationController in chapter 2. You could use the same com-
+mand as before:
+$ kubectl scale rc kubia --replicas=10
+But you’ll do it differently this time. 
+SCALING A REPLICATIONCONTROLLER BY EDITING ITS DEFINITION
+Instead of using the kubectl scale command, you’re going to scale it in a declarative
+way by editing the ReplicationController’s definition:
+$ kubectl edit rc kubia
+When the text editor opens, find the spec.replicas field and change its value to 10,
+as shown in the following listing.
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving 
+# this file will be reopened with the relevant failures.
+apiVersion: v1
+kind: ReplicationController
+Configuring kubectl edit to use a different text editor
+You can tell kubectl to use a text editor of your choice by setting the KUBE_EDITOR
+environment variable. For example, if you’d like to use nano for editing Kubernetes
+resources, execute the following command (or put it into your ~/.bashrc or an
+equivalent file):
+export KUBE_EDITOR=""/usr/bin/nano""
+If the KUBE_EDITOR environment variable isn’t set, kubectl edit falls back to using
+the default editor, usually configured through the EDITOR environment variable.
+Listing 4.7
+Editing the RC in a text editor by running kubectl edit
+ 
+",[],"[{'entity': 'ReplicationControllers', 'description': 'a Kubernetes resource that ensures a specific number of pod instances is always running', 'category': 'software'}, {'entity': 'pods', 'description': 'the basic execution unit in Kubernetes', 'category': 'container'}, {'entity': 'kubectl', 'description': 'the command-line tool for interacting with Kubernetes resources', 'category': 'command'}, {'entity': 'scale', 'description': 'a command used to change the number of replicas in a ReplicationController', 'category': 'command'}, {'entity': 'replicas', 'description': 'the desired number of pod instances in a ReplicationController', 'category': 'field'}, {'entity': 'ReplicationController resource', 'description': 'a Kubernetes resource that defines the configuration for a set of pods', 'category': 'resource'}, {'entity': 'apiVersion', 'description': 'a field in a Kubernetes resource that specifies the API version', 'category': 'field'}, {'entity': 'kind', 'description': 'a field in a Kubernetes resource that specifies the type of resource', 'category': 'field'}, {'entity': 'kubectl edit', 'description': 'a command used to edit a Kubernetes resource directly', 'category': 'command'}, {'entity': 'text editor', 'description': 'an application used for editing text files', 'category': 'software'}, {'entity': 'KUBE_EDITOR', 'description': 'an environment variable that specifies the default text editor to use with kubectl edit', 'category': 'environment variable'}, {'entity': 'EDITOR', 'description': 'an environment variable that specifies the default text editor to use for editing files', 'category': 'environment variable'}]","[{'source_entity': '""ReplicationController resource""', 'description': 'manages', 'destination_entity': '""replicas""'}, {'source_entity': '""apiVersion""', 'description': 'specifies', 'destination_entity': '""KUBE_EDITOR""'}, {'source_entity': '""text editor""', 'description': 'used to edit', 'destination_entity': '""KUBE_EDITOR""'}, {'source_entity': '""ReplicationControllers""', 'description': 'managed by', 'destination_entity': '""ReplicationController resource""'}, {'source_entity': '""pods""', 'description': 'related to', 'destination_entity': '""ReplicationControllers""'}, {'source_entity': '""kind""', 'description': 'specifies the type of', 'destination_entity': '""ReplicationController resource""'}, {'source_entity': '""EDITOR""', 'description': 'used to edit', 'destination_entity': '""KUBE_EDITOR""'}, {'source_entity': '""kubectl edit""', 'description': 'uses', 'destination_entity': '""KUBE_EDITOR""'}, {'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""scale""'}, {'source_entity': '""scale""', 'description': 'performed on', 'destination_entity': '""pods""'}]","['[\n  {\n    ""source"": ""ReplicationController resource"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""A ReplicationController resource manages a set of identical pods by controlling their creation and deletion.""\n  }\n]', '[\n  {\n    ""source"": ""apiVersion"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""API version that specifies a pod\'s configuration.""\n  },\n  {\n    ""source"": ""KUBE_EDITOR"",\n    ""destination"": ""editor"",\n    ""relation_description"": ""environment variable"",\n    ""summary_er"": ""Environment variable that sets the editor for Kubernetes configurations.""\n  }\n]', '[\n  {\n    ""source"": ""text editor"",\n    ""destination"": ""KUBE_EDITOR"",\n    ""relation_description"": ""used to edit"",\n    ""summary_er"": ""Text editors are used to edit text in Kubernetes environments, where KUBE_EDITOR is a variable that specifies the default text editor.""\n  }\n]', '[\n  {\n    ""source"": ""ReplicationControllers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""Replication Controllers manage the deployment of pods in a Kubernetes cluster, ensuring that a specified number of replicas are running at any given time.""\n  }\n]', '[\n  {\n    ""source"": ""pods"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""A pod is a logical host in Kubernetes, and this pod is related to another pod.""\n  },\n  {\n    ""source"": ""ReplicationControllers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managed by"",\n    ""summary_er"": ""A ReplicationController manages the number of replicas of a pod running in the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""specifies the type of"",\n    ""summary_er"": ""In Kubernetes, a ReplicationController resource specifies the desired state of a pod.""\n  },\n  {\n    ""source"": ""Docker"",\n    ""destination"": ""Container"",\n    ""relation_description"": ""defines and runs"",\n    ""summary_er"": ""Docker defines and runs containers that provide a consistent development environment.""\n  },\n  {\n    ""source"": ""Machine Learning"",\n    ""destination"": ""Model"",\n    ""relation_description"": ""trains and deploys"",\n    ""summary_er"": ""In Machine Learning, models are trained and deployed to make predictions or classify data.""\n  },\n  {\n    ""source"": ""Generative AI"",\n    ""destination"": ""Data"",\n    ""relation_description"": ""generates new"",\n    ""summary_er"": ""Generative AI generates new data that resembles existing patterns and structures.""\n  },\n  {\n    ""source"": ""Natural Language Understanding"",\n    ""destination"": ""Text"",\n    ""relation_description"": ""analyzes and interprets"",\n    ""summary_er"": ""In Natural Language Understanding, text is analyzed and interpreted to extract meaning and intent.""\n  },\n  {\n    ""source"": ""Computer Vision"",\n    ""destination"": ""Image"",\n    ""relation_description"": ""interprets and analyzes"",\n    ""summary_er"": ""Computer Vision interprets and analyzes images to extract features and make predictions.""\n  }\n]', '[\n  {\n    ""source"": ""EDITOR"",\n    ""destination"": ""KUBE_EDITOR"",\n    ""relation_description"": ""used to edit"",\n    ""summary_er"": ""The EDITOR variable is used to specify a command-line editor for editing Kubernetes configuration files, which is stored in the KUBE_EDITOR environment variable.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The \'kubectl edit\' command uses the KUBE_EDITOR environment variable to interact with a pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""\\""kubectl\\"" is a command-line tool that \\""uses\\"" a \\""pod\\"", which is a container running an application.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""scale"",\n    ""relation_description"": ""command"",\n    ""summary_er"": ""\\""kubectl\\"" is a command-line tool that can issue the \\""scale\\"" command to adjust resource allocation for applications.""\n  }\n]', '[\n  {\n    ""source"": ""scale"",\n    ""destination"": ""pods"",\n    ""relation_description"": ""performed on"",\n    ""summary_er"": ""Scaling involves adjusting the number of pods to match changing workload demands, ensuring efficient resource utilization and optimal performance.""\n  }\n]']","ReplicationControllers ensure a specific number of pod instances is always running. Scaling pods horizontally is trivial and can be done by changing the replicas field, either by using the command `kubectl scale` or by editing the ReplicationController's definition directly with `kubectl edit`. This allows scaling up or down with ease.","[{'highlight': 'ReplicationControllers make sure a specific number of pod instances is always running.'}, {'highlight': 'Scaling the number of pods up or down is as easy as changing the value of the replicas field in the ReplicationController resource.'}, {'highlight': 'You can scale a ReplicationController by editing its definition using kubectl edit command.'}, {'highlight': 'To use a different text editor with kubectl edit, set the KUBE_EDITOR environment variable.'}, {'highlight': ""kubectl edit falls back to using the default editor if the KUBE_EDITOR environment variable isn't set.""}]"
+46,135,0,[],"103
+Introducing ReplicationControllers
+metadata:
+  ...
+spec:
+  replicas: 3        
+  selector:
+    app: kubia
+  ...
+When you save the file and close the editor, the ReplicationController is updated and
+it immediately scales the number of pods to 10:
+$ kubectl get rc
+NAME      DESIRED   CURRENT   READY     AGE
+kubia     10        10        4         21m
+There you go. If the kubectl scale command makes it look as though you’re telling
+Kubernetes exactly what to do, it’s now much clearer that you’re making a declarative
+change to the desired state of the ReplicationController and not telling Kubernetes to
+do something.
+SCALING DOWN WITH THE KUBECTL SCALE COMMAND
+Now scale back down to 3. You can use the kubectl scale command:
+$ kubectl scale rc kubia --replicas=3
+All this command does is modify the spec.replicas field of the ReplicationController’s
+definition—like when you changed it through kubectl edit. 
+UNDERSTANDING THE DECLARATIVE APPROACH TO SCALING
+Horizontally scaling pods in Kubernetes is a matter of stating your desire: “I want to
+have x number of instances running.” You’re not telling Kubernetes what or how to do
+it. You’re just specifying the desired state. 
+ This declarative approach makes interacting with a Kubernetes cluster easy. Imag-
+ine if you had to manually determine the current number of running instances and
+then explicitly tell Kubernetes how many additional instances to run. That’s more
+work and is much more error-prone. Changing a simple number is much easier, and
+in chapter 15, you’ll learn that even that can be done by Kubernetes itself if you
+enable horizontal pod auto-scaling. 
+4.2.7
+Deleting a ReplicationController
+When you delete a ReplicationController through kubectl delete, the pods are also
+deleted. But because pods created by a ReplicationController aren’t an integral part
+of the ReplicationController, and are only managed by it, you can delete only the
+ReplicationController and leave the pods running, as shown in figure 4.7.
+ This may be useful when you initially have a set of pods managed by a Replication-
+Controller, and then decide to replace the ReplicationController with a ReplicaSet,
+for example (you’ll learn about them next.). You can do this without affecting the
+Change the number 3 
+to number 10 in 
+this line.
+ 
+",[],"[{'entity': 'ReplicationController', 'description': 'A Kubernetes resource that manages a set of replicas (pods) based on a specified desired state.', 'category': 'software'}, {'entity': 'kubectl', 'description': 'The command-line tool for interacting with a Kubernetes cluster.', 'category': 'software'}, {'entity': 'ReplicaSet', 'description': 'A Kubernetes resource that manages a set of replicas (pods) based on a specified desired state, similar to ReplicationController but more flexible.', 'category': 'software'}, {'entity': 'spec.replicas', 'description': ""The field in the ReplicationController's definition that specifies the desired number of replicas."", 'category': 'software'}, {'entity': 'selector.app', 'description': ""The field in the ReplicationController's definition that specifies the label selector for the pods managed by the controller."", 'category': 'software'}, {'entity': 'pods', 'description': 'A Kubernetes resource that represents a running instance of an application.', 'category': 'software'}, {'entity': ""ReplicationController's definition"", 'description': ""The configuration file that defines the ReplicationController's desired state and behavior."", 'category': 'software'}, {'entity': 'desired state', 'description': 'The specified number of replicas or other settings that define how a Kubernetes resource should behave.', 'category': 'software'}, {'entity': 'kubectl delete', 'description': 'The command used to delete a Kubernetes resource, such as a ReplicationController.', 'category': 'software'}, {'entity': 'horizontal pod auto-scaling', 'description': 'A feature in Kubernetes that automatically scales the number of replicas based on demand or other conditions.', 'category': 'software'}]",,[],"A ReplicationController is updated when scaled up or down, and it immediately scales the number of pods to the desired state. Scaling is a matter of stating the desired state, not telling Kubernetes how to do it. Declarative approach makes interacting with a Kubernetes cluster easy. When deleting a ReplicationController through kubectl delete, the pods are also deleted unless managed by another controller.","[{'highlight': 'When you save the file and close the editor, the ReplicationController is updated and it immediately scales the number of pods to 10:'}, {'highlight': ""You're not telling Kubernetes what or how to do it. You're just specifying the desired state.""}, {'highlight': 'When you delete a ReplicationController through kubectl delete, the pods are also deleted.'}, {'highlight': 'You can delete only the ReplicationController and leave the pods running,'}, {'highlight': 'Horizontally scaling pods in Kubernetes is a matter of stating your desire: “I want to have x number of instances running.”'}]"
+47,136,0,[],"104
+CHAPTER 4
+Replication and other controllers: deploying managed pods
+pods and keep them running without interruption while you replace the Replication-
+Controller that manages them. 
+ When deleting a ReplicationController with kubectl delete, you can keep its
+pods running by passing the --cascade=false option to the command. Try that now:
+$ kubectl delete rc kubia --cascade=false
+replicationcontroller ""kubia"" deleted
+You’ve deleted the ReplicationController so the pods are on their own. They are no
+longer managed. But you can always create a new ReplicationController with the
+proper label selector and make them managed again.
+4.3
+Using ReplicaSets instead of ReplicationControllers
+Initially, ReplicationControllers were the only Kubernetes component for replicating
+pods and rescheduling them when nodes failed. Later, a similar resource called a
+ReplicaSet was introduced. It’s a new generation of ReplicationController and
+replaces it completely (ReplicationControllers will eventually be deprecated). 
+ You could have started this chapter by creating a ReplicaSet instead of a Replication-
+Controller, but I felt it would be a good idea to start with what was initially available in
+Kubernetes. Plus, you’ll still see ReplicationControllers used in the wild, so it’s good
+for you to know about them. That said, you should always create ReplicaSets instead
+of ReplicationControllers from now on. They’re almost identical, so you shouldn’t
+have any trouble using them instead. 
+Before the RC deletion
+After the RC deletion
+Delete RC
+Pod:
+kubia-q3vkg
+Pod:
+kubia-53thy
+Pod:
+kubia-k0xz6
+Pod:
+kubia-q3vkg
+Pod:
+kubia-53thy
+Pod:
+kubia-k0xz6
+ReplicationController: kubia
+Replicas: 3
+Selector: app=kubia
+app: kubia
+app: kubia
+app: kubia
+app: kubia
+app: kubia
+app: kubia
+Figure 4.7
+Deleting a replication controller with --cascade=false leaves pods unmanaged.
+ 
+",[],"[{'entity': 'ReplicationController', 'description': 'A Kubernetes component for replicating pods and rescheduling them when nodes failed.', 'category': 'software'}, {'entity': 'kubectl delete', 'description': 'A command used to delete a ReplicationController with the --cascade=false option.', 'category': 'command'}, {'entity': '--cascade=false', 'description': 'An option passed to the kubectl delete command to keep pods running when deleting a ReplicationController.', 'category': 'option'}, {'entity': 'ReplicaSet', 'description': 'A new generation of ReplicationController that replaces it completely.', 'category': 'software'}, {'entity': 'Pod', 'description': 'A Kubernetes object that represents a container running an application.', 'category': 'container'}, {'entity': 'kubia', 'description': 'The name of the ReplicationController and ReplicaSet.', 'category': 'resource'}, {'entity': 'Replicas', 'description': 'The number of replicas in a ReplicationController or ReplicaSet.', 'category': 'property'}, {'entity': 'Selector', 'description': 'A label selector used to identify pods managed by a ReplicationController or ReplicaSet.', 'category': 'property'}, {'entity': 'app=kubia', 'description': 'The label selector value for the kubia application.', 'category': 'label'}]",,[],"ReplicationControllers manage pods and keep them running without interruption, but can be deleted while keeping the pods running using the --cascade=false option. ReplicaSets are a newer resource that replaces ReplicationControllers completely and should be used instead. Deleting a ReplicationController leaves its pods unmanaged, but a new one can be created to manage them again.","[{'highlight': ""You can keep ReplicationController's pods running by passing the --cascade=false option to the kubectl delete command.""}, {'highlight': 'ReplicaSets replace ReplicationControllers completely and should be used instead from now on.'}, {'highlight': 'Deleting a ReplicationController with --cascade=false leaves its pods unmanaged.'}, {'highlight': 'You can create a new ReplicationController with a proper label selector to manage the previously unmanaged pods.'}, {'highlight': 'ReplicaSets are almost identical to ReplicationControllers and should be used instead for replicating pods and rescheduling them when nodes fail.'}]"
+48,137,0,[],"105
+Using ReplicaSets instead of ReplicationControllers
+ You usually won’t create them directly, but instead have them created automati-
+cally when you create the higher-level Deployment resource, which you’ll learn about
+in chapter 9. In any case, you should understand ReplicaSets, so let’s see how they dif-
+fer from ReplicationControllers.
+4.3.1
+Comparing a ReplicaSet to a ReplicationController
+A ReplicaSet behaves exactly like a ReplicationController, but it has more expressive
+pod selectors. Whereas a ReplicationController’s label selector only allows matching
+pods that include a certain label, a ReplicaSet’s selector also allows matching pods
+that lack a certain label or pods that include a certain label key, regardless of
+its value.
+ Also, for example, a single ReplicationController can’t match pods with the label
+env=production and those with the label env=devel at the same time. It can only match
+either pods with the env=production label or pods with the env=devel label. But a sin-
+gle ReplicaSet can match both sets of pods and treat them as a single group. 
+ Similarly, a ReplicationController can’t match pods based merely on the presence
+of a label key, regardless of its value, whereas a ReplicaSet can. For example, a Replica-
+Set can match all pods that include a label with the key env, whatever its actual value is
+(you can think of it as env=*).
+4.3.2
+Defining a ReplicaSet
+You’re going to create a ReplicaSet now to see how the orphaned pods that were cre-
+ated by your ReplicationController and then abandoned earlier can now be adopted
+by a ReplicaSet. First, you’ll rewrite your ReplicationController into a ReplicaSet by
+creating a new file called kubia-replicaset.yaml with the contents in the following
+listing.
+apiVersion: apps/v1beta2      
+kind: ReplicaSet                    
+metadata:
+  name: kubia
+spec:
+  replicas: 3
+  selector:
+    matchLabels:                 
+      app: kubia                 
+  template:                        
+    metadata:                      
+      labels:                      
+        app: kubia                 
+    spec:                          
+      containers:                  
+      - name: kubia                
+        image: luksa/kubia         
+Listing 4.8
+A YAML definition of a ReplicaSet: kubia-replicaset.yaml
+ReplicaSets aren’t part of the v1 
+API, but belong to the apps API 
+group and version v1beta2.
+You’re using the simpler matchLabels 
+selector here, which is much like a 
+ReplicationController’s selector.
+The template is 
+the same as in the 
+ReplicationController.
+ 
+",[],"[{'entity': 'ReplicaSets', 'description': 'A higher-level resource that manages replica sets', 'category': 'software'}, {'entity': 'ReplicationControllers', 'description': 'An older resource for managing replicas', 'category': 'software'}, {'entity': 'pod selectors', 'description': 'Selectors used to match pods in a ReplicaSet or ReplicationController', 'category': 'software'}, {'entity': 'labels', 'description': 'Key-value pairs attached to pods, used for matching and selection', 'category': 'software'}, {'entity': 'ReplicaSet', 'description': 'A resource that manages replica sets with more expressive pod selectors', 'category': 'software'}, {'entity': 'Deployment', 'description': 'A higher-level resource that creates ReplicaSets automatically', 'category': 'software'}, {'entity': 'apiVersion', 'description': 'The version of the API used to define a resource', 'category': 'software'}, {'entity': 'kind', 'description': 'The type of resource being defined (e.g. ReplicaSet, Deployment)', 'category': 'software'}, {'entity': 'metadata', 'description': 'Information about the resource itself, such as its name and labels', 'category': 'software'}, {'entity': 'spec', 'description': 'The specification for the resource, including its replicas and selector', 'category': 'software'}, {'entity': 'replicas', 'description': 'The number of replicas to maintain in a ReplicaSet or Deployment', 'category': 'software'}, {'entity': 'selector', 'description': 'A selector used to match pods in a ReplicaSet or ReplicationController', 'category': 'software'}, {'entity': 'matchLabels', 'description': 'A selector that matches pods with specific labels', 'category': 'software'}, {'entity': 'template', 'description': 'The template for the pods created by a ReplicaSet or Deployment', 'category': 'software'}, {'entity': 'metadata.labels', 'description': 'Labels attached to the pod, used for matching and selection', 'category': 'software'}, {'entity': 'spec.containers', 'description': 'A list of containers in the pod template', 'category': 'software'}, {'entity': 'containers.name', 'description': 'The name of a container in the pod template', 'category': 'software'}, {'entity': 'image', 'description': 'The image used to create a container', 'category': 'software'}]",,[],"ReplicaSets are used instead of ReplicationControllers to manage replicas. A ReplicaSet behaves exactly like a ReplicationController but with more expressive pod selectors, allowing matching pods based on label presence or absence, and not just specific values. This enables a single ReplicaSet to match multiple sets of pods and treat them as a single group. The process of creating a ReplicaSet involves defining its YAML configuration, including the API version, kind, metadata, selector, replicas, template, and containers, which can be used to adopt orphaned pods created by a ReplicationController.","[{'highlight': 'ReplicaSets behave exactly like ReplicationControllers but have more expressive pod selectors.'}, {'highlight': 'A single ReplicaSet can match multiple sets of pods with different labels and treat them as a single group.'}, {'highlight': 'ReplicaSets can match pods based on the presence of a label key, regardless of its value, whereas ReplicationControllers cannot.'}, {'highlight': 'ReplicaSets are part of the apps API group and version v1beta2, not the v1 API.'}, {'highlight': 'The template in a ReplicaSet is the same as in a ReplicationController.'}]"
+49,138,0,[],"106
+CHAPTER 4
+Replication and other controllers: deploying managed pods
+The first thing to note is that ReplicaSets aren’t part of the v1 API, so you need to
+ensure you specify the proper apiVersion when creating the resource. You’re creating a
+resource of type ReplicaSet which has much the same contents as the Replication-
+Controller you created earlier. 
+ The only difference is in the selector. Instead of listing labels the pods need to
+have directly under the selector property, you’re specifying them under selector
+.matchLabels. This is the simpler (and less expressive) way of defining label selectors
+in a ReplicaSet. Later, you’ll look at the more expressive option, as well.
+Because you still have three pods matching the app=kubia selector running from ear-
+lier, creating this ReplicaSet will not cause any new pods to be created. The ReplicaSet
+will take those existing three pods under its wing. 
+4.3.3
+Creating and examining a ReplicaSet
+Create the ReplicaSet from the YAML file with the kubectl create command. After
+that, you can examine the ReplicaSet with kubectl get and kubectl describe:
+$ kubectl get rs
+NAME      DESIRED   CURRENT   READY     AGE
+kubia     3         3         3         3s
+TIP
+Use rs shorthand, which stands for replicaset.
+$ kubectl describe rs
+Name:           kubia
+Namespace:      default
+Selector:       app=kubia
+Labels:         app=kubia
+Annotations:    <none>
+Replicas:       3 current / 3 desired
+Pods Status:    3 Running / 0 Waiting / 0 Succeeded / 0 Failed
+Pod Template:
+  Labels:       app=kubia
+About the API version attribute
+This is your first opportunity to see that the apiVersion property specifies two things:
+The API group (which is apps in this case)
+The actual API version (v1beta2)
+You’ll see throughout the book that certain Kubernetes resources are in what’s called
+the core API group, which doesn’t need to be specified in the apiVersion field (you
+just specify the version—for example, you’ve been using apiVersion: v1 when
+defining Pod resources). Other resources, which were introduced in later Kubernetes
+versions, are categorized into several API groups. Look at the inside of the book’s
+covers to see all resources and their respective API groups.
+ 
+",[],"[{'entity': 'ReplicaSets', 'description': 'A resource that ensures a specified number of replicas (pods) are running at any given time.', 'category': 'software'}, {'entity': 'apiVersion', 'description': 'Specifies the API group and version for a Kubernetes resource.', 'category': 'software'}, {'entity': 'Replication-Controller', 'description': 'A deprecated resource that was used to manage replicas (pods) in earlier versions of Kubernetes.', 'category': 'software'}, {'entity': 'selector.matchLabels', 'description': 'A way to define label selectors for a ReplicaSet, specifying the labels directly under the selector property.', 'category': 'software'}, {'entity': 'kubectl create', 'description': 'A command used to create a Kubernetes resource from a YAML file.', 'category': 'command'}, {'entity': 'kubectl get', 'description': 'A command used to retrieve information about a Kubernetes resource.', 'category': 'command'}, {'entity': 'kubectl describe', 'description': 'A command used to display detailed information about a Kubernetes resource.', 'category': 'command'}, {'entity': 'rs', 'description': 'A shorthand for the replicaset resource type.', 'category': 'software'}, {'entity': 'Pods Status', 'description': 'A field that displays the status of pods managed by a ReplicaSet, including running, waiting, succeeded, and failed states.', 'category': 'software'}, {'entity': 'apiGroup', 'description': 'The group name for a Kubernetes API resource.', 'category': 'software'}, {'entity': 'v1beta2', 'description': 'A specific version of the apps API group.', 'category': 'software'}, {'entity': 'core API group', 'description': 'A category of Kubernetes resources that do not require an explicit API group in their apiVersion field.', 'category': 'software'}]",,[],"ReplicaSets aren't part of the v1 API, so specify the proper apiVersion when creating a resource. To create a ReplicaSet, use kubectl create command with YAML file, then examine it with kubectl get and describe commands. The apiVersion property specifies the API group (apps) and actual API version (v1beta2), which categorizes Kubernetes resources into core and other groups.","[{'highlight': 'ReplicaSets aren’t part of the v1 API, so you need to ensure you specify the proper apiVersion when creating the resource.'}, {'highlight': 'The ReplicaSet will take those existing three pods under its wing.'}, {'highlight': 'You can examine the ReplicaSet with kubectl get and kubectl describe: $ kubectl get rs'}, {'highlight': 'The apiVersion property specifies two things: The API group (which is apps in this case) and the actual API version (v1beta2)'}, {'highlight': 'Certain Kubernetes resources are in what’s called the core API group, which doesn’t need to be specified in the apiVersion field'}]"

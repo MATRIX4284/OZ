@@ -1,0 +1,507 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+290,379,0,[],"347
+Understanding authentication
+plugins, so they can each examine the request and try to determine who’s sending the
+request. The first plugin that can extract that information from the request returns
+the username, user ID, and the groups the client belongs to back to the API server
+core. The API server stops invoking the remaining authentication plugins and contin-
+ues onto the authorization phase. 
+ Several authentication plugins are available. They obtain the identity of the client
+using the following methods:
+From the client certificate
+From an authentication token passed in an HTTP header
+Basic HTTP authentication
+Others
+The authentication plugins are enabled through command-line options when starting
+the API server. 
+12.1.1 Users and groups
+An authentication plugin returns the username and group(s) of the authenticated
+user. Kubernetes doesn’t store that information anywhere; it uses it to verify whether
+the user is authorized to perform an action or not.
+UNDERSTANDING USERS
+Kubernetes distinguishes between two kinds of clients connecting to the API server:
+Actual humans (users)
+Pods (more specifically, applications running inside them)
+Both these types of clients are authenticated using the aforementioned authentication
+plugins. Users are meant to be managed by an external system, such as a Single Sign
+On (SSO) system, but the pods use a mechanism called service accounts, which are cre-
+ated and stored in the cluster as ServiceAccount resources. In contrast, no resource
+represents user accounts, which means you can’t create, update, or delete users through
+the API server. 
+ We won’t go into any details of how to manage users, but we will explore Service-
+Accounts in detail, because they’re essential for running pods. For more informa-
+tion on how to configure the cluster for authentication of human users, cluster
+administrators should refer to the Kubernetes Cluster Administrator guide at http:/
+/
+kubernetes.io/docs/admin.
+UNDERSTANDING GROUPS
+Both human users and ServiceAccounts can belong to one or more groups. We’ve said
+that the authentication plugin returns groups along with the username and user ID.
+Groups are used to grant permissions to several users at once, instead of having to
+grant them to individual users. 
+ 
+",[],"[{'entity': 'authentication plugins', 'description': ""plugins that examine the request and try to determine who's sending the request"", 'category': 'software'}, {'entity': 'API server core', 'description': 'the central part of the API server that receives requests from authentication plugins', 'category': 'application'}, {'entity': 'client certificate', 'description': 'a method used by authentication plugins to obtain the identity of the client', 'category': 'hardware'}, {'entity': 'authentication token', 'description': 'a method used by authentication plugins to obtain the identity of the client through an HTTP header', 'category': 'software'}, {'entity': 'Basic HTTP authentication', 'description': 'a method used by authentication plugins to obtain the identity of the client', 'category': 'software'}, {'entity': 'users', 'description': 'actual humans connecting to the API server', 'category': 'application'}, {'entity': 'pods', 'description': 'applications running inside them that connect to the API server', 'category': 'container'}, {'entity': 'service accounts', 'description': 'a mechanism used by pods to authenticate themselves', 'category': 'software'}, {'entity': 'ServiceAccount resources', 'description': 'resources created and stored in the cluster for service accounts', 'category': 'database'}, {'entity': 'groups', 'description': 'used to grant permissions to several users at once', 'category': 'application'}]","[{'source_entity': 'API server core', 'description': 'verifies client certificate', 'destination_entity': 'client certificate'}, {'source_entity': 'API server core', 'description': 'authenticates users through Basic HTTP authentication', 'destination_entity': 'users'}, {'source_entity': 'API server core', 'description': 'uses service accounts for authentication', 'destination_entity': 'service accounts'}, {'source_entity': 'authentication plugins', 'description': 'provides authentication token to users', 'destination_entity': 'users'}, {'source_entity': 'API server core', 'description': 'manages ServiceAccount resources', 'destination_entity': 'ServiceAccount resources'}, {'source_entity': 'users', 'description': 'uses authentication token for API access', 'destination_entity': 'authentication token'}]","['[\n  {\n    ""source"": ""API server core"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""verifies client certificate"",\n    ""summary_er"": ""The API server core verifies client certificates to ensure secure communication with pods.""\n  }\n]', '[\n  {\n    ""source"": ""API server core"",\n    ""destination"": ""users"",\n    ""relation_description"": ""authenticates users through Basic HTTP authentication"",\n    ""summary_er"": ""The API server core authenticates users using Basic HTTP authentication, ensuring secure access to the system.""\n  }\n]', '[\n  {\n    ""source"": ""API server core"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses service accounts for authentication"",\n    ""summary_er"": ""The API server core utilizes service accounts to authenticate pods, ensuring secure access and authorization.""\n  }\n]', '[\n  {\n    ""source"": ""authentication plugins"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides authentication token to users"",\n    ""summary_er"": ""Authentication plugins provide a pod with an authentication token, enabling users to access the pod\'s services.""\n  }\n]', '[\n  {\n    ""source"": ""API server core"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages ServiceAccount resources"",\n    ""summary_er"": ""The API server core manages ServiceAccount resources for a pod, ensuring secure authentication and authorization.""\n  }\n]', '[\n  {\n    ""source"": ""users"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses authentication token for API access"",\n    ""summary_er"": ""Users utilize an authentication token to access APIs within a pod, ensuring secure and authorized interactions.""\n  }\n]']","Kubernetes uses authentication plugins to determine who's sending a request by examining the request and returning the username, user ID, and groups to the API server core. The API server stops invoking remaining plugins and continues onto authorization. Authentication plugins can obtain client identity using methods such as client certificate, authentication token, or basic HTTP authentication. Kubernetes distinguishes between users (actual humans) and pods (applications running inside them), with users managed by external systems like SSO and pods using service accounts created in the cluster.","[{'highlight': 'The API server stops invoking the remaining authentication plugins and continues onto the authorization phase.'}, {'highlight': 'Several authentication plugins are available, including client certificate, authentication token, Basic HTTP authentication, and others.'}, {'highlight': 'Kubernetes distinguishes between two kinds of clients connecting to the API server: actual humans (users) and pods (applications running inside them).'}, {'highlight': 'Users are managed by an external system, such as a Single Sign On (SSO) system, while pods use service accounts created and stored in the cluster.'}, {'highlight': 'Groups are used to grant permissions to several users at once, instead of having to grant them to individual users.'}]"
+291,380,0,[],"348
+CHAPTER 12
+Securing the Kubernetes API server
+ Groups returned by the plugin are nothing but strings, representing arbitrary
+group names, but built-in groups have special meaning:
+The system:unauthenticated group is used for requests where none of the
+authentication plugins could authenticate the client.
+The system:authenticated group is automatically assigned to a user who was
+authenticated successfully.
+The system:serviceaccounts group encompasses all ServiceAccounts in the
+system.
+The system:serviceaccounts:<namespace> includes all ServiceAccounts in a
+specific namespace.
+12.1.2 Introducing ServiceAccounts
+Let’s explore ServiceAccounts up close. You’ve already learned that the API server
+requires clients to authenticate themselves before they’re allowed to perform opera-
+tions on the server. And you’ve already seen how pods can authenticate by sending the
+contents of the file/var/run/secrets/kubernetes.io/serviceaccount/token, which
+is mounted into each container’s filesystem through a secret volume.
+ But what exactly does that file represent? Every pod is associated with a Service-
+Account, which represents the identity of the app running in the pod. The token file
+holds the ServiceAccount’s authentication token. When an app uses this token to con-
+nect to the API server, the authentication plugin authenticates the ServiceAccount
+and passes the ServiceAccount’s username back to the API server core. Service-
+Account usernames are formatted like this:
+system:serviceaccount:<namespace>:<service account name>
+The API server passes this username to the configured authorization plugins, which
+determine whether the action the app is trying to perform is allowed to be performed
+by the ServiceAccount.
+ ServiceAccounts are nothing more than a way for an application running inside a
+pod to authenticate itself with the API server. As already mentioned, applications do
+that by passing the ServiceAccount’s token in the request.
+UNDERSTANDING THE SERVICEACCOUNT RESOURCE
+ServiceAccounts are resources just like Pods, Secrets, ConfigMaps, and so on, and are
+scoped to individual namespaces. A default ServiceAccount is automatically created
+for each namespace (that’s the one your pods have used all along). 
+ You can list ServiceAccounts like you do other resources:
+$ kubectl get sa
+NAME      SECRETS   AGE
+default   1         1d
+NOTE
+The shorthand for serviceaccount is sa.
+ 
+",[],"[{'entity': 'Kubernetes API server', 'description': 'The main entry point for interacting with the Kubernetes cluster.', 'category': 'application'}, {'entity': 'groups', 'description': 'Strings representing arbitrary group names, but built-in groups have special meaning.', 'category': 'process'}, {'entity': 'system:unauthenticated group', 'description': 'Used for requests where none of the authentication plugins could authenticate the client.', 'category': 'group'}, {'entity': 'system:authenticated group', 'description': 'Automatically assigned to a user who was authenticated successfully.', 'category': 'group'}, {'entity': 'system:serviceaccounts group', 'description': 'Encompasses all ServiceAccounts in the system.', 'category': 'group'}, {'entity': 'ServiceAccount', 'description': 'Represents the identity of an app running in a pod, and is used for authentication with the API server.', 'category': 'resource'}, {'entity': 'token file', 'description': ""Holds the ServiceAccount's authentication token, which is mounted into each container's filesystem through a secret volume."", 'category': 'file'}, {'entity': 'ServiceAccount usernames', 'description': 'Formatted like system:serviceaccount:<namespace>:<service account name>, and are passed to the API server core for authorization.', 'category': 'string'}, {'entity': 'authorization plugins', 'description': 'Determine whether an action is allowed to be performed by a ServiceAccount.', 'category': 'process'}, {'entity': 'ServiceAccounts resource', 'description': 'A resource just like Pods, Secrets, ConfigMaps, and so on, scoped to individual namespaces.', 'category': 'resource'}, {'entity': 'default ServiceAccount', 'description': 'Automatically created for each namespace, and is used by pods for authentication with the API server.', 'category': 'resource'}, {'entity': '$ kubectl get sa', 'description': 'A command used to list ServiceAccounts in a namespace.', 'category': 'command'}]","[{'source_entity': '""ServiceAccounts resource""', 'description': 'provides', 'destination_entity': '""$ kubectl get sa""'}, {'source_entity': '""ServiceAccount usernames""', 'description': 'contains', 'destination_entity': '""ServiceAccount""'}, {'source_entity': '""system:authenticated group""', 'description': 'grants', 'destination_entity': '""ServiceAccounts resource""'}, {'source_entity': '""system:unauthenticated group""', 'description': 'denies', 'destination_entity': '""ServiceAccounts resource""'}, {'source_entity': '""Kubernetes API server""', 'description': 'uses', 'destination_entity': '""$ kubectl get sa""'}, {'source_entity': '""default ServiceAccount""', 'description': 'is', 'destination_entity': '""ServiceAccount""'}, {'source_entity': '""token file""', 'description': 'holds', 'destination_entity': '""ServiceAccount usernames""'}, {'source_entity': '""groups""', 'description': 'includes', 'destination_entity': '""system:serviceaccounts group""'}, {'source_entity': '""$ kubectl get sa""', 'description': 'queries', 'destination_entity': '""ServiceAccounts resource""'}]","['[\n  {\n    ""source"": ""ServiceAccounts resource"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""A ServiceAccount resource provides an identity for a pod to authenticate with the Kubernetes API server.""\n  }\n]', '[\n  {\n    ""source"": ""ServiceAccount"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""A ServiceAccount contains a reference to a pod, allowing it to access credentials and secrets within that pod.""\n  }\n]', '[\n  {\n    ""source"": ""system:authenticated group"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""grants"",\n    ""summary_er"": ""The system-authenticated group grants access to pods, allowing them to utilize services and resources.""\n  }\n]', '[\n  {\n    ""source"": ""system:unauthenticated group"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""denies"",\n    ""summary_er"": ""The system denies access to unauthenticated groups, preventing unauthorized pods from accessing resources.""\n  },\n  {\n    ""source"": ""ServiceAccounts resource"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""access"",\n    ""summary_er"": ""Service Accounts provide access to pods, enabling them to utilize resources and perform tasks.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The Kubernetes API server interacts with pods to manage containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""default ServiceAccount"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is"",\n    ""summary_er"": ""The default ServiceAccount provides an identity for pods to authenticate with the API server.""\n  }\n]', '[\n  {\n    ""source"": ""token file"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""holds"",\n    ""summary_er"": ""A token file contains a secret that holds authentication information for a pod to access Kubernetes resources.""\n  },\n  {\n    ""source"": ""ServiceAccount usernames"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""holds"",\n    ""summary_er"": ""A ServiceAccount username is stored in a token file, which holds the authentication credentials for a pod to interact with Kubernetes services.""\n  }\n]', '[\n  {\n    ""source"": ""groups"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""includes"",\n    ""summary_er"": ""The \'groups\' entity includes a \'pod\' entity, which represents a containerized application in Kubernetes.""\n  },\n  {\n    ""source"": ""system:serviceaccounts group"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""includes"",\n    ""summary_er"": ""The \'system:serviceaccounts group\' entity includes a \'pod\' entity, which is a Kubernetes resource that runs an application.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""queries"",\n    ""summary_er"": ""The kubectl command retrieves information about ServiceAccount resources, which are used to authenticate pods.""\n  },\n  {\n    ""source"": ""ServiceAccounts resource"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""authenticates"",\n    ""summary_er"": ""ServiceAccount resources provide authentication for pods to access cluster resources.""\n  }\n]']","ServiceAccounts are identities of apps running in pods, allowing them to authenticate with the API server using a token. The API server passes the username to authorization plugins, which determine if actions can be performed. ServiceAccounts are resources scoped to individual namespaces and can be listed like other Kubernetes resources.","[{'highlight': 'Groups returned by the plugin are nothing but strings, representing arbitrary group names, but built-in groups have special meaning:'}, {'highlight': 'system:unauthenticated group is used for requests where none of the authentication plugins could authenticate the client.'}, {'highlight': 'ServiceAccounts are resources just like Pods, Secrets, ConfigMaps, and so on, and are scoped to individual namespaces.'}, {'highlight': 'A default ServiceAccount is automatically created for each namespace (that’s the one your pods have used all along).'}, {'highlight': 'ServiceAccount usernames are formatted like this: system:serviceaccount:<namespace>:<service account name>'}]"
+292,381,0,[],"349
+Understanding authentication
+As you can see, the current namespace only contains the default ServiceAccount. Addi-
+tional ServiceAccounts can be added when required. Each pod is associated with exactly
+one ServiceAccount, but multiple pods can use the same ServiceAccount. As you can
+see in figure 12.1, a pod can only use a ServiceAccount from the same namespace.
+UNDERSTANDING HOW SERVICEACCOUNTS TIE INTO AUTHORIZATION
+You can assign a ServiceAccount to a pod by specifying the account’s name in the pod
+manifest. If you don’t assign it explicitly, the pod will use the default ServiceAccount
+in the namespace.
+ By assigning different ServiceAccounts to pods, you can control which resources
+each pod has access to. When a request bearing the authentication token is received
+by the API server, the server uses the token to authenticate the client sending the
+request and then determines whether or not the related ServiceAccount is allowed to
+perform the requested operation. The API server obtains this information from the
+system-wide authorization plugin configured by the cluster administrator. One of
+the available authorization plugins is the role-based access control (RBAC) plugin,
+which is discussed later in this chapter. From Kubernetes version 1.6 on, the RBAC
+plugin is the plugin most clusters should use.
+12.1.3 Creating ServiceAccounts
+We’ve said every namespace contains its own default ServiceAccount, but additional
+ones can be created if necessary. But why should you bother with creating Service-
+Accounts instead of using the default one for all your pods? 
+ The obvious reason is cluster security. Pods that don’t need to read any cluster
+metadata should run under a constrained account that doesn’t allow them to retrieve
+or modify any resources deployed in the cluster. Pods that need to retrieve resource
+metadata should run under a ServiceAccount that only allows reading those objects’
+metadata, whereas pods that need to modify those objects should run under their own
+ServiceAccount allowing modifications of API objects. 
+Pod
+Namespace: foo
+Service-
+Account:
+default
+Pod
+Pod
+Namespace: baz
+Pod
+Namespace: bar
+Pod
+Pod
+Not possible
+Service-
+Account:
+default
+Another
+Service-
+Account
+Multiple pods using the
+same ServiceAccount
+Figure 12.1
+Each pod is associated with a single ServiceAccount in the pod’s namespace.
+ 
+","[Empty DataFrame
+Columns: [Namespace: bar
+Pod Pod Pod
+Service- Another
+Account: Service-
+default Account, Col1, Namespace: baz
+Pod]
+Index: []]","[{'entity': 'ServiceAccount', 'description': 'A ServiceAccount represents an identity for a pod to authenticate and authorize requests.', 'category': 'software'}, {'entity': 'Namespace', 'description': 'A Namespace is a logical grouping of resources within a Kubernetes cluster.', 'category': 'software'}, {'entity': 'Pod', 'description': 'A Pod is the basic execution unit in a Kubernetes cluster, representing a single instance of an application.', 'category': 'software'}, {'entity': 'API server', 'description': 'The API server is the central component of the Kubernetes control plane, responsible for managing and controlling resources within the cluster.', 'category': 'software'}, {'entity': 'RBAC plugin', 'description': 'Role-Based Access Control (RBAC) is a plugin used by the Kubernetes API server to manage authorization and access control within the cluster.', 'category': 'software'}, {'entity': 'ServiceAccount', 'description': 'A ServiceAccount represents an identity for a pod to authenticate and authorize requests.', 'category': 'software'}, {'entity': 'cluster administrator', 'description': 'The cluster administrator is responsible for configuring and managing the Kubernetes cluster, including setting up authorization plugins.', 'category': 'hardware'}]","[{'source_entity': 'cluster administrator', 'description': 'configures', 'destination_entity': 'Namespace'}, {'source_entity': 'RBAC plugin', 'description': 'enforces', 'destination_entity': 'access control'}, {'source_entity': 'cluster administrator', 'description': 'manages', 'destination_entity': 'ServiceAccount'}, {'source_entity': 'API server', 'description': 'communicates with', 'destination_entity': 'Pod'}, {'source_entity': 'RBAC plugin', 'description': 'authenticates', 'destination_entity': 'cluster administrator'}, {'source_entity': 'Namespace', 'description': 'restricts', 'destination_entity': 'access to resources'}]","['[\n  {\n    ""source"": ""cluster administrator"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures"",\n    ""summary_er"": ""A cluster administrator sets up and manages a pod\'s configuration, ensuring it meets the required specifications.""\n  }\n]', '[\n  {\n    ""source"": ""RBAC plugin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""The RBAC plugin ensures that pods adhere to defined access control policies, regulating user interactions and data access within the Kubernetes environment.""\n  }\n]', '[\n  {\n    ""source"": ""cluster administrator"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The cluster administrator has control over the pod, managing its lifecycle and ensuring it runs smoothly.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The API server sends requests to the Pod for processing.""\n  }\n]', '[\n  {\n    ""source"": ""RBAC plugin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""authenticates"",\n    ""summary_er"": ""The RBAC plugin verifies the identity of a user to authenticate them, allowing access to cluster resources as a cluster administrator.""\n  }\n]', '[\n  {\n    ""source"": ""Namespace"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""restricts"",\n    ""summary_er"": ""A namespace restricts a pod\'s access to resources, controlling what resources are available to the pod.""\n  }\n]']","Kubernetes authentication works by assigning ServiceAccounts to pods, which determine resource access. Each namespace has a default ServiceAccount, but additional ones can be created for cluster security reasons, such as running pods under constrained accounts or granting permissions to retrieve or modify resources.","[{'highlight': 'Each pod is associated with exactly one ServiceAccount, but multiple pods can use the same ServiceAccount.'}, {'highlight': ""You can assign a ServiceAccount to a pod by specifying the account's name in the pod manifest.""}, {'highlight': 'By assigning different ServiceAccounts to pods, you can control which resources each pod has access to.'}, {'highlight': 'The API server obtains this information from the system-wide authorization plugin configured by the cluster administrator.'}, {'highlight': ""Pods that need to retrieve resource metadata should run under a ServiceAccount that only allows reading those objects' metadata.""}]"
+293,382,0,[],"350
+CHAPTER 12
+Securing the Kubernetes API server
+ Let’s see how you can create additional ServiceAccounts, how they relate to Secrets,
+and how you can assign them to your pods.
+CREATING A SERVICEACCOUNT
+Creating a ServiceAccount is incredibly easy, thanks to the dedicated kubectl create
+serviceaccount command. Let’s create a new ServiceAccount called foo:
+$ kubectl create serviceaccount foo
+serviceaccount ""foo"" created
+Now, you can inspect the ServiceAccount with the describe command, as shown in
+the following listing.
+$ kubectl describe sa foo
+Name:               foo
+Namespace:          default
+Labels:             <none>
+Image pull secrets: <none>             
+Mountable secrets:  foo-token-qzq7j    
+Tokens:             foo-token-qzq7j    
+You can see that a custom token Secret has been created and associated with the
+ServiceAccount. If you look at the Secret’s data with kubectl describe secret foo-
+token-qzq7j, you’ll see it contains the same items (the CA certificate, namespace, and
+token) as the default ServiceAccount’s token does (the token itself will obviously be
+different), as shown in the following listing.
+$ kubectl describe secret foo-token-qzq7j
+...
+ca.crt:         1066 bytes
+namespace:      7 bytes
+token:          eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+NOTE
+You’ve probably heard of JSON Web Tokens (JWT). The authentica-
+tion tokens used in ServiceAccounts are JWT tokens.
+UNDERSTANDING A SERVICEACCOUNT’S MOUNTABLE SECRETS
+The token is shown in the Mountable secrets list when you inspect a ServiceAccount
+with kubectl describe. Let me explain what that list represents. In chapter 7 you
+learned how to create Secrets and mount them inside a pod. By default, a pod can
+mount any Secret it wants. But the pod’s ServiceAccount can be configured to only
+Listing 12.1
+Inspecting a ServiceAccount with kubectl describe
+Listing 12.2
+Inspecting the custom ServiceAccount’s Secret
+These will be added 
+automatically to all pods 
+using this ServiceAccount.
+Pods using this ServiceAccount 
+can only mount these Secrets if 
+mountable Secrets are enforced.
+Authentication token(s). 
+The first one is mounted 
+inside the container.
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command-line tool for interacting with Kubernetes', 'category': 'software'}, {'entity': 'ServiceAccount', 'description': 'an identity used by pods to authenticate with the Kubernetes API server', 'category': 'application'}, {'entity': 'foo', 'description': 'name of a ServiceAccount', 'category': 'application'}, {'entity': 'serviceaccount', 'description': 'command for creating a new ServiceAccount', 'category': 'software'}, {'entity': 'describe', 'description': 'command for displaying detailed information about an object in Kubernetes', 'category': 'software'}, {'entity': 'sa', 'description': 'abbreviation for ServiceAccount', 'category': 'application'}, {'entity': 'foo-token-qzq7j', 'description': 'token Secret associated with the foo ServiceAccount', 'category': 'secret'}, {'entity': 'JSON Web Tokens (JWT)', 'description': 'a type of authentication token used in ServiceAccounts', 'category': 'software'}, {'entity': 'ca.crt', 'description': 'CA certificate stored as a Secret', 'category': 'secret'}, {'entity': 'namespace', 'description': 'identifier for a Kubernetes namespace', 'category': 'application'}, {'entity': 'token', 'description': 'authentication token used by pods to authenticate with the Kubernetes API server', 'category': 'secret'}, {'entity': 'Mountable secrets', 'description': 'list of Secrets that can be mounted inside a pod using a ServiceAccount', 'category': 'application'}, {'entity': 'Secrets', 'description': 'objects in Kubernetes that store sensitive information, such as authentication tokens or passwords', 'category': 'database'}, {'entity': 'pods', 'description': 'lightweight and portable containers running in the Kubernetes cluster', 'category': 'container'}]","[{'source_entity': '""Secrets""', 'description': 'are used to store sensitive information', 'destination_entity': '""pods""'}, {'source_entity': '""serviceaccount""', 'description': 'is responsible for managing secrets', 'destination_entity': '""Secrets""'}, {'source_entity': '""kubectl""', 'description': 'uses serviceaccounts to authenticate and authorize access', 'destination_entity': '""ServiceAccount""'}, {'source_entity': '""token""', 'description': 'is used by serviceaccounts to authenticate with the API server', 'destination_entity': '""ServiceAccount""'}, {'source_entity': '""ca.crt""', 'description': 'is a certificate used for authentication and encryption', 'destination_entity': '""Secrets""'}, {'source_entity': '""sa""', 'description': 'is an instance of serviceaccount', 'destination_entity': '""ServiceAccount""'}, {'source_entity': '""foo-token-qzq7j""', 'description': 'is a token used by the serviceaccount to authenticate with the API server', 'destination_entity': '""token""'}, {'source_entity': '""Mountable secrets""', 'description': 'are used to store sensitive information that can be mounted into pods', 'destination_entity': '""Secrets""'}, {'source_entity': '""describe""', 'description': 'is a command used to display detailed information about an object', 'destination_entity': '""foo-token-qzq7j""'}]","['[\n  {\n    ""source"": ""Secrets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to store sensitive information"",\n    ""summary_er"": ""Secrets are used to securely store sensitive information for pods, ensuring confidentiality and integrity.""\n  }\n]', '[\n  {\n    ""source"": ""ServiceAccount"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is responsible for managing secrets"",\n    ""summary_er"": ""A ServiceAccount is a Kubernetes entity that manages secrets for Pods, ensuring secure access to sensitive data.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses serviceaccounts to authenticate and authorize access"",\n    ""summary_er"": ""Kubectl uses Service Accounts to authenticate and authorize pod access, ensuring secure interactions between users and cluster resources.""\n  }\n]', '[\n  {\n    ""source"": ""Token"",\n    ""destination"": ""ServiceAccount"",\n    ""relation_description"": ""is used by serviceaccounts to authenticate with the API server"",\n    ""summary_er"": ""A token is used by a ServiceAccount to authenticate with the Kubernetes API server.""\n  }\n]', '[\n  {\n    ""source"": ""ca.crt"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a certificate used for authentication and encryption"",\n    ""summary_er"": ""The \'ca.crt\' file is a digital certificate that authenticates and encrypts communication between the pod and the Kubernetes cluster.""\n  },\n  {\n    ""source"": ""Secrets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a container used for storing sensitive information"",\n    ""summary_er"": ""The \'Secrets\' container stores sensitive data, such as passwords or API keys, that are used by the pod to authenticate and communicate with other services.""\n  }\n]', '[\n  {\n    ""source"": ""serviceaccount"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is an instance of"",\n    ""summary_er"": ""A service account is a type of object that provides identity to pods, allowing them to authenticate with the Kubernetes API server.""\n  }\n]', '[\n  {\n    ""source"": ""serviceaccount"",\n    ""destination"": ""API server"",\n    ""relation_description"": ""authentication"",\n    ""summary_er"": ""Service account uses token to authenticate with API server.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""token"",\n    ""relation_description"": ""container runtime"",\n    ""summary_er"": ""Pod uses token as a container runtime component.""\n  }\n]', '[\n  {\n    ""source"": ""Mountable secrets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are used to store sensitive information that can be mounted into"",\n    ""summary_er"": ""Sensitive information stored in Mountable secrets can be mounted into pods.""\n  },\n  {\n    ""source"": ""Mountable secrets"",\n    ""destination"": ""Secrets"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""Mountable secrets are related to Secrets, which store sensitive information.""\n  }\n]', '[\n  {\n    ""source"": ""describe"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is a command used to display detailed information about an object"",\n    ""summary_er"": ""The describe command displays detailed info about a pod, providing insights into its configuration and properties.""\n  }\n]']","A ServiceAccount is created with `kubectl create serviceaccount` and can be inspected with `kubectl describe sa`. A custom token Secret is associated with the ServiceAccount, containing a CA certificate, namespace, and token. The token is a JSON Web Token (JWT) that can be mounted inside a pod if 'mountable Secrets' are enforced.","[{'highlight': 'You can create additional ServiceAccounts using the kubectl create serviceaccount command.'}, {'highlight': 'A custom token Secret has been created and associated with the ServiceAccount, containing a CA certificate, namespace, and token.'}, {'highlight': 'The authentication tokens used in ServiceAccounts are JSON Web Tokens (JWT).'}, {'highlight': ""A pod's ServiceAccount can be configured to only mount specific Secrets, known as Mountable secrets.""}, {'highlight': 'Pods using this ServiceAccount can only mount these Secrets if mountable Secrets are enforced.'}]"
+294,383,0,[],"351
+Understanding authentication
+allow the pod to mount Secrets that are listed as mountable Secrets on the Service-
+Account. To enable this feature, the ServiceAccount must contain the following anno-
+tation: kubernetes.io/enforce-mountable-secrets=""true"". 
+ If the ServiceAccount is annotated with this annotation, any pods using it can mount
+only the ServiceAccount’s mountable Secrets—they can’t use any other Secret.
+UNDERSTANDING A SERVICEACCOUNT’S IMAGE PULL SECRETS
+A ServiceAccount can also contain a list of image pull Secrets, which we examined in
+chapter 7. In case you don’t remember, they are Secrets that hold the credentials for
+pulling container images from a private image repository. 
+ The following listing shows an example of a ServiceAccount definition, which
+includes the image pull Secret you created in chapter 7.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: my-service-account
+imagePullSecrets:
+- name: my-dockerhub-secret
+A ServiceAccount’s image pull Secrets behave slightly differently than its mountable
+Secrets. Unlike mountable Secrets, they don’t determine which image pull Secrets a
+pod can use, but which ones are added automatically to all pods using the Service-
+Account. Adding image pull Secrets to a ServiceAccount saves you from having to add
+them to each pod individually. 
+12.1.4 Assigning a ServiceAccount to a pod
+After you create additional ServiceAccounts, you need to assign them to pods. This is
+done by setting the name of the ServiceAccount in the spec.serviceAccountName
+field in the pod definition. 
+NOTE
+A pod’s ServiceAccount must be set when creating the pod. It can’t be
+changed later. 
+CREATING A POD WHICH USES A CUSTOM SERVICEACCOUNT
+In chapter 8 you deployed a pod that ran a container based on the tutum/curl image
+and an ambassador container alongside it. You used it to explore the API server’s
+REST interface. The ambassador container ran the kubectl proxy process, which
+used the pod’s ServiceAccount’s token to authenticate with the API server. 
+ You can now modify the pod so it uses the foo ServiceAccount you created minutes
+ago. The next listing shows the pod definition.
+ 
+ 
+Listing 12.3
+ServiceAccount with an image pull Secret: sa-image-pull-secrets.yaml
+ 
+",[],"[{'entity': 'pod', 'description': 'A pod is a logical host for one or more containers.', 'category': 'container'}, {'entity': 'Secrets', 'description': 'Sensitive information, such as passwords or OAuth tokens, stored in Kubernetes.', 'category': 'database'}, {'entity': 'ServiceAccount', 'description': 'An object that represents a service account, which is an identity for a pod.', 'category': 'application'}, {'entity': 'image pull Secrets', 'description': 'Secrets that hold the credentials for pulling container images from a private image repository.', 'category': 'database'}, {'entity': 'mountable Secrets', 'description': 'Secrets that can be mounted by a pod, allowing it to access sensitive information.', 'category': 'database'}, {'entity': 'apiVersion', 'description': 'The API version of the Kubernetes resource being defined.', 'category': 'software'}, {'entity': 'kind', 'description': 'The type of Kubernetes resource being defined.', 'category': 'software'}, {'entity': 'metadata', 'description': 'Information about the Kubernetes resource, such as its name and namespace.', 'category': 'application'}, {'entity': 'imagePullSecrets', 'description': 'A list of image pull Secrets associated with a ServiceAccount.', 'category': 'database'}, {'entity': 'spec.serviceAccountName', 'description': 'The name of the ServiceAccount to be used by a pod.', 'category': 'application'}, {'entity': 'kubectl proxy process', 'description': ""A process that runs in an ambassador container, using the pod's ServiceAccount token to authenticate with the API server."", 'category': 'process'}]","[{'source_entity': 'pod', 'description': 'uses', 'destination_entity': 'imagePullSecrets'}, {'source_entity': 'pod', 'description': 'specifies', 'destination_entity': 'ServiceAccount'}, {'source_entity': 'kubectl proxy process', 'description': 'accesses', 'destination_entity': 'metadata'}, {'source_entity': 'kubectl proxy process', 'description': 'displays', 'destination_entity': 'Secrets'}, {'source_entity': 'pod', 'description': 'mounts', 'destination_entity': 'mountable Secrets'}, {'source_entity': 'image pull Secrets', 'description': 'pulls', 'destination_entity': 'image'}, {'source_entity': 'ServiceAccount', 'description': 'authenticates', 'destination_entity': 'apiVersion'}]","['[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A pod uses an existing container image from a registry, referencing it by its name or ID.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""imagePullSecrets"",\n    ""relation_description"": ""imagePullSecrets"",\n    ""summary_er"": ""A pod references one or more secrets to authenticate with a container registry when pulling images.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""ServiceAccount"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""A pod specifies a ServiceAccount to authenticate and authorize its containers.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl proxy process"",\n    ""destination"": ""pod metadata"",\n    ""relation_description"": ""accesses"",\n    ""summary_er"": ""The kubectl proxy process retrieves metadata from a running pod, allowing for access to its configuration and status.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl proxy process"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays"",\n    ""summary_er"": ""The kubectl proxy process displays information about a specific pod in the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""mounts"",\n    ""summary_er"": ""A Kubernetes Pod can mount a Secret to access sensitive data, such as API keys or database credentials.""\n  }\n]', '[\n  {\n    ""source"": ""image pull Secrets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""pulls"",\n    ""summary_er"": ""The secrets are used to authenticate with a registry, allowing the pod to pull the required image.""\n  }\n]', '[\n  {\n    ""source"": ""ServiceAccount"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""authenticates"",\n    ""summary_er"": ""A ServiceAccount authenticates a Pod by providing it with a secret token, allowing the Pod to access cluster resources.""\n  }\n]']","A ServiceAccount in Kubernetes allows pods to mount Secrets and can contain image pull Secrets for private image repositories. A pod's ServiceAccount must be set when creating the pod, and it cannot be changed later. Image pull Secrets are added automatically to all pods using a ServiceAccount, saving the need to add them individually.","[{'highlight': 'A ServiceAccount can also contain a list of image pull Secrets, which we examined in chapter 7.'}, {'highlight': ""A pod's ServiceAccount must be set when creating the pod. It can't be changed later.""}, {'highlight': 'Adding image pull Secrets to a ServiceAccount saves you from having to add them to each pod individually.'}, {'highlight': 'To enable a pod to mount Secrets that are listed as mountable Secrets on the Service-Account, the ServiceAccount must contain the annotation: kubernetes.io/enforce-mountable-secrets=""true""'}, {'highlight': ""A ServiceAccount's image pull Secrets behave slightly differently than its mountable Secrets.""}]"
+295,384,0,[],"352
+CHAPTER 12
+Securing the Kubernetes API server
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl-custom-sa
+spec:
+  serviceAccountName: foo           
+  containers:
+  - name: main
+    image: tutum/curl
+    command: [""sleep"", ""9999999""]
+  - name: ambassador                  
+    image: luksa/kubectl-proxy:1.6.2
+To confirm that the custom ServiceAccount’s token is mounted into the two contain-
+ers, you can print the contents of the token as shown in the following listing.
+$ kubectl exec -it curl-custom-sa -c main 
+➥ cat /var/run/secrets/kubernetes.io/serviceaccount/token
+eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+You can see the token is the one from the foo ServiceAccount by comparing the token
+string in listing 12.5 with the one in listing 12.2. 
+USING THE CUSTOM SERVICEACCOUNT’S TOKEN TO TALK TO THE API SERVER
+Let’s see if you can talk to the API server using this token. As mentioned previously,
+the ambassador container uses the token when talking to the server, so you can test
+the token by going through the ambassador, which listens on localhost:8001, as
+shown in the following listing.
+$ kubectl exec -it curl-custom-sa -c main curl localhost:8001/api/v1/pods
+{
+  ""kind"": ""PodList"",
+  ""apiVersion"": ""v1"",
+  ""metadata"": {
+    ""selfLink"": ""/api/v1/pods"",
+    ""resourceVersion"": ""433895""
+  },
+  ""items"": [
+  ...
+Okay, you got back a proper response from the server, which means the custom
+ServiceAccount is allowed to list pods. This may be because your cluster doesn’t use
+the RBAC authorization plugin, or you gave all ServiceAccounts full permissions, as
+instructed in chapter 8. 
+Listing 12.4
+Pod using a non-default ServiceAccount: curl-custom-sa.yaml
+Listing 12.5
+Inspecting the token mounted into the pod’s container(s)
+Listing 12.6
+Talking to the API server with a custom ServiceAccount
+This pod uses the 
+foo ServiceAccount 
+instead of the default.
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'API server', 'description': 'Kubernetes API server', 'category': 'application'}, {'entity': 'Pod', 'description': 'Lightweight and portable container', 'category': 'container'}, {'entity': 'ServiceAccount', 'description': 'Identity for accessing the Kubernetes API', 'category': 'software'}, {'entity': 'foo ServiceAccount', 'description': 'Custom ServiceAccount used in the example', 'category': 'software'}, {'entity': 'kubectl', 'description': 'Command-line tool for interacting with Kubernetes', 'category': 'command'}, {'entity': 'exec', 'description': 'Command to execute a command inside a container', 'category': 'command'}, {'entity': 'curl', 'description': 'Command-line tool for transferring data', 'category': 'command'}, {'entity': '/var/run/secrets/kubernetes.io/serviceaccount/token', 'description': 'Path to the ServiceAccount token file', 'category': 'path'}, {'entity': 'token', 'description': 'ServiceAccount authentication token', 'category': 'process'}, {'entity': 'localhost:8001/api/v1/pods', 'description': 'API endpoint for listing pods', 'category': 'url'}, {'entity': 'PodList', 'description': 'Kubernetes API object representing a list of pods', 'category': 'software'}, {'entity': 'apiVersion', 'description': 'Field in the PodList object indicating the API version', 'category': 'field'}, {'entity': 'kind', 'description': 'Field in the PodList object indicating the type of object', 'category': 'field'}]","[{'source_entity': '""exec""', 'description': 'runs', 'destination_entity': '""token""'}, {'source_entity': '""token""', 'description': 'is used by', 'destination_entity': '""API server""'}, {'source_entity': '""kubectl""', 'description': 'uses', 'destination_entity': '""API server""'}, {'source_entity': '""curl""', 'description': 'makes a request to', 'destination_entity': '""localhost:8001/api/v1/pods""'}, {'source_entity': '""Kubernetes""', 'description': 'manages', 'destination_entity': '""PodList""'}, {'source_entity': '""ServiceAccount""', 'description': 'is a type of', 'destination_entity': '""Pod""'}, {'source_entity': '""foo ServiceAccount""', 'description': 'is an instance of', 'destination_entity': '""ServiceAccount""'}]","['[\n  {\n    ""source"": ""exec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""The exec command executes a process within a running container, allowing it to run as if it were launched directly on the host machine.""\n  }\n]', '[\n  {\n    ""source"": ""token"",\n    ""destination"": ""API server"",\n    ""relation_description"": ""is used by"",\n    ""summary_er"": ""The token is utilized by the API server to authenticate and authorize requests.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubectl, a command-line tool, utilizes pods to execute commands and manage containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""makes a request to"",\n    ""summary_er"": ""Curl makes an HTTP request to a pod, sending data or retrieving information from it.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages a collection of containers called pods, providing a runtime environment for applications.""\n  }\n]', '[\n  {\n    ""source"": ""ServiceAccount"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is a type of"",\n    ""summary_er"": ""A ServiceAccount is a type of object that provides identity to pods, allowing them to authenticate with the API server.""\n  }\n]', '[\n  {\n    ""source"": ""foo ServiceAccount"",\n    ""destination"": ""pod ServiceAccount"",\n    ""relation_description"": ""is an instance of"",\n    ""summary_er"": ""A ServiceAccount is a Kubernetes object that provides identity to pods, and \'foo ServiceAccount\' is one such instance.""\n  }\n]']","A Kubernetes Pod is created using a non-default ServiceAccount named foo, which allows it to list pods when talking to the API server. The Pod's containers can access the token from the ServiceAccount and use it to authenticate with the API server, as shown by the successful response received from listing pods.","[{'highlight': ""The custom ServiceAccount's token is mounted into the two containers, and can be confirmed by printing its contents using kubectl exec.""}, {'highlight': 'The token from the foo ServiceAccount can be used to talk to the API server, as demonstrated by listing 12.6.'}, {'highlight': 'The custom ServiceAccount is allowed to list pods, which may be due to the cluster not using RBAC authorization or giving all ServiceAccounts full permissions.'}, {'highlight': 'A pod can use a non-default ServiceAccount, such as the foo ServiceAccount, instead of the default one.'}, {'highlight': ""The ambassador container uses the custom ServiceAccount's token when talking to the API server, and can be tested by curling localhost:8001/api/v1/pods.""}]"
+296,385,0,[],"353
+Securing the cluster with role-based access control
+ When your cluster isn’t using proper authorization, creating and using additional
+ServiceAccounts doesn’t make much sense, since even the default ServiceAccount is
+allowed to do anything. The only reason to use ServiceAccounts in that case is to
+enforce mountable Secrets or to provide image pull Secrets through the Service-
+Account, as explained earlier. 
+ But creating additional ServiceAccounts is practically a must when you use the
+RBAC authorization plugin, which we’ll explore next.
+12.2
+Securing the cluster with role-based access control
+Starting with Kubernetes version 1.6.0, cluster security was ramped up considerably. In
+earlier versions, if you managed to acquire the authentication token from one of the
+pods, you could use it to do anything you want in the cluster. If you google around,
+you’ll find demos showing how a path traversal (or directory traversal) attack (where clients
+can retrieve files located outside of the web server’s web root directory) can be used to
+get the token and use it to run your malicious pods in an insecure Kubernetes cluster.
+ But in version 1.8.0, the RBAC authorization plugin graduated to GA (General
+Availability) and is now enabled by default on many clusters (for example, when
+deploying a cluster with kubadm, as described in appendix B). RBAC prevents unau-
+thorized users from viewing or modifying the cluster state. The default Service-
+Account isn’t allowed to view cluster state, let alone modify it in any way, unless you
+grant it additional privileges. To write apps that communicate with the Kubernetes
+API server (as described in chapter 8), you need to understand how to manage
+authorization through RBAC-specific resources.
+NOTE
+In addition to RBAC, Kubernetes also includes other authorization
+plugins, such as the Attribute-based access control (ABAC) plugin, a Web-
+Hook plugin and custom plugin implementations. RBAC is the standard,
+though.
+12.2.1 Introducing the RBAC authorization plugin
+The Kubernetes API server can be configured to use an authorization plugin to check
+whether an action is allowed to be performed by the user requesting the action. Because
+the API server exposes a REST interface, users perform actions by sending HTTP
+requests to the server. Users authenticate themselves by including credentials in the
+request (an authentication token, username and password, or a client certificate).
+UNDERSTANDING ACTIONS
+But what actions are there? As you know, REST clients send GET, POST, PUT, DELETE,
+and other types of HTTP requests to specific URL paths, which represent specific
+REST resources. In Kubernetes, those resources are Pods, Services, Secrets, and so on.
+Here are a few examples of actions in Kubernetes:
+Get Pods
+Create Services
+ 
+",[],"[{'entity': 'Role-Based Access Control (RBAC)', 'description': 'A plugin used to secure the cluster by preventing unauthorized users from viewing or modifying the cluster state.', 'category': 'authorization'}, {'entity': 'ServiceAccount', 'description': 'An account used to authenticate and authorize access to a Kubernetes cluster.', 'category': 'application'}, {'entity': 'RBAC authorization plugin', 'description': 'A plugin that enables role-based access control in a Kubernetes cluster, preventing unauthorized users from viewing or modifying the cluster state.', 'category': 'authorization'}, {'entity': 'Attribute-Based Access Control (ABAC)', 'description': 'An authorization plugin that allows access to be controlled based on attributes of users and resources.', 'category': 'authorization'}, {'entity': 'Web-Hook plugin', 'description': 'An authorization plugin that uses web hooks to control access to a Kubernetes cluster.', 'category': 'authorization'}, {'entity': 'custom plugin implementations', 'description': 'Custom plugins implemented by users to control access to a Kubernetes cluster.', 'category': 'authorization'}, {'entity': 'Kubernetes API server', 'description': 'The central component of a Kubernetes cluster that exposes a REST interface and handles incoming requests.', 'category': 'application'}, {'entity': 'REST resources', 'description': 'Resources in a Kubernetes cluster that can be accessed using HTTP requests, such as Pods, Services, Secrets, etc.', 'category': 'application'}, {'entity': 'GET request', 'description': 'A type of HTTP request used to retrieve data from a resource in a Kubernetes cluster.', 'category': 'protocol'}, {'entity': 'POST request', 'description': 'A type of HTTP request used to create new resources in a Kubernetes cluster.', 'category': 'protocol'}, {'entity': 'PUT request', 'description': 'A type of HTTP request used to update existing resources in a Kubernetes cluster.', 'category': 'protocol'}, {'entity': 'DELETE request', 'description': 'A type of HTTP request used to delete resources from a Kubernetes cluster.', 'category': 'protocol'}]","[{'source_entity': '""REST resources""', 'description': 'expose', 'destination_entity': '""Web-Hook plugin""'}, {'source_entity': '""REST resources""', 'description': 'interact with', 'destination_entity': '""Kubernetes API server""'}, {'source_entity': '""Role-Based Access Control (RBAC)""', 'description': 'enforce', 'destination_entity': '""Web-Hook plugin""'}, {'source_entity': '""DELETE request""', 'description': 'delete', 'destination_entity': '""REST resources""'}, {'source_entity': '""POST request""', 'description': 'create', 'destination_entity': '""REST resources""'}, {'source_entity': '""PUT request""', 'description': 'update', 'destination_entity': '""REST resources""'}, {'source_entity': '""GET request""', 'description': 'retrieve', 'destination_entity': '""REST resources""'}, {'source_entity': '""RBAC authorization plugin""', 'description': 'authenticate', 'destination_entity': '""ServiceAccount""'}, {'source_entity': '""Attribute-Based Access Control (ABAC)""', 'description': 'authorize', 'destination_entity': '""REST resources""'}, {'source_entity': '""custom plugin implementations""', 'description': 'extend', 'destination_entity': '""Kubernetes API server""'}]","['[\n  {\n    ""source"": ""REST resources"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""expose"",\n    ""summary_er"": ""\\""REST resources\\"" are exposed to be accessed by clients, while a \\""pod\\"" provides a containerized environment for applications.""\n  },\n  {\n    ""source"": ""Web-Hook plugin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""integrate"",\n    ""summary_er"": ""A \\""Web-Hook plugin\\"" integrates with a \\""pod\\"" to provide custom functionality and automate tasks within the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""REST resources"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""interact with"",\n    ""summary_er"": ""REST resources in Kubernetes interact with pods to manage and orchestrate containerized applications.""\n  },\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manage"",\n    ""summary_er"": ""The Kubernetes API server manages pods, ensuring they are running correctly and efficiently within the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Role-Based Access Control (RBAC)"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""enforce"",\n    ""summary_er"": ""RBAC enforces access control policies on pods by defining user roles and permissions.""\n  }\n]', '[\n  {\n    ""source"": ""DELETE request"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""delete"",\n    ""summary_er"": ""A DELETE request in Kubernetes deletes a specific pod, removing it from the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""POST request"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""create"",\n    ""summary_er"": ""A POST request is used to create a new pod in Kubernetes, which can be a container or a group of containers.""\n  }\n]', '[\n  {\n    ""source"": ""PUT request"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""update"",\n    ""summary_er"": ""Updating a pod using a PUT request involves sending an HTTP request to update the pod\'s configuration, which can include changes to its container images, environment variables, or other settings.""\n  },\n  {\n    ""source"": ""REST resources"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""management"",\n    ""summary_er"": ""REST (Representational State of Resource) resources provide a way to manage and interact with pods in a Kubernetes cluster, allowing for CRUD (Create, Read, Update, Delete) operations on pod configurations.""\n  }\n]', '[\n  {\n    ""source"": ""GET request"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""retrieve"",\n    ""summary_er"": ""A GET request retrieves data from a pod in Kubernetes, allowing for efficient data access and management.""\n  },\n  {\n    ""source"": ""REST resources"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""access"",\n    ""summary_er"": ""REST resources provide access to pods in Kubernetes, enabling developers to interact with and manage containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""RBAC authorization plugin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""authenticate"",\n    ""summary_er"": ""The RBAC authorization plugin authenticates pods to ensure secure access to cluster resources.""\n  }\n]', '[\n  {\n    ""source"": ""Attribute-Based Access Control (ABAC)"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""authorize"",\n    ""summary_er"": ""ABAC authorizes access to pods based on attributes, ensuring secure and fine-grained control.""\n  }\n]', '[\n  {\n    ""source"": ""Custom Plugin Implementations"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""extend"",\n    ""summary_er"": ""Custom plugin implementations in Kubernetes extend the functionality of pods, allowing for tailored configurations and integrations.""\n  }\n]']","Kubernetes' Role-Based Access Control (RBAC) authorization plugin prevents unauthorized users from viewing or modifying the cluster state. The default ServiceAccount isn't allowed to view or modify the cluster state, unless granted additional privileges. Additional authorization plugins like Attribute-based access control (ABAC), Web- Hook, and custom implementations are also available, but RBAC is the standard.","[{'highlight': 'When your cluster isn’t using proper authorization, creating and using additional ServiceAccounts doesn’t make much sense,'}, {'highlight': 'Starting with Kubernetes version 1.6.0, cluster security was ramped up considerably.'}, {'highlight': 'RBAC prevents unauthorized users from viewing or modifying the cluster state.'}, {'highlight': 'The default ServiceAccount isn’t allowed to view cluster state, let alone modify it in any way, unless you grant it additional privileges.'}, {'highlight': 'In Kubernetes, those resources are Pods, Services, Secrets and so on.'}]"
+297,386,0,[],"354
+CHAPTER 12
+Securing the Kubernetes API server
+Update Secrets
+And so on
+The verbs in those examples (get, create, update) map to HTTP methods (GET, POST,
+PUT) performed by the client (the complete mapping is shown in table 12.1). The
+nouns (Pods, Service, Secrets) obviously map to Kubernetes resources. 
+ An authorization plugin such as RBAC, which runs inside the API server, deter-
+mines whether a client is allowed to perform the requested verb on the requested
+resource or not.
+NOTE
+The additional verb use is used for PodSecurityPolicy resources, which
+are explained in the next chapter.
+Besides applying security permissions to whole resource types, RBAC rules can also
+apply to specific instances of a resource (for example, a Service called myservice).
+And later you’ll see that permissions can also apply to non-resource URL paths,
+because not every path the API server exposes maps to a resource (such as the /api
+path itself or the server health information at /healthz). 
+UNDERSTANDING THE RBAC PLUGIN
+The RBAC authorization plugin, as the name suggests, uses user roles as the key factor
+in determining whether the user may perform the action or not. A subject (which may
+be a human, a ServiceAccount, or a group of users or ServiceAccounts) is associated
+with one or more roles and each role is allowed to perform certain verbs on certain
+resources. 
+ If a user has multiple roles, they may do anything that any of their roles allows
+them to do. If none of the user’s roles contains a permission to, for example, update
+Secrets, the API server will prevent the user from performing PUT or PATCH requests
+on Secrets.
+ Managing authorization through the RBAC plugin is simple. It’s all done by creat-
+ing four RBAC-specific Kubernetes resources, which we’ll look at next.
+Table 12.1
+Mapping HTTP methods to authorization verbs
+HTTP method
+Verb for single resource
+Verb for collection
+GET, HEAD
+get (and watch for watching)
+list (and watch)
+POST
+create
+n/a
+PUT
+update
+n/a
+PATCH
+patch
+n/a
+DELETE
+delete
+deletecollection
+ 
+","[                           HTTP method  \
+0  GET, HEAD\nPOST\nPUT\nPATCH\nDELETE   
+
+                            Verb for single resource  \
+0  get (and watch for watching)\ncreate\nupdate\n...   
+
+                                 Verb for collection  
+0  list (and watch)\nn/a\nn/a\nn/a\ndeletecollection  ]","[{'entity': 'Kubernetes API server', 'description': 'The main entry point for interacting with Kubernetes resources', 'category': 'application'}, {'entity': 'Secrets', 'description': 'A type of Kubernetes resource used to store sensitive information', 'category': 'database'}, {'entity': 'PodSecurityPolicy', 'description': 'A type of Kubernetes resource used to define security policies for pods', 'category': 'database'}, {'entity': 'ServiceAccount', 'description': 'A type of Kubernetes identity used to authenticate and authorize access to resources', 'category': 'application'}, {'entity': 'RBAC plugin', 'description': 'An authorization plugin used by the Kubernetes API server to determine user permissions', 'category': 'software'}, {'entity': 'roles', 'description': 'User-defined roles that define permissions for users or ServiceAccounts', 'category': 'process'}, {'entity': 'verbs', 'description': 'HTTP methods such as GET, POST, PUT, etc. used to interact with Kubernetes resources', 'category': 'protocol'}, {'entity': 'resources', 'description': 'Kubernetes resources such as Pods, Services, Secrets, etc.', 'category': 'database'}, {'entity': 'permissions', 'description': 'User-defined permissions that define what actions a user or ServiceAccount can perform on resources', 'category': 'process'}]","[{'source_entity': 'Kubernetes API server', 'description': 'manages', 'destination_entity': 'Secrets'}, {'source_entity': 'Kubernetes API server', 'description': 'enforces', 'destination_entity': 'RBAC plugin'}, {'source_entity': 'Kubernetes API server', 'description': 'provides access to', 'destination_entity': 'resources'}, {'source_entity': 'Kubernetes API server', 'description': 'grants permissions for', 'destination_entity': 'roles'}, {'source_entity': 'Kubernetes API server', 'description': 'assigns verbs to', 'destination_entity': 'resources'}, {'source_entity': 'RBAC plugin', 'description': 'defines', 'destination_entity': 'permissions'}, {'source_entity': 'RBAC plugin', 'description': 'associates with', 'destination_entity': 'roles'}, {'source_entity': 'ServiceAccount', 'description': 'uses', 'destination_entity': 'PodSecurityPolicy'}]","['[{\n  ""source"": ""Kubernetes API server"",\n  ""destination"": ""pod"",\n  ""relation_description"": ""manages"",\n  ""summary_er"": ""The Kubernetes API server is responsible for managing pods, which are the basic execution units in a containerized application.""\n}]', '[\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""The Kubernetes API server enforces access control for pods through the RBAC plugin, ensuring only authorized entities can interact with them.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod resources"",\n    ""relation_description"": ""provides access to"",\n    ""summary_er"": ""The Kubernetes API server grants access to pod resources, enabling management and control of containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""grants permissions for"",\n    ""summary_er"": ""The Kubernetes API server grants permissions to pods, allowing them to access and utilize cluster resources.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes API server"",\n    ""destination"": ""pod resources"",\n    ""relation_description"": ""assigns verbs to"",\n    ""summary_er"": ""The Kubernetes API server assigns verbs to manage and manipulate pod resources, enabling control over containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""RBAC plugin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines permissions"",\n    ""summary_er"": ""The RBAC plugin defines access control rules for pods, ensuring secure interactions between users and Kubernetes resources.""\n  }\n]', '[\n  {\n    ""source"": ""RBAC plugin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""associates with"",\n    ""summary_er"": ""The RBAC plugin assigns roles to pods, enabling fine-grained access control and ensuring that only authorized entities can interact with the pod.""\n  }\n]', '[\n  {\n    ""source"": ""ServiceAccount"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A ServiceAccount provides an identity for a Pod to access cluster resources, using its credentials to authenticate and authorize API requests.""\n  },\n  {\n    ""source"": ""PodSecurityPolicy"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""A PodSecurityPolicy defines the security requirements for a Pod to run, enforcing constraints on volumes, containers, and other attributes.""\n  }\n]']","The Kubernetes API server's security is ensured through the RBAC authorization plugin, which uses user roles to determine permissions. Roles are associated with subjects and allow certain verbs on resources or non-resource URL paths. Managing authorization is done by creating four RBAC-specific Kubernetes resources, including RoleBindings and ClusterRoleBindings.","[{'highlight': 'The Kubernetes API server can be secured by using an authorization plugin such as RBAC, which determines whether a client is allowed to perform the requested verb on the requested resource or not.'}, {'highlight': 'RBAC rules can apply to specific instances of a resource, such as a Service called myservice, and also to non-resource URL paths like /api and /healthz.'}, {'highlight': 'The RBAC authorization plugin uses user roles as the key factor in determining whether the user may perform the action or not.'}, {'highlight': 'A subject (human, ServiceAccount, group of users or ServiceAccounts) is associated with one or more roles, each role allowing certain verbs on certain resources.'}, {'highlight': 'Managing authorization through the RBAC plugin is simple and done by creating four RBAC-specific Kubernetes resources.'}]"
+298,387,0,[],"355
+Securing the cluster with role-based access control
+12.2.2 Introducing RBAC resources
+The RBAC authorization rules are configured through four resources, which can be
+grouped into two groups:
+Roles and ClusterRoles, which specify which verbs can be performed on which
+resources.
+RoleBindings and ClusterRoleBindings, which bind the above roles to specific
+users, groups, or ServiceAccounts.
+Roles define what can be done, while bindings define who can do it (this is shown in
+figure 12.2).
+The distinction between a Role and a ClusterRole, or between a RoleBinding and a
+ClusterRoleBinding, is that the Role and RoleBinding are namespaced resources,
+whereas the ClusterRole and ClusterRoleBinding are cluster-level resources (not
+namespaced). This is depicted in figure 12.3.
+ As you can see from the figure, multiple RoleBindings can exist in a single name-
+space (this is also true for Roles). Likewise, multiple ClusterRoleBindings and Cluster-
+Roles can be created. Another thing shown in the figure is that although RoleBindings
+are namespaced, they can also reference ClusterRoles, which aren’t. 
+ The best way to learn about these four resources and what their effects are is by try-
+ing them out in a hands-on exercise. You’ll do that now.
+ 
+ 
+ 
+ 
+What?
+Role
+Binding
+Some
+resources
+Other
+resources
+Role
+Doesn’t allow
+doing anything
+with other resources
+User A
+Who?
+Admins group
+Allows users
+to access
+Service-
+Account:
+x
+Figure 12.2
+Roles grant permissions, whereas RoleBindings bind Roles to subjects.
+ 
+",[],"[{'entity': 'RBAC', 'description': 'Role-Based Access Control', 'category': 'security'}, {'entity': 'Roles', 'description': 'specify which verbs can be performed on which resources', 'category': 'authorization'}, {'entity': 'ClusterRoles', 'description': 'cluster-level resources that specify which verbs can be performed on which resources', 'category': 'authorization'}, {'entity': 'RoleBindings', 'description': 'bind Roles to specific users, groups, or ServiceAccounts', 'category': 'authorization'}, {'entity': 'ClusterRoleBindings', 'description': 'bind ClusterRoles to specific users, groups, or ServiceAccounts', 'category': 'authorization'}, {'entity': 'Role', 'description': 'namespaced resource that defines what can be done', 'category': 'resource'}, {'entity': 'ClusterRole', 'description': 'cluster-level resource that defines what can be done', 'category': 'resource'}, {'entity': 'RoleBinding', 'description': 'namespaced resource that binds a Role to a subject', 'category': 'binding'}, {'entity': 'ClusterRoleBinding', 'description': 'cluster-level resource that binds a ClusterRole to a subject', 'category': 'binding'}, {'entity': 'ServiceAccount', 'description': 'a ServiceAccount is an identity for a service', 'category': 'identity'}]","[{'source_entity': '""Roles""', 'description': 'define', 'destination_entity': '""ClusterRole""'}, {'source_entity': '""ClusterRole""', 'description': 'inherit', 'destination_entity': '""RBAC""'}, {'source_entity': '""RoleBinding""', 'description': 'bind', 'destination_entity': '""Role""'}, {'source_entity': '""ClusterRoles""', 'description': 'manage', 'destination_entity': '""ClusterRoleBindings""'}, {'source_entity': '""RoleBindings""', 'description': 'assign', 'destination_entity': '""ServiceAccount""'}, {'source_entity': '""ClusterRoleBinding""', 'description': 'apply', 'destination_entity': '""ClusterRoles""'}]","['[\n  {\n    ""source"": ""Roles"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""define"",\n    ""summary_er"": ""A role defines a set of permissions for a pod to access resources within a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""ClusterRole"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""define"",\n    ""summary_er"": ""A ClusterRole defines a set of permissions for a pod to access resources across multiple namespaces in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""ClusterRole"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""inherit"",\n    ""summary_er"": ""A ClusterRole inherits permissions from a Role or ClusterRole, allowing it to be used by pods and other resources.""\n  },\n  {\n    ""source"": ""RBAC"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""access control"",\n    ""summary_er"": ""RBAC (Role-Based Access Control) grants access to pods based on their role assignments, ensuring secure resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""RoleBinding"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""bind"",\n    ""summary_er"": ""A RoleBinding binds a Role to a set of subjects, allowing them to access resources within a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""ClusterRoles"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manage"",\n    ""summary_er"": ""ClusterRoles are used to manage access and permissions for pods, ensuring that only authorized entities can interact with them.""\n  }\n]', '[\n  {\n    ""source"": ""RoleBindings"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assign"",\n    ""summary_er"": ""RoleBindings are used to assign permissions to pods, allowing them to access cluster resources.""\n  },\n  {\n    ""source"": ""ServiceAccount"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assign"",\n    ""summary_er"": ""ServiceAccounts provide an identity for pods, enabling them to authenticate with the cluster and access services.""\n  }\n]', '[\n  {\n    ""source"": ""ClusterRoleBinding"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""apply"",\n    ""summary_er"": ""A ClusterRoleBinding binds a ClusterRole to a user, service account, or group. It allows the bound entity to apply configurations to pods.""\n  }\n]']","RBAC (Role-Based Access Control) in Kubernetes is configured through four resources: Roles and ClusterRoles that define what can be done on resources, and RoleBindings and ClusterRoleBindings that bind roles to users or groups. Roles are namespaced while ClusterRoles are cluster-level, allowing multiple bindings within a namespace or across the cluster.","[{'highlight': 'The RBAC authorization rules are configured through four resources: Roles and ClusterRoles, which specify which verbs can be performed on which resources.'}, {'highlight': 'Roles define what can be done, while bindings define who can do it (this is shown in figure 12.2).'}, {'highlight': 'The distinction between a Role and a ClusterRole, or between a RoleBinding and a ClusterRoleBinding, is that the Role and RoleBinding are namespaced resources,'}, {'highlight': 'Roles grant permissions, whereas RoleBindings bind Roles to subjects.'}, {'highlight': 'Multiple RoleBindings can exist in a single namespace (this is also true for Roles).'}]"
+299,388,0,[],"356
+CHAPTER 12
+Securing the Kubernetes API server
+SETTING UP YOUR EXERCISE
+Before you can explore how RBAC resources affect what you can do through the API
+server, you need to make sure RBAC is enabled in your cluster. First, ensure you’re
+using at least version 1.6 of Kubernetes and that the RBAC plugin is the only config-
+ured authorization plugin. There can be multiple plugins enabled in parallel and if
+one of them allows an action to be performed, the action is allowed.
+NOTE
+If you’re using GKE 1.6 or 1.7, you need to explicitly disable legacy autho-
+rization by creating the cluster with the --no-enable-legacy-authorization
+option. If you’re using Minikube, you also may need to enable RBAC by start-
+ing Minikube with --extra-config=apiserver.Authorization.Mode=RBAC
+If you followed the instructions on how to disable RBAC in chapter 8, now’s the time
+to re-enable it by running the following command:
+$ kubectl delete clusterrolebinding permissive-binding
+To try out RBAC, you’ll run a pod through which you’ll try to talk to the API server,
+the way you did in chapter 8. But this time you’ll run two pods in different namespaces
+to see how per-namespace security behaves.
+ In the examples in chapter 8, you ran two containers to demonstrate how an appli-
+cation in one container uses the other container to talk to the API server. This time,
+you’ll run a single container (based on the kubectl-proxy image) and use kubectl
+exec to run curl inside that container directly. The proxy will take care of authentica-
+tion and HTTPS, so you can focus on the authorization aspect of API server security.
+Namespace C
+Namespaced
+resources
+Cluster-level
+resources
+RoleBinding
+RoleBinding
+Role
+Namespace B
+Namespaced
+resources
+RoleBinding
+Role
+Namespace A
+Namespaced
+resources
+RoleBinding
+Role
+Cluster scope (resources that aren’t namespaced)
+ClusterRoleBinding
+ClusterRole
+Figure 12.3
+Roles and RoleBindings are namespaced; ClusterRoles and ClusterRoleBindings aren’t.
+ 
+","[Empty DataFrame
+Columns: [Namespace B
+RoleBinding Role
+Namespaced
+resources, Namespace C
+RoleBinding Role
+Namespaced
+RoleBinding resources]
+Index: []]","[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'API server', 'description': 'Component of Kubernetes that handles API requests', 'category': 'application'}, {'entity': 'RBAC', 'description': 'Role-Based Access Control, a security feature in Kubernetes', 'category': 'security'}, {'entity': 'clusterrolebinding', 'description': 'Resource used to bind a cluster role to a user or service account', 'category': 'resource'}, {'entity': 'clusterrole', 'description': 'Resource that defines permissions for a cluster-wide role', 'category': 'resource'}, {'entity': 'RoleBinding', 'description': 'Resource that binds a role to a user or service account within a namespace', 'category': 'resource'}, {'entity': 'Role', 'description': 'Resource that defines permissions for a role within a namespace', 'category': 'resource'}, {'entity': 'kubectl', 'description': 'Command-line tool used to interact with Kubernetes', 'category': 'command'}, {'entity': 'curl', 'description': 'Command used to make HTTP requests', 'category': 'command'}, {'entity': 'Minikube', 'description': 'Tool for running a local copy of a Kubernetes cluster', 'category': 'software'}, {'entity': 'GKE', 'description': 'Google Kubernetes Engine, a managed Kubernetes service', 'category': 'service'}]","[{'source_entity': '""Minikube""', 'description': 'is used to create', 'destination_entity': '""clusterrole""'}, {'source_entity': '""clusterrole""', 'description': 'defines permissions for', 'destination_entity': '""Kubernetes""'}, {'source_entity': '""Kubernetes""', 'description': 'implements', 'destination_entity': '""RBAC""'}, {'source_entity': '""kubectl""', 'description': 'uses to manage', 'destination_entity': '""clusterrolebinding""'}, {'source_entity': '""RoleBinding""', 'description': 'binds a role to a user or service account for', 'destination_entity': '""Minikube""'}, {'source_entity': '""kubectl""', 'description': 'uses to manage', 'destination_entity': '""clusterrolebinding""'}, {'source_entity': '""curl""', 'description': 'is used to interact with the', 'destination_entity': '""API server""'}, {'source_entity': '""GKE""', 'description': 'uses a', 'destination_entity': '""clusterrolebinding""'}, {'source_entity': '""Role""', 'description': 'defines permissions for', 'destination_entity': '""Kubernetes""'}, {'source_entity': '""API server""', 'description': 'enforces', 'destination_entity': '""RBAC""'}]","['[\n  {\n    ""source"": ""Minikube"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to create"",\n    ""summary_er"": ""Minikube is a tool that creates and manages Kubernetes pods, providing a simple way to deploy applications.""\n  },\n  {\n    ""source"": ""clusterrole"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to create"",\n    ""summary_er"": ""A cluster role defines the permissions for creating and managing Kubernetes pods, ensuring secure access control.""\n  }\n]', '[\n  {\n    ""source"": ""clusterrole"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines permissions for"",\n    ""summary_er"": ""A cluster role defines a set of permissions that can be used by pods to access Kubernetes resources.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""implements"",\n    ""summary_er"": ""Kubernetes manages and orchestrates containerized applications, including pods, which are the basic execution unit of a Kubernetes application.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to manage"",\n    ""summary_er"": ""\\""kubectl\\"" is used to manage \\""pods\\"", which are the basic execution units in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""clusterrolebinding"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""grants access to"",\n    ""summary_er"": ""\\""clusterrolebinding\\"" grants access to \\""pods\\"", allowing users or services to interact with them.""\n  }\n]', '[\n  {\n    ""source"": ""RoleBinding"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""binds a role to a user or service account for"",\n    ""summary_er"": ""A RoleBinding binds a role to a user or service account, granting access to pods and other resources within the Kubernetes cluster.""\n  },\n  {\n    ""source"": ""RoleBinding"",\n    ""destination"": ""Minikube"",\n    ""relation_description"": ""binds a role to a user or service account for"",\n    ""summary_er"": ""A RoleBinding binds a role to a user or service account, granting access to Minikube and other resources within the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to manage"",\n    ""summary_er"": ""Kubectl uses Kubernetes API to manage pods, which are the basic execution units in a cluster.""\n  },\n  {\n    ""source"": ""clusterrolebinding"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""binds"",\n    ""summary_er"": ""ClusterRoleBinding binds a role to a user or service account, granting access to pods and other resources within a cluster.""\n  }\n]', '[\n  {\n    ""source"": ""curl"",\n    ""destination"": ""API server"",\n    ""relation_description"": ""is used to interact with the"",\n    ""summary_er"": ""Curl is a command-line tool that interacts with the API server, sending HTTP requests and receiving responses.""\n  }\n]', '[\n  {\n    ""source"": ""GKE"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses a"",\n    ""summary_er"": ""Google Kubernetes Engine (GKE) utilizes pods to manage and deploy containerized applications.""\n  },\n  {\n    ""source"": ""GKE"",\n    ""destination"": ""clusterrolebinding"",\n    ""relation_description"": ""uses a"",\n    ""summary_er"": ""GKE employs cluster role bindings to manage access control and permissions within the Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""Role"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines permissions for"",\n    ""summary_er"": ""A Role in Kubernetes defines a set of permissions that can be assigned to a pod, controlling its access to resources.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""The API server enforces access control policies for pods, ensuring only authorized entities can interact with them.""\n  }\n]']","To secure the Kubernetes API server, RBAC must be enabled in the cluster by setting version 1.6 or higher and disabling legacy authorization if using GKE 1.6 or 1.7. Minikube requires enabling RBAC with --extra-config. The permissive-binding clusterrolebinding should be deleted to re-enable RBAC.","[{'highlight': 'To enable RBAC in a Kubernetes cluster, ensure you’re using at least version 1.6 of Kubernetes and that the RBAC plugin is the only configured authorization plugin.'}, {'highlight': ""If you're using GKE 1.6 or 1.7, you need to explicitly disable legacy authorization by creating the cluster with the --no-enable-legacy-authorization option.""}, {'highlight': 'Roles and RoleBindings are namespaced; ClusterRoles and ClusterRoleBindings aren’t.'}, {'highlight': 'To try out RBAC, run a pod through which you’ll talk to the API server, running two pods in different namespaces to see how per-namespace security behaves.'}, {'highlight': 'You can use kubectl exec to run curl inside a container directly, with the proxy taking care of authentication and HTTPS.'}]"

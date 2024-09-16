@@ -1,0 +1,570 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+350,439,0,[],"407
+Requesting resources for a pod’s containers
+UNDERSTANDING HOW THE SCHEDULER USES PODS’ REQUESTS WHEN SELECTING THE BEST NODE 
+FOR A POD
+You may remember from chapter 11 that the Scheduler first filters the list of nodes to
+exclude those that the pod can’t fit on and then prioritizes the remaining nodes per the
+configured prioritization functions. Among others, two prioritization functions rank
+nodes based on the amount of resources requested: LeastRequestedPriority and
+MostRequestedPriority. The first one prefers nodes with fewer requested resources
+(with a greater amount of unallocated resources), whereas the second one is the exact
+opposite—it prefers nodes that have the most requested resources (a smaller amount of
+unallocated CPU and memory). But, as we’ve discussed, they both consider the amount
+of requested resources, not the amount of resources actually consumed.
+ The Scheduler is configured to use only one of those functions. You may wonder
+why anyone would want to use the MostRequestedPriority function. After all, if you
+have a set of nodes, you usually want to spread CPU load evenly across them. However,
+that’s not the case when running on cloud infrastructure, where you can add and
+remove nodes whenever necessary. By configuring the Scheduler to use the Most-
+RequestedPriority function, you guarantee that Kubernetes will use the smallest pos-
+sible number of nodes while still providing each pod with the amount of CPU/memory
+it requests. By keeping pods tightly packed, certain nodes are left vacant and can be
+removed. Because you’re paying for individual nodes, this saves you money.
+INSPECTING A NODE’S CAPACITY
+Let’s see the Scheduler in action. You’ll deploy another pod with four times the
+amount of requested resources as before. But before you do that, let’s see your node’s
+capacity. Because the Scheduler needs to know how much CPU and memory each
+node has, the Kubelet reports this data to the API server, making it available through
+Pod C
+Node
+Pod A
+Unallocated
+CPU requests
+Pod B
+Pod A
+Currently unused
+CPU usage
+Pod B
+Pod C
+0%
+100%
+Pod A
+Memory requests
+Pod B
+Pod C
+Pod A
+Memory usage
+Pod B
+Pod C
+CPU requests
+Memory requests
+Unallocated
+Currently unused
+Pod D
+Pod D cannot be scheduled; its CPU
+requests exceed unallocated CPU
+Figure 14.1
+The Scheduler only cares about requests, not actual usage.
+ 
+","[   Pod D cannot be scheduled; its CPU\nrequests exceed unallocated CPU   Col1  \
+0   Node\nCPU requests Pod A Pod B Pod C Unallocat...                    None   
+1                                                None                   Pod A   
+2                                                None                    None   
+3                                                None                   Pod A   
+4                                                None                    None   
+5                                                None                   Pod A   
+6                                                None                    None   
+7                                                None                   Pod A   
+8                                                None                    None   
+9                                               Pod D                    None   
+10                                               None                    None   
+11                                               None                    None   
+
+     Col2   Col3   Col4   Col5   Col6  Col7  Col8             Col9 Col10  \
+0    None   None   None   None   None  None  None             None  None   
+1    None   None  Pod B   None  Pod C  None  None             None  None   
+2    None   None   None   None   None  None  None             None  None   
+3    None  Pod B   None  Pod C   None  None  None             None         
+4    None   None   None   None   None  None  None             None  None   
+5    None  Pod B   None   None  Pod C  None            Unallocated  None   
+6    None   None   None   None   None  None  None                   None   
+7   Pod B   None   None  Pod C   None        None         Currentl  None   
+8    None   None   None   None   None  None  None                   None   
+9    None   None   None   None   None  None  None                   None   
+10   None   None   None   None   None  None  None             None  None   
+11   None   None   None   None   None  None  None  Memory requests  None   
+
+               Col11        Col12 Col13  
+0               None         None  None  
+1                     Unallocated  None  
+2                            None  None  
+3   Currently unused         None  None  
+4                            None  None  
+5               None         None  None  
+6                            None  None  
+7           y unused         None  None  
+8               None         None  None  
+9                            None        
+10      CPU requests         None  None  
+11              None         None  None  ]","[{'entity': 'pod', 'description': 'A pod is a logical host for one or more containers.', 'category': 'container'}, {'entity': 'scheduler', 'description': 'The scheduler is responsible for selecting the best node for a pod based on its resource requests.', 'category': 'process'}, {'entity': 'node', 'description': 'A node is a physical machine that can host one or more pods.', 'category': 'hardware'}, {'entity': 'CPU', 'description': 'Central Processing Unit, measures the processing power of a node.', 'category': 'hardware'}, {'entity': 'memory', 'description': 'Random Access Memory, measures the amount of memory available on a node.', 'category': 'hardware'}, {'entity': 'Kubelet', 'description': 'A Kubelet is an agent that runs on each node and communicates with the API server to report resource usage.', 'category': 'process'}, {'entity': 'API server', 'description': 'The API server is responsible for managing the cluster and providing a RESTful interface for clients to interact with it.', 'category': 'application'}, {'entity': 'LeastRequestedPriority', 'description': 'A prioritization function that prefers nodes with fewer requested resources.', 'category': 'process'}, {'entity': 'MostRequestedPriority', 'description': 'A prioritization function that prefers nodes with the most requested resources.', 'category': 'process'}]","[{'source_entity': 'Kubelet', 'description': 'allocates resources to', 'destination_entity': 'node'}, {'source_entity': 'scheduler', 'description': 'assigns pods based on', 'destination_entity': 'LeastRequestedPriority'}, {'source_entity': 'scheduler', 'description': 'prioritizes pods with', 'destination_entity': 'MostRequestedPriority'}, {'source_entity': 'Kubelet', 'description': 'manages CPU resources for', 'destination_entity': 'pod'}, {'source_entity': 'Kubelet', 'description': 'monitors memory usage of', 'destination_entity': 'node'}, {'source_entity': 'API server', 'description': 'communicates with', 'destination_entity': 'scheduler'}, {'source_entity': 'scheduler', 'description': 'makes decisions based on', 'destination_entity': 'CPU'}, {'source_entity': 'scheduler', 'description': 'takes into account', 'destination_entity': 'memory'}]","['[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allocates resources to"",\n    ""summary_er"": ""Kubelet, a key component of Kubernetes, allocates resources such as CPU and memory to pods, ensuring efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assigns pods based on"",\n    ""summary_er"": ""The scheduler assigns pods to nodes based on least requested priority, ensuring efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""prioritizes pods with"",\n    ""summary_er"": ""The scheduler assigns priority to pods based on their resource requirements, ensuring efficient allocation and utilization of resources.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages CPU resources for"",\n    ""summary_er"": ""Kubelet manages CPU resources for pods, ensuring efficient resource allocation and utilization.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""monitors memory usage of"",\n    ""summary_er"": ""Kubelet monitors memory usage of pods to ensure efficient resource allocation and prevent node crashes.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod scheduler"",\n    ""relation_description"": ""communicates with"",\n    ""summary_er"": ""The API server sends requests to the pod scheduler for resource allocation and scheduling.""\n  }\n]', '[\n  {\n    ""source"": ""scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""makes decisions based on"",\n    ""summary_er"": ""The scheduler allocates resources to pods based on their CPU requirements.""\n  }\n]', '[\n  {\n    ""source"": ""scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""takes into account"",\n    ""summary_er"": ""The scheduler considers pod memory when making scheduling decisions.""\n  }\n]']","The Kubernetes Scheduler prioritizes nodes based on requested resources, using functions like LeastRequestedPriority and MostRequestedPriority to select the best node for a pod. The MostRequestedPriority function is useful in cloud infrastructure where adding or removing nodes is possible, as it allows for tight packing of pods and potential removal of unused nodes, saving costs.","[{'highlight': 'The Scheduler first filters the list of nodes to exclude those that the pod can’t fit on and then prioritizes the remaining nodes per the configured prioritization functions.'}, {'highlight': 'The LeastRequestedPriority function prefers nodes with fewer requested resources (with a greater amount of unallocated resources), whereas the MostRequestedPriority function prefers nodes that have the most requested resources.'}, {'highlight': 'By configuring the Scheduler to use the Most-RequestedPriority function, you guarantee that Kubernetes will use the smallest possible number of nodes while still providing each pod with the amount of CPU/memory it requests.'}, {'highlight': ""The Kubelet reports a node's capacity (CPU and memory) to the API server, making it available through the Pod C interface.""}, {'highlight': 'The Scheduler only cares about resource requests, not actual usage or consumption, when selecting the best node for a pod.'}]"
+351,440,0,[],"408
+CHAPTER 14
+Managing pods’ computational resources
+the Node resource. You can see it by using the kubectl describe command as in the
+following listing.
+$ kubectl describe nodes
+Name:       minikube
+...
+Capacity:                       
+  cpu:           2               
+  memory:        2048484Ki       
+  pods:          110             
+Allocatable:                       
+  cpu:           2                  
+  memory:        1946084Ki          
+  pods:          110                
+...
+The output shows two sets of amounts related to the available resources on the node:
+the node’s capacity and allocatable resources. The capacity represents the total resources
+of a node, which may not all be available to pods. Certain resources may be reserved
+for Kubernetes and/or system components. The Scheduler bases its decisions only on
+the allocatable resource amounts.
+ In the previous example, the node called minikube runs in a VM with two cores
+and has no CPU reserved, making the whole CPU allocatable to pods. Therefore,
+the Scheduler should have no problem scheduling another pod requesting 800
+millicores. 
+ Run the pod now. You can use the YAML file in the code archive, or run the pod
+with the kubectl run command like this:
+$ kubectl run requests-pod-2 --image=busybox --restart Never
+➥ --requests='cpu=800m,memory=20Mi' -- dd if=/dev/zero of=/dev/null
+pod ""requests-pod-2"" created
+Let’s see if it was scheduled:
+$ kubectl get po requests-pod-2
+NAME             READY     STATUS    RESTARTS   AGE
+requests-pod-2   1/1       Running   0          3m
+Okay, the pod has been scheduled and is running. 
+CREATING A POD THAT DOESN’T FIT ON ANY NODE
+You now have two pods deployed, which together have requested a total of 1,000 mil-
+licores or exactly 1 core. You should therefore have another 1,000 millicores available
+for additional pods, right? You can deploy another pod with a resource request of
+1,000 millicores. Use a similar command as before:
+$ kubectl run requests-pod-3 --image=busybox --restart Never
+➥ --requests='cpu=1,memory=20Mi' -- dd if=/dev/zero of=/dev/null
+pod ""requests-pod-2"" created
+Listing 14.3
+A node’s capacity and allocatable resources
+The overall capacity 
+of the node
+The resources 
+allocatable to pods
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command-line tool for managing Kubernetes clusters', 'category': 'software'}, {'entity': 'describe', 'description': 'kubectl command to display detailed information about a resource', 'category': 'software'}, {'entity': 'nodes', 'description': 'resource in Kubernetes that represents a machine or VM', 'category': 'hardware'}, {'entity': 'minikube', 'description': 'name of the node being described', 'category': 'software'}, {'entity': 'Capacity', 'description': 'total resources available on a node, including CPU and memory', 'category': 'hardware'}, {'entity': 'cpu', 'description': 'computational resource measured in millicores or cores', 'category': 'hardware'}, {'entity': 'memory', 'description': 'computational resource measured in kilobytes or megabytes', 'category': 'hardware'}, {'entity': 'pods', 'description': 'resource in Kubernetes that represents a running application', 'category': 'software'}, {'entity': 'Scheduler', 'description': 'component in Kubernetes that assigns resources to pods', 'category': 'software'}, {'entity': 'allocatable', 'description': 'resources available for allocation to pods, excluding reserved resources', 'category': 'hardware'}, {'entity': 'kubectl run', 'description': 'command to create a new pod with specified image and resource requests', 'category': 'software'}, {'entity': 'requests-pod-2', 'description': 'name of the pod being created', 'category': 'software'}, {'entity': 'busybox', 'description': 'image used to create a new pod', 'category': 'software'}, {'entity': 'dd', 'description': 'command to create a loopback device and write data to it', 'category': 'software'}, {'entity': 'pod', 'description': 'resource in Kubernetes that represents a running application', 'category': 'software'}, {'entity': 'kubectl get', 'description': 'command to display information about a resource, such as pods', 'category': 'software'}, {'entity': 'po', 'description': 'resource in Kubernetes that represents a pod', 'category': 'software'}, {'entity': 'requests-pod-3', 'description': 'name of the pod being created', 'category': 'software'}]","[{'source_entity': '""kubectl run""', 'description': 'create', 'destination_entity': '""requests-pod-2""'}, {'source_entity': '""kubectl get""', 'description': 'retrieve information about', 'destination_entity': '""Scheduler""'}, {'source_entity': '""kubectl get""', 'description': 'retrieve information about', 'destination_entity': '""Capacity""'}, {'source_entity': '""dd""', 'description': 'copy data from', 'destination_entity': '""requests-pod-3""'}, {'source_entity': '""kubectl""', 'description': 'run command on', 'destination_entity': '""minikube""'}, {'source_entity': '""kubectl""', 'description': 'check resource usage of', 'destination_entity': '""memory""'}, {'source_entity': '""kubectl""', 'description': 'check resource usage of', 'destination_entity': '""cpu""'}, {'source_entity': '""kubectl""', 'description': 'list all', 'destination_entity': '""pods""'}, {'source_entity': '""kubectl""', 'description': 'get information about', 'destination_entity': '""po""'}, {'source_entity': '""kubectl""', 'description': 'get information about', 'destination_entity': '""nodes""'}, {'source_entity': '""kubectl describe""', 'description': 'show detailed information about', 'destination_entity': '""pod""'}, {'source_entity': '""kubectl get""', 'description': 'retrieve information about', 'destination_entity': '""allocatable""'}, {'source_entity': '""kubectl get""', 'description': 'retrieve information about', 'destination_entity': '""busybox""'}]","['[\n  {\n    ""source"": ""kubectl run"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""create"",\n    ""summary_er"": ""Create a new pod using kubectl run command.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl get"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""retrieve information about"",\n    ""summary_er"": ""The \'kubectl get\' command retrieves information about a Kubernetes pod, such as its status and configuration.""\n  },\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assigns"",\n    ""summary_er"": ""The Scheduler assigns a pod to a suitable node in the cluster based on resource availability and other factors.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""retrieve information about"",\n    ""summary_er"": ""Use kubectl to get details of a running pod, including its capacity and resource utilization.""\n  },\n  {\n    ""source"": ""get"",\n    ""destination"": ""Capacity"",\n    ""relation_description"": ""kubectl command"",\n    ""summary_er"": ""Get the current capacity of a Kubernetes cluster using the \'get\' command in kubectl.""\n  }\n]', '[\n  {\n    ""source"": ""dd"",\n    ""destination"": ""requests-pod-3"",\n    ""relation_description"": ""copy data from"",\n    ""summary_er"": ""Copying data from a disk device (dd) to a pod named requests-pod-3 for further processing.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""run command on"",\n    ""summary_er"": ""Kubectl executes commands to manage Kubernetes resources, including running containers within pods.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""check resource usage of"",\n    ""summary_er"": ""Kubectl checks memory usage of a running pod to ensure efficient resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""check resource usage of"",\n    ""summary_er"": ""Kubectl checks CPU utilization of a running Pod to monitor its performance and identify potential bottlenecks.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""list all"",\n    ""summary_er"": ""List all running pods using kubectl command.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""get information about"",\n    ""summary_er"": ""Get detailed information about a running pod using kubectl command.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""get information about"",\n    ""summary_er"": ""Get detailed information about a specific pod, including its status, labels, and containers.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""nodes"",\n    ""relation_description"": ""get information about"",\n    ""summary_er"": ""Display information about the nodes in the Kubernetes cluster, including their IP addresses and statuses.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""show detailed information about"",\n    ""summary_er"": ""Use kubectl to display detailed information about a pod, including its configuration and status.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl get"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""retrieve information about"",\n    ""summary_er"": ""Kubectl command retrieves pod details, such as allocatable resources and status.""\n  },\n  {\n    ""source"": ""allocatable"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""resource capacity"",\n    ""summary_er"": ""Allocatable resources are the maximum amount of resources a pod can use, including CPU and memory.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl get"",\n    ""destination"": ""pod busybox"",\n    ""relation_description"": ""retrieve information about"",\n    ""summary_er"": ""Retrieve details of a specific \'busybox\' pod using kubectl command.""\n  }\n]']","This chapter discusses managing pods' computational resources, specifically the Node resource. It explains that a node's capacity represents its total resources, but not all are available to pods due to reserved resources for Kubernetes and system components. The Scheduler bases its decisions on allocatable resource amounts. A pod with CPU requests of 800 millicores was successfully scheduled, but attempting to deploy another pod with 1 core of CPU request did not fit on any node.","[{'highlight': 'The Node resource can be seen by using the kubectl describe command.'}, {'highlight': 'The Scheduler bases its decisions only on the allocatable resource amounts.'}, {'highlight': 'A pod requesting 800 millicores should have no problem being scheduled.'}, {'highlight': 'Two pods deployed together have requested a total of 1,000 millicores or exactly 1 core.'}, {'highlight': 'Deploying another pod with a resource request of 1,000 millicores may not be possible due to limited resources.'}]"
+352,441,0,[],"409
+Requesting resources for a pod’s containers
+NOTE
+This time you’re specifying the CPU request in whole cores (cpu=1)
+instead of millicores (cpu=1000m).
+So far, so good. The pod has been accepted by the API server (you’ll remember from
+the previous chapter that the API server can reject pods if they’re invalid in any way).
+Now, check if the pod is running:
+$ kubectl get po requests-pod-3
+NAME             READY     STATUS    RESTARTS   AGE
+requests-pod-3   0/1       Pending   0          4m
+Even if you wait a while, the pod is still stuck at Pending. You can see more informa-
+tion on why that’s the case by using the kubectl describe command, as shown in
+the following listing.
+$ kubectl describe po requests-pod-3
+Name:       requests-pod-3
+Namespace:  default
+Node:       /                    
+...
+Conditions:
+  Type           Status
+  PodScheduled   False           
+...
+Events:
+... Warning  FailedScheduling    No nodes are available      
+                                 that match all of the       
+                                 following predicates::      
+                                 Insufficient cpu (1).       
+The output shows that the pod hasn’t been scheduled because it can’t fit on any node
+due to insufficient CPU on your single node. But why is that? The sum of the CPU
+requests of all three pods equals 2,000 millicores or exactly two cores, which is exactly
+what your node can provide. What’s wrong?
+DETERMINING WHY A POD ISN’T BEING SCHEDULED
+You can figure out why the pod isn’t being scheduled by inspecting the node resource.
+Use the kubectl describe node command again and examine the output more
+closely in the following listing.
+$ kubectl describe node
+Name:                   minikube
+...
+Non-terminated Pods:    (7 in total)
+  Namespace    Name            CPU Requ.   CPU Lim.  Mem Req.    Mem Lim.
+  ---------    ----            ----------  --------  ---------   --------
+  default      requests-pod    200m (10%)  0 (0%)    10Mi (0%)   0 (0%)
+Listing 14.4
+Examining why a pod is stuck at Pending with kubectl describe pod
+Listing 14.5
+Inspecting allocated resources on a node with kubectl describe node
+No node is 
+associated 
+with the pod.
+The pod hasn’t 
+been scheduled.
+Scheduling has 
+failed because of 
+insufficient CPU.
+ 
+",[],"[{'entity': 'CPU', 'description': ""A measure of a computer's processing power."", 'category': 'hardware'}, {'entity': 'Pod', 'description': 'A container that runs one or more application containers.', 'category': 'application'}, {'entity': 'kubectl', 'description': 'A command-line tool for managing Kubernetes clusters.', 'category': 'software'}, {'entity': 'API server', 'description': 'The central component of a Kubernetes cluster that manages the creation and deletion of pods.', 'category': 'application'}, {'entity': 'Node', 'description': 'A machine in a Kubernetes cluster that runs one or more containers.', 'category': 'hardware'}, {'entity': 'Namespace', 'description': 'A logical grouping of resources within a Kubernetes cluster.', 'category': 'software'}, {'entity': 'PodScheduled', 'description': 'A condition indicating whether a pod has been scheduled on a node.', 'category': 'application'}, {'entity': 'FailedScheduling', 'description': 'An event indicating that scheduling of a pod has failed.', 'category': 'application'}, {'entity': 'Insufficient cpu', 'description': 'A reason for failing to schedule a pod due to insufficient CPU resources on a node.', 'category': 'hardware'}, {'entity': 'millicores', 'description': 'A unit of measurement for CPU usage, equivalent to one thousandth of a core.', 'category': 'hardware'}, {'entity': 'cores', 'description': ""A measure of a computer's processing power, equivalent to the number of CPUs available."", 'category': 'hardware'}]","[{'source_entity': '""Node""', 'description': 'has', 'destination_entity': '""CPU""'}, {'source_entity': '""Node""', 'description': 'is affected by', 'destination_entity': '""Insufficient cpu""'}, {'source_entity': '""kubectl""', 'description': 'uses to manage', 'destination_entity': '""API server""'}, {'source_entity': '""API server""', 'description': 'is responsible for', 'destination_entity': '""PodScheduled""'}, {'source_entity': '""Node""', 'description': 'has', 'destination_entity': '""cores""'}, {'source_entity': '""Node""', 'description': 'has', 'destination_entity': '""millicores""'}, {'source_entity': '""Pod""', 'description': 'is scheduled by', 'destination_entity': '""Namespace""'}, {'source_entity': '""FailedScheduling""', 'description': 'occurs when', 'destination_entity': '""PodScheduled""'}]","['[\n  {\n    ""source"": ""Node"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""has"",\n    ""summary_er"": ""A Node in Kubernetes has one or more Pods running on it, which are the basic execution units of a containerized application.""\n  },\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""CPU"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A Pod in Kubernetes uses CPU resources to execute its containers and applications, which can be managed and allocated by the cluster administrator.""\n  }\n]', '[\n  {\n    ""source"": ""Node"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is affected by"",\n    ""summary_er"": ""A node in a Kubernetes cluster is impacted by a pod due to insufficient CPU resources, potentially leading to performance issues or even crashes.""\n  },\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Node"",\n    ""relation_description"": ""is running on"",\n    ""summary_er"": ""A pod is executed and hosted on a specific node within the Kubernetes cluster, utilizing its resources for execution.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to manage"",\n    ""summary_er"": ""Kubectl uses API server to manage pods, which are the smallest deployable units in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""API server"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is responsible for"",\n    ""summary_er"": ""The API server manages and controls the lifecycle of a pod, ensuring it is scheduled and running as expected.""\n  },\n  {\n    ""source"": ""PodScheduled"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""indicates that a pod has been successfully scheduled on a node"",\n    ""summary_er"": ""The PodScheduled condition signifies that a pod has been allocated resources on a node, marking the start of its execution.""\n  }\n]', '[\n  {\n    ""source"": ""Node"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""has"",\n    ""summary_er"": ""A Node in Kubernetes has one or more Pods running on it, which are the basic execution units of a containerized application.""\n  },\n  {\n    ""source"": ""Node"",\n    ""destination"": ""cores"",\n    ""relation_description"": ""has"",\n    ""summary_er"": ""A Node in Kubernetes has multiple CPU cores that can be allocated to Pods for processing and execution.""\n  }\n]', '[{\n  ""source"": ""Node"",\n  ""destination"": ""Pod"",\n  ""relation_description"": ""has"",\n  ""summary_er"": ""A node in Kubernetes is a virtual machine or physical host that runs containers and pods. The pod is the basic execution unit in Kubernetes, comprising one or more containers.""\n}]', '[{""source"": ""Pod"", ""destination"": ""Kubernetes Cluster"", ""relation_description"": ""is scheduled by"", ""summary_er"": ""A Pod in Kubernetes is a logical host that can contain one or more containers, which are scheduled by the cluster.""}, {""source"": ""Namespace"", ""destination"": ""Pod"", ""relation_description"": ""contains"", ""summary_er"": ""A Namespace in Kubernetes is an abstraction of a physical cluster, and it contains multiple Pods that share resources.""}]', '[\n  {\n    ""source"": ""FailedScheduling"",\n    ""destination"": ""PodScheduled"",\n    ""relation_description"": ""occurs when"",\n    ""summary_er"": ""The PodScheduled event occurs when a pod fails to schedule due to resource constraints or other scheduling issues.""\n  }\n]']","A Kubernetes pod's container request for 1 whole core CPU instead of millicores causes scheduling failure due to insufficient CPU on a single node. The issue is resolved by inspecting the node resource with `kubectl describe node` and examining the output, which shows that the node has allocated resources that are not associated with the pod, resulting in failed scheduling.","[{'highlight': ""The pod hasn't been scheduled because it can't fit on any node due to insufficient CPU on your single node.""}]"
+353,442,0,[],"410
+CHAPTER 14
+Managing pods’ computational resources
+  default      requests-pod-2  800m (40%)  0 (0%)    20Mi (1%)   0 (0%)
+  kube-system  dflt-http-b...  10m (0%)    10m (0%)  20Mi (1%)   20Mi (1%)
+  kube-system  kube-addon-...  5m (0%)     0 (0%)    50Mi (2%)   0 (0%)
+  kube-system  kube-dns-26...  260m (13%)  0 (0%)    110Mi (5%)  170Mi (8%)
+  kube-system  kubernetes-...  0 (0%)      0 (0%)    0 (0%)      0 (0%)
+  kube-system  nginx-ingre...  0 (0%)      0 (0%)    0 (0%)      0 (0%)
+Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  CPU Requests  CPU Limits      Memory Requests Memory Limits
+  ------------  ----------      --------------- -------------
+  1275m (63%)   10m (0%)        210Mi (11%)     190Mi (9%)
+If you look at the bottom left of the listing, you’ll see a total of 1,275 millicores have
+been requested by the running pods, which is 275 millicores more than what you
+requested for the first two pods you deployed. Something is eating up additional
+CPU resources. 
+ You can find the culprit in the list of pods in the previous listing. Three pods in the
+kube-system namespace have explicitly requested CPU resources. Those pods plus
+your two pods leave only 725 millicores available for additional pods. Because your
+third pod requested 1,000 millicores, the Scheduler won’t schedule it to this node, as
+that would make the node overcommitted. 
+FREEING RESOURCES TO GET THE POD SCHEDULED
+The pod will only be scheduled when an adequate amount of CPU is freed (when one
+of the first two pods is deleted, for example). If you delete your second pod, the
+Scheduler will be notified of the deletion (through the watch mechanism described in
+chapter 11) and will schedule your third pod as soon as the second pod terminates.
+This is shown in the following listing.
+$ kubectl delete po requests-pod-2
+pod ""requests-pod-2"" deleted 
+$ kubectl get po
+NAME             READY     STATUS        RESTARTS   AGE
+requests-pod     1/1       Running       0          2h
+requests-pod-2   1/1       Terminating   0          1h
+requests-pod-3   0/1       Pending       0          1h
+$ kubectl get po
+NAME             READY     STATUS    RESTARTS   AGE
+requests-pod     1/1       Running   0          2h
+requests-pod-3   1/1       Running   0          1h
+In all these examples, you’ve specified a request for memory, but it hasn’t played any
+role in the scheduling because your node has more than enough allocatable memory to
+accommodate all your pods’ requests. Both CPU and memory requests are treated the
+same way by the Scheduler, but in contrast to memory requests, a pod’s CPU requests
+also play a role elsewhere—while the pod is running. You’ll learn about this next.
+Listing 14.6
+Pod is scheduled after deleting another pod
+ 
+",[],"[{'entity': 'requests-pod-2', 'description': 'pod name', 'category': 'process'}, {'entity': 'kube-system', 'description': 'namespace', 'category': 'database'}, {'entity': 'dflt-http-b...', 'description': 'pod name', 'category': 'process'}, {'entity': 'kube-addon-...', 'description': 'pod name', 'category': 'process'}, {'entity': 'kube-dns-26...', 'description': 'pod name', 'category': 'process'}, {'entity': 'kubernetes-...', 'description': 'pod name', 'category': 'process'}, {'entity': 'nginx-ingre...', 'description': 'pod name', 'category': 'process'}, {'entity': 'requests-pod', 'description': 'pod name', 'category': 'process'}, {'entity': 'requests-pod-3', 'description': 'pod name', 'category': 'process'}, {'entity': 'CPU Requests', 'description': 'resource type', 'category': 'hardware'}, {'entity': 'CPU Limits', 'description': 'resource type', 'category': 'hardware'}, {'entity': 'Memory Requests', 'description': 'resource type', 'category': 'hardware'}, {'entity': 'Memory Limits', 'description': 'resource type', 'category': 'hardware'}, {'entity': 'Scheduler', 'description': 'component', 'category': 'software'}, {'entity': 'kubectl delete', 'description': 'command', 'category': 'application'}, {'entity': 'kubectl get', 'description': 'command', 'category': 'application'}, {'entity': 'pod', 'description': 'resource type', 'category': 'hardware'}]","[{'source_entity': '""requests-pod""', 'description': 'is deleted by', 'destination_entity': '""kubectl delete""'}, {'source_entity': '""kubectl delete""', 'description': 'deletes', 'destination_entity': '""kube-system""'}, {'source_entity': '""kubectl delete""', 'description': 'deletes', 'destination_entity': '""kube-addon-...""'}, {'source_entity': '""requests-pod-2""', 'description': 'is deleted by', 'destination_entity': '""kubectl delete""'}, {'source_entity': '""Memory Limits""', 'description': 'are set for', 'destination_entity': '""requests-pod""'}, {'source_entity': '""Scheduler""', 'description': 'schedules', 'destination_entity': '""requests-pod""'}, {'source_entity': '""kubectl get""', 'description': 'gets information about', 'destination_entity': '""kubernetes-...""'}, {'source_entity': '""kubectl get""', 'description': 'gets information about', 'destination_entity': '""kube-dns-26...""'}, {'source_entity': '""requests-pod-3""', 'description': 'is deleted by', 'destination_entity': '""kubectl delete""'}, {'source_entity': '""Memory Requests""', 'description': 'are set for', 'destination_entity': '""requests-pod""'}, {'source_entity': '""CPU Limits""', 'description': 'are set for', 'destination_entity': '""nginx-ingre...""'}, {'source_entity': '""pod""', 'description': 'is created by', 'destination_entity': '""dflt-http-b...""'}, {'source_entity': '""dflt-http-b...""', 'description': 'creates', 'destination_entity': '""pod""'}, {'source_entity': '""CPU Requests""', 'description': 'are set for', 'destination_entity': '""requests-pod""'}]","['[\n  {\n    ""source"": ""requests-pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is deleted by"",\n    ""summary_er"": ""The Kubernetes \'requests-pod\' is deleted using the command \'kubectl delete\'.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl delete"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deletes"",\n    ""summary_er"": ""Deletes a pod in the \'kube-system\' namespace using kubectl command.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl delete"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deletes"",\n    ""summary_er"": ""Deletes a Kubernetes pod using kubectl command.""\n  }\n]', '[\n  {\n    ""source"": ""requests-pod-2"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is deleted by"",\n    ""summary_er"": ""The \'requests-pod-2\' pod is deleted using the \'kubectl delete\' command.""\n  }\n]', '[\n  {\n    ""source"": ""Memory Limits"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are set for"",\n    ""summary_er"": ""Resource constraints are applied to a pod\'s memory usage.""\n  }\n]', '[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""schedules"",\n    ""summary_er"": ""The Scheduler component assigns tasks to pods, ensuring efficient resource utilization and optimal performance.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl get"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""gets information about"",\n    ""summary_er"": ""Kubectl command retrieves pod details, providing a snapshot of its current state.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""gets information about"",\n    ""summary_er"": ""The Kubernetes command-line tool (kubectl) retrieves information about a specific pod, such as its status and configuration.""\n  }\n]', '[\n  {\n    ""source"": ""requests-pod-3"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is deleted by"",\n    ""summary_er"": ""The Kubernetes pod \'requests-pod-3\' is deleted using the command \'kubectl delete\'.""\n  }\n]', '[\n  {\n    ""source"": ""Memory Requests"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are set for"",\n    ""summary_er"": ""Memory requests are configured for a specific pod, defining the amount of memory allocated to it.""\n  }\n]', '[\n  {\n    ""source"": ""CPU Limits"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are set for"",\n    ""summary_er"": ""CPU limits are configured to restrict resource usage for a pod, ensuring efficient utilization and preventing overconsumption.""\n  },\n  {\n    ""source"": ""nginx-ingress-controller"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is running as"",\n    ""summary_er"": ""The nginx-ingress-controller is executing within the pod, providing ingress functionality and routing incoming requests to the correct services.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""dflt-http-b..."",\n    ""relation_description"": ""is created by"",\n    ""summary_er"": ""A Kubernetes Pod named dflt-http-b... is created by a pod, indicating that it was spawned from another pod instance.""\n  }\n]', '[\n  {\n    ""source"": ""dflt-http-b"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates"",\n    ""summary_er"": ""The dflt-http-b service creates a new pod to host its HTTP server.""\n  }\n]', '[\n  {\n    ""source"": ""CPU Requests"",\n    ""destination"": ""requests-pod"",\n    ""relation_description"": ""are set for"",\n    ""summary_er"": ""The CPU requests are configured for the \'requests-pod\' to manage resource allocation.""\n  }\n]']","The Kubernetes Scheduler allocates computational resources based on pod requests and limits. A total of 1,275 millicores have been requested by running pods, exceeding initial requests. The culprit behind additional CPU resources usage is identified in the kube-system namespace. To free up resources for a third pod to be scheduled, one of the first two pods can be deleted. This triggers the Scheduler to schedule the third pod as soon as the deleted pod terminates. Both CPU and memory requests are treated equally by the Scheduler.","[{'highlight': 'The total CPU requests by running pods have exceeded the initial request, indicating additional resources are being consumed.'}, {'highlight': 'Three pods in the kube-system namespace have explicitly requested CPU resources, leaving only 725 millicores available for additional pods.'}, {'highlight': 'Deleting one of the first two pods will free up enough CPU to schedule the third pod, as shown in Listing 14.6.'}, {'highlight': ""Pods' CPU requests play a role elsewhere while the pod is running, unlike memory requests which only affect scheduling.""}, {'highlight': 'The Scheduler will be notified of pod deletions through the watch mechanism and reschedule pods accordingly.'}]"
+354,443,0,[],"411
+Requesting resources for a pod’s containers
+14.1.3 Understanding how CPU requests affect CPU time sharing
+You now have two pods running in your cluster (you can disregard the system pods
+right now, because they’re mostly idle). One has requested 200 millicores and the
+other one five times as much. At the beginning of the chapter, we said Kubernetes dis-
+tinguishes between resource requests and limits. You haven’t defined any limits yet, so
+the two pods are in no way limited when it comes to how much CPU they can each
+consume. If the process inside each pod consumes as much CPU time as it can, how
+much CPU time does each pod get? 
+ The CPU requests don’t only affect scheduling—they also determine how the
+remaining (unused) CPU time is distributed between pods. Because your first pod
+requested 200 millicores of CPU and the other one 1,000 millicores, any unused CPU
+will be split among the two pods in a 1 to 5 ratio, as shown in figure 14.2. If both pods
+consume as much CPU as they can, the first pod will get one sixth or 16.7% of the
+CPU time and the other one the remaining five sixths or 83.3%.
+But if one container wants to use up as much CPU as it can, while the other one is sit-
+ting idle at a given moment, the first container will be allowed to use the whole CPU
+time (minus the small amount of time used by the second container, if any). After all,
+it makes sense to use all the available CPU if no one else is using it, right? As soon as
+the second container needs CPU time, it will get it and the first container will be throt-
+tled back.
+14.1.4 Defining and requesting custom resources
+Kubernetes also allows you to add your own custom resources to a node and request
+them in the pod’s resource requests. Initially these were known as Opaque Integer
+Resources, but were replaced with Extended Resources in Kubernetes version 1.8.
+Pod A:
+200 m
+CPU
+requests
+Pod B: 1000 m
+800 m available
+CPU
+usage
+2000 m
+1000 m
+0 m
+Pod A and B requests
+are in 1:5 ratio.
+Available CPU time is
+distributed in same ratio.
+Pod B: 1667 m
+133 m
+(1/6)
+667 m
+(5/6)
+Pod A:
+333 m
+Figure 14.2
+Unused CPU time is distributed to containers based on their CPU requests.
+ 
+","[            Col0      Col1           Col2  Col3  Col4           Col5  \
+0  Pod A:\n200 m      None  Pod B: 1000 m  None  None                  
+1                     None           None  None  None           None   
+2           None      None                 None  None           None   
+3                 Pod\n333          A:\nm              Pod B: 1667 m   
+
+  133 m (1/6)      667 m (5/6)  
+0              800 m available  
+1                               
+2        None                   
+3        None                   ]","[{'entity': 'pod', 'description': 'A pod in Kubernetes that can contain one or more containers.', 'category': 'container'}, {'entity': 'container', 'description': 'A lightweight and standalone executable binary that runs a process.', 'category': 'process'}, {'entity': 'CPU', 'description': ""Central Processing Unit, a component of a computer system that executes most instructions that the computer's software performs."", 'category': 'hardware'}, {'entity': 'millicores', 'description': 'A unit of measurement for CPU time, where 1 millicore is equal to 0.001 CPU cores.', 'category': 'unit_of_measurement'}, {'entity': 'resource requests', 'description': 'The amount of resources a pod or container requires to run, such as CPU and memory.', 'category': 'resource_management'}, {'entity': 'limits', 'description': 'The maximum amount of resources a pod or container can consume, set by the user.', 'category': 'resource_management'}, {'entity': 'Kubernetes', 'description': 'An open-source container orchestration system for automating the deployment, scaling, and management of containers.', 'category': 'container_orchestration'}, {'entity': 'node', 'description': 'A machine in a Kubernetes cluster that runs pods and provides resources to them.', 'category': 'hardware'}, {'entity': 'custom resources', 'description': 'Resources added by the user to a node, such as Opaque Integer Resources or Extended Resources.', 'category': 'resource_management'}, {'entity': 'Extended Resources', 'description': 'A type of custom resource in Kubernetes that provides additional resources to pods and containers.', 'category': 'resource_management'}, {'entity': 'Opaque Integer Resources', 'description': 'An older type of custom resource in Kubernetes that was replaced by Extended Resources.', 'category': 'resource_management'}, {'entity': 'CPU time sharing', 'description': 'The process of distributing unused CPU time among pods and containers based on their CPU requests.', 'category': 'resource_management'}]","[{'source_entity': '""container""', 'description': 'allocates', 'destination_entity': '""CPU time sharing""'}, {'source_entity': '""container""', 'description': 'requests', 'destination_entity': '""resource requests""'}, {'source_entity': '""container""', 'description': 'uses', 'destination_entity': '""CPU""'}, {'source_entity': '""container""', 'description': 'utilizes', 'destination_entity': '""millicores""'}, {'source_entity': '""Kubernetes""', 'description': 'manages', 'destination_entity': '""node""'}, {'source_entity': '""Kubernetes""', 'description': 'allocates', 'destination_entity': '""CPU time sharing""'}, {'source_entity': '""pod""', 'description': 'requests', 'destination_entity': '""resource requests""'}, {'source_entity': '""pod""', 'description': 'limits', 'destination_entity': '""limits""'}, {'source_entity': '""Kubernetes""', 'description': 'supports', 'destination_entity': '""custom resources""'}, {'source_entity': '""node""', 'description': 'provides', 'destination_entity': '""CPU time sharing""'}]","['[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allocates"",\n    ""summary_er"": ""A container in Kubernetes allocates resources to a pod, allowing multiple containers to share CPU time and run concurrently.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""container"",\n    ""relation_description"": ""CPU time sharing"",\n    ""summary_er"": ""A pod in Kubernetes shares CPU time with its contained containers, enabling efficient resource utilization and concurrent execution.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""A container\'s resource requests are allocated to a pod, ensuring sufficient resources for its execution.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""A container utilizes a pod\'s resources, such as CPU, to run its application.""\n  },\n  {\n    ""source"": ""CPU"",\n    ""destination"": ""container"",\n    ""relation_description"": ""allocated to"",\n    ""summary_er"": ""A container is allocated a portion of the available CPU resources to execute its processes.""\n  }\n]', '[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""utilizes"",\n    ""summary_er"": ""A container utilizes a pod\'s resources, such as millicores, to run its application.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages pods, ensuring efficient resource allocation and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allocates"",\n    ""summary_er"": ""Kubernetes allocates resources to a pod, allowing it to run and manage containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests"",\n    ""summary_er"": ""A Kubernetes Pod\'s resource requests determine the amount of CPU and memory allocated to it.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits"",\n    ""summary_er"": ""A Kubernetes Pod has resource limits that define the maximum amount of CPU and memory it can consume.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""supports"",\n    ""summary_er"": ""Kubernetes manages and orchestrates containerized applications, including pods, which are the basic execution unit in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""custom resources"",\n    ""relation_description"": """",\n    ""summary_er"": ""Kubernetes supports custom resources, allowing users to define their own API objects and manage them within the Kubernetes ecosystem.""\n  }\n]', '[\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""A node in a Kubernetes cluster provides resources to a pod, allowing it to run and execute tasks.""\n  },\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""CPU time sharing"",\n    ""summary_er"": ""A node shares its CPU resources with multiple pods, enabling them to utilize processing power efficiently.""\n  }\n]']","Kubernetes distributes unused CPU time among pods in a ratio based on their CPU requests, allowing one pod to consume all available CPU if the other is idle. Custom resources can also be added and requested by pods, initially as Opaque Integer Resources, then replaced with Extended Resources in Kubernetes 1.8.","[{'highlight': 'Kubernetes distinguishes between resource requests and limits, where requests affect scheduling and determine how unused CPU time is distributed between pods.'}, {'highlight': 'CPU requests are in a 1 to 5 ratio, so if one pod consumes as much CPU as it can, the other pod will get 83.3% of the CPU time and the first pod will get 16.7%.'}, {'highlight': 'If one container is idle, the other container can use up to 100% of the available CPU time, but as soon as the idle container needs CPU time, it will be throttled back.'}, {'highlight': ""Kubernetes allows you to add custom resources to a node and request them in the pod's resource requests, which were initially known as Opaque Integer Resources but replaced with Extended Resources in Kubernetes version 1.8.""}, {'highlight': 'Unused CPU time is distributed between containers based on their CPU requests, as shown in Figure 14.2, where Pod A gets 16.7% and Pod B gets 83.3% of the available CPU time.'}]"
+355,444,0,[],"412
+CHAPTER 14
+Managing pods’ computational resources
+ First, you obviously need to make Kubernetes aware of your custom resource by
+adding it to the Node object’s capacity field. This can be done by performing a
+PATCH HTTP request. The resource name can be anything, such as example.org/my-
+resource, as long as it doesn’t start with the kubernetes.io domain. The quantity
+must be an integer (for example, you can’t set it to 100 millis, because 0.1 isn’t an inte-
+ger; but you can set it to 1000m or 2000m or, simply, 1 or 2). The value will be copied
+from the capacity to the allocatable field automatically.
+ Then, when creating pods, you specify the same resource name and the requested
+quantity under the resources.requests field in the container spec or with --requests
+when using kubectl run like you did in previous examples. The Scheduler will make
+sure the pod is only deployed to a node that has the requested amount of the custom
+resource available. Every deployed pod obviously reduces the number of allocatable
+units of the resource.
+ An example of a custom resource could be the number of GPU units available on the
+node. Pods requiring the use of a GPU specify that in their requests. The Scheduler then
+makes sure the pod is only scheduled to nodes with at least one GPU still unallocated.
+14.2
+Limiting resources available to a container
+Setting resource requests for containers in a pod ensures each container gets the min-
+imum amount of resources it needs. Now let’s see the other side of the coin—the
+maximum amount the container will be allowed to consume. 
+14.2.1 Setting a hard limit for the amount of resources a container can use
+We’ve seen how containers are allowed to use up all the CPU if all the other processes
+are sitting idle. But you may want to prevent certain containers from using up more
+than a specific amount of CPU. And you’ll always want to limit the amount of memory
+a container can consume. 
+ CPU is a compressible resource, which means the amount used by a container can
+be throttled without affecting the process running in the container in an adverse way.
+Memory is obviously different—it’s incompressible. Once a process is given a chunk of
+memory, that memory can’t be taken away from it until it’s released by the process
+itself. That’s why you need to limit the maximum amount of memory a container can
+be given. 
+ Without limiting memory, a container (or a pod) running on a worker node may
+eat up all the available memory and affect all other pods on the node and any new
+pods scheduled to the node (remember that new pods are scheduled to the node
+based on the memory requests and not actual memory usage). A single malfunction-
+ing or malicious pod can practically make the whole node unusable.
+CREATING A POD WITH RESOURCE LIMITS
+To prevent this from happening, Kubernetes allows you to specify resource limits for
+every container (along with, and virtually in the same way as, resource requests). The
+following listing shows an example pod manifest with resource limits.
+ 
+",[],"[{'entity': 'Kubernetes', 'description': 'Container orchestration system', 'category': 'software'}, {'entity': 'Node', 'description': 'Physical or virtual machine running Kubernetes', 'category': 'hardware'}, {'entity': 'PATCH HTTP request', 'description': 'HTTP request method to update a resource', 'category': 'protocol'}, {'entity': 'capacity field', 'description': 'Field in the Node object to specify custom resources', 'category': 'field'}, {'entity': 'example.org/my-resource', 'description': 'Custom resource name', 'category': 'resource'}, {'entity': 'quantity', 'description': 'Integer value for custom resource allocation', 'category': 'parameter'}, {'entity': 'resources.requests field', 'description': 'Field in the container spec to specify requested resources', 'category': 'field'}, {'entity': 'Scheduler', 'description': 'Component that assigns pods to nodes based on resource availability', 'category': 'component'}, {'entity': 'GPU units', 'description': 'Custom resource representing available GPU units', 'category': 'resource'}, {'entity': 'kubectl run', 'description': 'Command to create a pod with specified resources', 'category': 'command'}, {'entity': 'container spec', 'description': ""Specification for a container's resources and settings"", 'category': 'specification'}, {'entity': 'resources.requests', 'description': 'Parameter to specify requested resources for a pod', 'category': 'parameter'}, {'entity': 'CPU', 'description': 'Compressible resource that can be throttled', 'category': 'resource'}, {'entity': 'memory', 'description': 'Incompressible resource that cannot be taken away from a process', 'category': 'resource'}, {'entity': 'container', 'description': 'Isolated environment for running an application or service', 'category': 'software component'}, {'entity': 'pod', 'description': 'Logical host for one or more containers', 'category': 'software component'}, {'entity': 'worker node', 'description': 'Node that runs pods and manages resources', 'category': 'hardware'}, {'entity': 'resource limits', 'description': 'Maximum amount of resources a container can use', 'category': 'parameter'}, {'entity': 'pod manifest', 'description': 'Specification for creating a pod with specific settings and resources', 'category': 'specification'}]","[{'source_entity': '""Kubernetes""', 'description': 'manages', 'destination_entity': '""pod""'}, {'source_entity': '""kubectl run""', 'description': 'creates', 'destination_entity': '""pod manifest""'}, {'source_entity': '""resources.requests field""', 'description': 'specifies', 'destination_entity': '""resources.requests""'}, {'source_entity': '""container spec""', 'description': 'defines', 'destination_entity': '""container""'}, {'source_entity': '""worker node""', 'description': 'hosts', 'destination_entity': '""pod""'}, {'source_entity': '""Node""', 'description': 'allocates', 'destination_entity': '""resource limits""'}, {'source_entity': '""Scheduler""', 'description': 'assigns', 'destination_entity': '""GPU units""'}, {'source_entity': '""PATCH HTTP request""', 'description': 'updates', 'destination_entity': '""container spec""'}, {'source_entity': '""resources.requests field""', 'description': 'limits', 'destination_entity': '""memory""'}, {'source_entity': '""capacity field""', 'description': 'defines', 'destination_entity': '""quantity""'}]","['[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""Kubernetes manages pods, ensuring efficient resource allocation and scaling.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl run"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""creates"",\n    ""summary_er"": ""Kubernetes command to create a new pod from a YAML or JSON file.""\n  }\n]', '[\n  {\n    ""source"": ""resources.requests field"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The resources.requests field in a Kubernetes configuration specifies the requested resources for a pod, such as CPU and memory.""\n  }\n]', '[\n  {\n    ""source"": ""container spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A container specification that defines a pod\'s configuration, including its containers and their settings.""\n  }\n]', '[\n  {\n    ""source"": ""worker node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""A worker node in a Kubernetes cluster hosts one or more pods, providing them with computational resources and storage.""\n  }\n]', '[\n  {\n    ""source"": ""Node"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""allocates"",\n    ""summary_er"": ""A Node in Kubernetes allocates resources to a Pod, ensuring it has sufficient CPU and memory to run.""\n  },\n  {\n    ""source"": ""Pod"",\n    ""destination"": ""Resource Limits"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""A Pod defines resource limits for its containers, specifying the maximum amount of CPU and memory they can consume.""\n  }\n]', '[\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""assigns"",\n    ""summary_er"": ""The Scheduler assigns GPU units to a pod for efficient resource utilization.""\n  }\n]', '[\n  {\n    ""source"": ""PATCH HTTP request"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""updates"",\n    ""summary_er"": ""A PATCH HTTP request updates a pod\'s container specification.""\n  },\n  {\n    ""source"": ""container spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""A container specification specifies the configuration for a pod\'s containers.""\n  }\n]', '[\n  {\n    ""source"": ""resources.requests field"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits"",\n    ""summary_er"": ""The resources.requests field in Kubernetes sets memory limits for a pod, ensuring it doesn\'t exceed allocated memory.""\n  }\n]', '[\n  {\n    ""source"": ""capacity field"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines"",\n    ""summary_er"": ""The capacity field in a pod defines its quantity.""\n  }\n]']","To manage pods' computational resources in Kubernetes, a custom resource can be added to the Node object's capacity field. This involves performing a PATCH HTTP request and specifying the resource name and quantity. When creating pods, the same resource name and requested quantity must be specified under the resources.requests field. Resource limits for containers can also be set to prevent them from using up excessive CPU or memory. Limits can be set on both CPU and memory usage, preventing malfunctioning or malicious pods from affecting other nodes.","[{'highlight': ""To make Kubernetes aware of a custom resource, add it to the Node object's capacity field by performing a PATCH HTTP request.""}, {'highlight': 'When creating pods, specify the same resource name and requested quantity under resources.requests in the container spec or with --requests using kubectl run.'}, {'highlight': 'Kubernetes allows you to specify resource limits for every container (along with resource requests) to prevent a malfunctioning or malicious pod from affecting other pods on the node.'}, {'highlight': 'Resource limits can be set for CPU and memory, but memory is an incompressible resource that cannot be throttled without affecting the process running in the container.'}, {'highlight': 'A single malfunctioning or malicious pod can practically make a whole node unusable if not limited by resource limits, especially when it comes to memory usage.'}]"
+356,445,0,[],"413
+Limiting resources available to a container
+apiVersion: v1
+kind: Pod
+metadata:
+  name: limited-pod
+spec:
+  containers:
+  - image: busybox
+    command: [""dd"", ""if=/dev/zero"", ""of=/dev/null""]
+    name: main
+    resources:            
+      limits:             
+        cpu: 1             
+        memory: 20Mi       
+This pod’s container has resource limits configured for both CPU and memory. The
+process or processes running inside the container will not be allowed to consume
+more than 1 CPU core and 20 mebibytes of memory. 
+NOTE
+Because you haven’t specified any resource requests, they’ll be set to
+the same values as the resource limits.
+OVERCOMMITTING LIMITS
+Unlike resource requests, resource limits aren’t constrained by the node’s allocatable
+resource amounts. The sum of all limits of all the pods on a node is allowed to exceed
+100% of the node’s capacity (figure 14.3). Restated, resource limits can be overcom-
+mitted. This has an important consequence—when 100% of the node’s resources are
+used up, certain containers will need to be killed.
+You’ll see how Kubernetes decides which containers to kill in section 14.3, but individ-
+ual containers can be killed even if they try to use more than their resource limits
+specify. You’ll learn more about this next.
+Listing 14.7
+A pod with a hard limit on CPU and memory: limited-pod.yaml
+Specifying resource 
+limits for the container
+This container will be 
+allowed to use at 
+most 1 CPU core.
+The container will be
+allowed to use up to 20
+mebibytes of memory.
+Node
+0%
+136%
+100%
+Pod A
+Memory requests
+Pod B
+Pod C
+Pod A
+Memory limits
+Pod B
+Unallocated
+Pod C
+Figure 14.3
+The sum of resource limits of all pods on a node can exceed 100% of the node’s 
+capacity.
+ 
+","[Empty DataFrame
+Columns: [Pod A, Pod B, Pod C, Unallocated]
+Index: [], Empty DataFrame
+Columns: [Pod A, Pod B, Pod C, Col3]
+Index: []]","[{'entity': 'cpu', 'description': 'Central Processing Unit', 'category': 'hardware'}, {'entity': 'memory', 'description': 'Random Access Memory', 'category': 'hardware'}, {'entity': 'container', 'description': 'A lightweight and standalone executable software package', 'category': 'software'}, {'entity': 'pod', 'description': 'The basic execution unit in Kubernetes, a logical host for one or more containers', 'category': 'application'}, {'entity': 'image', 'description': 'A pre-built Docker image used to run a container', 'category': 'container'}, {'entity': 'command', 'description': 'An instruction set executed by the operating system', 'category': 'process'}, {'entity': 'limits', 'description': 'Resource constraints for a container or pod', 'category': 'resource'}, {'entity': 'requests', 'description': 'Resource requirements for a container or pod', 'category': 'resource'}, {'entity': 'overcommitting', 'description': 'The ability to allocate more resources than available on the node', 'category': 'process'}, {'entity': 'node', 'description': 'A physical or virtual machine running Kubernetes', 'category': 'hardware'}, {'entity': 'allocatable', 'description': 'Resources available for allocation by the node', 'category': 'resource'}]","[{'source_entity': '""container""', 'description': 'is run on', 'destination_entity': '""node""'}, {'source_entity': '""requests""', 'description': 'are made to', 'destination_entity': '""pod""'}, {'source_entity': '""overcommitting""', 'description': 'can occur when', 'destination_entity': '""memory""'}, {'source_entity': '""image""', 'description': 'is used to create', 'destination_entity': '""container""'}, {'source_entity': '""node""', 'description': 'has limited', 'destination_entity': '""allocatable""'}, {'source_entity': '""memory""', 'description': 'can be allocated by', 'destination_entity': '""pod""'}, {'source_entity': '""cpu""', 'description': 'can be used by', 'destination_entity': '""container""'}, {'source_entity': '""command""', 'description': 'is executed within', 'destination_entity': '""container""'}, {'source_entity': '""pod""', 'description': 'requests resources from', 'destination_entity': '""node""'}, {'source_entity': '""limits""', 'description': 'are set for', 'destination_entity': '""container""'}]","['[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is run on"",\n    ""summary_er"": ""A container is executed or run within a pod, which provides shared resources and networking.""\n  }\n]', '[\n  {\n    ""source"": ""requests"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are made to"",\n    ""summary_er"": ""Requests in Kubernetes are made to pods, which are the basic execution units of a containerized application.""\n  }\n]', '[\n  {\n    ""source"": ""overcommitting"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can occur when"",\n    ""summary_er"": ""Overcommitting occurs when a pod\'s memory requirements exceed available resources, potentially leading to performance issues and crashes.""\n  }\n]', '[\n  {\n    ""source"": ""image"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to create"",\n    ""summary_er"": ""An image is used to create a container, which in turn creates a pod.""\n  },\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is created by"",\n    ""summary_er"": ""A container is created by an image and runs within a pod.""\n  }\n]', '[\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""has limited allocatable"",\n    ""summary_er"": ""A node in a Kubernetes cluster has limited allocatable resources, which are shared among pods.""\n  }\n]', '[{\n  ""source"": ""memory"",\n  ""destination"": ""pod"",\n  ""relation_description"": ""can be allocated by"",\n  ""summary_er"": ""Memory is a crucial resource that can be dynamically allocated to pods in a Kubernetes cluster, allowing for efficient use of system resources.""\n}]', '[\n  {\n    ""source"": ""cpu"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can be used by"",\n    ""summary_er"": ""A CPU resource that can be utilized by a Pod in Kubernetes.""\n  },\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can run inside"",\n    ""summary_er"": ""A Container that can execute within a Pod, providing isolation and resource management.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is executed within"",\n    ""summary_er"": ""In Kubernetes, a Pod is an executable unit that can contain one or more containers. Containers are lightweight and portable execution environments.""\n  },\n  {\n    ""source"": ""Docker"",\n    ""destination"": ""Container"",\n    ""relation_description"": ""is contained in"",\n    ""summary_er"": ""A Docker Container is a lightweight and portable environment for running an application, which can be created from a Docker Image.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""requests resources from"",\n    ""summary_er"": ""A Kubernetes pod requests resources, such as CPU and memory, from another pod to function properly.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""node"",\n    ""relation_description"": ""runs on"",\n    ""summary_er"": ""A pod runs on a node in the Kubernetes cluster, utilizing its resources for execution.""\n  }\n]', '[\n  {\n    ""source"": ""limits"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are set for"",\n    ""summary_er"": ""Resource limits, such as CPU and memory, are configured for a pod to ensure proper container execution.""\n  },\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""A container is executed within a pod, providing isolation and resource management for the application.""\n  }\n]']","A Kubernetes pod's container has configured resource limits for CPU and memory, limiting its consumption to 1 CPU core and 20Mi of memory. Resource limits are not constrained by the node's allocatable resources and can be overcommitted, potentially leading to containers being killed if resources are fully utilized.","[{'highlight': ""This pod's container has resource limits configured for both CPU and memory.""}, {'highlight': ""Resource limits aren't constrained by the node's allocatable resource amounts, allowing them to exceed 100% of the node's capacity.""}, {'highlight': ""Certain containers will need to be killed when 100% of the node's resources are used up.""}, {'highlight': 'Individual containers can be killed even if they try to use more than their resource limits specify.'}, {'highlight': 'Resource requests are set to the same values as the resource limits by default.'}]"
+357,446,0,[],"414
+CHAPTER 14
+Managing pods’ computational resources
+14.2.2 Exceeding the limits
+What happens when a process running in a container tries to use a greater amount of
+resources than it’s allowed to? 
+ You’ve already learned that CPU is a compressible resource, and it’s only natural
+for a process to want to consume all of the CPU time when not waiting for an I/O
+operation. As you’ve learned, a process’ CPU usage is throttled, so when a CPU
+limit is set for a container, the process isn’t given more CPU time than the config-
+ured limit. 
+ With memory, it’s different. When a process tries to allocate memory over its
+limit, the process is killed (it’s said the container is OOMKilled, where OOM stands
+for Out Of Memory). If the pod’s restart policy is set to Always or OnFailure, the
+process is restarted immediately, so you may not even notice it getting killed. But if it
+keeps going over the memory limit and getting killed, Kubernetes will begin restart-
+ing it with increasing delays between restarts. You’ll see a CrashLoopBackOff status
+in that case:
+$ kubectl get po
+NAME        READY     STATUS             RESTARTS   AGE
+memoryhog   0/1       CrashLoopBackOff   3          1m
+The CrashLoopBackOff status doesn’t mean the Kubelet has given up. It means that
+after each crash, the Kubelet is increasing the time period before restarting the con-
+tainer. After the first crash, it restarts the container immediately and then, if it crashes
+again, waits for 10 seconds before restarting it again. On subsequent crashes, this
+delay is then increased exponentially to 20, 40, 80, and 160 seconds, and finally lim-
+ited to 300 seconds. Once the interval hits the 300-second limit, the Kubelet keeps
+restarting the container indefinitely every five minutes until the pod either stops
+crashing or is deleted. 
+ To examine why the container crashed, you can check the pod’s log and/or use
+the kubectl describe pod command, as shown in the following listing.
+$ kubectl describe pod
+Name:       memoryhog
+...
+Containers:
+  main:
+    ...
+    State:          Terminated          
+      Reason:       OOMKilled           
+      Exit Code:    137
+      Started:      Tue, 27 Dec 2016 14:55:53 +0100
+      Finished:     Tue, 27 Dec 2016 14:55:58 +0100
+    Last State:     Terminated            
+      Reason:       OOMKilled             
+      Exit Code:    137
+Listing 14.8
+Inspecting why a container terminated with kubectl describe pod
+The current container was 
+killed because it was out 
+of memory (OOM).
+The previous container 
+was also killed because 
+it was  OOM
+ 
+",[],"[{'entity': 'CPU', 'description': 'a compressible resource', 'category': 'hardware'}, {'entity': 'process', 'description': 'a running program', 'category': 'software'}, {'entity': 'container', 'description': 'a lightweight and portable executable package', 'category': 'software'}, {'entity': 'memory', 'description': 'a non-compressible resource', 'category': 'hardware'}, {'entity': 'OOMKilled', 'description': 'Out Of Memory killed, a process that exceeds its memory limit is terminated', 'category': 'process'}, {'entity': 'kubectl', 'description': 'a command-line tool for managing Kubernetes resources', 'category': 'software'}, {'entity': 'pod', 'description': 'the basic execution unit in Kubernetes', 'category': 'application'}, {'entity': 'CrashLoopBackOff', 'description': 'a status indicating that a pod is restarting with increasing delays', 'category': 'status'}, {'entity': 'Kubelet', 'description': 'the agent running on each node in a Kubernetes cluster', 'category': 'software'}, {'entity': 'container restart policy', 'description': 'the policy for restarting a container when it crashes', 'category': 'process'}, {'entity': 'memory limit', 'description': 'the maximum amount of memory that a process can use', 'category': 'resource management'}]","[{'source_entity': '""process""', 'description': 'executes', 'destination_entity': '""container""'}, {'source_entity': '""Kubelet""', 'description': 'manages', 'destination_entity': '""container""'}, {'source_entity': '""OOMKilled""', 'description': 'kills', 'destination_entity': '""process""'}, {'source_entity': '""container restart policy""', 'description': 'determines', 'destination_entity': '""container""'}, {'source_entity': '""CPU""', 'description': 'allocates', 'destination_entity': '""container""'}, {'source_entity': '""memory""', 'description': 'allocates', 'destination_entity': '""container""'}, {'source_entity': '""kubectl""', 'description': 'interacts with', 'destination_entity': '""Kubelet""'}, {'source_entity': '""CrashLoopBackOff""', 'description': 'indicates', 'destination_entity': '""container""'}, {'source_entity': '""memory limit""', 'description': 'enforces', 'destination_entity': '""container""'}, {'source_entity': '""pod""', 'description': 'hosts', 'destination_entity': '""container""'}]","['[\n  {\n    ""source"": ""process"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""A process executes within a container, utilizing system resources to run an application or service.""\n  },\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""A container runs within a pod, providing isolation and resource management for the application.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The Kubelet manages a pod, ensuring its lifecycle and resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""OOMKilled"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""kills"",\n    ""summary_er"": ""OOMKilled kills a pod when it exceeds its allocated resources.""\n  }\n]', '[\n  {\n    ""source"": ""container restart policy"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""determines"",\n    ""summary_er"": ""The container restart policy determines how a pod should be restarted in case of a container failure.""\n  }\n]', '[\n  {\n    ""source"": ""CPU"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allocates"",\n    ""summary_er"": ""The CPU resource is allocated to a specific pod, allowing it to run and execute tasks.""\n  }\n]', '[\n  {\n    ""source"": ""memory"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""allocates"",\n    ""summary_er"": ""Memory allocation for a pod involves assigning a portion of system memory to run the container, ensuring efficient resource utilization and application performance.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""interacts with"",\n    ""summary_er"": ""kubectl, a command-line tool, interacts with pods to manage and control containerized applications.""\n  }\n]', '[\n  {\n    ""source"": ""CrashLoopBackOff"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""container"",\n    ""summary_er"": ""A CrashLoopBackOff error occurs when a container in a pod crashes and restarts repeatedly, causing a loopback off.""\n  }\n]', '[\n  {\n    ""source"": ""memory limit"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""enforces"",\n    ""summary_er"": ""The memory limit of a container is enforced by the Kubernetes system to prevent resource overutilization and ensure smooth operation.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts"",\n    ""summary_er"": ""A pod in Kubernetes hosts one or more containers, providing a shared environment for them to run.""\n  },\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""A container is an instance of a Docker image that runs within a pod in Kubernetes, utilizing the resources provided by the pod.""\n  }\n]']","When a process running in a container tries to use more resources than allowed, the process is throttled for CPU usage. However, for memory, if the process allocates more memory than its limit, it's killed (OOMKilled) and restarted by Kubernetes with increasing delays between restarts, eventually resulting in a CrashLoopBackOff status.","[{'highlight': ""When a process running in a container tries to use a greater amount of resources than it's allowed to, Kubernetes will kill the process (OOMKilled) if the pod's restart policy is set to Always or OnFailure.""}, {'highlight': ""If a pod's restart policy is set to Always or OnFailure and the process keeps going over the memory limit and getting killed, Kubernetes will begin restarting it with increasing delays between restarts, resulting in a CrashLoopBackOff status.""}, {'highlight': 'The Kubelet increases the time period before restarting the container after each crash, starting from 10 seconds and exponentially increasing to 20, 40, 80, and 160 seconds, and finally limited to 300 seconds.'}, {'highlight': ""To examine why a container crashed, you can check the pod's log and/or use the kubectl describe pod command to get information about the terminated container, including its reason for termination (OOMKilled).""}, {'highlight': ""A CrashLoopBackOff status doesn't mean the Kubelet has given up; it means that after each crash, the Kubelet is increasing the time period before restarting the container.""}]"
+358,447,0,[],"415
+Limiting resources available to a container
+      Started:      Tue, 27 Dec 2016 14:55:37 +0100
+      Finished:     Tue, 27 Dec 2016 14:55:50 +0100
+    Ready:          False
+...
+The OOMKilled status tells you that the container was killed because it was out of mem-
+ory. In the previous listing, the container went over its memory limit and was killed
+immediately. 
+ It’s important not to set memory limits too low if you don’t want your container to
+be killed. But containers can get OOMKilled even if they aren’t over their limit. You’ll
+see why in section 14.3.2, but first, let’s discuss something that catches most users off-
+guard the first time they start specifying limits for their containers.
+14.2.3 Understanding how apps in containers see limits
+If you haven’t deployed the pod from listing 14.7, deploy it now:
+$ kubectl create -f limited-pod.yaml
+pod ""limited-pod"" created
+Now, run the top command in the container, the way you did at the beginning of the
+chapter. The command’s output is shown in the following listing.
+$ kubectl exec -it limited-pod top
+Mem: 1450980K used, 597504K free, 22012K shrd, 65876K buff, 857552K cached
+CPU: 10.0% usr 40.0% sys  0.0% nic 50.0% idle  0.0% io  0.0% irq  0.0% sirq
+Load average: 0.17 1.19 2.47 4/503 10
+  PID  PPID USER     STAT   VSZ %VSZ CPU %CPU COMMAND
+    1     0 root     R     1192  0.0   1 49.9 dd if /dev/zero of /dev/null
+    5     0 root     R     1196  0.0   0  0.0 top
+First, let me remind you that the pod’s CPU limit is set to 1 core and its memory limit
+is set to 20 MiB. Now, examine the output of the top command closely. Is there any-
+thing that strikes you as odd?
+ Look at the amount of used and free memory. Those numbers are nowhere near
+the 20 MiB you set as the limit for the container. Similarly, you set the CPU limit to
+one core and it seems like the main process is using only 50% of the available CPU
+time, even though the dd command, when used like you’re using it, usually uses all the
+CPU it has available. What’s going on?
+UNDERSTANDING THAT CONTAINERS ALWAYS SEE THE NODE’S MEMORY, NOT THE CONTAINER’S
+The top command shows the memory amounts of the whole node the container is
+running on. Even though you set a limit on how much memory is available to a con-
+tainer, the container will not be aware of this limit. 
+Listing 14.9
+Running the top command in a CPU- and memory-limited container
+ 
+",[],"[{'entity': 'container', 'description': 'a process running within a pod', 'category': 'software'}, {'entity': 'OOMKilled', 'description': 'status indicating that a container was killed due to out-of-memory error', 'category': 'process'}, {'entity': 'memory limit', 'description': 'the maximum amount of memory available to a container', 'category': 'resource'}, {'entity': 'CPU limit', 'description': 'the maximum amount of CPU time available to a container', 'category': 'resource'}, {'entity': 'pod', 'description': 'a logical host for one or more containers', 'category': 'software'}, {'entity': 'kubectl', 'description': 'command-line tool for managing Kubernetes clusters', 'category': 'application'}, {'entity': 'top command', 'description': 'system monitoring command that displays memory and CPU usage statistics', 'category': 'process'}, {'entity': 'dd command', 'description': 'data duplication command used to generate load on the system', 'category': 'process'}, {'entity': 'node', 'description': 'a machine in a Kubernetes cluster', 'category': 'hardware'}, {'entity': 'Kubernetes', 'description': 'container orchestration system', 'category': 'software'}]","[{'source_entity': '""container""', 'description': 'is running on', 'destination_entity': '""node""'}, {'source_entity': '""kubectl""', 'description': 'can manage', 'destination_entity': '""pod""'}, {'source_entity': '""kubectl""', 'description': 'can set', 'destination_entity': '""CPU limit""'}, {'source_entity': '""kubectl""', 'description': 'can set', 'destination_entity': '""memory limit""'}, {'source_entity': '""OOMKilled""', 'description': 'occurs when', 'destination_entity': '""container""'}, {'source_entity': '""top command""', 'description': 'displays information about', 'destination_entity': '""container""'}, {'source_entity': '""dd command""', 'description': 'can cause', 'destination_entity': '""OOMKilled""'}, {'source_entity': '""node""', 'description': 'has', 'destination_entity': '""pod""'}, {'source_entity': '""Kubernetes""', 'description': 'uses', 'destination_entity': '""container""'}]","['[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is running on"",\n    ""summary_er"": ""A container is a lightweight and portable executable that runs on a pod, providing isolation and resource management.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""node"",\n    ""relation_description"": """",\n    ""summary_er"": ""A pod is a logical host that runs one or more containers, and can be scheduled on a node for execution.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can manage"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) manages pods, which are the basic execution units in a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can set"",\n    ""summary_er"": ""\\""kubectl\\"" can be used to set various configurations for a \\""pod\\"", including CPU limits.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""CPU limit"",\n    ""relation_description"": ""set"",\n    ""summary_er"": ""A \\""pod\\"" can have its \\""CPU limit\\"" set using kubectl, which controls resource allocation.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can set"",\n    ""summary_er"": ""Kubectl can be used to set memory limits for a running pod.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""memory limit"",\n    ""relation_description"": ""set"",\n    ""summary_er"": ""A pod\'s memory limit can be set using kubectl to control resource usage.""\n  }\n]', '[\n  {\n    ""source"": ""OOMKilled"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""occurs when"",\n    ""summary_er"": ""The \'OOMKilled\' relation occurs when a container exceeds its allocated memory, causing the pod to be terminated due to Out-Of-Memory (OOM) conditions.""\n  },\n  {\n    ""source"": ""OOMKilled"",\n    ""destination"": ""container"",\n    ""relation_description"": ""occurs when"",\n    ""summary_er"": ""The \'OOMKilled\' relation occurs when a container exceeds its allocated memory, causing the pod to be terminated due to Out-Of-Memory (OOM) conditions.""\n  }\n]', '[\n  {\n    ""source"": ""top command"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays information about"",\n    ""summary_er"": ""The top command displays detailed system information, including process and memory usage, for a pod in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""dd command"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""can cause"",\n    ""summary_er"": ""Running a dd command can cause a pod to be OOMKilled due to excessive resource usage.""\n  }\n]', '[\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""has"",\n    ""summary_er"": ""A node in Kubernetes has a pod, which is a container running an application.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubernetes manages and orchestrates containers, including pods, to ensure efficient resource utilization and scalability.""\n  }\n]']","Containers may get OOMKilled even if they aren't over their memory limit due to the way apps in containers see limits. The top command shows memory amounts of the whole node, not the container's memory limit, which can be misleading. Containers always see the node's memory, not their own, and this can lead to unexpected behavior.","[{'highlight': 'The OOMKilled status tells you that the container was killed because it was out of memory.'}, {'highlight': ""Containers can get OOMKilled even if they aren't over their limit due to how apps in containers see limits.""}, {'highlight': ""When running the top command in a container, the output shows the node's memory usage, not the container's memory limit.""}, {'highlight': 'The top command shows the main process using only 50% of available CPU time despite being set to use one core.'}, {'highlight': ""Containers always see the node's memory, not their own memory limit, which can lead to unexpected behavior and OOMKilled status.""}]"
+359,448,0,[],"416
+CHAPTER 14
+Managing pods’ computational resources
+ This has an unfortunate effect on any application that looks up the amount of
+memory available on the system and uses that information to decide how much mem-
+ory it wants to reserve. 
+ The problem is visible when running Java apps, especially if you don’t specify the
+maximum heap size for the Java Virtual Machine with the -Xmx option. In that case,
+the JVM will set the maximum heap size based on the host’s total memory instead of
+the memory available to the container. When you run your containerized Java apps in
+a Kubernetes cluster on your laptop, the problem doesn’t manifest itself, because the
+difference between the memory limits you set for the pod and the total memory avail-
+able on your laptop is not that great. 
+ But when you deploy your pod onto a production system, where nodes have much
+more physical memory, the JVM may go over the container’s memory limit you config-
+ured and will be OOMKilled. 
+ And if you think setting the -Xmx option properly solves the issue, you’re wrong,
+unfortunately. The -Xmx option only constrains the heap size, but does nothing about
+the JVM’s off-heap memory. Luckily, new versions of Java alleviate that problem by tak-
+ing the configured container limits into account.
+UNDERSTANDING THAT CONTAINERS ALSO SEE ALL THE NODE’S CPU CORES
+Exactly like with memory, containers will also see all the node’s CPUs, regardless of
+the CPU limits configured for the container. Setting a CPU limit to one core doesn’t
+magically only expose only one CPU core to the container. All the CPU limit does is
+constrain the amount of CPU time the container can use. 
+ A container with a one-core CPU limit running on a 64-core CPU will get 1/64th
+of the overall CPU time. And even though its limit is set to one core, the container’s
+processes will not run on only one core. At different points in time, its code may be
+executed on different cores.
+ Nothing is wrong with this, right? While that’s generally the case, at least one sce-
+nario exists where this situation is catastrophic.
+ Certain applications look up the number of CPUs on the system to decide how
+many worker threads they should run. Again, such an app will run fine on a develop-
+ment laptop, but when deployed on a node with a much bigger number of cores, it’s
+going to spin up too many threads, all competing for the (possibly) limited CPU time.
+Also, each thread requires additional memory, causing the apps memory usage to sky-
+rocket. 
+ You may want to use the Downward API to pass the CPU limit to the container and
+use it instead of relying on the number of CPUs your app can see on the system. You
+can also tap into the cgroups system directly to get the configured CPU limit by read-
+ing the following files:
+/sys/fs/cgroup/cpu/cpu.cfs_quota_us
+/sys/fs/cgroup/cpu/cpu.cfs_period_us
+ 
+",[],"[{'entity': 'memory', 'description': 'available memory on the system', 'category': 'hardware'}, {'entity': 'Java Virtual Machine', 'description': 'JVM that runs Java apps', 'category': 'software'}, {'entity': '-Xmx option', 'description': 'option to set maximum heap size for JVM', 'category': 'software'}, {'entity': 'Kubernetes cluster', 'description': 'cluster where pods are run', 'category': 'application'}, {'entity': 'OOMKill', 'description': 'out-of-memory kill signal sent by the kernel', 'category': 'process'}, {'entity': 'CPU cores', 'description': 'number of CPU cores available on a node', 'category': 'hardware'}, {'entity': 'cgroups system', 'description': 'system that controls resource usage for containers', 'category': 'software'}, {'entity': '/sys/fs/cgroup/cpu/cpu.cfs_quota_us', 'description': 'file that stores the configured CPU limit', 'category': 'filesystem'}, {'entity': '/sys/fs/cgroup/cpu/cpu.cfs_period_us', 'description': 'file that stores the period of time over which the CPU limit is enforced', 'category': 'filesystem'}]","[{'source_entity': '""cgroups system""', 'description': 'limits', 'destination_entity': '""Java Virtual Machine""'}, {'source_entity': '""Java Virtual Machine""', 'description': 'uses', 'destination_entity': '""memory""'}, {'source_entity': '""Java Virtual Machine""', 'description': 'allocates', 'destination_entity': '""CPU cores""'}, {'source_entity': '""OOMKill""', 'description': 'kills', 'destination_entity': '""Java Virtual Machine""'}, {'source_entity': '""cgroups system""', 'description': 'monitors', 'destination_entity': '""Kubernetes cluster""'}, {'source_entity': '""-Xmx option""', 'description': 'specifies', 'destination_entity': '""Java Virtual Machine""'}]","['[\n  {\n    ""source"": ""cgroups system"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""limits"",\n    ""summary_er"": ""The cgroups system enforces CPU and memory limits on a pod, ensuring efficient resource utilization.""\n  },\n  {\n    ""source"": ""Java Virtual Machine"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""execution environment"",\n    ""summary_er"": ""A Java Virtual Machine (JVM) is executed within a pod, providing a sandboxed environment for Java applications to run in.""\n  }\n]', '[\n  {\n    ""source"": ""Java Virtual Machine"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""The Java Virtual Machine utilizes a pod to manage memory, ensuring efficient allocation and deallocation of resources.""\n  }\n]', '[\n  {\n    ""source"": ""Java Virtual Machine"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""allocates"",\n    ""summary_er"": ""The Java Virtual Machine allocates resources to a Pod, allowing it to run efficiently.""\n  }\n]', '[\n  {\n    ""source"": ""OOMKill"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""kills"",\n    ""summary_er"": ""OOMKill terminates a pod when it exceeds memory limits.""\n  }\n]', '[\n  {\n    ""source"": ""cgroups system"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""monitors"",\n    ""summary_er"": ""The cgroups system monitors resource usage for pods in a Kubernetes cluster, ensuring efficient resource allocation and utilization.""\n  }\n]', '[\n  {\n    ""source"": ""Java Virtual Machine"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""specifies"",\n    ""summary_er"": ""The Java Virtual Machine option specifies the maximum heap size for a pod.""\n  }\n]']","When running containers in a Kubernetes cluster, it's essential to manage pods' computational resources properly. Containers can see all node CPUs and may exceed memory limits if not configured correctly. The JVM may be OOMKilled when the heap size exceeds container memory limits. Setting -Xmx options doesn't solve issues with off-heap memory. New Java versions consider container limits, but certain applications that rely on CPU count for worker threads may spin up too many threads and exceed resources.","[{'highlight': 'When running Java apps, especially if you don’t specify the maximum heap size for the JVM with the -Xmx option, the JVM will set the maximum heap size based on the host’s total memory instead of the memory available to the container.'}, {'highlight': 'A container with a one-core CPU limit running on a 64-core CPU will get 1/64th of the overall CPU time, and its processes will not run on only one core at different points in time.'}, {'highlight': 'Certain applications look up the number of CPUs on the system to decide how many worker threads they should run, which can cause issues when deployed on a node with a much bigger number of cores.'}, {'highlight': 'You may want to use the Downward API to pass the CPU limit to the container and use it instead of relying on the number of CPUs your app can see on the system.'}, {'highlight': 'New versions of Java alleviate the problem by taking the configured container limits into account, constraining both heap size and off-heap memory.'}]"

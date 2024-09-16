@@ -1,0 +1,538 @@
+,page,img_cnt,img_npy_lst,text,tables,entities,relationships,summary_rel,summary,highlights
+320,409,0,[],"377
+Using the host node’s namespaces in a pod
+spec:
+  hostNetwork: true              
+  containers:
+  - name: main
+    image: alpine
+    command: [""/bin/sleep"", ""999999""]
+After you run the pod, you can use the following command to see that it’s indeed using
+the host’s network namespace (it sees all the host’s network adapters, for example).
+$ kubectl exec pod-with-host-network ifconfig
+docker0   Link encap:Ethernet  HWaddr 02:42:14:08:23:47
+          inet addr:172.17.0.1  Bcast:0.0.0.0  Mask:255.255.0.0
+          ...
+eth0      Link encap:Ethernet  HWaddr 08:00:27:F8:FA:4E
+          inet addr:10.0.2.15  Bcast:10.0.2.255  Mask:255.255.255.0
+          ...
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          ...
+veth1178d4f Link encap:Ethernet  HWaddr 1E:03:8D:D6:E1:2C
+          inet6 addr: fe80::1c03:8dff:fed6:e12c/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+...
+When the Kubernetes Control Plane components are deployed as pods (such as when
+you deploy your cluster with kubeadm, as explained in appendix B), you’ll find that
+those pods use the hostNetwork option, effectively making them behave as if they
+weren’t running inside a pod.
+13.1.2 Binding to a host port without using the host’s network 
+namespace
+A related feature allows pods to bind to a port in the node’s default namespace, but
+still have their own network namespace. This is done by using the hostPort property
+in one of the container’s ports defined in the spec.containers.ports field.
+ Don’t confuse pods using hostPort with pods exposed through a NodePort service.
+They’re two different things, as explained in figure 13.2.
+ The first thing you’ll notice in the figure is that when a pod is using a hostPort, a
+connection to the node’s port is forwarded directly to the pod running on that node,
+whereas with a NodePort service, a connection to the node’s port is forwarded to a
+randomly selected pod (possibly on another node). The other difference is that with
+pods using a hostPort, the node’s port is only bound on nodes that run such pods,
+whereas NodePort services bind the port on all nodes, even on those that don’t run
+such a pod (as on node 3 in the figure).
+Listing 13.2
+Network interfaces in a pod using the host’s network namespace
+Using the host node’s 
+network namespace
+ 
+",[],"[{'entity': 'hostNetwork', 'description': ""an option to use the host's network namespace"", 'category': 'software'}, {'entity': 'pod', 'description': 'a container that can run one or more containers', 'category': 'application'}, {'entity': 'kubectl', 'description': 'a command-line tool for managing Kubernetes clusters', 'category': 'software'}, {'entity': 'exec', 'description': 'a command to execute a command inside a pod', 'category': 'command'}, {'entity': 'ifconfig', 'description': 'a command to display network interface information', 'category': 'command'}, {'entity': 'docker0', 'description': 'a virtual network interface for Docker containers', 'category': 'hardware'}, {'entity': 'eth0', 'description': 'the first Ethernet interface on a node', 'category': 'hardware'}, {'entity': 'lo', 'description': 'the loopback interface on a node', 'category': 'hardware'}, {'entity': 'veth1178d4f', 'description': 'a virtual Ethernet interface for a pod', 'category': 'hardware'}, {'entity': 'hostPort', 'description': ""an option to bind a port on the node's default namespace"", 'category': 'software'}, {'entity': 'NodePort service', 'description': 'a type of service that exposes a port on all nodes', 'category': 'application'}, {'entity': 'container', 'description': 'a lightweight and standalone executable package', 'category': 'software'}, {'entity': 'image', 'description': 'a pre-built container with an application or library', 'category': 'software'}, {'entity': 'alpine', 'description': 'a lightweight Linux distribution used as a base image', 'category': 'software'}]","[{'source_entity': 'kubectl', 'description': 'uses to execute a command in a container', 'destination_entity': 'container'}, {'source_entity': 'kubectl', 'description': 'deploys an application as a pod', 'destination_entity': 'pod'}, {'source_entity': 'kubectl', 'description': 'exposes a service on a NodePort', 'destination_entity': 'NodePort service'}, {'source_entity': 'docker0', 'description': 'is the default bridge network for Docker containers', 'destination_entity': 'container'}, {'source_entity': 'exec', 'description': 'runs a command inside a container', 'destination_entity': 'container'}, {'source_entity': 'ifconfig', 'description': 'displays information about the eth0 interface', 'destination_entity': 'eth0'}, {'source_entity': 'ifconfig', 'description': 'displays information about the lo interface', 'destination_entity': 'lo'}, {'source_entity': 'kubectl', 'description': 'uses to create a new pod from an image', 'destination_entity': 'image'}, {'source_entity': 'kubectl', 'description': 'exposes a service on a hostPort', 'destination_entity': 'hostPort service'}, {'source_entity': 'veth1178d4f', 'description': 'is a virtual network interface for the container', 'destination_entity': 'container'}]","['[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to execute a command in a container"",\n    ""summary_er"": ""Kubectl uses pods as execution environments for commands, allowing users to interact with containers within the pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""deploys an application as a pod"",\n    ""summary_er"": ""Kubectl deploys an application as a containerized unit called a pod, which can contain one or more containers.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""NodePort service"",\n    ""relation_description"": ""exposes a service on a NodePort"",\n    ""summary_er"": ""Kubectl exposes a NodePort service, making it accessible from outside the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""docker0"",\n    ""destination"": ""pod/container"",\n    ""relation_description"": ""is the default bridge network for Docker containers"",\n    ""summary_er"": ""Docker containers use docker0 as their default bridge network, enabling communication between containers.""\n  }\n]', '[\n  {\n    ""source"": ""exec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs a command inside a container"",\n    ""summary_er"": ""Executes a command within a container, leveraging Docker\'s isolation features to run arbitrary commands in a controlled environment.""\n  }\n]', '[\n  {\n    ""source"": ""ifconfig"",\n    ""destination"": ""eth0"",\n    ""relation_description"": ""displays information about the eth0 interface"",\n    ""summary_er"": ""Ifconfig displays network interface info for eth0, including IP address and MAC address.""\n  }\n]', '[\n  {\n    ""source"": ""ifconfig"",\n    ""destination"": ""lo"",\n    ""relation_description"": ""displays information about the lo interface"",\n    ""summary_er"": ""Ifconfig command displays information about the loopback interface (lo) in a pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses to create a new pod from an image"",\n    ""summary_er"": ""Kubectl uses Docker images to create new pods, allowing for scalable and efficient deployment of applications.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""image"",\n    ""relation_description"": ""from which it is created"",\n    ""summary_er"": ""A pod is created from a Docker image, which contains the application code and dependencies necessary for execution.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes a service on a hostPort"",\n    ""summary_er"": ""Kubectl exposes a service on a host port, allowing external access to a pod\'s service.""\n  }\n]', '[\n  {\n    ""source"": ""veth1178d4f"",\n    ""destination"": ""container"",\n    ""relation_description"": ""is a virtual network interface"",\n    ""summary_er"": ""A virtual network interface for a container, enabling communication between the container and its host environment.""\n  },\n  {\n    ""source"": ""veth1178d4f"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""the destination pod"",\n    ""summary_er"": ""The virtual network interface is associated with a specific pod in the Kubernetes cluster, facilitating communication between the container and the pod.""\n  }\n]']","A Kubernetes pod can use the host's network namespace by setting `hostNetwork: true` in its spec. This allows it to see all the host's network adapters and bind to a port in the node's default namespace using `hostPort`. Note that this is different from a NodePort service, which binds the port on all nodes even if no pod is running on them.","[{'highlight': ""When you deploy your cluster with kubeadm, Kubernetes Control Plane components are deployed as pods and use the hostNetwork option, effectively making them behave as if they weren't running inside a pod.""}, {'highlight': ""Pods can bind to a port in the node's default namespace without using the host's network namespace by using the hostPort property in one of the container's ports defined in the spec.containers.ports field.""}, {'highlight': ""Using hostPort allows pods to directly connect to the node's port, whereas NodePort services forward connections to a randomly selected pod on any node.""}, {'highlight': ""Pods using hostPort only bind the node's port on nodes that run such pods, whereas NodePort services bind the port on all nodes, even those that don't run the pod.""}, {'highlight': ""You can use the command kubectl exec pod-with-host-network ifconfig to see that a pod is indeed using the host's network namespace and sees all the host's network adapters.""}]"
+321,410,0,[],"378
+CHAPTER 13
+Securing cluster nodes and the network
+It’s important to understand that if a pod is using a specific host port, only one
+instance of the pod can be scheduled to each node, because two processes can’t bind
+to the same host port. The Scheduler takes this into account when scheduling pods, so
+it doesn’t schedule multiple pods to the same node, as shown in figure 13.3. If you
+have three nodes and want to deploy four pod replicas, only three will be scheduled
+(one pod will remain Pending).
+Node 1
+Pod 1
+Two pods using
+hostPort
+Port
+8080
+Port
+9000
+Node 2
+Pod 2
+Port
+8080
+Port
+9000
+Node 3
+Node 1
+Pod 1
+Two pods under
+the same
+NodePort
+service
+Port
+8080
+Node 2
+Pod 2
+Port
+8080
+Node 3
+Port
+88
+Port
+88
+Port
+88
+Service
+(
+)
+iptables
+Service
+(
+)
+iptables
+Service
+(
+)
+iptables
+Figure 13.2
+Difference between pods using a hostPort and pods behind a NodePort service.
+Node 1
+Pod 1
+Port
+8080
+Host
+port
+9000
+Host
+port
+9000
+Pod 2
+Port
+8080
+Node 2
+Pod 3
+Port
+8080
+Host
+port
+9000
+Node 3
+Pod 4
+Port
+8080
+Cannot be scheduled to the same
+node, because the port is already bound
+Only a single
+replica per node
+Figure 13.3
+If a host port is used, only a single pod instance can be scheduled to a node.
+ 
+","[   Col0 Node 2\nService\n(iptables) Col2  Col3
+0                              None       None
+1  None                                   None
+2  None            Pod 2 Port\n8080           ]","[{'entity': 'pod', 'description': 'A container that runs as part of a Kubernetes cluster.', 'category': 'application'}, {'entity': 'Scheduler', 'description': 'A component that schedules pods to nodes in a Kubernetes cluster.', 'category': 'process'}, {'entity': 'node', 'description': 'A machine in a Kubernetes cluster that runs one or more pods.', 'category': 'hardware'}, {'entity': 'hostPort', 'description': 'A port on a node that is used by a pod to communicate with the outside world.', 'category': 'process'}, {'entity': 'NodePort', 'description': 'A service that exposes a port on each node in a Kubernetes cluster.', 'category': 'application'}, {'entity': 'service', 'description': 'An abstraction that defines a set of pods and provides a network identity for them.', 'category': 'application'}, {'entity': 'iptables', 'description': 'A firewalling system in Linux that is used to filter network traffic.', 'category': 'software'}]","[{'source_entity': '""iptables""', 'description': 'is used to configure network rules', 'destination_entity': '""NodePort""'}, {'source_entity': '""NodePort""', 'description': ""provides a way to expose a service's port on each node"", 'destination_entity': '""service""'}, {'source_entity': '""node""', 'description': 'runs a pod and exposes its ports', 'destination_entity': '""pod""'}, {'source_entity': '""pod""', 'description': 'is the basic execution unit in Kubernetes', 'destination_entity': '""Scheduler""'}, {'source_entity': '""service""', 'description': ""provides a network interface to access a pod's ports"", 'destination_entity': '""hostPort""'}, {'source_entity': '""hostPort""', 'description': ""exposes a service's port on the host machine"", 'destination_entity': '""node""'}]","['[{\n    ""source"": ""iptables"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is used to configure network rules"",\n    ""summary_er"": ""\\""iptables configures network rules for pods, ensuring secure and controlled access.\\""""\n}]', '[\n  {\n    ""source"": ""NodePort"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides a way to expose a service\'s port on each node"",\n    ""summary_er"": ""NodePort exposes a service\'s port on each node, allowing external access.""\n  }\n]', '[\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs a pod and exposes its ports"",\n    ""summary_er"": ""A node in Kubernetes runs a pod, exposing its ports for external access.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is the basic execution unit"",\n    ""summary_er"": ""In Kubernetes, a Pod is the basic execution unit that contains one or more application containers.""\n  },\n  {\n    ""source"": ""Scheduler"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""assigns"",\n    ""summary_er"": ""The Scheduler in Kubernetes assigns Pods to nodes for execution based on resource availability and scheduling policies.""\n  }\n]', '[\n  {\n    ""source"": ""service"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides a network interface to access a pod\'s ports"",\n    ""summary_er"": ""A service provides a network interface for accessing a pod\'s exposed ports, enabling communication between services and pods.""\n  },\n  {\n    ""source"": ""service"",\n    ""destination"": ""hostPort"",\n    ""relation_description"": ""exposes a port on the host machine"",\n    ""summary_er"": ""A service exposes a port on the host machine, allowing external access to the pod\'s ports through the hostPort.""\n  }\n]', '[\n  {\n    ""source"": ""hostPort"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes a service\'s port on the host machine"",\n    ""summary_er"": ""In Kubernetes, hostPort allows a pod to expose its port directly on the host machine, bypassing the node\'s network stack.""\n  },\n  {\n    ""source"": ""hostPort"",\n    ""destination"": ""node"",\n    ""relation_description"": ""exposes a service\'s port on the host machine"",\n    ""summary_er"": ""HostPort in Kubernetes allows a pod to expose its port directly on the host machine, potentially bypassing the node\'s network stack.""\n  },\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""basic computing unit"",\n    ""summary_er"": ""In Kubernetes, a node is a basic computing unit that can run one or more pods, providing resources and networking for them to operate.""\n  }\n]']","When using a specific host port in a pod, only one instance of the pod can be scheduled to each node due to multiple processes cannot bind to the same host port. The Scheduler takes this into account and doesn't schedule multiple pods to the same node, allowing only three pods to be scheduled out of four replicas when three nodes are available.","[{'highlight': 'If a pod is using a specific host port, only one instance of the pod can be scheduled to each node.'}, {'highlight': 'The Scheduler takes this into account when scheduling pods, so it doesn’t schedule multiple pods to the same node.'}, {'highlight': 'If you have three nodes and want to deploy four pod replicas, only three will be scheduled (one pod will remain Pending).'}, {'highlight': 'Pods using a hostPort can only be scheduled to one node per port, while pods behind a NodePort service can be scheduled to multiple nodes.'}, {'highlight': 'Using a host port limits the number of pod instances that can be scheduled to each node.'}]"
+322,411,0,[],"379
+Using the host node’s namespaces in a pod
+Let’s see how to define the hostPort in a pod’s YAML definition. The following listing
+shows the YAML to run your kubia pod and bind it to the node’s port 9000.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kubia-hostport
+spec:
+  containers:
+  - image: luksa/kubia
+    name: kubia
+    ports:
+    - containerPort: 8080    
+      hostPort: 9000        
+      protocol: TCP
+After you create this pod, you can access it through port 9000 of the node it’s sched-
+uled to. If you have multiple nodes, you’ll see you can’t access the pod through that
+port on the other nodes. 
+NOTE
+If you’re trying this on GKE, you need to configure the firewall prop-
+erly using gcloud compute firewall-rules, the way you did in chapter 5.
+The hostPort feature is primarily used for exposing system services, which are
+deployed to every node using DaemonSets. Initially, people also used it to ensure two
+replicas of the same pod were never scheduled to the same node, but now you have a
+better way of achieving this—it’s explained in chapter 16.
+13.1.3 Using the node’s PID and IPC namespaces
+Similar to the hostNetwork option are the hostPID and hostIPC pod spec properties.
+When you set them to true, the pod’s containers will use the node’s PID and IPC
+namespaces, allowing processes running in the containers to see all the other pro-
+cesses on the node or communicate with them through IPC, respectively. See the fol-
+lowing listing for an example.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-with-host-pid-and-ipc
+spec:
+  hostPID: true                    
+  hostIPC: true                     
+  containers:
+  - name: main
+    image: alpine
+    command: [""/bin/sleep"", ""999999""]
+Listing 13.3
+Binding a pod to a port in the node’s port space: kubia-hostport.yaml
+Listing 13.4
+Using the host’s PID and IPC namespaces: pod-with-host-pid-and-ipc.yaml
+The container can be 
+reached on port 8080 
+of the pod’s IP.
+It can also be reached 
+on port 9000 of the 
+node it’s deployed on.
+You want the pod to 
+use the host’s PID 
+namespace.
+You also want the 
+pod to use the host’s 
+IPC namespace.
+ 
+",[],"[{'entity': 'hostPort', 'description': 'A feature used for exposing system services deployed to every node using DaemonSets.', 'category': 'software'}, {'entity': 'kubia', 'description': 'An image used as a container in the pod.', 'category': 'software'}, {'entity': 'port 9000', 'description': ""A port on the node that is bound to the pod's port 8080."", 'category': 'hardware/network'}, {'entity': 'node', 'description': 'The host machine where the pod is scheduled to run.', 'category': 'hardware'}, {'entity': 'GKE', 'description': 'A Google Kubernetes Engine cluster.', 'category': 'software/application'}, {'entity': 'firewall-rules', 'description': 'Rules used to configure the firewall in GKE.', 'category': 'hardware/network'}, {'entity': 'DaemonSets', 'description': 'A type of pod that is deployed to every node in a cluster.', 'category': 'software'}, {'entity': 'PID namespace', 'description': 'A namespace that allows processes running in containers to see all other processes on the node.', 'category': 'hardware/process'}, {'entity': 'IPC namespace', 'description': 'A namespace that allows processes running in containers to communicate with each other through IPC.', 'category': 'hardware/process'}, {'entity': 'pod-with-host-pid-and-ipc.yaml', 'description': ""A YAML file used to define a pod that uses the host's PID and IPC namespaces."", 'category': 'software/configuration'}, {'entity': 'kubia-hostport.yaml', 'description': 'A YAML file used to define a pod that binds to a port on the node.', 'category': 'software/configuration'}]","[{'source_entity': '""IPC namespace""', 'description': 'provides a separate address space for each process', 'destination_entity': '""kubia""'}, {'source_entity': '""kubia""', 'description': 'runs as a pod with host PID and IPC capabilities', 'destination_entity': '""pod-with-host-pid-and-ipc.yaml""'}, {'source_entity': '""node""', 'description': 'hosts the pod that runs kubia', 'destination_entity': '""kubia""'}, {'source_entity': '""DaemonSets""', 'description': 'manage the lifecycle of pods, including kubia', 'destination_entity': '""kubia""'}, {'source_entity': '""port 9000""', 'description': 'exposes a port on the host machine for kubia to use', 'destination_entity': '""kubia""'}, {'source_entity': '""GKE""', 'description': 'provides a managed environment for running kubia', 'destination_entity': '""kubia""'}, {'source_entity': '""firewall-rules""', 'description': 'configure the network policies for kubia to access', 'destination_entity': '""kubia""'}, {'source_entity': '""IPC namespace""', 'description': 'provides a separate address space for each process', 'destination_entity': '""PID namespace""'}, {'source_entity': '""hostPort""', 'description': 'exposes a port on the host machine for kubia to use', 'destination_entity': '""kubia-hostport.yaml""'}]","['[\n  {\n    ""source"": ""IPC namespace"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides a separate address space for each process"",\n    ""summary_er"": ""Each process in a pod has its own IPC namespace, ensuring isolation and preventing interference between processes.""\n  }\n]', '[\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""runs as a pod with host PID and IPC capabilities"",\n    ""summary_er"": ""In Kubernetes, \'kubia\' runs as a pod with enhanced privileges, utilizing host PID and IPC capabilities.""\n  },\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""Pod-with-host-pid-and-ipc.yaml"",\n    ""relation_description"": ""runs as a pod with host PID and IPC capabilities"",\n    ""summary_er"": ""The \'kubia\' application runs within the \'pod-with-host-pid-and-ipc.yaml\' configuration, leveraging host privileges.""\n  }\n]', '[\n  {\n    ""source"": ""node"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""hosts the pod that runs kubia"",\n    ""summary_er"": ""A Kubernetes node hosts a pod running the Kibia application, providing resources and infrastructure for its execution.""\n  },\n  {\n    ""source"": ""pod"",\n    ""destination"": ""kubia"",\n    ""relation_description"": ""runs on"",\n    ""summary_er"": ""The kubia pod runs the Kibia application, utilizing the node\'s resources to execute its codebase.""\n  }\n]', '[\n  {\n    ""source"": ""DaemonSets"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manage the lifecycle of pods, including kubia"",\n    ""summary_er"": ""DaemonSets manage the lifecycle of pods, ensuring they run continuously and are updated automatically.""\n  }\n]', '[\n    {\n        ""source"": ""port 9000"",\n        ""destination"": ""kubia"",\n        ""relation_description"": ""exposes a port on the host machine for kubia to use"",\n        ""summary_er"": ""Kubernetes exposes port 9000 on the host machine for the Kubia pod to utilize.""\n    }\n]', '[\n  {\n    ""source"": ""GKE"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides a managed environment"",\n    ""summary_er"": ""GKE provides a managed environment for running kubia, which is a pod that can be scaled and managed.""\n  },\n  {\n    ""source"": ""kubia"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""managed environment for running"",\n    ""summary_er"": ""Kubia is a pod that runs in a managed environment provided by GKE, allowing for scaling and management.""\n  }\n]', '[\n  {\n    ""source"": ""firewall-rules"",\n    ""destination"": ""kubia"",\n    ""relation_description"": ""configure the network policies"",\n    ""summary_er"": ""Configure firewall rules to allow kubia pod access, ensuring secure network connectivity.""\n  }\n]', '[\n  {\n    ""source"": ""IPC namespace"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides a separate address space for each process"",\n    ""summary_er"": ""Each process has its own IPC namespace, ensuring isolation and preventing interference between processes.""\n  },\n  {\n    ""source"": ""PID namespace"",\n    ""destination"": ""pod"",\n    ""relation_description"": """",\n    ""summary_er"": ""A PID namespace is not applicable to a pod as it\'s a Linux kernel feature for isolating process IDs""\n  }\n]', '[\n  {\n    ""source"": ""hostPort"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""exposes a port on the host machine for kubia to use"",\n    ""summary_er"": ""Kubernetes exposes a port on the host machine, allowing the Kubia pod to access it.""\n  }\n]']","Using the host node's namespaces in a pod, you can define hostPort in a pod's YAML definition. This allows access to the pod through the node's port, but not on other nodes. The hostPID and hostIPC pod spec properties allow containers to use the node's PID and IPC namespaces, respectively.","[{'highlight': ""To access a pod through its host node's port, you can define the hostPort in a pod's YAML definition.""}, {'highlight': 'The hostPort feature is primarily used for exposing system services deployed to every node using DaemonSets.'}, {'highlight': 'You can use the hostPID and hostIPC pod spec properties to allow processes running in containers to see all other processes on the node or communicate with them through IPC.'}, {'highlight': ""When you set hostPID and hostIPC to true, a pod's containers will use the node's PID and IPC namespaces.""}, {'highlight': ""You can access a container on port 8080 of the pod's IP or on port 9000 of the node it's deployed on.""}]"
+323,412,0,[],"380
+CHAPTER 13
+Securing cluster nodes and the network
+You’ll remember that pods usually see only their own processes, but if you run this pod
+and then list the processes from within its container, you’ll see all the processes run-
+ning on the host node, not only the ones running in the container, as shown in the
+following listing.
+$ kubectl exec pod-with-host-pid-and-ipc ps aux
+PID   USER     TIME   COMMAND
+    1 root       0:01 /usr/lib/systemd/systemd --switched-root --system ...
+    2 root       0:00 [kthreadd]
+    3 root       0:00 [ksoftirqd/0]
+    5 root       0:00 [kworker/0:0H]
+    6 root       0:00 [kworker/u2:0]
+    7 root       0:00 [migration/0]
+    8 root       0:00 [rcu_bh]
+    9 root       0:00 [rcu_sched]
+   10 root       0:00 [watchdog/0]
+...
+By setting the hostIPC property to true, processes in the pod’s containers can also
+communicate with all the other processes running on the node, through Inter-Process
+Communication.
+13.2
+Configuring the container’s security context
+Besides allowing the pod to use the host’s Linux namespaces, other security-related
+features can also be configured on the pod and its container through the security-
+Context properties, which can be specified under the pod spec directly and inside the
+spec of individual containers.
+UNDERSTANDING WHAT’S CONFIGURABLE IN THE SECURITY CONTEXT
+Configuring the security context allows you to do various things:
+Specify the user (the user’s ID) under which the process in the container will run.
+Prevent the container from running as root (the default user a container runs
+as is usually defined in the container image itself, so you may want to prevent
+containers from running as root).
+Run the container in privileged mode, giving it full access to the node’s kernel.
+Configure fine-grained privileges, by adding or dropping capabilities—in con-
+trast to giving the container all possible permissions by running it in privi-
+leged mode.
+Set SELinux (Security Enhanced Linux) options to strongly lock down a
+container.
+Prevent the process from writing to the container’s filesystem.
+We’ll explore these options next. 
+Listing 13.5
+Processes visible in a pod with hostPID: true
+ 
+",[],"[{'entity': 'pods', 'description': 'containers that run on a Kubernetes cluster', 'category': 'application'}, {'entity': 'kubectl', 'description': 'Kubernetes command-line tool', 'category': 'command'}, {'entity': 'exec', 'description': 'kubectl command to execute a command inside a pod', 'category': 'command'}, {'entity': 'ps aux', 'description': 'Unix command to list processes', 'category': 'command'}, {'entity': 'hostIPC', 'description': 'property to enable inter-process communication between host and pod', 'category': 'property'}, {'entity': 'Inter-Process Communication', 'description': 'mechanism for processes to communicate with each other', 'category': 'process'}, {'entity': 'security context', 'description': 'configuration options for pod and container security', 'category': 'property'}, {'entity': 'user ID', 'description': 'ID of the user under which a process will run', 'category': 'process'}, {'entity': 'root', 'description': 'default user a container runs as', 'category': 'process'}, {'entity': 'privileged mode', 'description': ""mode that gives full access to the node's kernel"", 'category': 'property'}, {'entity': 'capabilities', 'description': 'fine-grained privileges that can be added or dropped', 'category': 'process'}, {'entity': 'SELinux', 'description': 'Security Enhanced Linux options to lock down a container', 'category': 'property'}, {'entity': 'filesystem', 'description': ""container's filesystem that can be prevented from writing"", 'category': 'process'}, {'entity': 'hostPID: true', 'description': ""property to enable processes in the pod's containers to communicate with host processes"", 'category': 'property'}]","[{'source_entity': 'root', 'description': 'executes', 'destination_entity': 'ps aux'}]","['[\n  {\n    ""source"": ""root"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""The root user executes a command on a pod, which is a containerized application in Kubernetes.""\n  }\n]']","This chapter discusses securing cluster nodes and networks by configuring the security context of pods and containers. This includes setting hostIPC to true for processes to communicate, configuring container security through user ID, preventing root access, running in privileged mode, adding or dropping capabilities, setting SELinux options, and preventing process writing to the filesystem.","[{'highlight': 'By setting the hostIPC property to true, processes in the pod’s containers can also communicate with all the other processes running on the node, through Inter-Process Communication.'}]"
+324,413,0,[],"381
+Configuring the container’s security context
+RUNNING A POD WITHOUT SPECIFYING A SECURITY CONTEXT
+First, run a pod with the default security context options (by not specifying them at
+all), so you can see how it behaves compared to pods with a custom security context:
+$ kubectl run pod-with-defaults --image alpine --restart Never 
+➥  -- /bin/sleep 999999
+pod ""pod-with-defaults"" created
+Let’s see what user and group ID the container is running as, and which groups it
+belongs to. You can see this by running the id command inside the container:
+$ kubectl exec pod-with-defaults id
+uid=0(root) gid=0(root) groups=0(root), 1(bin), 2(daemon), 3(sys), 4(adm), 
+6(disk), 10(wheel), 11(floppy), 20(dialout), 26(tape), 27(video)
+The container is running as user ID (uid) 0, which is root, and group ID (gid) 0 (also
+root). It’s also a member of multiple other groups. 
+NOTE
+What user the container runs as is specified in the container image. In
+a Dockerfile, this is done using the USER directive. If omitted, the container
+runs as root.
+Now, you’ll run a pod where the container runs as a different user.
+13.2.1 Running a container as a specific user
+To run a pod under a different user ID than the one that’s baked into the container
+image, you’ll need to set the pod’s securityContext.runAsUser property. You’ll
+make the container run as user guest, whose user ID in the alpine container image is
+405, as shown in the following listing.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-as-user-guest
+spec:
+  containers:
+  - name: main
+    image: alpine
+    command: [""/bin/sleep"", ""999999""]
+    securityContext:
+      runAsUser: 405      
+Now, to see the effect of the runAsUser property, run the id command in this new
+pod, the way you did before:
+$ kubectl exec pod-as-user-guest id
+uid=405(guest) gid=100(users)
+Listing 13.6
+Running containers as a specific user: pod-as-user-guest.yaml
+You need to specify a user ID, not 
+a username (id 405 corresponds 
+to the guest user).
+ 
+",[],"[{'entity': 'kubectl', 'description': 'command-line tool for managing Kubernetes clusters', 'category': 'software'}, {'entity': 'pod-with-defaults', 'description': 'a pod with default security context options', 'category': 'application'}, {'entity': 'id', 'description': 'command to display user and group IDs', 'category': 'software'}, {'entity': 'root', 'description': 'superuser account in Linux', 'category': 'hardware'}, {'entity': 'bin', 'description': 'system binary directory', 'category': 'hardware'}, {'entity': 'daemon', 'description': 'system daemon process', 'category': 'process'}, {'entity': 'sys', 'description': 'system group', 'category': 'group'}, {'entity': 'adm', 'description': 'administrators group', 'category': 'group'}, {'entity': 'disk', 'description': 'file system disk group', 'category': 'group'}, {'entity': 'wheel', 'description': 'superuser group', 'category': 'group'}, {'entity': 'floppy', 'description': 'floppy disk device group', 'category': 'hardware'}, {'entity': 'dialout', 'description': 'dial-out modem group', 'category': 'group'}, {'entity': 'tape', 'description': 'tape drive device group', 'category': 'hardware'}, {'entity': 'video', 'description': 'video display device group', 'category': 'hardware'}, {'entity': 'guest', 'description': 'user account in Linux', 'category': 'hardware'}, {'entity': 'users', 'description': 'users group', 'category': 'group'}, {'entity': 'runAsUser', 'description': 'property to specify user ID for a pod', 'category': 'software'}, {'entity': 'securityContext', 'description': 'pod configuration property for security context', 'category': 'software'}]","[{'source_entity': 'runAsUser', 'description': 'sets the user ID to run the pod as', 'destination_entity': 'pod-with-defaults'}, {'source_entity': 'root', 'description': 'has read and execute access to the disk', 'destination_entity': 'disk'}, {'source_entity': 'daemon', 'description': 'runs with elevated privileges', 'destination_entity': 'users'}, {'source_entity': 'dialout', 'description': 'has access to dial-out devices', 'destination_entity': 'users'}, {'source_entity': 'adm', 'description': 'has administrative access', 'destination_entity': 'users'}, {'source_entity': 'sys', 'description': 'has system-level access', 'destination_entity': 'users'}, {'source_entity': 'kubectl', 'description': 'is used to manage the pod', 'destination_entity': 'pod-with-defaults'}, {'source_entity': 'id', 'description': 'displays user information', 'destination_entity': 'users'}, {'source_entity': 'wheel', 'description': 'has elevated privileges', 'destination_entity': 'users'}, {'source_entity': 'guest', 'description': 'runs with limited privileges', 'destination_entity': 'users'}, {'source_entity': 'bin', 'description': 'contains executable binaries', 'destination_entity': 'disk'}, {'source_entity': 'video', 'description': 'has access to video devices', 'destination_entity': 'tape'}, {'source_entity': 'tape', 'description': 'has access to tape devices', 'destination_entity': 'floppy'}]","['[\n  {\n    ""source"": ""runAsUser"",\n    ""destination"": ""pod-with-defaults"",\n    ""relation_description"": ""sets the user ID to run the pod as"",\n    ""summary_er"": ""This Kubernetes configuration sets the user ID for a pod named \'pod-with-defaults\' to be executed under.""\n  }\n]', '[\n  {\n    ""source"": ""root"",\n    ""destination"": ""disk"",\n    ""relation_description"": ""has read and execute access to the disk"",\n    ""summary_er"": ""Root has read and execute permissions on the disk, allowing it to interact with files and directories.""\n  }\n]', '[\n  {\n    ""source"": ""daemon"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs with elevated privileges"",\n    ""summary_er"": ""A daemon process runs within a pod, utilizing elevated privileges to execute specific tasks.""\n  }\n]', '[\n  {\n    ""source"": ""dialout"",\n    ""destination"": ""users"",\n    ""relation_description"": ""has access to dial-out devices"",\n    ""summary_er"": ""The dialout entity has access to dial-out devices for users, enabling them to make outgoing calls.""\n  }\n]', '[\n  {\n    ""source"": ""adm"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""has administrative access"",\n    ""summary_er"": ""An administrator has full control over a pod, allowing them to manage its resources and configuration.""\n  },\n  {\n    ""source"": ""users"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Users interact with a pod by running applications or services within it, leveraging its resources for their needs.""\n  }\n]', '[\n  {\n    ""source"": ""sys"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""has system-level access"",\n    ""summary_er"": ""Sys has system-level access to Pod, allowing it to manage and control pod resources.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is used to manage"",\n    ""summary_er"": ""Kubectl is a command-line tool used to manage and control pods in a Kubernetes cluster.""\n  },\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod-with-defaults"",\n    ""relation_description"": ""is used to manage"",\n    ""summary_er"": ""Kubectl can be used to manage pods with default configurations, such as pod-with-defaults.""\n  }\n]', '[\n  {\n    ""source"": ""users"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""displays user information"",\n    ""summary_er"": ""The \'users\' entity displays user information to a Kubernetes Pod, utilizing Docker containers for efficient deployment and management.""\n  }\n]', '[\n  {\n    ""source"": ""wheel"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""has elevated privileges"",\n    ""summary_er"": ""The wheel entity, which represents a user or group with elevated privileges, has access to a pod entity in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""guest"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs with limited privileges"",\n    ""summary_er"": ""A guest user can run a pod with limited privileges, ensuring security and isolation.""\n  }\n]', '[\n  {\n    ""source"": ""bin"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""contains executable binaries"",\n    ""summary_er"": ""The bin directory within a pod contains executable binaries that can be run by the container.""\n  }\n]', '[\n  {\n    ""source"": ""video"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""has access to video devices"",\n    ""summary_er"": ""Video has direct access to pod\'s video devices, enabling seamless video processing and streaming.""\n  }\n]', '[\n  {\n    ""source"": ""tape"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""has access to tape devices"",\n    ""summary_er"": ""The pod has direct access to tape devices for data storage and retrieval.""\n  }\n]']","To run a pod under a different user ID than the one baked into the container image, set the pod's securityContext.runAsUser property. This was shown by running a pod as user 'guest' with UID 405 and verifying the result using the id command inside the container.","[{'highlight': 'When running a pod without specifying a security context, the container runs as root with user ID (uid) 0 and group ID (gid) 0.'}, {'highlight': 'The user that the container runs as is specified in the container image using the USER directive in a Dockerfile, and defaults to root if omitted.'}, {'highlight': ""To run a pod under a different user ID than the one baked into the container image, set the pod's securityContext.runAsUser property with a specific user ID (e.g. 405 for the guest user).""}, {'highlight': 'The id command can be used to see the user and group ID that the container is running as, and which groups it belongs to.'}, {'highlight': ""A user ID must be specified in the securityContext.runAsUser property, not a username (e.g. 'guest' instead of 'user guest').""}]"
+325,414,0,[],"382
+CHAPTER 13
+Securing cluster nodes and the network
+As requested, the container is running as the guest user. 
+13.2.2 Preventing a container from running as root
+What if you don’t care what user the container runs as, but you still want to prevent it
+from running as root? 
+ Imagine having a pod deployed with a container image that was built with a USER
+daemon directive in the Dockerfile, which makes the container run under the daemon
+user. What if an attacker gets access to your image registry and pushes a different
+image under the same tag? The attacker’s image is configured to run as the root user.
+When Kubernetes schedules a new instance of your pod, the Kubelet will download
+the attacker’s image and run whatever code they put into it. 
+ Although containers are mostly isolated from the host system, running their pro-
+cesses as root is still considered a bad practice. For example, when a host directory is
+mounted into the container, if the process running in the container is running as
+root, it has full access to the mounted directory, whereas if it’s running as non-root,
+it won’t. 
+ To prevent the attack scenario described previously, you can specify that the pod’s
+container needs to run as a non-root user, as shown in the following listing.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-run-as-non-root
+spec:
+  containers:
+  - name: main
+    image: alpine
+    command: [""/bin/sleep"", ""999999""]
+    securityContext:                   
+      runAsNonRoot: true               
+If you deploy this pod, it gets scheduled, but is not allowed to run:
+$ kubectl get po pod-run-as-non-root
+NAME                 READY  STATUS                                                  
+pod-run-as-non-root  0/1    container has runAsNonRoot and image will run 
+                            ➥  as root
+Now, if anyone tampers with your container images, they won’t get far.
+13.2.3 Running pods in privileged mode
+Sometimes pods need to do everything that the node they’re running on can do, such
+as use protected system devices or other kernel features, which aren’t accessible to
+regular containers. 
+Listing 13.7
+Preventing containers from running as root: pod-run-as-non-root.yaml
+This container will only 
+be allowed to run as a 
+non-root user.
+ 
+",[],"[{'entity': 'container', 'description': 'A lightweight and standalone executable software package that includes everything needed to run an application, including code, libraries, settings, and other dependencies.', 'category': 'software'}, {'entity': 'Kubernetes', 'description': 'An open-source container orchestration system for automating the deployment, scaling, and management of containers across multiple hosts.', 'category': 'application'}, {'entity': 'Docker', 'description': 'A containerization platform that allows developers to package their applications and dependencies into a single container that can be run on any system with Docker installed.', 'category': 'software'}, {'entity': 'pod', 'description': 'The basic execution unit in Kubernetes, which is a logical host for one or more containers.', 'category': 'application'}, {'entity': 'image', 'description': 'A read-only template that contains the application code and dependencies, used to create a container.', 'category': 'software'}, {'entity': 'Kubelet', 'description': 'The agent that runs on each node in a Kubernetes cluster, responsible for starting and managing containers.', 'category': 'application'}, {'entity': 'securityContext', 'description': 'A configuration option that allows you to specify security settings for a container, such as the user it should run as.', 'category': 'software'}, {'entity': 'runAsNonRoot', 'description': 'A boolean flag that specifies whether a container should be allowed to run as root or not.', 'category': 'process'}, {'entity': 'kubectl', 'description': 'The command-line tool used to interact with a Kubernetes cluster, allowing you to create, manage, and delete resources such as pods and services.', 'category': 'command'}, {'entity': 'apiVersion', 'description': 'A configuration option that specifies the API version of a resource, used to determine which version of the Kubernetes API should be used to interact with it.', 'category': 'process'}, {'entity': 'kind', 'description': 'A configuration option that specifies the type of resource being created or managed.', 'category': 'process'}, {'entity': 'metadata', 'description': 'A configuration option that provides metadata about a resource, such as its name and labels.', 'category': 'process'}, {'entity': 'spec', 'description': 'A configuration option that specifies the desired state of a resource, used to determine how it should be managed or created.', 'category': 'process'}, {'entity': 'containers', 'description': 'A list of containers that make up a pod, each with its own configuration and settings.', 'category': 'application'}]","[{'source_entity': 'container', 'description': 'defines a container in Kubernetes', 'destination_entity': 'metadata'}, {'source_entity': 'securityContext', 'description': 'specifies security settings for a pod', 'destination_entity': 'pod'}, {'source_entity': 'kind', 'description': 'indicates the type of resource being defined', 'destination_entity': 'container'}, {'source_entity': 'runAsNonRoot', 'description': 'specifies whether to run the container as non-root user', 'destination_entity': 'container'}, {'source_entity': 'Docker', 'description': 'is a containerization platform used by Kubernetes', 'destination_entity': 'Kubernetes'}, {'source_entity': 'kubectl', 'description': 'is a command-line tool for managing Kubernetes resources', 'destination_entity': 'Kubernetes'}, {'source_entity': 'pod', 'description': 'is the basic execution unit in Kubernetes', 'destination_entity': 'container'}, {'source_entity': 'image', 'description': 'specifies the Docker image to use for a container', 'destination_entity': 'container'}, {'source_entity': 'Kubelet', 'description': 'is an agent that runs on each node and is responsible for running pods', 'destination_entity': 'pod'}, {'source_entity': 'apiVersion', 'description': 'specifies the API version of the Kubernetes resource being defined', 'destination_entity': 'metadata'}, {'source_entity': 'spec', 'description': 'defines the specification of a pod or container', 'destination_entity': 'container'}, {'source_entity': 'containers', 'description': 'lists the containers that make up a pod', 'destination_entity': 'pod'}]","['[\n  {\n    ""source"": ""container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines a container in Kubernetes"",\n    ""summary_er"": ""A container is defined within a pod, allowing for resource sharing and management in Kubernetes.""\n  }\n]', '[\n  {\n    ""source"": ""securityContext"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies security settings"",\n    ""summary_er"": ""Security settings for a pod are defined in the security context, ensuring secure execution and access control.""\n  }\n]', '[\n  {\n    ""source"": ""kind"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""indicates the type of resource being defined"",\n    ""summary_er"": ""The kind field specifies the type of Kubernetes resource, in this case a pod.""\n  }\n]', '[\n  {\n    ""source"": ""runAsNonRoot"",\n    ""destination"": ""container"",\n    ""relation_description"": ""specifies whether to run the container as non-root user"",\n    ""summary_er"": ""This field determines if a container should be run with root privileges, impacting security and access.""\n  }\n]', '[\n  {\n    ""source"": ""Docker"",\n    ""destination"": ""Kubernetes"",\n    ""relation_description"": ""is a containerization platform used by"",\n    ""summary_er"": ""Docker is a containerization platform that Kubernetes uses to manage and deploy applications.""\n  },\n  {\n    ""source"": ""Kubernetes"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""used by"",\n    ""summary_er"": ""Kubernetes utilizes pods as the basic execution unit for its application deployment and management.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is managed by"",\n    ""summary_er"": ""kubectl manages Kubernetes pods, a fundamental resource in container orchestration.""\n  }\n]', '[\n  {\n    ""source"": ""pod"",\n    ""destination"": ""container"",\n    ""relation_description"": ""is the basic execution unit in Kubernetes"",\n    ""summary_er"": ""A pod is a basic execution unit in Kubernetes, containing one or more containers that share resources and namespaces.""\n  }\n]', '[\n  {\n    ""source"": ""image"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the Docker image to use for a container"",\n    ""summary_er"": ""The Docker image used for a container is specified in the pod configuration, allowing for consistent and reproducible deployments.""\n  }\n]', '[\n  {\n    ""source"": ""Kubelet"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is an agent that runs on each node and is responsible for running pods"",\n    ""summary_er"": ""Kubelet is a pod runner, responsible for executing pods on each node.""\n  }\n]', '[\n  {\n    ""source"": ""apiVersion"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""specifies the API version of the Kubernetes resource being defined"",\n    ""summary_er"": ""Defines the API version for a pod in a Kubernetes configuration.""\n  }\n]', '[\n  {\n    ""source"": ""spec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""defines the specification of a pod"",\n    ""summary_er"": ""The spec defines the configuration and settings for a pod, including its containers, volumes, and other attributes.""\n  },\n  {\n    ""source"": ""spec"",\n    ""destination"": ""container"",\n    ""relation_description"": ""defines the specification of a container"",\n    ""summary_er"": ""The spec defines the configuration and settings for a container, including its image, ports, and environment variables.""\n  }\n]', '[\n  {\n    ""source"": ""containers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""lists the containers that make up a pod"",\n    ""summary_er"": ""In Kubernetes, containers are grouped together to form a pod, which shares resources and provides a single unit of deployment.""\n  }\n]']","The chapter discusses securing cluster nodes and the network by preventing containers from running as root. It explains how to prevent an attacker from pushing a malicious image under the same tag as a trusted image, and how to specify that a pod's container needs to run as a non-root user using `runAsNonRoot: true`. It also touches on running pods in privileged mode for specific use cases.","[{'highlight': ""To prevent containers from running as root, you can specify that the pod's container needs to run as a non-root user by setting `runAsNonRoot` to true in the Pod's securityContext.""}]"
+326,415,0,[],"383
+Configuring the container’s security context
+ An example of such a pod is the kube-proxy pod, which needs to modify the node’s
+iptables rules to make services work, as was explained in chapter 11. If you follow the
+instructions in appendix B and deploy a cluster with kubeadm, you’ll see every cluster
+node runs a kube-proxy pod and you can examine its YAML specification to see all the
+special features it’s using. 
+ To get full access to the node’s kernel, the pod’s container runs in privileged
+mode. This is achieved by setting the privileged property in the container’s security-
+Context property to true. You’ll create a privileged pod from the YAML in the follow-
+ing listing.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-privileged
+spec:
+  containers:
+  - name: main
+    image: alpine
+    command: [""/bin/sleep"", ""999999""]
+    securityContext:
+      privileged: true     
+Go ahead and deploy this pod, so you can compare it with the non-privileged pod you
+ran earlier. 
+ If you’re familiar with Linux, you may know it has a special file directory called /dev,
+which contains device files for all the devices on the system. These aren’t regular files on
+disk, but are special files used to communicate with devices. Let’s see what devices are
+visible in the non-privileged container you deployed earlier (the pod-with-defaults
+pod), by listing files in its /dev directory, as shown in the following listing.
+$ kubectl exec -it pod-with-defaults ls /dev
+core             null             stderr           urandom
+fd               ptmx             stdin            zero
+full             pts              stdout
+fuse             random           termination-log
+mqueue           shm              tty
+The listing shows all the devices. The list is fairly short. Now, compare this with the fol-
+lowing listing, which shows the device files your privileged pod can see.
+$ kubectl exec -it pod-privileged ls /dev
+autofs              snd                 tty46
+bsg                 sr0                 tty47
+Listing 13.8
+A pod with a privileged container: pod-privileged.yaml
+Listing 13.9
+List of available devices in a non-privileged pod
+Listing 13.10
+List of available devices in a privileged pod
+This container will 
+run in privileged 
+mode
+ 
+",[],"[{'entity': 'kube-proxy', 'description': ""A pod that modifies node's iptables rules to make services work."", 'category': 'application'}, {'entity': 'kubeadm', 'description': 'A tool for deploying a cluster with Kubernetes.', 'category': 'software'}, {'entity': 'iptables', 'description': 'A Linux utility for managing network packet filtering and network address translation.', 'category': 'software'}, {'entity': 'privileged', 'description': ""A property in the container's security context that allows the pod to run with full access to the node's kernel."", 'category': 'property'}, {'entity': '/dev', 'description': 'A special file directory on Linux systems containing device files for all devices on the system.', 'category': 'directory'}, {'entity': 'device files', 'description': 'Special files used to communicate with devices on a Linux system.', 'category': 'files'}, {'entity': '/bin/sleep', 'description': 'A command that suspends execution of the current process for a specified time period.', 'category': 'command'}, {'entity': 'alpine', 'description': 'An image used to create a container in Kubernetes.', 'category': 'image'}, {'entity': 'kubectl', 'description': 'A command-line tool for interacting with Kubernetes clusters.', 'category': 'command'}, {'entity': 'exec', 'description': 'A command used to execute a command inside a container in Kubernetes.', 'category': 'command'}, {'entity': 'ls', 'description': 'A command that lists the files and directories within a specified directory.', 'category': 'command'}, {'entity': '/dev/null', 'description': 'A special file in Linux systems used to discard output or redirect input.', 'category': 'file'}, {'entity': '/dev/zero', 'description': 'A special file in Linux systems that generates a stream of zeros.', 'category': 'file'}, {'entity': '/dev/random', 'description': 'A special file in Linux systems that generates a stream of random numbers.', 'category': 'file'}]","[{'source_entity': 'kubeadm', 'description': 'uses', 'destination_entity': 'iptables'}, {'source_entity': 'exec', 'description': 'runs', 'destination_entity': 'kubectl'}, {'source_entity': 'kubectl', 'description': 'executes', 'destination_entity': 'ls'}, {'source_entity': 'kubeadm', 'description': 'configures', 'destination_entity': 'kube-proxy'}, {'source_entity': 'device files', 'description': 'provides', 'destination_entity': '/dev/zero'}, {'source_entity': 'privileged', 'description': 'grants', 'destination_entity': 'kubectl'}, {'source_entity': 'kubeadm', 'description': 'uses', 'destination_entity': 'exec'}, {'source_entity': 'ls', 'description': 'lists', 'destination_entity': '/bin/sleep'}, {'source_entity': 'kube-proxy', 'description': 'utilizes', 'destination_entity': '/dev/random'}, {'source_entity': 'kubectl', 'description': 'accesses', 'destination_entity': '/dev/null'}]","['[\n  {\n    ""source"": ""kubeadm"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubeadm, a Kubernetes cluster bootstrapper, utilizes pods to execute its functionality.""\n  },\n  {\n    ""source"": ""kubeadm"",\n    ""destination"": ""iptables"",\n    ""relation_description"": ""and the destination pod"",\n    ""summary_er"": ""Kubeadm leverages iptables rules within pods to configure network policies for Kubernetes clusters.""\n  }\n]', '[\n  {\n    ""source"": ""exec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs"",\n    ""summary_er"": ""The `exec` command runs within a Kubernetes pod, utilizing the pod\'s resources and environment.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes"",\n    ""summary_er"": ""Kubernetes command-line tool (kubectl) executes a command on a running pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubeadm"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""configures"",\n    ""summary_er"": ""Kubeadm configures a pod to run Kubernetes services.""\n  }\n]', '[\n  {\n    ""source"": ""device files"",\n    ""destination"": ""/dev/zero"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""/dev/zero receives device file resources from device files.""\n  }\n]', '[\n  {\n    ""source"": ""privileged"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""grants"",\n    ""summary_er"": ""The \'privileged\' mode in Docker allows a container to run with elevated privileges, granting access to the host system\'s resources.""\n  }\n]', '[\n  {\n    ""source"": ""kubeadm"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""uses"",\n    ""summary_er"": ""Kubeadm utilizes pods to execute commands, leveraging their ephemeral nature for efficient execution.""\n  },\n  {\n    ""source"": ""kubeadm"",\n    ""destination"": ""exec"",\n    ""relation_description"": ""exec"",\n    ""summary_er"": ""Kubeadm executes commands within the context of an exec session, allowing for direct interaction with the pod\'s environment.""\n  }\n]', '[\n  {\n    ""source"": ""/bin/sleep"",\n    ""destination"": ""ls"",\n    ""relation_description"": ""lists"",\n    ""summary_er"": ""/bin/sleep is used to list files in a directory.""\n  }\n]', '[\n  {\n    ""source"": ""kube-proxy"",\n    ""destination"": ""/dev/random"",\n    ""relation_description"": ""utilizes"",\n    ""summary_er"": ""Kube-proxy uses /dev/random to generate random numbers for load balancing and other purposes.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""/dev/null"",\n    ""relation_description"": ""accesses"",\n    ""summary_er"": ""Kubectl command accessing null device for logging or debugging purposes.""\n  }\n]']","A Kubernetes pod's container can run in privileged mode by setting the `privileged` property to true in its security context, allowing access to the node's kernel and device files. This is demonstrated by comparing the devices visible in a non-privileged container with those in a privileged container.","[{'highlight': ""A pod can run in privileged mode by setting the privileged property in the container's security-Context property to true.""}, {'highlight': 'In a non-privileged container, only a short list of devices is visible in the /dev directory, including core, null, stderr, stdin, stdout, urandom, fd, ptmx, and tty.'}, {'highlight': 'A privileged pod can see all device files in the /dev directory, including autofs, bsg, sr0, snd, and tty46-47.'}, {'highlight': ""The kube-proxy pod runs in privileged mode to modify node's iptables rules for services to work.""}, {'highlight': 'Deploying a cluster with kubeadm results in every cluster node running a kube-proxy pod, which can be examined for its YAML specification.'}]"
+327,416,0,[],"384
+CHAPTER 13
+Securing cluster nodes and the network
+btrfs-control       stderr              tty48
+core                stdin               tty49
+cpu                 stdout              tty5
+cpu_dma_latency     termination-log     tty50
+fd                  tty                 tty51
+full                tty0                tty52
+fuse                tty1                tty53
+hpet                tty10               tty54
+hwrng               tty11               tty55
+...                 ...                 ...
+I haven’t included the whole list, because it’s too long for the book, but it’s evident
+that the device list is much longer than before. In fact, the privileged container sees
+all the host node’s devices. This means it can use any device freely. 
+ For example, I had to use privileged mode like this when I wanted a pod running
+on a Raspberry Pi to control LEDs connected it.
+13.2.4 Adding individual kernel capabilities to a container
+In the previous section, you saw one way of giving a container unlimited power. In the
+old days, traditional UNIX implementations only distinguished between privileged
+and unprivileged processes, but for many years, Linux has supported a much more
+fine-grained permission system through kernel capabilities.
+ Instead of making a container privileged and giving it unlimited permissions, a
+much safer method (from a security perspective) is to give it access only to the kernel
+features it really requires. Kubernetes allows you to add capabilities to each container
+or drop part of them, which allows you to fine-tune the container’s permissions and
+limit the impact of a potential intrusion by an attacker.
+ For example, a container usually isn’t allowed to change the system time (the hard-
+ware clock’s time). You can confirm this by trying to set the time in your pod-with-
+defaults pod:
+$ kubectl exec -it pod-with-defaults -- date +%T -s ""12:00:00""
+date: can't set date: Operation not permitted
+If you want to allow the container to change the system time, you can add a capabil-
+ity called CAP_SYS_TIME to the container’s capabilities list, as shown in the follow-
+ing listing.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-add-settime-capability
+spec:
+  containers:
+  - name: main
+    image: alpine
+Listing 13.11
+Adding the CAP_SYS_TIME capability: pod-add-settime-capability.yaml
+ 
+",[],"[{'entity': 'btrfs-control', 'description': 'device', 'category': 'hardware'}, {'entity': 'stderr', 'description': 'file descriptor', 'category': 'process'}, {'entity': 'tty48', 'description': 'terminal device', 'category': 'hardware'}, {'entity': 'core', 'description': 'system core file', 'category': 'software'}, {'entity': 'stdin', 'description': 'standard input stream', 'category': 'process'}, {'entity': 'tty49', 'description': 'terminal device', 'category': 'hardware'}, {'entity': 'stdout', 'description': 'standard output stream', 'category': 'process'}, {'entity': 'tty5', 'description': 'terminal device', 'category': 'hardware'}, {'entity': 'cpu_dma_latency', 'description': 'CPU DMA latency file', 'category': 'software'}, {'entity': 'termination-log', 'description': 'system log file', 'category': 'software'}, {'entity': 'tty50', 'description': 'terminal device', 'category': 'hardware'}, {'entity': 'fd', 'description': 'file descriptor', 'category': 'process'}, {'entity': 'tty', 'description': 'terminal device', 'category': 'hardware'}, {'entity': 'tty51', 'description': 'terminal device', 'category': 'hardware'}, {'entity': 'full', 'description': 'device', 'category': 'hardware'}, {'entity': 'tty0', 'description': 'terminal device', 'category': 'hardware'}, {'entity': 'fuse', 'description': 'file system', 'category': 'software'}, {'entity': 'tty1', 'description': 'terminal device', 'category': 'hardware'}, {'entity': 'hpet', 'description': 'high precision event timer', 'category': 'hardware'}, {'entity': 'tty10', 'description': 'terminal device', 'category': 'hardware'}, {'entity': 'hwrng', 'description': 'hardware random number generator', 'category': 'hardware'}, {'entity': 'tty11', 'description': 'terminal device', 'category': 'hardware'}, {'entity': 'privileged container', 'description': 'container with elevated privileges', 'category': 'software'}, {'entity': 'CAP_SYS_TIME', 'description': 'kernel capability to set system time', 'category': 'software'}, {'entity': 'pod-with-defaults', 'description': 'Kubernetes pod with default settings', 'category': 'application'}, {'entity': 'kubectl', 'description': 'Kubernetes command-line tool', 'category': 'software'}, {'entity': 'exec', 'description': 'command to execute a process in a container', 'category': 'process'}, {'entity': 'date', 'description': 'Unix command to display or set the system date and time', 'category': 'software'}]","[{'source_entity': '""tty49""', 'description': 'is associated with', 'destination_entity': '""core""'}, {'source_entity': '""core""', 'description': 'contains', 'destination_entity': '""tty10""'}, {'source_entity': '""full""', 'description': 'characterizes', 'destination_entity': '""privileged container""'}, {'source_entity': '""kubectl""', 'description': 'controls', 'destination_entity': '""privileged container""'}, {'source_entity': '""tty0""', 'description': 'is associated with', 'destination_entity': '""fd""'}, {'source_entity': '""fd""', 'description': 'provides', 'destination_entity': '""tty""'}, {'source_entity': '""hpet""', 'description': 'is associated with', 'destination_entity': '""tty11""'}, {'source_entity': '""tty51""', 'description': 'is associated with', 'destination_entity': '""tty1""'}, {'source_entity': '""stdout""', 'description': 'outputs to', 'destination_entity': '""fuse""'}, {'source_entity': '""exec""', 'description': 'performs on', 'destination_entity': '""CAP_SYS_TIME""'}, {'source_entity': '""btrfs-control""', 'description': 'manages', 'destination_entity': '""termination-log""'}, {'source_entity': '""stdin""', 'description': 'inputs from', 'destination_entity': '""tty48""'}, {'source_entity': '""stderr""', 'description': 'outputs to', 'destination_entity': '""cpu_dma_latency""'}, {'source_entity': '""hwrng""', 'description': 'is associated with', 'destination_entity': '""pod-with-defaults""'}, {'source_entity': '""tty50""', 'description': 'is associated with', 'destination_entity': '""date""'}, {'source_entity': '""tty5""', 'description': 'is associated with', 'destination_entity': '""tty49""'}]","['[\n  {\n    ""source"": ""tty49"",\n    ""destination"": ""pod/core"",\n    ""relation_description"": ""is associated with"",\n    ""summary_er"": ""TTY49 is a terminal emulator that provides a command-line interface to interact with the core pod, which is the central component of a Kubernetes cluster.""\n  }\n]', '[\n  {\n    ""source"": ""core"",\n    ""destination"": ""tty10"",\n    ""relation_description"": ""contains"",\n    ""summary_er"": ""The core entity contains the tty10 pod, which suggests a hierarchical relationship where the core serves as a container or parent to the tty10 pod.""\n  }\n]', '[\n  {\n    ""source"": ""full"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""characterizes"",\n    ""summary_er"": ""\\""Full\\"" describes a pod\'s characteristics, such as its configuration and behavior.""\n  },\n  {\n    ""source"": ""privileged container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""characterizes"",\n    ""summary_er"": ""\\""Privileged Container\\"" refers to a pod that has elevated privileges, allowing it to access system resources.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""controls"",\n    ""summary_er"": ""Kubectl manages and controls pods in a Kubernetes cluster, ensuring efficient resource utilization and scalability.""\n  },\n  {\n    ""source"": ""privileged container"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs inside"",\n    ""summary_er"": ""A privileged container runs within a pod, providing a secure and isolated environment for applications to execute.""\n  }\n]', '[\n  {\n    ""source"": ""tty0"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is associated with"",\n    ""summary_er"": ""TTY0 is a virtual terminal device that provides input/output functionality for a pod.""\n  },\n  {\n    ""source"": ""fd"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""is associated with"",\n    ""summary_er"": ""File descriptor (FD) is an integer that represents an open file or other resource in a pod.""\n  }\n]', '[\n  {\n    ""source"": ""fd"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""A container runtime that provides a layer of abstraction between the host machine and the containers running on it.""\n  },\n  {\n    ""source"": ""tty"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""provides"",\n    ""summary_er"": ""A terminal emulator that allows users to interact with the pod as if they were logged in directly to the host machine.""\n  }\n]', '[\n  {\n    ""source"": ""HPET"",\n    ""destination"": ""Pod tty11"",\n    ""relation_description"": ""is associated with"",\n    ""summary_er"": ""The HPET is a hardware component that provides high-resolution timing information, which is utilized by the Pod tty11 for scheduling and resource allocation purposes.""\n  }\n]', '[\n  {\n    ""source"": ""tty51"",\n    ""destination"": ""tty1"",\n    ""relation_description"": ""is associated with"",\n    ""summary_er"": ""tty51 is a terminal emulator associated with tty1, which represents a Linux pseudoterminal.""\n  }\n]', '[\n  {\n    ""source"": ""stdout"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""outputs to"",\n    ""summary_er"": ""The stdout of a process outputs its results to a pod, which can be managed by Kubernetes.""\n  },\n  {\n    ""source"": ""fuse"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""container runtime"",\n    ""summary_er"": ""A fuse is used as the container runtime for Docker, allowing it to run containers within a pod.""\n  }\n]', '[\n  {\n    ""source"": ""exec"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""performs on"",\n    ""summary_er"": ""The exec command performs operations on a pod, allowing users to execute commands within the container.""\n  },\n  {\n    ""source"": ""CAP_SYS_TIME"",\n    ""destination"": ""exec"",\n    ""relation_description"": """",\n    ""summary_er"": ""CAP_SYS_TIME is a capability that allows the execution of certain system calls.""\n  }\n]', '[\n  {\n    ""source"": ""btrfs-control"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""manages"",\n    ""summary_er"": ""The btrfs-control manages a pod by overseeing its termination log.""\n  }\n]', '[\n  {\n    ""source"": ""stdin"",\n    ""destination"": ""pod/tty48"",\n    ""relation_description"": ""inputs from"",\n    ""summary_er"": ""The stdin entity provides input to the tty48 pod, allowing it to receive user input.""\n  }\n]', '[\n  {\n    ""source"": ""stderr"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""outputs to"",\n    ""summary_er"": ""The stderr stream outputs logs from a container to its parent pod.""\n  },\n  {\n    ""source"": ""cpu_dma_latency"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""related to"",\n    ""summary_er"": ""CPU DMA latency is related to the performance of a container within a pod.""\n  }\n]', '[\n  {\n    ""source"": ""hwrng"",\n    ""destination"": ""pod-with-defaults"",\n    ""relation_description"": ""is associated with"",\n    ""summary_er"": ""The hwrng entity is linked to the pod-with-defaults entity, indicating a relationship between hardware random number generator and default settings in a Kubernetes pod.""\n  }\n]', '[\n  {\n    ""source"": ""tty50"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""is associated with"",\n    ""summary_er"": ""\\""tty50 is a terminal emulator that associates with a pod in Kubernetes.\\""""\n  },\n  {\n    ""source"": ""date"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""and the destination pod"",\n    ""summary_er"": ""\\""date is used to display information related to a pod\'s creation time.\\""""\n  }\n]', '[\n  {\n    ""source"": ""tty5"",\n    ""destination"": ""tty49"",\n    ""relation_description"": ""is associated with"",\n    ""summary_er"": ""tty5 is a terminal emulator process, tty49 is a pod that contains a container running a specific application.""\n  }\n]']","In Kubernetes, instead of making a container privileged and giving it unlimited permissions, you can give it access only to the kernel features it really requires by adding individual kernel capabilities. This allows fine-tuning of the container's permissions and limiting the impact of a potential intrusion. For example, you can add CAP_SYS_TIME capability to allow the container to change the system time.","[{'highlight': ""The privileged container sees all the host node's devices, allowing it to use any device freely.""}, {'highlight': ""Kubernetes allows you to add capabilities to each container or drop part of them, fine-tuning the container's permissions and limiting the impact of a potential intrusion by an attacker.""}, {'highlight': ""A container usually isn't allowed to change the system time (the hardware clock's time), but can be granted access to do so by adding the CAP_SYS_TIME capability.""}, {'highlight': 'The CAP_SYS_TIME capability allows a container to set the system time, as demonstrated in Listing 13.11.'}, {'highlight': 'You can add individual kernel capabilities to a container using Kubernetes, providing a safer method than making it privileged and giving it unlimited permissions.'}]"
+328,417,0,[],"385
+Configuring the container’s security context
+    command: [""/bin/sleep"", ""999999""]
+    securityContext:                     
+      capabilities:                      
+        add:                  
+        - SYS_TIME            
+NOTE
+Linux kernel capabilities are usually prefixed with CAP_. But when
+specifying them in a pod spec, you must leave out the prefix.
+If you run the same command in this new pod’s container, the system time is changed
+successfully:
+$ kubectl exec -it pod-add-settime-capability -- date +%T -s ""12:00:00""
+12:00:00
+$ kubectl exec -it pod-add-settime-capability -- date
+Sun May  7 12:00:03 UTC 2017
+WARNING
+If you try this yourself, be aware that it may cause your worker
+node to become unusable. In Minikube, although the system time was auto-
+matically reset back by the Network Time Protocol (NTP) daemon, I had to
+reboot the VM to schedule new pods. 
+You can confirm the node’s time has been changed by checking the time on the node
+running the pod. In my case, I’m using Minikube, so I have only one node and I can
+get its time like this:
+$ minikube ssh date
+Sun May  7 12:00:07 UTC 2017
+Adding capabilities like this is a much better way than giving a container full privileges
+with privileged: true. Admittedly, it does require you to know and understand what
+each capability does.
+TIP
+You’ll find the list of Linux kernel capabilities in the Linux man pages.
+13.2.5 Dropping capabilities from a container
+You’ve seen how to add capabilities, but you can also drop capabilities that may oth-
+erwise be available to the container. For example, the default capabilities given to a
+container include the CAP_CHOWN capability, which allows processes to change the
+ownership of files in the filesystem. 
+ You can see that’s the case by changing the ownership of the /tmp directory in
+your pod-with-defaults pod to the guest user, for example:
+$ kubectl exec pod-with-defaults chown guest /tmp
+$ kubectl exec pod-with-defaults -- ls -la / | grep tmp
+drwxrwxrwt    2 guest    root             6 May 25 15:18 tmp
+Capabilities are added or dropped 
+under the securityContext property.
+You’re adding the 
+SYS_TIME capability.
+ 
+",[],"[{'entity': 'Linux kernel capabilities', 'description': 'Capabilities that can be used by a container to perform specific actions.', 'category': 'software'}, {'entity': 'CAP_', 'description': 'Prefix for Linux kernel capabilities.', 'category': 'software'}, {'entity': '/bin/sleep', 'description': 'Command that puts the container to sleep for a specified amount of time.', 'category': 'command'}, {'entity': 'securityContext', 'description': 'Property used to configure the security context of a container.', 'category': 'software'}, {'entity': 'capabilities', 'description': 'List of capabilities that can be added or dropped from a container.', 'category': 'software'}, {'entity': 'SYS_TIME', 'description': 'Capability that allows the container to change the system time.', 'category': 'software'}, {'entity': 'kubectl', 'description': 'Command-line tool used to interact with a Kubernetes cluster.', 'category': 'command'}, {'entity': 'exec', 'description': 'Subcommand of kubectl that allows executing a command in a container.', 'category': 'command'}, {'entity': 'date', 'description': 'Command used to display the current date and time.', 'category': 'command'}, {'entity': 'pod-add-settime-capability', 'description': 'Name of a pod that has been created with the SYS_TIME capability.', 'category': 'container'}, {'entity': 'Minikube', 'description': 'Tool used to run a Kubernetes cluster on a local machine.', 'category': 'software'}, {'entity': 'ssh', 'description': 'Command used to establish a secure shell connection to a remote machine.', 'category': 'command'}, {'entity': 'privileged', 'description': 'Property that allows a container to run with elevated privileges.', 'category': 'software'}, {'entity': 'CAP_CHOWN', 'description': 'Capability that allows the container to change the ownership of files in the filesystem.', 'category': 'software'}, {'entity': '/tmp', 'description': 'Directory where temporary files are stored.', 'category': 'filesystem'}, {'entity': 'guest', 'description': 'User account used to run a container with reduced privileges.', 'category': 'user'}]","[{'source_entity': '""/tmp""', 'description': 'is a directory', 'destination_entity': '""/bin/sleep""'}, {'source_entity': '""/bin/sleep""', 'description': 'executes with capabilities', 'destination_entity': '""Linux kernel capabilities""'}, {'source_entity': '""securityContext""', 'description': 'sets capabilities for the pod', 'destination_entity': '""capabilities""'}, {'source_entity': '""kubectl""', 'description': 'executes command to add time capability', 'destination_entity': '""pod-add-settime-capability""'}, {'source_entity': '""Minikube""', 'description': 'runs in privileged mode', 'destination_entity': '""privileged""'}, {'source_entity': '""date""', 'description': 'sets the date and time', 'destination_entity': '""/tmp""'}, {'source_entity': '""ssh""', 'description': 'executes command to set system time', 'destination_entity': '""SYS_TIME""'}, {'source_entity': '""CAP_CHOWN""', 'description': 'grants capability to change ownership', 'destination_entity': '""/bin/sleep""'}]","['[\n  {\n    ""source"": ""/tmp"",\n    ""destination"": ""/bin/sleep"",\n    ""relation_description"": ""is a directory"",\n    ""summary_er"": ""/tmp is a directory containing files and subdirectories, whereas /bin/sleep is an executable binary that pauses execution for a specified time.""\n  }\n]', '[\n  {\n    ""source"": ""/bin/sleep"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes with capabilities"",\n    ""summary_er"": ""/bin/sleep executes Linux kernel capabilities in a pod""\n  }\n]', '[\n  {\n    ""source"": ""securityContext"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets capabilities"",\n    ""summary_er"": ""The security context sets capabilities for a pod, ensuring it can execute specific system calls and access certain resources.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""executes command to add time capability"",\n    ""summary_er"": ""Kubectl executes a command to add time capability to a pod, enabling it to manage and schedule tasks based on time constraints.""\n  }\n]', '[\n  {\n    ""source"": ""Minikube"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""runs in privileged mode"",\n    ""summary_er"": ""Minikube runs a container in privileged mode within a pod, granting it access to host system resources.""\n  }\n]', '[\n  {\n    ""source"": ""date"",\n    ""destination"": ""/tmp"",\n    ""relation_description"": ""sets the date and time"",\n    ""summary_er"": ""The \'date\' entity sets the date and time for the \'/tmp\' pod, ensuring accurate timestamping of files stored in the temporary directory.""\n  }\n]', '[\n  {\n    ""source"": ""SSH"",\n    ""destination"": ""Pod"",\n    ""relation_description"": ""executes command to set system time"",\n    ""summary_er"": ""SSH executes a command on a Pod to set the system time, ensuring synchronization across the cluster.""\n  }\n]', '[\n  {\n    ""source"": ""CAP_CHOWN"",\n    ""destination"": ""/bin/sleep"",\n    ""relation_description"": ""grants capability to change ownership"",\n    ""summary_er"": ""The CAP_CHOWN capability grants permission to modify file ownership, which is essential for the /bin/sleep command to function correctly.""\n  }\n]']","Configuring a container's security context by adding or dropping Linux kernel capabilities, such as SYS_TIME. This can be done under the securityContext property in a pod spec, and is a more controlled way than giving full privileges with privileged: true. Capabilities can be added or dropped to allow specific actions, but requires knowledge of what each capability does.","[{'highlight': 'Linux kernel capabilities are usually prefixed with CAP_, but when specifying them in a pod spec, you must leave out the prefix.'}, {'highlight': 'If you try to change the system time in a container, it may cause your worker node to become unusable and require a reboot.'}, {'highlight': 'Adding capabilities like SYS_TIME is a better way than giving a container full privileges with privileged: true.'}, {'highlight': 'Capabilities can be added or dropped under the securityContext property, allowing you to customize the capabilities available to a container.'}, {'highlight': 'The CAP_CHOWN capability allows processes to change the ownership of files in the filesystem and can be dropped from a container if not needed.'}]"
+329,418,0,[],"386
+CHAPTER 13
+Securing cluster nodes and the network
+To prevent the container from doing that, you need to drop the capability by listing it
+under the container’s securityContext.capabilities.drop property, as shown in
+the following listing.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-drop-chown-capability
+spec:
+  containers:
+  - name: main
+    image: alpine
+    command: [""/bin/sleep"", ""999999""]
+    securityContext:
+      capabilities:
+        drop:                   
+        - CHOWN                 
+By dropping the CHOWN capability, you’re not allowed to change the owner of the /tmp
+directory in this pod:
+$ kubectl exec pod-drop-chown-capability chown guest /tmp
+chown: /tmp: Operation not permitted
+You’re almost done exploring the container’s security context options. Let’s look at
+one more.
+13.2.6 Preventing processes from writing to the container’s filesystem
+You may want to prevent the processes running in the container from writing to the
+container’s filesystem, and only allow them to write to mounted volumes. You’d want
+to do that mostly for security reasons. 
+ Let’s imagine you’re running a PHP application with a hidden vulnerability, allow-
+ing an attacker to write to the filesystem. The PHP files are added to the container
+image at build time and are served from the container’s filesystem. Because of the vul-
+nerability, the attacker can modify those files and inject them with malicious code. 
+ These types of attacks can be thwarted by preventing the container from writing to
+its filesystem, where the app’s executable code is normally stored. This is done by set-
+ting the container’s securityContext.readOnlyRootFilesystem property to true, as
+shown in the following listing.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-with-readonly-filesystem
+Listing 13.12
+Dropping a capability from a container: pod-drop-chown-capability.yaml
+Listing 13.13
+A container with a read-only filesystem: pod-with-readonly-filesystem.yaml
+You’re not allowing this container 
+to change file ownership.
+ 
+",[],"[{'entity': 'CHOWN', 'description': 'capability to change the owner of a file or directory', 'category': 'process'}, {'entity': 'securityContext.capabilities.drop', 'description': 'property in Kubernetes Pod configuration to drop specific capabilities', 'category': 'configuration'}, {'entity': 'Pod', 'description': 'Kubernetes resource representing a group of one or more containers', 'category': 'resource'}, {'entity': 'containers', 'description': 'list of container specifications within a Pod', 'category': 'component'}, {'entity': '/bin/sleep', 'description': 'command to put the process into sleep mode', 'category': 'command'}, {'entity': 'kubectl exec', 'description': 'Kubernetes command to execute a command in a running container', 'category': 'command'}, {'entity': 'chown', 'description': 'Unix command to change file ownership', 'category': 'command'}, {'entity': 'securityContext.readOnlyRootFilesystem', 'description': 'property in Kubernetes Pod configuration to set the root filesystem as read-only', 'category': 'configuration'}, {'entity': 'Pod-with-readonly-filesystem', 'description': 'Kubernetes resource representing a Pod with a read-only root filesystem', 'category': 'resource'}]","[{'source_entity': '""chown""', 'description': 'changes ownership of', 'destination_entity': '""/bin/sleep""'}, {'source_entity': '""kubectl exec""', 'description': 'executes a command on', 'destination_entity': '""Pod-with-readonly-filesystem""'}, {'source_entity': '""containers""', 'description': 'are part of', 'destination_entity': '""Pod-with-readonly-filesystem""'}, {'source_entity': '""securityContext.capabilities.drop""', 'description': 'drops capabilities for', 'destination_entity': '""Pod-with-readonly-filesystem""'}, {'source_entity': '""securityContext.readOnlyRootFilesystem""', 'description': 'sets read-only root filesystem for', 'destination_entity': '""Pod-with-readonly-filesystem""'}, {'source_entity': '""CHOWN""', 'description': 'is a command used to change ownership of', 'destination_entity': '""/bin/sleep""'}]","['[\n  {\n    ""source"": ""chown"",\n    ""destination"": ""/bin/sleep"",\n    ""relation_description"": ""changes ownership of"",\n    ""summary_er"": ""The \'chown\' command changes the ownership of a file or directory, in this case, the \'/bin/sleep\' pod.""\n  }\n]', '[\n  {\n    ""source"": ""kubectl exec"",\n    ""destination"": ""Pod-with-readonly-filesystem"",\n    ""relation_description"": ""executes a command on"",\n    ""summary_er"": ""Executes a command within a Pod with a read-only filesystem, allowing for execution of commands without modifying the pod\'s underlying file system.""\n  }\n]', '[\n  {\n    ""source"": ""containers"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""are part of"",\n    ""summary_er"": ""Containers are a fundamental concept in Kubernetes, and each pod consists of one or more containers that run as processes on the host machine.""\n  }\n]', '[\n  {\n    ""source"": ""securityContext"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""drops capabilities for"",\n    ""summary_er"": ""Security context drops capabilities for a pod, restricting its privileges.""\n  },\n  {\n    ""source"": ""Pod-with-readonly-filesystem"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""has readonly filesystem"",\n    ""summary_er"": ""A pod has a readonly filesystem, preventing modifications to its contents.""\n  }\n]', '[\n  {\n    ""source"": ""securityContext"",\n    ""destination"": ""pod"",\n    ""relation_description"": ""sets read-only root filesystem for"",\n    ""summary_er"": ""The security context sets a read-only root filesystem for a pod, restricting file system modifications.""\n  }\n]', '[\n  {\n    ""source"": ""/bin/sleep"",\n    ""destination"": ""CHOWN"",\n    ""relation_description"": ""is a command used to change ownership of"",\n    ""summary_er"": ""/bin/sleep is a binary that can be owned by changing its permissions using CHOWN command.""\n  }\n]']","To prevent containers from modifying the owner of files or writing to their own filesystem, Kubernetes capabilities can be dropped and the readonlyRootFilesystem property set to true. This prevents malicious code injection in case of vulnerabilities.","[{'highlight': 'To prevent the container from doing that, you need to drop the capability by listing it under the container’s securityContext.capabilities.drop property.'}, {'highlight': 'By dropping the CHOWN capability, you’re not allowed to change the owner of the /tmp directory in this pod:'}, {'highlight': 'You may want to prevent the processes running in the container from writing to the container’s filesystem,'}, {'highlight': 'This is done by setting the container’s securityContext.readOnlyRootFilesystem property to true,'}, {'highlight': 'You’re not allowing this container to change file ownership.'}]"
